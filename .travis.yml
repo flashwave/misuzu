@@ -1,0 +1,16 @@
+cache:
+    directories:
+        - vendor
+
+language: php
+
+php:
+    - 7.2
+
+matrix:
+    fast_finish: true
+
+before_install:
+    - composer install
+
+script: ./vendor/bin/phpunit

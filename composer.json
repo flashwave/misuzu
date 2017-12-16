@@ -16,6 +16,9 @@
         "swiftmailer/swiftmailer": "~6.0",
         "erusev/parsedown": "~1.6"
     },
+    "require-dev": {
+        "phpunit/phpunit": "~6.0"
+    },
     "autoload": {
         "psr-4": {
             "Misuzu\\": "src/"

@@ -23,9 +23,6 @@ class Colour {
             case 'blue':
                 return $this->rawValue & 0xFF;
 
-            case 'none':
-                return new static(self::INHERIT);
-
             case 'hex':
                 return dechex_pad($this->red) . dechex_pad($this->green) . dechex_pad($this->blue);
         }
@@ -95,10 +92,9 @@ class Colour {
         $hex = ltrim(strtolower($hex), '#');
         $hex_length = strlen($hex);
 
-        if ($hex_length == 3)
+        if ($hex_length === 3)
             $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
-
-        if ($hex_length != 6)
+        elseif ($hex_length != 6)
             throw new \Exception('Invalid hex colour format! (find a more appropiate exception type)');
 
         return static::fromRGB(
@@ -106,6 +102,10 @@ class Colour {
             hexdec(substr($hex, 2, 2)),
             hexdec(substr($hex, 4, 2))
         );
+    }
+
+    public static function none(): Colour {
+        return new static(static::INHERIT);
     }
 
     public function __toString() {
