@@ -2,7 +2,7 @@
 [![Build Status](https://api.travis-ci.org/flashwave/misuzu.svg)](https://travis-ci.org/flashwave/misuzu)
 [![StyleCI](https://styleci.io/repos/114177358/shield)](https://styleci.io/repos/114177358)
 [![CodeFactor](https://www.codefactor.io/repository/github/flashwave/misuzu/badge)](https://www.codefactor.io/repository/github/flashwave/misuzu)
-[![License](https://poser.pugx.org/flashwave/misuzu/license)](https://packagist.org/packages/flashwave/misuzu)
+[![License](https://img.shields.io/github/license/flashwave/misuzu.svg)](https://github.com/flashwave/misuzu/blob/master/LICENSE)
 
 ## Requirements
  - PHP 7.2
