@@ -1,12 +1,14 @@
 <?php
 namespace Misuzu;
 
-class Colour {
+class Colour
+{
     private const INHERIT = 0x40000000;
 
     private $rawValue = 0;
 
-    public function __get(string $name) {
+    public function __get(string $name)
+    {
         switch ($name) {
             case 'raw':
                 return $this->rawValue;
@@ -30,44 +32,51 @@ class Colour {
         return null;
     }
 
-    public function __set(string $name, $value): void {
+    public function __set(string $name, $value): void
+    {
         switch ($name) {
             case 'raw':
-                if (!is_int32($value) && !is_uint32($value))
+                if (!is_int32($value) && !is_uint32($value)) {
                     break;
+                }
 
                 $this->rawValue = $value;
                 break;
 
             case 'inherit':
-                if (!is_bool($value))
+                if (!is_bool($value)) {
                     break;
+                }
 
-                if ($value)
+                if ($value) {
                     $this->rawValue |= self::INHERIT;
-                else
+                } else {
                     $this->rawValue &= ~self::INHERIT;
+                }
                 break;
 
             case 'red':
-                if (!is_byte($value))
+                if (!is_byte($value)) {
                     break;
+                }
 
                 $this->rawValue &= ~0xFF0000;
                 $this->rawValue |= $value << 16;
                 break;
 
             case 'green':
-                if (!is_byte($value))
+                if (!is_byte($value)) {
                     break;
+                }
 
                 $this->rawValue &= ~0xFF00;
                 $this->rawValue |= $value << 8;
                 break;
 
             case 'blue':
-                if (!is_byte($value))
+                if (!is_byte($value)) {
                     break;
+                }
 
                 $this->rawValue &= ~0xFF;
                 $this->rawValue |= $value;
@@ -76,11 +85,13 @@ class Colour {
         }
     }
 
-    public function __construct(int $raw) {
+    public function __construct(int $raw)
+    {
         $this->rawValue = $raw;
     }
 
-    public static function fromRGB(int $red, int $green, int $blue): Colour {
+    public static function fromRGB(int $red, int $green, int $blue): Colour
+    {
         $raw = 0;
         $raw |= ($red & 0xFF) << 16;
         $raw |= ($green & 0xFF) << 8;
@@ -88,14 +99,16 @@ class Colour {
         return new static($raw);
     }
 
-    public static function fromHex(string $hex): Colour {
+    public static function fromHex(string $hex): Colour
+    {
         $hex = ltrim(strtolower($hex), '#');
         $hex_length = strlen($hex);
 
-        if ($hex_length === 3)
+        if ($hex_length === 3) {
             $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
-        elseif ($hex_length != 6)
+        } elseif ($hex_length != 6) {
             throw new \Exception('Invalid hex colour format! (find a more appropiate exception type)');
+        }
 
         return static::fromRGB(
             hexdec(substr($hex, 0, 2)),
@@ -104,11 +117,13 @@ class Colour {
         );
     }
 
-    public static function none(): Colour {
+    public static function none(): Colour
+    {
         return new static(static::INHERIT);
     }
 
-    public function __toString() {
+    public function __toString()
+    {
         return "#{$this->hex}";
     }
 }

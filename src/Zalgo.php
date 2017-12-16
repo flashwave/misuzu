@@ -1,7 +1,8 @@
 <?php
 namespace Misuzu;
 
-class Zalgo {
+class Zalgo
+{
     private const ZALGO_CHARS_UP = [
         "\u{030d}", "\u{030e}", "\u{0304}", "\u{0305}", "\u{033f}",
         "\u{0311}", "\u{0306}", "\u{0310}", "\u{0352}", "\u{0357}",
@@ -48,7 +49,8 @@ class Zalgo {
     public const ZALGO_DIR_MID = 0x2;
     public const ZALGO_DIR_DOWN = 0x4;
 
-    public static function strip(string $text): string {
+    public static function strip(string $text): string
+    {
         $text = str_replace(self::ZALGO_CHARS_UP, '', $text);
         $text = str_replace(self::ZALGO_CHARS_MIDDLE, '', $text);
         $text = str_replace(self::ZALGO_CHARS_DOWN, '', $text);
@@ -56,45 +58,52 @@ class Zalgo {
         return $text;
     }
 
-    private static function isZalgo(string $char): bool {
+    private static function isZalgo(string $char): bool
+    {
         return in_array($char, self::ZALGO_CHARS_UP)
             || in_array($char, self::ZALGO_CHARS_MIDDLE)
             || in_array($char, self::ZALGO_CHARS_DOWN);
     }
 
-    private static function getZalgo(array $array, int $length): string {
+    private static function getZalgo(array $array, int $length): string
+    {
         $string = '';
 
-        for ($i = 0; $i < $length; $i++)
+        for ($i = 0; $i < $length; $i++) {
             $string .= array_rand_value($array, '');
+        }
 
         return $string;
     }
 
-    public static function run(string $text, int $mode = self::ZALGO_MODE_MINI, int $direction = self::ZALGO_DIR_MID | self::ZALGO_DIR_DOWN): string {
-            $text_length = strlen($text);
+    public static function run(string $text, int $mode = self::ZALGO_MODE_MINI, int $direction = self::ZALGO_DIR_MID | self::ZALGO_DIR_DOWN): string
+    {
+        $text_length = strlen($text);
 
-            if (!$text_length || !$mode || !$direction || !in_array($mode, self::ZALGO_MODES))
-                return $text;
+        if (!$text_length || !$mode || !$direction || !in_array($mode, self::ZALGO_MODES)) {
+            return $text;
+        }
 
-            $going_up   = has_flag($direction, self::ZALGO_DIR_UP);
-            $going_mid  = has_flag($direction, self::ZALGO_DIR_MID);
-            $going_down = has_flag($direction, self::ZALGO_DIR_DOWN);
+        $going_up   = has_flag($direction, self::ZALGO_DIR_UP);
+        $going_mid  = has_flag($direction, self::ZALGO_DIR_MID);
+        $going_down = has_flag($direction, self::ZALGO_DIR_DOWN);
 
-            if (!$going_up || !$going_mid || !$going_down)
-                return $text;
+        if (!$going_up || !$going_mid || !$going_down) {
+            return $text;
+        }
 
-            $str = '';
+        $str = '';
 
-            for ($i = 0; $i < $text_length; $i++) {
-                $char = $text[$i];
+        for ($i = 0; $i < $text_length; $i++) {
+            $char = $text[$i];
 
-                if (self::isZalgo($char))
-                    continue;
+            if (self::isZalgo($char)) {
+                continue;
+            }
 
-                $str .= $char;
+            $str .= $char;
                 
-                switch ($mode) {
+            switch ($mode) {
                     case self::ZALGO_MODE_MINI:
                         $num_up     = mt_rand(0, 8);
                         $num_mid    = mt_rand(0, 2);
@@ -103,8 +112,8 @@ class Zalgo {
 
                     case self::ZALGO_MODE_NORMAL:
                         $num_up     = mt_rand(0, 16) / 2 + 1;
-                        $num_mid    = mt_rand(0,  6) / 2;
-                        $num_down   = mt_rand(0,  8) / 2 + 1;
+                        $num_mid    = mt_rand(0, 6) / 2;
+                        $num_down   = mt_rand(0, 8) / 2 + 1;
                         break;
 
                     case self::ZALGO_MODE_MAX:
@@ -114,11 +123,17 @@ class Zalgo {
                         break;
                 }
 
-                if ($going_up)      $str .= self::getZalgo(self::ZALGO_CHARS_UP,        $num_up);
-                if ($going_mid)     $str .= self::getZalgo(self::ZALGO_CHARS_MIDDLE,    $num_mid);
-                if ($going_down)    $str .= self::getZalgo(self::ZALGO_CHARS_DOWN,      $num_down);
+            if ($going_up) {
+                $str .= self::getZalgo(self::ZALGO_CHARS_UP, $num_up);
             }
+            if ($going_mid) {
+                $str .= self::getZalgo(self::ZALGO_CHARS_MIDDLE, $num_mid);
+            }
+            if ($going_down) {
+                $str .= self::getZalgo(self::ZALGO_CHARS_DOWN, $num_down);
+            }
+        }
 
-            return $str;
+        return $str;
     }
 }

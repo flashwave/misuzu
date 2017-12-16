@@ -3,7 +3,8 @@ use PHPUnit\Framework\TestCase;
 
 use Misuzu\Colour;
 
-class ColourTest extends TestCase {
+class ColourTest extends TestCase
+{
     public const RED_HEX6 = 67;
     public const GREEN_HEX6 = 45;
     public const BLUE_HEX6 = 23;
@@ -18,7 +19,8 @@ class ColourTest extends TestCase {
     public const STR_HEX3 = '3388dd';
     public const RAW_HEX3 = 3377373;
 
-    public function testNone() {
+    public function testNone()
+    {
         $colour = Colour::none();
 
         $this->assertTrue($colour->inherit);
@@ -29,7 +31,8 @@ class ColourTest extends TestCase {
         $this->assertEquals($colour->hex, '000000');
     }
 
-    public function testFromRaw() {
+    public function testFromRaw()
+    {
         $colour = new Colour(static::RAW_HEX6);
 
         $this->assertEquals($colour->hex, static::STR_HEX6);
@@ -40,7 +43,8 @@ class ColourTest extends TestCase {
         $this->assertFalse($colour->inherit);
     }
 
-    public function testFromRGB() {
+    public function testFromRGB()
+    {
         $colour = Colour::fromRGB(static::RED_HEX6, static::GREEN_HEX6, static::BLUE_HEX6);
 
         $this->assertEquals($colour->hex, static::STR_HEX6);
@@ -51,7 +55,8 @@ class ColourTest extends TestCase {
         $this->assertFalse($colour->inherit);
     }
 
-    public function testFromHex() {
+    public function testFromHex()
+    {
         $colour = Colour::fromHex(static::SSTR_HEX6);
 
         $this->assertEquals($colour->hex, static::STR_HEX6);
@@ -62,7 +67,8 @@ class ColourTest extends TestCase {
         $this->assertFalse($colour->inherit);
     }
 
-    public function testFromHex3() {
+    public function testFromHex3()
+    {
         $colour = Colour::fromHex(static::SSTR_HEX3);
 
         $this->assertEquals($colour->hex, static::STR_HEX3);
