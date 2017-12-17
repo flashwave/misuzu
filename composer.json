@@ -8,8 +8,8 @@
     },
     "require": {
         "php": ">=7.2",
+        "flashwave/aitemu": "dev-master#ac3050d17e3aa31a088caf15469bb51e5b165d40",
         "nesbot/carbon": "~1.22",
-        "twig/twig": "~2.4",
         "illuminate/database": "~5.5",
         "illuminate/filesystem": "~5.5",
         "doctrine/dbal": "~2.6",

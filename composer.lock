@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "87474e9107d93924c3516439ea7bf8a0",
+    "content-hash": "e20f18d591572a55dce8ab1b98dc7b5a",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -583,6 +583,41 @@
                 "parser"
             ],
             "time": "2017-11-14T20:44:03+00:00"
+        },
+        {
+            "name": "flashwave/aitemu",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/flashwave/aitemu.git",
+                "reference": "ac3050d17e3aa31a088caf15469bb51e5b165d40"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/flashwave/aitemu/zipball/ac3050d17e3aa31a088caf15469bb51e5b165d40",
+                "reference": "ac3050d17e3aa31a088caf15469bb51e5b165d40",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2",
+                "twig/twig": "~2.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Aitemu\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHP Framework, primarily for personal use.",
+            "homepage": "https://github.com/flashwave/aitemu",
+            "time": "2017-12-17T01:25:07+00:00"
         },
         {
             "name": "illuminate/container",
@@ -2747,7 +2782,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "flashwave/aitemu": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
