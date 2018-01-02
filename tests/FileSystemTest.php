@@ -42,7 +42,7 @@ class FileSystemTest extends TestCase
 
     public function testWriteFile()
     {
-        $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_TRUNCATE, false);
+        $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_TRUNCATE);
         $this->assertInstanceOf(FileStream::class, $file);
 
         $file->write('misuzu');
