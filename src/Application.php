@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Aitemu\RouteCollection;
 use Misuzu\Config\ConfigManager;
 
 class Application
@@ -26,14 +27,17 @@ class Application
         return static::getInstance();
     }
 
+    private $router = null;
     private $templating = null;
     private $configuration = null;
 
-    protected function __construct()
+    protected function __construct($config = null)
     {
         ExceptionHandler::register();
 
+        $this->router = new RouteCollection;
         $this->templating = new TemplateEngine;
+        $this->configuration = new ConfigManager($config);
 
         echo 'hello!';
     }
@@ -50,6 +54,20 @@ class Application
         if ($this->hasTemplating()) {
             $this->getTemplating()->debug($mode);
         }
+    }
+
+    public function hasRouter(): bool
+    {
+        return !is_null($this->router) && $this->router instanceof RouteCollection;
+    }
+
+    public function getRouter(): RouteCollection
+    {
+        if (!$this->hasRouter()) {
+            throw new \Exception('No RouteCollection instance is available.');
+        }
+
+        return $this->router;
     }
 
     public function hasTemplating(): bool
