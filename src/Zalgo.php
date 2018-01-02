@@ -40,9 +40,9 @@ class Zalgo
     public const ZALGO_MODE_MAX = 3;
 
     private const ZALGO_MODES = [
-        ZALGO_MODE_MINI,
-        ZALGO_MODE_NORMAL,
-        ZALGO_MODE_MAX,
+        self::ZALGO_MODE_MINI,
+        self::ZALGO_MODE_NORMAL,
+        self::ZALGO_MODE_MAX,
     ];
 
     public const ZALGO_DIR_UP = 0x1;
@@ -105,7 +105,7 @@ class Zalgo
             }
 
             $str .= $char;
-                
+
             switch ($mode) {
                 case self::ZALGO_MODE_MINI:
                     $num_up     = mt_rand(0, 8);
@@ -129,9 +129,11 @@ class Zalgo
             if ($going_up) {
                 $str .= self::getZalgo(self::ZALGO_CHARS_UP, $num_up);
             }
+
             if ($going_mid) {
                 $str .= self::getZalgo(self::ZALGO_CHARS_MIDDLE, $num_mid);
             }
+
             if ($going_down) {
                 $str .= self::getZalgo(self::ZALGO_CHARS_DOWN, $num_down);
             }

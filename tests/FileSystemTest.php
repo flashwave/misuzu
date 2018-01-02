@@ -4,6 +4,7 @@ namespace MisuzuTests;
 use PHPUnit\Framework\TestCase;
 use Misuzu\IO\Directory;
 use Misuzu\IO\File;
+use Misuzu\IO\FileStream;
 
 define('WORKING_DIR', sys_get_temp_dir() . '/MisuzuFileSystemTest' . time());
 
@@ -34,48 +35,48 @@ class FileSystemTest extends TestCase
 
     public function testCreateFile()
     {
-        $file = new File(WORKING_DIR . '/file', File::CREATE_READ_WRITE);
-        $this->assertInstanceOf(File::class, $file);
+        $file = File::open(WORKING_DIR . '/file');
+        $this->assertInstanceOf(FileStream::class, $file);
         $file->close();
     }
 
     public function testWriteFile()
     {
-        $file = new File(WORKING_DIR . '/file', File::OPEN_WRITE);
-        $this->assertInstanceOf(File::class, $file);
+        $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_TRUNCATE, false);
+        $this->assertInstanceOf(FileStream::class, $file);
 
         $file->write('misuzu');
-        $this->assertEquals(6, $file->size);
+        $this->assertEquals(6, $file->length);
 
         $file->close();
     }
 
     public function testAppendFile()
     {
-        $file = new File(WORKING_DIR . '/file', File::OPEN_WRITE);
-        $this->assertInstanceOf(File::class, $file);
+        $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_APPEND);
+        $this->assertInstanceOf(FileStream::class, $file);
 
-        $file->append(' test');
-        $this->assertEquals(11, $file->size);
+        $file->write(' test');
+        $this->assertEquals(11, $file->length);
 
         $file->close();
     }
 
     public function testPosition()
     {
-        $file = new File(WORKING_DIR . '/file', File::OPEN_READ);
-        $this->assertInstanceOf(File::class, $file);
+        $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_READ);
+        $this->assertInstanceOf(FileStream::class, $file);
 
-        $file->start();
+        $file->seek(0, FileStream::ORIGIN_BEGIN);
         $this->assertEquals(0, $file->position);
 
-        $file->end();
-        $this->assertEquals($file->size, $file->position);
+        $file->seek(0, FileStream::ORIGIN_END);
+        $this->assertEquals($file->length, $file->position);
 
-        $file->position(4);
+        $file->seek(4, FileStream::ORIGIN_BEGIN);
         $this->assertEquals(4, $file->position);
 
-        $file->position(4, true);
+        $file->seek(4, FileStream::ORIGIN_CURRENT);
         $this->assertEquals(8, $file->position);
 
         $file->close();
@@ -83,34 +84,24 @@ class FileSystemTest extends TestCase
 
     public function testRead()
     {
-        $file = new File(WORKING_DIR . '/file', File::OPEN_READ);
-        $this->assertInstanceOf(File::class, $file);
+        $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_READ);
+        $this->assertInstanceOf(FileStream::class, $file);
 
-        $this->assertEquals('misuzu test', $file->read());
+        $this->assertEquals('misuzu test', $file->read($file->length));
 
-        $file->position(7);
-        $this->assertEquals('test', $file->read());
-
-        $file->close();
-    }
-
-    public function testFind()
-    {
-        $file = new File(WORKING_DIR . '/file', File::OPEN_READ);
-        $this->assertInstanceOf(File::class, $file);
-
-        $this->assertEquals(7, $file->find('test'));
+        $file->seek(7, FileStream::ORIGIN_BEGIN);
+        $this->assertEquals('test', $file->read(4));
 
         $file->close();
     }
 
     public function testChar()
     {
-        $file = new File(WORKING_DIR . '/file', File::OPEN_READ);
-        $this->assertInstanceOf(File::class, $file);
+        $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_READ);
+        $this->assertInstanceOf(FileStream::class, $file);
 
-        $file->position(3);
-        $this->assertEquals('s', $file->char());
+        $file->seek(3, FileStream::ORIGIN_BEGIN);
+        $this->assertEquals(ord('u'), $file->readChar());
 
         $file->close();
     }

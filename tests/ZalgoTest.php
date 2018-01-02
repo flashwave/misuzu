@@ -10,8 +10,19 @@ class ZalgoTest extends TestCase
 
     public function testStrip()
     {
-        $this->assertEquals(TEST_STRING, Zalgo::strip(Zalgo::run(TEST_STRING, Zalgo::ZALGO_MODE_MINI)));
-        $this->assertEquals(TEST_STRING, Zalgo::strip(Zalgo::run(TEST_STRING, Zalgo::ZALGO_MODE_NORMAL)));
-        $this->assertEquals(TEST_STRING, Zalgo::strip(Zalgo::run(TEST_STRING, Zalgo::ZALGO_MODE_MAX)));
+        $this->assertEquals(
+            static::TEST_STRING,
+            Zalgo::strip(Zalgo::run(static::TEST_STRING, Zalgo::ZALGO_MODE_MINI))
+        );
+
+        $this->assertEquals(
+            static::TEST_STRING,
+            Zalgo::strip(Zalgo::run(static::TEST_STRING, Zalgo::ZALGO_MODE_NORMAL))
+        );
+
+        $this->assertEquals(
+            static::TEST_STRING,
+            Zalgo::strip(Zalgo::run(static::TEST_STRING, Zalgo::ZALGO_MODE_MAX))
+        );
     }
 }
