@@ -7,10 +7,10 @@ class FileStream extends Stream
 {
     public const MODE_READ = 0x1;
     public const MODE_WRITE = 0x2;
-    public const MODE_READ_WRITE = self::MODE_READ | self::MODE_WRITE;
     private const MODE_TRUNCATE_RAW = 0x4;
-    public const MODE_TRUNCATE = self::MODE_TRUNCATE_RAW | self::MODE_WRITE;
     private const MODE_APPEND_RAW = 0x8;
+    public const MODE_READ_WRITE = self::MODE_READ | self::MODE_WRITE;
+    public const MODE_TRUNCATE = self::MODE_TRUNCATE_RAW | self::MODE_WRITE;
     public const MODE_APPEND = self::MODE_APPEND_RAW | self::MODE_WRITE;
 
     protected $fileHandle;
@@ -200,6 +200,8 @@ class FileStream extends Stream
     public function readChar(): int
     {
         $this->ensureHandleActive();
+        $this->ensureCanRead();
+
         return ord(fgetc($this->fileHandle));
     }
 
