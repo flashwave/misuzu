@@ -45,7 +45,8 @@ class FileSystemTest extends TestCase
         $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_TRUNCATE);
         $this->assertInstanceOf(FileStream::class, $file);
 
-        $file->write('misuzu');
+        $file->write('mis');
+        $file->write('uzu');
         $this->assertEquals(6, $file->length);
 
         $file->close();
