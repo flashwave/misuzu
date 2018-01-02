@@ -18,7 +18,7 @@ class File
     /**
      * Open + Write flag.
      */
-    public const OPEN_WRITE = 'xb';
+    public const OPEN_WRITE = 'cb';
 
     /**
      * Open + Read + Write flag.
@@ -38,12 +38,12 @@ class File
     /**
      * Open + Write flag.
      */
-    public const OPEN_CREATE_WRITE = 'cb';
+    public const OPEN_CREATE_WRITE = 'xb';
 
     /**
      * Open or Create + Read + Write flag.
      */
-    public const OPEN_CREATE_READ_WRITE = 'cb+';
+    public const OPEN_CREATE_READ_WRITE = 'xb+';
 
     /**
      * Resource/stream container.
@@ -318,6 +318,7 @@ class File
         }
 
         $this->updateMetaData();
+        $this->updatePosition();
     }
 
     /**

@@ -1,5 +1,6 @@
 <?php
-// both of these are provided by illuminate/database already but i feel like it makes sense to add these definitions regardless
+// both of these are provided by illuminate/database already
+// but i feel like it makes sense to add these definitions regardless
 
 if (!function_exists('starts_with')) {
     function starts_with(string $string, string $text): bool

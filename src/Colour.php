@@ -81,7 +81,6 @@ class Colour
                 $this->rawValue &= ~0xFF;
                 $this->rawValue |= $value;
                 break;
-
         }
     }
 

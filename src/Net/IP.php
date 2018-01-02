@@ -48,7 +48,7 @@ class IP
      * @throws NetInvalidAddressException
      * @return string
      */
-    public static function unpack($ip)
+    public static function unpack(string $ip): string
     {
         $ipv = static::version($ip);
 
@@ -69,7 +69,7 @@ class IP
      * @throws NetAddressTypeException
      * @return string
      */
-    public static function pack($bin)
+    public static function pack(string $bin): string
     {
         $len = strlen($bin);
 

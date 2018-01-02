@@ -76,8 +76,11 @@ class Zalgo
         return $string;
     }
 
-    public static function run(string $text, int $mode = self::ZALGO_MODE_MINI, int $direction = self::ZALGO_DIR_MID | self::ZALGO_DIR_DOWN): string
-    {
+    public static function run(
+        string $text,
+        int $mode = self::ZALGO_MODE_MINI,
+        int $direction = self::ZALGO_DIR_MID | self::ZALGO_DIR_DOWN
+    ): string {
         $text_length = strlen($text);
 
         if (!$text_length || !$mode || !$direction || !in_array($mode, self::ZALGO_MODES)) {
@@ -104,24 +107,24 @@ class Zalgo
             $str .= $char;
                 
             switch ($mode) {
-                    case self::ZALGO_MODE_MINI:
-                        $num_up     = mt_rand(0, 8);
-                        $num_mid    = mt_rand(0, 2);
-                        $num_down   = mt_rand(0, 8);
-                        break;
+                case self::ZALGO_MODE_MINI:
+                    $num_up     = mt_rand(0, 8);
+                    $num_mid    = mt_rand(0, 2);
+                    $num_down   = mt_rand(0, 8);
+                    break;
 
-                    case self::ZALGO_MODE_NORMAL:
-                        $num_up     = mt_rand(0, 16) / 2 + 1;
-                        $num_mid    = mt_rand(0, 6) / 2;
-                        $num_down   = mt_rand(0, 8) / 2 + 1;
-                        break;
+                case self::ZALGO_MODE_NORMAL:
+                    $num_up     = mt_rand(0, 16) / 2 + 1;
+                    $num_mid    = mt_rand(0, 6) / 2;
+                    $num_down   = mt_rand(0, 8) / 2 + 1;
+                    break;
 
-                    case self::ZALGO_MODE_MAX:
-                        $num_up     = mt_rand(0, 64) / 4 + 3;
-                        $num_mid    = mt_rand(0, 16) / 4 + 1;
-                        $num_down   = mt_rand(0, 64) / 4 + 3;
-                        break;
-                }
+                case self::ZALGO_MODE_MAX:
+                    $num_up     = mt_rand(0, 64) / 4 + 3;
+                    $num_mid    = mt_rand(0, 16) / 4 + 1;
+                    $num_down   = mt_rand(0, 64) / 4 + 3;
+                    break;
+            }
 
             if ($going_up) {
                 $str .= self::getZalgo(self::ZALGO_CHARS_UP, $num_up);

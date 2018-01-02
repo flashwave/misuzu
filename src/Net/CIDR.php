@@ -14,7 +14,7 @@ class CIDR
      * @param string $range
      * @return bool
      */
-    public static function match($ip, $range)
+    public static function match(string $ip, string $range): bool
     {
         [$net, $mask] = explode('/', $range);
 
@@ -44,7 +44,7 @@ class CIDR
      * @param int $mask
      * @return bool
      */
-    private static function matchV4($ip, $net, $mask)
+    private static function matchV4(string $ip, string $net, int $mask): bool
     {
         $ip = ip2long($ip);
         $net = ip2long($net);
@@ -59,7 +59,7 @@ class CIDR
      * @param int $mask
      * @return bool
      */
-    private static function matchV6($ip, $net, $mask)
+    private static function matchV6(string $ip, string $net, int $mask): bool
     {
         $ip = inet_pton($ip);
         $net = inet_pton($net);
@@ -70,11 +70,11 @@ class CIDR
     /**
      * Converts an IPv6 mask to bytes.
      * @param int $mask
-     * @return int
+     * @return string
      */
-    private static function createV6Mask($mask)
+    private static function createV6Mask(int $mask): string
     {
-        $range = str_repeat("f", $mask / 4);
+        $range = str_repeat('f', $mask / 4);
 
         switch ($mask % 4) {
             case 1:

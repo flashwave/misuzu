@@ -1,6 +1,7 @@
 <?php
-use PHPUnit\Framework\TestCase;
+namespace MisuzuTests;
 
+use PHPUnit\Framework\TestCase;
 use Misuzu\Colour;
 
 class ColourTest extends TestCase

@@ -184,7 +184,7 @@ class TemplateEngine
      * @param string $name
      * @param Callable $callable
      */
-    public function addFunction(string $name, Callable $callable = null): void
+    public function addFunction(string $name, callable $callable = null): void
     {
         $this->twig->addFunction(new Twig_SimpleFunction($name, $callable === null ? $name : $callable));
     }
@@ -194,7 +194,7 @@ class TemplateEngine
      * @param string $name
      * @param Callable $callable
      */
-    public function addFilter(string $name, Callable $callable = null): void
+    public function addFilter(string $name, callable $callable = null): void
     {
         $this->twig->addFilter(new Twig_SimpleFilter($name, $callable === null ? $name : $callable));
     }
@@ -204,7 +204,7 @@ class TemplateEngine
      * @param string $path
      * @return string
      */
-    public function findNamespace(string $path): string
+    public function findNamespace(string $path): ?string
     {
         foreach ($this->loader->getNamespaces() as $namespace) {
             if ($this->exists($path, $namespace)) {
