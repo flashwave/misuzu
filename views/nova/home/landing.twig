@@ -1,5 +1,180 @@
 {% extends '@nova/home/master.twig' %}
 
-{% block content %}
-    test
+{% set banner_classes = 'banner--insane landing__banner' %}
+{% set banner = 'https://static.flash.moe/images/banner-clouds.png' %}
+
+{% block banner_content %}
+    <div id="countdown"></div>
+    <style>
+        #countdown {
+            width: 100%;
+            height: 100%;
+        }
+
+        .countdown-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            transition: transform .5s;
+        }
+
+        .countdown-digit {
+            background: url('https://static.flash.moe/images/countdown-sprite.png');
+            width: 68px;
+            height: 80px;
+            display: inline-block;
+            z-index: 1;
+            position: relative;
+            transition: background-position-y .2s;
+        }
+
+        .countdown-digit[data-digit="0"] { background-position: 0px 0px; }
+        .countdown-digit[data-digit="1"] { background-position: 0px -86px; }
+        .countdown-digit[data-digit="2"] { background-position: 0px -172px; }
+        .countdown-digit[data-digit="3"] { background-position: 0px -259px; }
+        .countdown-digit[data-digit="4"] { background-position: 0px -345px; }
+        .countdown-digit[data-digit="5"] { background-position: 0px -432px; }
+        .countdown-digit[data-digit="6"] { background-position: 0px -518px; }
+        .countdown-digit[data-digit="7"] { background-position: 0px -604px; }
+        .countdown-digit[data-digit="8"] { background-position: 0px -691px; }
+        .countdown-digit[data-digit="9"] { background-position: 0px -777px; }
+
+        .countdown-digit[data-digit=";"] { transition: background-position-y 0s; background-position: -56px 0px; }
+        .countdown-digit[data-digit=":"] { transition: background-position-y 0s; background-position: -56px -86px; }
+        .countdown-digit[data-digit=","] { transition: background-position-y 0s; background-position: -56px -172px; }
+        .countdown-digit[data-digit="."] { transition: background-position-y 0s; background-position: -56px -259px; }
+        .countdown-digit[data-digit="+"] { transition: background-position-y 0s; background-position: -56px -345px; }
+        .countdown-digit[data-digit="-"] { transition: background-position-y 0s; background-position: -56px -432px; }
+        .countdown-digit[data-digit=" "] { transition: background-position-y 0s; background-position: -56px -518px; }
+    </style>
+    <script>
+        var countdownTarget,
+            countdownDigits = [],
+            countdownContainer,
+            countdownInterval,
+            countdownFlashingTicks = 0,
+            countdownLastString = '',
+            countdownFinish,
+            countdownIgnoreHidden = false;
+
+        function countdownSetup(container, target, finish) {
+            countdownFinish = finish || null;
+            countdownContainer = container;
+            countdownTarget = target.getTime();
+            countdownResize(10);
+            countdownInterval = setInterval(function () { countdownUpdate(countdownIgnoreHidden); }, 100);
+            countdownUpdate(countdownIgnoreHidden);
+        }
+
+        function countdownStop() {
+            clearInterval(countdownInterval);
+            countdownResize(0);
+            countdownTarget = 0;
+            countdownContainer.parentNode.removeChild(countdownContainer);
+            countdownFinish = null;
+        }
+
+        function countdownResize(num) {
+            if (num == countdownDigits.length)
+                return;
+
+            if (num < countdownDigits.length) {
+                num = countdownDigits.length - num;
+
+                for (var i = 0; i < num; i++)
+                    countdownContainer.removeChild(countdownDigits.pop());
+
+                return;
+            }
+
+            if (num > countdownDigits.length) {
+                num = num - countdownDigits.length;
+
+                for (var i = 0; i < num; i++) {
+                    var elem = document.createElement('div');
+                    elem.className = 'countdown-digit';
+                    elem.setAttribute('data-digit', i);
+                    countdownDigits.push(elem);
+                    countdownContainer.appendChild(elem);
+                }
+
+                return;
+            }
+        }
+
+        function countdownUpdate(ignoreHidden) {
+            if (!ignoreHidden && document.hidden)
+                return;
+
+            var now = Date.now();
+
+            if (countdownTarget < now) {
+                if ((typeof countdownFinish) === 'function') {
+                    countdownFinish.call();
+                    countdownFinish = null;
+                }
+
+                countdownWrite(++countdownFlashingTicks % 10 < 5 ? '00:00:00' : '00 00 00');
+                return;
+            }
+
+            var milliseconds = now - countdownTarget;
+
+            var days = Math.ceil(milliseconds / 86400000);
+            milliseconds -= days * 86400000;
+
+            var hours = Math.ceil(milliseconds / 3600000);
+            milliseconds -= hours * 3600000;
+
+            var minutes = Math.ceil(milliseconds / 60000);
+            milliseconds -= minutes * 60000;
+
+            var seconds = Math.ceil(milliseconds / 1000);
+            milliseconds -= seconds * 1000;
+
+            var cdString = '';
+
+            if (days < 0)
+                cdString += Math.abs(days) + ' ';
+
+            if (days < 0 || hours < 0)
+                cdString += Math.abs(hours) + ':';
+
+            if (days < 0 || hours < 0 || minutes < 0)
+                cdString += Math.abs(minutes).toString().padStart(2, '0') + ':';
+
+            cdString += Math.abs(seconds).toString().padStart(2, '0');
+
+            countdownWrite(cdString);
+
+            if (days >= 0 && hours >= 0 && minutes >= 0 && seconds <= 0) {
+                var scale = 1;
+
+                if (seconds < 0)
+                    scale += 4 * Math.pow((60 + seconds) / 60, 2);
+
+                countdownContainer.style.transform = 'scale(' + scale + ')';
+            }
+        }
+
+        function countdownWrite(str) {
+            if ((typeof str) !== 'string')
+                str = str.toString();
+
+            countdownLastString = str;
+            countdownResize(str.length);
+
+            for (var i = 0; i < str.length; i++)
+                countdownDigits[i].setAttribute('data-digit', str[i]);
+        }
+
+        window.onload = function () {
+            var container = document.createElement('div');
+            container.className = 'countdown-container';
+            document.getElementById('countdown').appendChild(container);
+            countdownSetup(container, new Date("Mon, 1 27 2018 1:00:00 +0100"));
+        }
+    </script>
 {% endblock %}

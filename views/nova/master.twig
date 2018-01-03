@@ -30,15 +30,15 @@
 
             <div class="container__footer">
                 <div class="container__footer-copyright">
-                    flash.moe 2013-{{ ''|date('Y') }} |
+                    <a href="https://flash.moe" class="container__footer-link">flash.moe 2013-{{ ''|date('Y') }}</a> |
                     <a href="https://github.com/flashwave/misuzu/tree/{{ git_branch() }}" class="container__footer-link">{{ git_branch() }}</a>#<a href="https://github.com/flashwave/misuzu/commit/{{ git_hash(true) }}" class="container__footer-link">{{ git_hash() }}</a>
                 </div>
-                <div class="container__footer-links">
+                {#<div class="container__footer-links">
                     <a href="#" class="container__footer-link">Terms of Service</a>
                     <a href="#" class="container__footer-link">Rules</a>
                     <a href="#" class="container__footer-link">Contact</a>
                     <a href="#" class="container__footer-link">Status</a>
-                </div>
+                </div>#}
             </div>
         </div>
     </body>
