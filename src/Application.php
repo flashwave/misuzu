@@ -29,7 +29,7 @@ class Application
 
     public static function gitCommitInfo(string $format): string
     {
-        return trim(shell_exec(sprintf('git log --pretty="%s" -n1 HEAD"', $format)));
+        return trim(shell_exec(sprintf('git log --pretty="%s" -n1 HEAD', $format)));
     }
 
     public static function gitCommitHash(bool $long = false): string
