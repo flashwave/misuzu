@@ -1,0 +1,11 @@
+.platform {
+    margin: @platform-margin;
+    background: no-repeat center center / cover @grey-2;
+    box-shadow: 0 @global-shadow-distance @global-shadow-size fade(@grey-1, @global-shadow-opacity);
+    padding: @general-spacing;
+
+    &--thin {
+        margin: @platform-thin-margin;
+        display: inline-block;
+    }
+}

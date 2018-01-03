@@ -122,7 +122,7 @@ class TemplateEngine
     private function fixPath(string $path): string
     {
         // if the .twig extension if already present just assume that the path is already correct
-        if (ends_width($path, self::FILE_EXTENSION)) {
+        if (ends_with($path, self::FILE_EXTENSION)) {
             return $path;
         }
 

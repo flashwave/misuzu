@@ -1,0 +1,25 @@
+.banner {
+    height: 150px;
+    margin-top: @general-spacing;
+    background: no-repeat center center / cover @grey-2;
+    box-shadow: 0 @global-shadow-distance @global-shadow-size fade(@grey-1, @global-shadow-opacity);
+    display: flex;
+    flex-flow: column-reverse;
+
+    &--large {
+        height: 250px;
+    }
+
+    &--insane {
+        height: 400px;
+    }
+
+    &__bottom {
+        height: 60px;
+        background: fade(@grey-0, 80%);
+        display: inline-flex;
+        flex-flow: row;
+        align-items: center;
+        line-height: 1;
+    }
+}

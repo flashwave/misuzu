@@ -1,0 +1,35 @@
+.container {
+    min-height: 100%;
+    color: @grey-f;
+    background: url(@grid) @purple;
+    // no-repeat center center / cover
+    text-align: center;
+
+    &__wrapper {
+        margin: 0 auto;
+        padding: @general-spacing;
+        max-width: @container-max-width;
+        padding-bottom: 59px; // oddly specific number but it works
+    }
+
+    &__footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        font-size: .7em;
+        height: 60px;
+        padding-top: 20px;
+        background: linear-gradient(0deg, fade(@grey-0, 60%) 70%, fade(@grey-0, 70%) 80%, fade(@grey-0, 40%) 80%, transparent 90%) transparent;
+
+        &-link {
+            color: inherit;
+            text-decoration: none;
+            margin: 0 @general-spacing;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}

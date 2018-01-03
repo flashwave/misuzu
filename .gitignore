@@ -1,1 +1,26 @@
-vendor/
+# Libraries
+/vendor
+/node_modules
+/npm-debug.log
+/yarn-error.log
+
+# Configuration
+/config/config.ini
+
+# Storage
+/store/*
+!/store/.gitkeep
+
+# OS specific
+[Tt]humbs.db
+[Dd]esktop.ini
+
+# IDE specific
+.vscode/
+.vs/
+.idea/
+
+# Compiled/copied assets
+/public/js
+/public/css
+/assets/typescript/*.d.ts
