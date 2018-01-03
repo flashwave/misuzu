@@ -2,16 +2,21 @@
 namespace Misuzu\Controllers;
 
 use Misuzu\Application;
+use Misuzu\Database;
+use Misuzu\AyaseUser;
 
 class HomeController extends Controller
 {
     public function index(): string
     {
-        $twig = Application::getInstance()->templating;
-
-        $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
-        $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
+        $app = Application::getInstance();
+        $twig = $app->templating;
 
         return $twig->render('home.landing');
+    }
+
+    public function isReady(): string
+    {
+        return 'no';
     }
 }

@@ -109,11 +109,10 @@ class ExceptionHandler
      */
     private static function render(Throwable $exception, bool $reported): void
     {
-        $in_cli = PHP_SAPI === 'cli';
         $is_http = false;//$exception instanceof HttpException;
 
-        if ($in_cli || (!$is_http && static::$debugMode)) {
-            if (!$in_cli) {
+        if (PHP_SAPI === 'cli' || (!$is_http && static::$debugMode)) {
+            if (PHP_SAPI !== 'cli') {
                 http_response_code(500);
                 header('Content-Type: text/plain');
             }

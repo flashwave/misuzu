@@ -39,14 +39,18 @@ class TemplateEngine
     /**
      * Creates the twig environment and registers the utility filters and functions.
      */
-    public function __construct()
-    {
+    public function __construct(
+        ?string $cache = null,
+        bool $strict = true,
+        bool $autoReload = false,
+        bool $debug = false
+    ) {
         $this->loader = new Twig_Loader_Filesystem;
         $this->twig = new Twig_Environment($this->loader, [
-            'cache' => false,
-            'strict_variables' => true,
-            'auto_reload' => false,
-            'debug' => false,
+            'cache' => $cache ?? false,
+            'strict_variables' => $strict,
+            'auto_reload' => $autoReload,
+            'debug' => $debug,
         ]);
     }
 
@@ -90,9 +94,9 @@ class TemplateEngine
      * Sets the cache path and alternatively turns it off.
      * @param string $path
      */
-    public function cache(bool $path): void
+    public function cache(?string $path): void
     {
-        $this->twig->setCache($path);
+        $this->twig->setCache($path ?? false);
     }
 
     /**
@@ -151,7 +155,7 @@ class TemplateEngine
             $namespace = $this->findNamespace($path);
 
             if ($namespace !== null) {
-                $path = '@' . $this->findNamespace($path) . '/' . $path;
+                $path = "@{$this->findNamespace($path)}/{$path}";
             }
         }
 
@@ -202,6 +206,6 @@ class TemplateEngine
      */
     public function exists(string $path, string $namespace): bool
     {
-        return $this->loader->exists('@' . $namespace . '/' . self::fixPath($path));
+        return $this->loader->exists("@{$namespace}/" . self::fixPath($path));
     }
 }
