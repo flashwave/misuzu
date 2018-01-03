@@ -57,7 +57,10 @@
             countdownFlashingTicks = 0,
             countdownLastString = '',
             countdownFinish,
-            countdownIgnoreHidden = false;
+            countdownIgnoreHidden = false,
+            continueChecking = true,
+            checkClient = null,
+            checkTimeout;
 
         function countdownSetup(container, target, finish) {
             countdownFinish = finish || null;
@@ -170,11 +173,32 @@
                 countdownDigits[i].setAttribute('data-digit', str[i]);
         }
 
-        window.onload = function () {
+        function checkIfFlashiiReady(continuous) {
+            continueChecking = !(!continuous);
+
+            if (checkClient === null) {
+                checkClient = new XMLHttpRequest();
+
+                checkClient.addEventListener('readystatechange', function () {
+                    if (checkClient.readyState === 4 && (checkClient.status !== 200 || checkClient.responseText !== 'no'))
+                        location.reload(true);
+                });
+            }
+
+            checkClient.open('GET', '/is_ready?' + Date.now(), true);
+            checkClient.send();
+
+            if (continueChecking)
+                checkTimeout = setTimeout(function () { checkIfFlashiiReady(continueChecking); }, 1000);
+        }
+
+        window.addEventListener("load", function () {
             var container = document.createElement('div');
             container.className = 'countdown-container';
             document.getElementById('countdown').appendChild(container);
-            countdownSetup(container, new Date("Mon, 1 27 2018 1:00:00 +0100"));
-        }
+            countdownSetup(container, new Date("Mon, 1 27 2018 1:00:00 +0100"), function () {
+                checkIfFlashiiReady(true);
+            });
+        });
     </script>
 {% endblock %}

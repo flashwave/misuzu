@@ -9,9 +9,11 @@ class HomeController extends Controller
     {
         $twig = Application::getInstance()->templating;
 
-        $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
-        $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
-
         return $twig->render('home.landing');
+    }
+
+    public function isReady(): string
+    {
+        return 'no';
     }
 }

@@ -58,21 +58,23 @@ class Application
         throw new \Exception('Invalid property.');
     }
 
-    protected function __construct($config = null)
+    protected function __construct($configFile = null)
     {
         ExceptionHandler::register();
 
-        $this->addModule('router', new RouteCollection);
-        $this->addModule('templating', new TemplateEngine);
-        $this->addModule('config', new ConfigManager($config));
+        $this->addModule('router', $router = new RouteCollection);
+        $this->addModule('templating', $twig = new TemplateEngine);
+        $this->addModule('config', $config = new ConfigManager($configFile));
 
-        $this->templating->addFilter('json_decode');
-        $this->templating->addFilter('byte_symbol');
-        $this->templating->addFunction('byte_symbol');
-        $this->templating->addFunction('session_id');
-        $this->templating->addFunction('config', [$this->config, 'get']);
-        $this->templating->addFunction('route', [$this->router, 'url']);
-        $this->templating->addPath('nova', __DIR__ . '/../views/nova');
+        $twig->addFilter('json_decode');
+        $twig->addFilter('byte_symbol');
+        $twig->addFunction('byte_symbol');
+        $twig->addFunction('session_id');
+        $twig->addFunction('config', [$config, 'get']);
+        $twig->addFunction('route', [$router, 'url']);
+        $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
+        $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
+        $twig->addPath('nova', __DIR__ . '/../views/nova');
     }
 
     public function __destruct()
