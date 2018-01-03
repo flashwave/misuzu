@@ -14,23 +14,6 @@ use Twig_SimpleFunction;
 class TemplateEngine
 {
     /**
-     * Utility |filters().
-     */
-    private const UTILITY_FILTERS = [
-        'json_decode',
-        //'byte_symbol',
-    ];
-
-    /**
-     * Utility functions().
-     */
-    private const UTILITY_FUNCTIONS = [
-        //'route',
-        //'config',
-        //'session_id',
-    ];
-
-    /**
      * Template file extension.
      */
     private const FILE_EXTENSION = '.twig';
@@ -61,14 +44,6 @@ class TemplateEngine
             'auto_reload' => false,
             'debug' => false,
         ]);
-
-        foreach (static::UTILITY_FILTERS as $filter) {
-            $this->addFilter($filter, $filter);
-        }
-
-        foreach (static::UTILITY_FUNCTIONS as $function) {
-            $this->addFunction($function, $function);
-        }
     }
 
     /**
@@ -147,11 +122,11 @@ class TemplateEngine
     private function fixPath(string $path): string
     {
         // if the .twig extension if already present just assume that the path is already correct
-        if (substr($path, 0 - strlen(static::FILE_EXTENSION)) === static::FILE_EXTENSION) {
+        if (ends_width($path, self::FILE_EXTENSION)) {
             return $path;
         }
 
-        return str_replace('.', '/', $path) . static::FILE_EXTENSION;
+        return str_replace('.', '/', $path) . self::FILE_EXTENSION;
     }
 
     /**
@@ -162,7 +137,7 @@ class TemplateEngine
      */
     public function render(string $path, array $vars = null): string
     {
-        $path = static::fixPath($path);
+        $path = self::fixPath($path);
 
         if ($vars !== null) {
             $this->vars($vars);
@@ -223,6 +198,6 @@ class TemplateEngine
      */
     public function exists(string $path, string $namespace): bool
     {
-        return $this->loader->exists('@' . $namespace . '/' . static::fixPath($path));
+        return $this->loader->exists('@' . $namespace . '/' . self::fixPath($path));
     }
 }

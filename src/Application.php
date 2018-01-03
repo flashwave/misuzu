@@ -27,19 +27,58 @@ class Application
         return static::getInstance();
     }
 
-    private $router = null;
-    private $templating = null;
-    private $configuration = null;
+    public static function gitCommitInfo(string $format): string
+    {
+        return trim(shell_exec(sprintf('git log --pretty="%s" -n1 HEAD"', $format)));
+    }
+
+    public static function gitCommitHash(bool $long = false): string
+    {
+        return self::gitCommitInfo($long ? '%H' : '%h');
+    }
+
+    public static function gitBranch(): string
+    {
+        return trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
+    }
+
+    private $modules = [];
+
+    public function __get($name)
+    {
+        if (starts_with($name, 'has') && strlen($name) > 3 && ctype_upper($name[3])) {
+            $name = lcfirst(substr($name, 3));
+            return $this->hasModule($name);
+        }
+
+        if ($this->hasModule($name)) {
+            return $this->modules[$name];
+        }
+
+        throw new \Exception('Invalid property.');
+    }
 
     protected function __construct($config = null)
     {
         ExceptionHandler::register();
 
-        $this->router = new RouteCollection;
-        $this->templating = new TemplateEngine;
-        $this->configuration = new ConfigManager($config);
+        $this->addModule('router', new RouteCollection);
+        $this->addModule('templating', new TemplateEngine);
+        $this->addModule('config', new ConfigManager($config));
 
-        echo 'hello!';
+        $this->templating->addFilter('json_decode');
+        $this->templating->addFilter('byte_symbol');
+        $this->templating->addFunction('byte_symbol');
+        $this->templating->addFunction('session_id');
+        $this->templating->addFunction('config', [$this->config, 'get']);
+        $this->templating->addFunction('route', [$this->router, 'url']);
+
+        echo sprintf(
+            'Running on commit <a href="https://github.com/flashwave/misuzu/commit/%s">%s</a> on branch <a href="https://github.com/flashwave/misuzu/tree/%3$s">%3$s</a>!',
+            self::gitCommitHash(true),
+            self::gitCommitHash(),
+            self::gitBranch()
+        );
     }
 
     public function __destruct()
@@ -51,50 +90,22 @@ class Application
     {
         ExceptionHandler::debug($mode);
 
-        if ($this->hasTemplating()) {
-            $this->getTemplating()->debug($mode);
+        if ($this->hasTemplating) {
+            $this->templating->debug($mode);
         }
     }
 
-    public function hasRouter(): bool
+    public function addModule(string $name, $module): void
     {
-        return !is_null($this->router) && $this->router instanceof RouteCollection;
-    }
-
-    public function getRouter(): RouteCollection
-    {
-        if (!$this->hasRouter()) {
-            throw new \Exception('No RouteCollection instance is available.');
+        if ($this->hasModule($name)) {
+            throw new \Exception('This module has already been registered.');
         }
 
-        return $this->router;
+        $this->modules[$name] = $module;
     }
 
-    public function hasTemplating(): bool
+    public function hasModule(string $name): bool
     {
-        return !is_null($this->templating) && $this->templating instanceof TemplateEngine;
-    }
-
-    public function getTemplating(): TemplateEngine
-    {
-        if (!$this->hasTemplating()) {
-            throw new \Exception('No TemplateEngine instance is available.');
-        }
-
-        return $this->templating;
-    }
-
-    public function hasConfig(): bool
-    {
-        return !is_null($this->configuration) && $this->configuration instanceof ConfigManager;
-    }
-
-    public function getConfig(): ConfigManager
-    {
-        if (!$this->hasConfig()) {
-            throw new \Exception('No ConfigManager instance is available.');
-        }
-
-        return $this->configuration;
+        return array_key_exists($name, $this->modules) && !is_null($this->modules[$name]);
     }
 }

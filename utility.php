@@ -35,6 +35,22 @@ function has_flag(int $flags, int $flag): bool
     return ($flags & $flag) > 0;
 }
 
+function byte_symbol($bytes, $decimal = false)
+{
+    if ($bytes < 1) {
+        return "0 B";
+    }
+
+    $divider = $decimal ? 1000 : 1024;
+    $symbols = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+
+    $exp = floor(log($bytes) / log($divider));
+    $bytes = $bytes / pow($divider, floor($exp));
+    $symbol = $symbols[$exp];
+
+    return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
+}
+
 function is_int_ex($value, int $boundary_low, int $boundary_high): bool
 {
     return is_int($value) && $value >= $boundary_low && $value <= $boundary_high;
@@ -73,9 +89,4 @@ function is_uint32($value): bool
 function is_int64($value): bool
 {
     return is_int_ex($value, -0x8000000000000000, 0x7FFFFFFFFFFFFFFF);
-}
-
-function is_uint64($value): bool
-{
-    return is_int_ex($value, 0x0, 0xFFFFFFFFFFFFFFFF);
 }
