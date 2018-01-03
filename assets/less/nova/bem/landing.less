@@ -1,0 +1,44 @@
+.landing {
+    text-shadow: 0 @text-shadow-distance @text-shadow-size fade(@grey-0, @text-shadow-opacity);
+
+    &__banner,
+    &__inner {
+        display: flex;
+        flex-flow: row-reverse;
+    }
+
+    &__text {
+        max-width: 300px;
+    }
+
+    &__buttons {
+        max-width: 200px;
+        display: inline-flex;
+        flex-flow: column;
+        justify-content: center;
+    }
+
+    &__inner,
+    &__buttons {
+        background: fade(@grey-0, 80%);
+        align-items: center;
+        height: 100%;
+    }
+
+    &__text,
+    &__button {
+        padding: 0 (@general-spacing * 4);
+    }
+
+    &__button {
+        color: inherit;
+        text-decoration: none;
+        cursor: pointer;
+        flex-grow: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2em;
+        width: 100%;
+    }
+}

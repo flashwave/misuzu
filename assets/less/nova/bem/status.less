@@ -1,0 +1,140 @@
+.status {
+    &__overall {
+        font-size: @font-size--status-overall;
+        font-weight: 100;
+        flex-grow: 1;
+        flex-shrink: 0;
+        text-align: left;
+        margin-left: @general-spacing * 4;
+
+        &-icon {
+            font-family: FontAwesome;
+        }
+
+        &-text {
+            font-style: italic;
+        }
+
+        &--good {
+            .status__overall-icon:before {
+                content: "\f05d";
+            }
+        }
+    }
+
+    &__last-update {
+        align-self: flex-end;
+        margin: @general-spacing * 2;
+        font-size: @font-size--status-last-update;
+    }
+
+    &__response {
+        display: flex;
+    }
+
+    &__services {
+        display: flex;
+        flex-flow: column;
+        border-right: 1px solid @grey-1;
+    }
+
+    &__service {
+        display: inline-flex;
+        padding: @general-spacing;
+        align-items: center;
+        line-height: 1;
+
+        &-icon {
+            width: 40px;
+            height: 20px;
+            border-radius: 4px;
+            transform: skewX(-10deg);
+            background: #333;
+            margin-left: @general-spacing / 2;
+            box-shadow: 0 @global-shadow-distance @global-shadow-size fade(@grey-1, @global-shadow-opacity);
+        }
+
+        &-name {
+            font-size: 24px;
+            text-align: right;
+            flex-grow: 1;
+            padding-left: @general-spacing * 10;
+        }
+
+        &--selected {
+            background: @grey-1;
+        }
+
+        &--good {
+            .status__service-icon {
+                background: @green;
+            }
+        }
+
+        &--bad {
+            .status__service-icon {
+                background: @red;
+            }
+        }
+    }
+
+    &__incident {
+        display: flex;
+
+        &:not(:last-child) {
+            border-bottom: 1px solid @grey-1;
+            margin-bottom: @general-spacing;
+            padding-bottom: @general-spacing;
+        }
+
+        &-date {
+            border-right: 1px solid @grey-1;
+            margin-right: @general-spacing;
+            padding: @general-spacing;
+            padding-left: 0;
+            font-size: @font-size--status-incident-date;
+            font-style: italic;
+            font-weight: 300;
+            min-width: 150px;
+        }
+    }
+
+    &__update {
+        display: flex;
+
+        &:not(:last-child) {
+            margin-bottom: @general-spacing;
+        }
+
+        &-meta {
+            text-align: left;
+            font-style: italic;
+            border-right: 1px solid @grey-1;
+            padding: @general-spacing;
+            margin-right: @general-spacing;
+            min-width: 150px;
+        }
+
+        &-text {
+            padding: @general-spacing;
+        }
+
+        &--good {
+            .status__update-meta {
+                border-color: @green;
+            }
+        }
+
+        &--busy {
+            .status__update-meta {
+                border-color: @orange;
+            }
+        }
+
+        &--bad {
+            .status__update-meta {
+                border-color: @red;
+            }
+        }
+    }
+}
