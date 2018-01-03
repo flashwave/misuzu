@@ -61,27 +61,7 @@ class Application
     protected function __construct($configFile = null)
     {
         ExceptionHandler::register();
-        $this->debug(true);
-
-        $this->addModule('config', $config = new ConfigManager($configFile));
-        $this->addModule('database', new Database(
-            $config,
-            $config->get('Database', 'default', 'string', 'default')
-        ));
-        $this->addModule('router', $router = new RouteCollection);
-        $this->addModule('templating', $twig = new TemplateEngine);
-
-        $this->loadConfigDatabaseConnections();
-
-        $twig->addFilter('json_decode');
-        $twig->addFilter('byte_symbol');
-        $twig->addFunction('byte_symbol');
-        $twig->addFunction('session_id');
-        $twig->addFunction('config', [$config, 'get']);
-        $twig->addFunction('route', [$router, 'url']);
-        $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
-        $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
-        $twig->addPath('nova', __DIR__ . '/../views/nova');
+        $this->addModule('config', new ConfigManager($configFile));
     }
 
     public function __destruct()
@@ -91,6 +71,54 @@ class Application
         }
 
         ExceptionHandler::unregister();
+    }
+
+    public function startDatabase(): void
+    {
+        if ($this->hasDatabase) {
+            throw new \Exception('Database module has already been started.');
+        }
+
+        $config = $this->config;
+
+        $this->addModule('database', new Database(
+            $config,
+            $config->get('Database', 'default', 'string', 'default')
+        ));
+
+        $this->loadConfigDatabaseConnections();
+    }
+
+    public function startTemplating(): void
+    {
+        if ($this->hasTemplating) {
+            throw new \Exception('Templating module has already been started.');
+        }
+
+        $this->addModule('templating', $twig = new TemplateEngine);
+
+        $twig->addFilter('json_decode');
+        $twig->addFilter('byte_symbol');
+        $twig->addFunction('byte_symbol');
+        $twig->addFunction('session_id');
+        $twig->addFunction('config', [$this->config, 'get']);
+        $twig->addFunction('route', [$this->router, 'url']);
+        $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
+        $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
+        $twig->addPath('nova', __DIR__ . '/../views/nova');
+    }
+
+    public function startRouter(array $routes = null): void
+    {
+        if ($this->hasRouter) {
+            throw new \Exception('Router module has already been started.');
+        }
+
+        $this->addModule('router', $router = new RouteCollection);
+
+        if ($routes !== null) {
+            $router->add($routes);
+        }
     }
 
     private function loadConfigDatabaseConnections(): void
