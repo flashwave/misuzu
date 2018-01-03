@@ -13,6 +13,7 @@
         "nesbot/carbon": "~1.22",
         "illuminate/database": "~5.5",
         "illuminate/filesystem": "~5.5",
+        "illuminate/pagination": "~5.5",
         "doctrine/dbal": "~2.6",
         "swiftmailer/swiftmailer": "~6.0",
         "erusev/parsedown": "~1.6"
@@ -21,11 +22,22 @@
         "phpunit/phpunit": "~6.0"
     },
     "autoload": {
+        "classmap": [
+            "database"
+        ],
         "psr-4": {
             "Misuzu\\": "src/"
         },
         "files": [
             "utility.php"
         ]
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "php misuzu_migrate.php"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist"
     }
 }

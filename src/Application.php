@@ -121,6 +121,10 @@ class Application
         }
     }
 
+    /**
+     * @todo Instead of reading a connections variable from the config,
+     *       the expected connections should be defined somewhere in this class.
+     */
     private function loadConfigDatabaseConnections(): void
     {
         $config = $this->config;
