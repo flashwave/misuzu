@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "4c9cc87ad91ef38f4333d4e9e80a0f39",
+    "content-hash": "fd3ae2504a3c120f29942565ef7cd403",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -590,12 +590,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/flashwave/aitemu.git",
-                "reference": "3ddb8147ed809cfba59c46f6e3d3af9fb2a86ace"
+                "reference": "7997543717d996b56938d5050ea497d62eb71f2e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/flashwave/aitemu/zipball/3ddb8147ed809cfba59c46f6e3d3af9fb2a86ace",
-                "reference": "3ddb8147ed809cfba59c46f6e3d3af9fb2a86ace",
+                "url": "https://api.github.com/repos/flashwave/aitemu/zipball/7997543717d996b56938d5050ea497d62eb71f2e",
+                "reference": "7997543717d996b56938d5050ea497d62eb71f2e",
                 "shasum": ""
             },
             "require": {
@@ -616,7 +616,7 @@
             ],
             "description": "PHP router library, mainly for personal use.",
             "homepage": "https://github.com/flashwave/aitemu",
-            "time": "2018-01-01T22:36:19+00:00"
+            "time": "2018-01-03T15:36:23+00:00"
         },
         {
             "name": "illuminate/container",

@@ -8,7 +8,7 @@
     },
     "require": {
         "php": ">=7.2",
-        "flashwave/aitemu": "dev-master#3ddb8147ed809cfba59c46f6e3d3af9fb2a86ace",
+        "flashwave/aitemu": "dev-master#7997543717d996b56938d5050ea497d62eb71f2e",
         "twig/twig": "~2.4",
         "nesbot/carbon": "~1.22",
         "illuminate/database": "~5.5",

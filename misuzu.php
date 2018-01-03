@@ -3,4 +3,6 @@ namespace Misuzu;
 
 require_once 'vendor/autoload.php';
 
-Application::start()->debug(IO\Directory::exists(__DIR__ . '/vendor/phpunit/phpunit'));
+$app = Application::start();
+$app->debug(IO\Directory::exists(__DIR__ . '/vendor/phpunit/phpunit'));
+$app->router->add(include_once __DIR__ . '/routes.php');

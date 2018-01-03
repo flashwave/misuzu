@@ -19,11 +19,15 @@ class TemplateEngine
     private const FILE_EXTENSION = '.twig';
 
     /**
-     * Container for twig.
+     * Instance of the Twig Environment.
      * @var Twig_Environment
      */
     private $twig;
 
+    /**
+     * Instance a Twig loader, probably only compatible with the Filesystem type.
+     * @var Twig_Loader_Filesystem
+     */
     private $loader;
 
     /**
@@ -135,7 +139,7 @@ class TemplateEngine
      * @param array $vars
      * @return string
      */
-    public function render(string $path, array $vars = null): string
+    public function render(string $path, ?array $vars = null): string
     {
         $path = self::fixPath($path);
 

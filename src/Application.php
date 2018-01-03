@@ -66,19 +66,13 @@ class Application
         $this->addModule('templating', new TemplateEngine);
         $this->addModule('config', new ConfigManager($config));
 
-        $this->debug(true);
-
         $this->templating->addFilter('json_decode');
         $this->templating->addFilter('byte_symbol');
         $this->templating->addFunction('byte_symbol');
         $this->templating->addFunction('session_id');
         $this->templating->addFunction('config', [$this->config, 'get']);
         $this->templating->addFunction('route', [$this->router, 'url']);
-        $this->templating->addFunction('git_hash', [Application::class, 'gitCommitHash']);
-        $this->templating->addFunction('git_branch', [Application::class, 'gitBranch']);
         $this->templating->addPath('nova', __DIR__ . '/../views/nova');
-
-        echo $this->templating->render('home.landing');
     }
 
     public function __destruct()
