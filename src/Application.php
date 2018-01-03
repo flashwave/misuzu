@@ -17,13 +17,13 @@ class Application
         return static::$instance;
     }
 
-    public static function start(): Application
+    public static function start(...$params): Application
     {
         if (!is_null(static::$instance) || static::$instance instanceof Application) {
             throw new \Exception('An Application has already been set up.');
         }
 
-        static::$instance = new Application;
+        static::$instance = new Application(...$params);
         return static::getInstance();
     }
 
@@ -61,10 +61,17 @@ class Application
     protected function __construct($configFile = null)
     {
         ExceptionHandler::register();
+        $this->debug(true);
 
+        $this->addModule('config', $config = new ConfigManager($configFile));
+        $this->addModule('database', new Database(
+            $config,
+            $config->get('Database', 'default', 'string', 'default')
+        ));
         $this->addModule('router', $router = new RouteCollection);
         $this->addModule('templating', $twig = new TemplateEngine);
-        $this->addModule('config', $config = new ConfigManager($configFile));
+
+        $this->loadConfigDatabaseConnections();
 
         $twig->addFilter('json_decode');
         $twig->addFilter('byte_symbol');
@@ -79,7 +86,33 @@ class Application
 
     public function __destruct()
     {
+        if ($this->hasConfig) {
+            $this->config->save();
+        }
+
         ExceptionHandler::unregister();
+    }
+
+    private function loadConfigDatabaseConnections(): void
+    {
+        $config = $this->config;
+        $database = $this->database;
+
+        if ($config->contains('Database', 'connections')) {
+            $connections = explode(' ', $config->get('Database', 'connections'));
+
+            foreach ($connections as $name) {
+                $section = 'Database.' . $name;
+
+                if (!$config->contains($section)) {
+                    continue;
+                }
+
+                $database->addConnectionFromConfig($section, $name);
+            }
+        } else {
+            throw new \Exception('No database connections have been configured.');
+        }
     }
 
     public function debug(bool $mode): void

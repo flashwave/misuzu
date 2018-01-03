@@ -2,12 +2,14 @@
 namespace Misuzu\Controllers;
 
 use Misuzu\Application;
+use Misuzu\Database;
 
 class HomeController extends Controller
 {
     public function index(): string
     {
-        $twig = Application::getInstance()->templating;
+        $app = Application::getInstance();
+        $twig = $app->templating;
 
         return $twig->render('home.landing');
     }
