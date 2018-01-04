@@ -4,11 +4,31 @@ namespace Misuzu;
 use Aitemu\RouteCollection;
 use Misuzu\Config\ConfigManager;
 
+/**
+ * Handles the set up procedures.
+ */
 class Application extends ApplicationBase
 {
+    /**
+     * Whether the application is in debug mode, this should only be set in the constructor and never altered.
+     * @var bool
+     */
     private $debugMode = false;
 
-    protected function __construct($configFile = null, bool $debug = false)
+    /**
+     * Array of database connection names, first in the list is assumed to be the default.
+     */
+    private const DATABASE_CONNECTIONS = [
+        'mysql-main',
+        //'mysql-ayase',
+    ];
+
+    /**
+     * Constructor, called by ApplicationBase::start() which also passes the arguments through.
+     * @param ?string $configFile
+     * @param bool $debug
+     */
+    protected function __construct(?string $configFile = null, bool $debug = false)
     {
         $this->debugMode = $debug;
         ExceptionHandler::register();
@@ -25,22 +45,41 @@ class Application extends ApplicationBase
         ExceptionHandler::unregister();
     }
 
+    /**
+     * Sets up the database module.
+     */
     public function startDatabase(): void
     {
         if ($this->hasDatabase) {
             throw new \Exception('Database module has already been started.');
         }
 
-        $config = $this->config;
-
-        $this->addModule('database', new Database(
-            $config,
-            $config->get('Database', 'default', 'string', 'default')
-        ));
-
-        $this->loadConfigDatabaseConnections();
+        $this->addModule('database', new Database($this->config, self::DATABASE_CONNECTIONS[0]));
+        $this->loadDatabaseConnections();
     }
 
+    /**
+     * Sets up the required database connections defined in the DATABASE_CONNECTIONS constant.
+     */
+    private function loadDatabaseConnections(): void
+    {
+        $config = $this->config;
+        $database = $this->database;
+
+        foreach (self::DATABASE_CONNECTIONS as $name) {
+            $section = 'Database.' . $name;
+
+            if (!$config->contains($section)) {
+                throw new \Exception("Database {$name} is not configured.");
+            }
+
+            $database->addConnectionFromConfig($section, $name);
+        }
+    }
+
+    /**
+     * Sets up the templating engine module.
+     */
     public function startTemplating(): void
     {
         if ($this->hasTemplating) {
@@ -65,6 +104,9 @@ class Application extends ApplicationBase
         $twig->addPath('nova', __DIR__ . '/../views/nova');
     }
 
+    /**
+     * Sets up the router module.
+     */
     public function startRouter(array $routes = null): void
     {
         if ($this->hasRouter) {
@@ -75,32 +117,6 @@ class Application extends ApplicationBase
 
         if ($routes !== null) {
             $router->add($routes);
-        }
-    }
-
-    /**
-     * @todo Instead of reading a connections variable from the config,
-     *       the expected connections should be defined somewhere in this class.
-     */
-    private function loadConfigDatabaseConnections(): void
-    {
-        $config = $this->config;
-        $database = $this->database;
-
-        if ($config->contains('Database', 'connections')) {
-            $connections = explode(' ', $config->get('Database', 'connections'));
-
-            foreach ($connections as $name) {
-                $section = 'Database.' . $name;
-
-                if (!$config->contains($section)) {
-                    continue;
-                }
-
-                $database->addConnectionFromConfig($section, $name);
-            }
-        } else {
-            throw new \Exception('No database connections have been configured.');
         }
     }
 }

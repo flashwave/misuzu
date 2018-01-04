@@ -15,6 +15,12 @@ class Database extends LaravelDatabaseManager
         'sqlsrv',
     ];
 
+    private const DEFAULT_PORT_MYSQL = 3306;
+    private const DEFAULT_PORT_PGSQL = 5432;
+    private const DEFAULT_PORT_MSSQL = 1433;
+
+    private const DEFAULT_HOST = '127.0.0.1';
+
     public function __construct(
         ConfigManager $config,
         string $default = 'default',
@@ -50,7 +56,9 @@ class Database extends LaravelDatabaseManager
         $args = [
             'driver' => $driver,
             'database' => $this->configManager->get($section, 'database', 'string', 'misuzu'),
-            'prefix' => $this->configManager->get($section, 'prefix', 'string', ''),
+            'prefix' => $this->configManager->contains($section, 'prefix')
+                ? $this->configManager->get($section, 'prefix', 'string')
+                : '',
         ];
 
         switch ($driver) {
@@ -59,11 +67,11 @@ class Database extends LaravelDatabaseManager
 
                 $args['host'] = $is_unix_socket
                     ? ''
-                    : $this->configManager->get($section, 'host', 'string', '127.0.0.1');
+                    : $this->configManager->get($section, 'host', 'string', self::DEFAULT_HOST);
 
                 $args['port'] = $is_unix_socket
-                    ? 3306
-                    : $this->configManager->get($section, 'port', 'int', 3306);
+                    ? self::DEFAULT_PORT_MYSQL
+                    : $this->configManager->get($section, 'port', 'int', self::DEFAULT_PORT_MYSQL);
 
                 $args['username'] = $this->configManager->get($section, 'username', 'string');
                 $args['password'] = $this->configManager->get($section, 'password', 'string');
@@ -89,11 +97,11 @@ class Database extends LaravelDatabaseManager
 
                 $args['host'] = $is_unix_socket
                     ? ''
-                    : $this->configManager->get($section, 'host', 'string', '127.0.0.1');
+                    : $this->configManager->get($section, 'host', 'string', self::DEFAULT_HOST);
 
                 $args['port'] = $is_unix_socket
-                    ? 5432
-                    : $this->configManager->get($section, 'port', 'int', 5432);
+                    ? self::DEFAULT_PORT_PGSQL
+                    : $this->configManager->get($section, 'port', 'int', self::DEFAULT_PORT_PGSQL);
 
                 $args['username'] = $this->configManager->get($section, 'username', 'string');
                 $args['password'] = $this->configManager->get($section, 'password', 'string');
@@ -112,8 +120,8 @@ class Database extends LaravelDatabaseManager
                 break;
 
             case 'sqlsrv':
-                $args['host'] = $this->configManager->get($section, 'host', 'string', '127.0.0.1');
-                $args['port'] = $this->configManager->get($section, 'port', 'int', 1433);
+                $args['host'] = $this->configManager->get($section, 'host', 'string', self::DEFAULT_HOST);
+                $args['port'] = $this->configManager->get($section, 'port', 'int', self::DEFAULT_PORT_MSSQL);
                 $args['username'] = $this->configManager->get($section, 'username', 'string');
                 $args['password'] = $this->configManager->get($section, 'password', 'string');
 

@@ -1,23 +1,44 @@
 <?php
 namespace Misuzu;
 
+/**
+ * Contains all non-specific methods, for possibly using Misuzu as a framework for other things.
+ */
 abstract class ApplicationBase
 {
+    /**
+     * Things extending ApplicationBase are single instance, this property contains the active one.
+     * @var ApplicationBase
+     */
     private static $instance = null;
+
+    /**
+     * Holds all the loaded modules.
+     * @var array
+     */
     private $modules = [];
 
-    public static function getInstance(): Application
+    /**
+     * Gets the currently active instance of ApplicationBase
+     * @return ApplicationBase
+     */
+    public static function getInstance(): ApplicationBase
     {
-        if (is_null(self::$instance) || !(self::$instance instanceof Application)) {
+        if (is_null(self::$instance) || !(self::$instance instanceof ApplicationBase)) {
             throw new \Exception('Invalid instance type.');
         }
 
         return self::$instance;
     }
 
-    public static function start(...$params): Application
+    /**
+     * Creates an instance of whichever class extends ApplicationBase.
+     * I have no idea how to make a param for the ... thingy so ech.
+     * @return ApplicationBase
+     */
+    public static function start(...$params): ApplicationBase
     {
-        if (!is_null(self::$instance) || self::$instance instanceof Application) {
+        if (!is_null(self::$instance) || self::$instance instanceof ApplicationBase) {
             throw new \Exception('An Application has already been set up.');
         }
 
@@ -25,16 +46,30 @@ abstract class ApplicationBase
         return self::getInstance();
     }
 
+    /**
+     * Gets info from the current git commit.
+     * @param string $format Follows the format of the pretty flag on the git log command
+     * @return string
+     */
     public static function gitCommitInfo(string $format): string
     {
         return trim(shell_exec(sprintf('git log --pretty="%s" -n1 HEAD', $format)));
     }
 
+    /**
+     * Gets the hash of the current commit.
+     * @param bool $long Whether to fetch the long hash or the shorter one.
+     * @return string
+     */
     public static function gitCommitHash(bool $long = false): string
     {
         return self::gitCommitInfo($long ? '%H' : '%h');
     }
 
+    /**
+     * Gets the name of the current branch.
+     * @return string
+     */
     public static function gitBranch(): string
     {
         return trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
@@ -54,6 +89,11 @@ abstract class ApplicationBase
         throw new \Exception('Invalid property.');
     }
 
+    /**
+     * Adds a module to this application.
+     * @param string $name
+     * @param mixed $module
+     */
     public function addModule(string $name, $module): void
     {
         if ($this->hasModule($name)) {
@@ -63,6 +103,11 @@ abstract class ApplicationBase
         $this->modules[$name] = $module;
     }
 
+    /**
+     * Checks if a module is registered.
+     * @param string $name
+     * @return bool
+     */
     public function hasModule(string $name): bool
     {
         return array_key_exists($name, $this->modules) && !is_null($this->modules[$name]);
