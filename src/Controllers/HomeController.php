@@ -3,7 +3,6 @@ namespace Misuzu\Controllers;
 
 use Misuzu\Application;
 use Misuzu\Database;
-use Misuzu\AyaseUser;
 
 class HomeController extends Controller
 {

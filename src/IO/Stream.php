@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu\IO;
 
+use InvalidArgumentException;
+
 abstract class Stream
 {
     public const ORIGIN_CURRENT = 0;
@@ -15,8 +17,7 @@ abstract class Stream
             return $this->{$name}();
         }
 
-        // todo: specialised exception type
-        throw new IOException('Invalid property.');
+        throw new InvalidArgumentException;
     }
 
     abstract protected function getCanRead(): bool;

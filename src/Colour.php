@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu;
 
+use InvalidArgumentException;
+
 class Colour
 {
     private const INHERIT = 0x40000000;
@@ -106,7 +108,7 @@ class Colour
         if ($hex_length === 3) {
             $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
         } elseif ($hex_length != 6) {
-            throw new \Exception('Invalid hex colour format! (find a more appropiate exception type)');
+            throw new InvalidArgumentException('Invalid hex colour format!');
         }
 
         return static::fromRGB(

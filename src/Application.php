@@ -3,64 +3,38 @@ namespace Misuzu;
 
 use Aitemu\RouteCollection;
 use Misuzu\Config\ConfigManager;
+use UnexpectedValueException;
+use InvalidArgumentException;
 
-class Application
+/**
+ * Handles the set up procedures.
+ */
+class Application extends ApplicationBase
 {
-    private static $instance = null;
+    /**
+     * Whether the application is in debug mode, this should only be set in the constructor and never altered.
+     * @var bool
+     */
+    private $debugMode = false;
 
-    public static function getInstance(): Application
+    /**
+     * Array of database connection names, first in the list is assumed to be the default.
+     */
+    private const DATABASE_CONNECTIONS = [
+        'mysql-main',
+        //'mysql-ayase',
+    ];
+
+    /**
+     * Constructor, called by ApplicationBase::start() which also passes the arguments through.
+     * @param ?string $configFile
+     * @param bool $debug
+     */
+    protected function __construct(?string $configFile = null, bool $debug = false)
     {
-        if (is_null(static::$instance) || !(static::$instance instanceof Application)) {
-            throw new \Exception('Invalid instance type.');
-        }
-
-        return static::$instance;
-    }
-
-    public static function start(...$params): Application
-    {
-        if (!is_null(static::$instance) || static::$instance instanceof Application) {
-            throw new \Exception('An Application has already been set up.');
-        }
-
-        static::$instance = new Application(...$params);
-        return static::getInstance();
-    }
-
-    public static function gitCommitInfo(string $format): string
-    {
-        return trim(shell_exec(sprintf('git log --pretty="%s" -n1 HEAD', $format)));
-    }
-
-    public static function gitCommitHash(bool $long = false): string
-    {
-        return self::gitCommitInfo($long ? '%H' : '%h');
-    }
-
-    public static function gitBranch(): string
-    {
-        return trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
-    }
-
-    private $modules = [];
-
-    public function __get($name)
-    {
-        if (starts_with($name, 'has') && strlen($name) > 3 && ctype_upper($name[3])) {
-            $name = lcfirst(substr($name, 3));
-            return $this->hasModule($name);
-        }
-
-        if ($this->hasModule($name)) {
-            return $this->modules[$name];
-        }
-
-        throw new \Exception('Invalid property.');
-    }
-
-    protected function __construct($configFile = null)
-    {
+        $this->debugMode = $debug;
         ExceptionHandler::register();
+        ExceptionHandler::debug($this->debugMode);
         $this->addModule('config', new ConfigManager($configFile));
     }
 
@@ -73,45 +47,72 @@ class Application
         ExceptionHandler::unregister();
     }
 
+    /**
+     * Sets up the database module.
+     */
     public function startDatabase(): void
     {
         if ($this->hasDatabase) {
-            throw new \Exception('Database module has already been started.');
+            throw new UnexpectedValueException('Database module has already been started.');
         }
 
-        $config = $this->config;
-
-        $this->addModule('database', new Database(
-            $config,
-            $config->get('Database', 'default', 'string', 'default')
-        ));
-
-        $this->loadConfigDatabaseConnections();
+        $this->addModule('database', new Database($this->config, self::DATABASE_CONNECTIONS[0]));
+        $this->loadDatabaseConnections();
     }
 
+    /**
+     * Sets up the required database connections defined in the DATABASE_CONNECTIONS constant.
+     */
+    private function loadDatabaseConnections(): void
+    {
+        $config = $this->config;
+        $database = $this->database;
+
+        foreach (self::DATABASE_CONNECTIONS as $name) {
+            $section = 'Database.' . $name;
+
+            if (!$config->contains($section)) {
+                throw new InvalidArgumentException("Database {$name} is not configured.");
+            }
+
+            $database->addConnectionFromConfig($section, $name);
+        }
+    }
+
+    /**
+     * Sets up the templating engine module.
+     */
     public function startTemplating(): void
     {
         if ($this->hasTemplating) {
-            throw new \Exception('Templating module has already been started.');
+            throw new UnexpectedValueException('Templating module has already been started.');
         }
 
         $this->addModule('templating', $twig = new TemplateEngine);
+        $twig->debug($this->debugMode);
 
         $twig->addFilter('json_decode');
         $twig->addFilter('byte_symbol');
+
         $twig->addFunction('byte_symbol');
         $twig->addFunction('session_id');
         $twig->addFunction('config', [$this->config, 'get']);
         $twig->addFunction('route', [$this->router, 'url']);
         $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
+
+        $twig->vars(['app' => $this]);
+
         $twig->addPath('nova', __DIR__ . '/../views/nova');
     }
 
+    /**
+     * Sets up the router module.
+     */
     public function startRouter(array $routes = null): void
     {
         if ($this->hasRouter) {
-            throw new \Exception('Router module has already been started.');
+            throw new UnexpectedValueException('Router module has already been started.');
         }
 
         $this->addModule('router', $router = new RouteCollection);
@@ -119,54 +120,5 @@ class Application
         if ($routes !== null) {
             $router->add($routes);
         }
-    }
-
-    /**
-     * @todo Instead of reading a connections variable from the config,
-     *       the expected connections should be defined somewhere in this class.
-     */
-    private function loadConfigDatabaseConnections(): void
-    {
-        $config = $this->config;
-        $database = $this->database;
-
-        if ($config->contains('Database', 'connections')) {
-            $connections = explode(' ', $config->get('Database', 'connections'));
-
-            foreach ($connections as $name) {
-                $section = 'Database.' . $name;
-
-                if (!$config->contains($section)) {
-                    continue;
-                }
-
-                $database->addConnectionFromConfig($section, $name);
-            }
-        } else {
-            throw new \Exception('No database connections have been configured.');
-        }
-    }
-
-    public function debug(bool $mode): void
-    {
-        ExceptionHandler::debug($mode);
-
-        if ($this->hasTemplating) {
-            $this->templating->debug($mode);
-        }
-    }
-
-    public function addModule(string $name, $module): void
-    {
-        if ($this->hasModule($name)) {
-            throw new \Exception('This module has already been registered.');
-        }
-
-        $this->modules[$name] = $module;
-    }
-
-    public function hasModule(string $name): bool
-    {
-        return array_key_exists($name, $this->modules) && !is_null($this->modules[$name]);
     }
 }
