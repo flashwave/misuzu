@@ -3,6 +3,7 @@ namespace MisuzuTests;
 
 use PHPUnit\Framework\TestCase;
 use Misuzu\Colour;
+use InvalidArgumentException;
 
 class ColourTest extends TestCase
 {
@@ -78,5 +79,14 @@ class ColourTest extends TestCase
         $this->assertEquals($colour->green, static::GREEN_HEX3);
         $this->assertEquals($colour->blue, static::BLUE_HEX3);
         $this->assertFalse($colour->inherit);
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Invalid hex colour format!
+     */
+    public function testHexException()
+    {
+        Colour::fromHex('invalid hex code');
     }
 }

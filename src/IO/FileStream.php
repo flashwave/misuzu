@@ -221,7 +221,6 @@ class FileStream extends Stream
 
     public function writeChar(int $char): void
     {
-        $this->ensureHandleActive();
         $this->write(chr($char), 0, 1);
     }
 

@@ -3,6 +3,7 @@ namespace Misuzu;
 
 use Illuminate\Database\Capsule\Manager as LaravelDatabaseManager;
 use Misuzu\Config\ConfigManager;
+use InvalidArgumentException;
 
 class Database extends LaravelDatabaseManager
 {
@@ -44,13 +45,13 @@ class Database extends LaravelDatabaseManager
     public function addConnectionFromConfig(string $section, string $name = 'default'): void
     {
         if (!$this->configManager->contains($section, 'driver')) {
-            throw new \Exception('Config section not found!');
+            throw new InvalidArgumentException('Config section not found!');
         }
 
         $driver = $this->configManager->get($section, 'driver');
 
         if (!in_array($driver, self::SUPPORTED_DB_ALS)) {
-            throw new \Exception('Unsupported driver.');
+            throw new InvalidArgumentException('Unsupported driver.');
         }
 
         $args = [

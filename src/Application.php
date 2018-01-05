@@ -3,6 +3,8 @@ namespace Misuzu;
 
 use Aitemu\RouteCollection;
 use Misuzu\Config\ConfigManager;
+use UnexpectedValueException;
+use InvalidArgumentException;
 
 /**
  * Handles the set up procedures.
@@ -51,7 +53,7 @@ class Application extends ApplicationBase
     public function startDatabase(): void
     {
         if ($this->hasDatabase) {
-            throw new \Exception('Database module has already been started.');
+            throw new UnexpectedValueException('Database module has already been started.');
         }
 
         $this->addModule('database', new Database($this->config, self::DATABASE_CONNECTIONS[0]));
@@ -70,7 +72,7 @@ class Application extends ApplicationBase
             $section = 'Database.' . $name;
 
             if (!$config->contains($section)) {
-                throw new \Exception("Database {$name} is not configured.");
+                throw new InvalidArgumentException("Database {$name} is not configured.");
             }
 
             $database->addConnectionFromConfig($section, $name);
@@ -83,7 +85,7 @@ class Application extends ApplicationBase
     public function startTemplating(): void
     {
         if ($this->hasTemplating) {
-            throw new \Exception('Templating module has already been started.');
+            throw new UnexpectedValueException('Templating module has already been started.');
         }
 
         $this->addModule('templating', $twig = new TemplateEngine);
@@ -110,7 +112,7 @@ class Application extends ApplicationBase
     public function startRouter(array $routes = null): void
     {
         if ($this->hasRouter) {
-            throw new \Exception('Router module has already been started.');
+            throw new UnexpectedValueException('Router module has already been started.');
         }
 
         $this->addModule('router', $router = new RouteCollection);

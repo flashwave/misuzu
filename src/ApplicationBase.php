@@ -1,6 +1,9 @@
 <?php
 namespace Misuzu;
 
+use InvalidArgumentException;
+use UnexpectedValueException;
+
 /**
  * Contains all non-specific methods, for possibly using Misuzu as a framework for other things.
  */
@@ -25,7 +28,7 @@ abstract class ApplicationBase
     public static function getInstance(): ApplicationBase
     {
         if (is_null(self::$instance) || !(self::$instance instanceof ApplicationBase)) {
-            throw new \Exception('Invalid instance type.');
+            throw new UnexpectedValueException('Invalid instance type.');
         }
 
         return self::$instance;
@@ -39,7 +42,7 @@ abstract class ApplicationBase
     public static function start(...$params): ApplicationBase
     {
         if (!is_null(self::$instance) || self::$instance instanceof ApplicationBase) {
-            throw new \Exception('An Application has already been set up.');
+            throw new UnexpectedValueException('An Application has already been set up.');
         }
 
         self::$instance = new static(...$params);
@@ -86,7 +89,7 @@ abstract class ApplicationBase
             return $this->modules[$name];
         }
 
-        throw new \Exception('Invalid property.');
+        throw new InvalidArgumentException('Invalid property.');
     }
 
     /**
@@ -97,7 +100,7 @@ abstract class ApplicationBase
     public function addModule(string $name, $module): void
     {
         if ($this->hasModule($name)) {
-            throw new \Exception('This module has already been registered.');
+            throw new InvalidArgumentException('This module has already been registered.');
         }
 
         $this->modules[$name] = $module;
