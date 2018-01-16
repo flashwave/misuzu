@@ -16,6 +16,17 @@ if (!function_exists('ends_with')) {
     }
 }
 
+function password_entropy(string $password): int
+{
+    return count(count_chars(utf8_decode($password), 1)) * log(256, 2);
+}
+
+function check_mx_record(string $email): bool
+{
+    $domain = substr(strstr($email, '@'), 1);
+    return checkdnsrr($domain, 'MX') || checkdnsrr($domain, 'A');
+}
+
 function dechex_pad(int $value, int $padding = 2): string
 {
     return str_pad(dechex($value), $padding, '0', STR_PAD_LEFT);
@@ -49,6 +60,28 @@ function byte_symbol($bytes, $decimal = false)
     $symbol = $symbols[$exp];
 
     return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
+}
+
+function flashii_is_ready()
+{
+    $ipAddr = \Misuzu\Net\IP::remote();
+    return in_array($ipAddr, ['83.85.244.163', '127.0.0.1', '::1']) || time() > 1517443200;
+}
+
+function get_country_code(string $ipAddr, string $fallback = 'XX'): string
+{
+    if (function_exists("geoip_country_code_by_name")) {
+        try {
+            $code = geoip_country_code_by_name($ipAddr);
+
+            if ($code) {
+                return $code;
+            }
+        } catch (\Exception $e) {
+        }
+    }
+
+    return $fallback;
 }
 
 function is_int_ex($value, int $boundary_low, int $boundary_high): bool

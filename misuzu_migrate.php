@@ -15,9 +15,7 @@ use Illuminate\Filesystem\Filesystem;
 
 require_once __DIR__ . '/misuzu.php';
 
-$resolver = new ConnectionResolver(['database' => Database::connection()]);
-$repository = new DatabaseMigrationRepository($resolver, 'migrations');
-$repository->setSource('database');
+$repository = new DatabaseMigrationRepository(Application::getInstance()->database->getDatabaseManager(), 'migrations');
 $migrator = new Migrator($repository, $repository->getConnectionResolver(), new Filesystem);
 
 if (!$migrator->repositoryExists()) {

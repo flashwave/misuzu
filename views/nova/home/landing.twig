@@ -180,7 +180,7 @@
                 checkClient = new XMLHttpRequest();
 
                 checkClient.addEventListener('readystatechange', function () {
-                    if (checkClient.readyState === 4 && (checkClient.status !== 200 || checkClient.responseText !== 'no'))
+                    if (checkClient.readyState === 4 && checkClient.responseText !== 'no')
                         location.reload(true);
                 });
             }
@@ -196,9 +196,17 @@
             var container = document.createElement('div');
             container.className = 'countdown-container';
             document.getElementById('countdown').appendChild(container);
-            countdownSetup(container, new Date("Mon, 1 27 2018 1:00:00 +0100"), function () {
+            countdownSetup(container, new Date("Mon, 2 01 2018 1:00:00 +0100"), function () {
                 checkIfFlashiiReady(true);
             });
         });
     </script>
+{% endblock %}
+
+{% block content %}
+    <div class="platform" style="text-align: left;">
+        <p>So I have to be honest, when the timer runs out you shouldn't expect a fully functional site. A chat, registration, login and a basic session system will most likely be at most in place though. On the position side of things you get to see the site evolve, so yay!!</p>
+        <p>In any case I hope you all will enjoy what I have in store going forward. I've also decided to push launch back to the 1st or February because I'll need the time.</p>
+        <p>Lastly I'd like to add that none of the designs are final, most of this I put together ages ago as an eventual redesign for the old site, since then I haven't done much aside from the work in the last month.</p>
+    </div>
 {% endblock %}

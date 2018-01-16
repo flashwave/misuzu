@@ -1,0 +1,58 @@
+{% extends '@nova/master.twig' %}
+
+{% block content %}
+    <script>
+        var authHttp;
+
+        window.addEventListener('load', function () {
+            var authf = document.getElementById('auth-form');
+
+            if (!authf)
+                return;
+
+            authHttp = new XMLHttpRequest();
+            authHttp.addEventListener('readystatechange', function () {
+                if (authHttp.readyState === 4 && authHttp.status === 200)
+                    authfHandle(JSON.parse(authHttp.responseText));
+            });
+
+            authf.addEventListener('keydown', function (e) {
+                if (e.keyCode === 13)
+                    authfSubmit();
+            });
+
+            var buttons = document.getElementsByTagName('button');
+
+            buttons[buttons.length - 1].addEventListener('click', function () { authfSubmit(); });
+        });
+
+        function authfHandle(obj)
+        {
+            if (obj.error)
+                alert(obj.error);
+
+            if (obj.next)
+                location.assign(obj.next);
+        }
+
+        function authfSubmit()
+        {
+            authHttp.open('POST', location.pathname, true);
+            authHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            authHttp.send(authfForms());
+        }
+
+        function authfForms()
+        {
+            var elems = document.getElementsByTagName('input');
+            var str = "";
+
+            for (var i = 0; i < elems.length; i++) {
+                var elem = elems[i];
+                str += encodeURIComponent(elem.name) + "=" + encodeURIComponent(elem.value) + "&";
+            }
+
+            return str.slice(0, -1);
+        }
+    </script>
+{% endblock %}

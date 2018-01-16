@@ -36,6 +36,9 @@ class Application extends ApplicationBase
         ExceptionHandler::register();
         ExceptionHandler::debug($this->debugMode);
         $this->addModule('config', new ConfigManager($configFile));
+
+        // temporary session system
+        session_start();
     }
 
     public function __destruct()
@@ -94,6 +97,7 @@ class Application extends ApplicationBase
         $twig->addFilter('json_decode');
         $twig->addFilter('byte_symbol');
 
+        $twig->addFunction('flashii_is_ready');
         $twig->addFunction('byte_symbol');
         $twig->addFunction('session_id');
         $twig->addFunction('config', [$this->config, 'get']);
@@ -101,7 +105,7 @@ class Application extends ApplicationBase
         $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
 
-        $twig->vars(['app' => $this]);
+        $twig->vars(['app' => $this, 'tsession' => $_SESSION]);
 
         $twig->addPath('nova', __DIR__ . '/../views/nova');
     }

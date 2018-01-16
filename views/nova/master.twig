@@ -13,6 +13,14 @@
         <div class="container">
             <nav class="header">
                 <div class="header__inner">
+                    <div class="header__navigation">
+                        <a class="header__entry fa-home" href="/">home</a>
+                        <a class="header__entry fa-comments" href="https://chat.flashii.net">chat</a>
+                    </div>
+                    <a class="header__user" href="/auth/{{ tsession is defined and tsession.username is defined ? 'logout' : 'login' }}">
+                        <div class="header__username">{{ tsession is defined and tsession.username is defined ? tsession.username : 'login' }}</div>
+                        <div class="header__avatar" style="background-image: url('https://static.flash.moe/images/{{ tsession is defined and tsession.username is defined ? 'discord-logo' : 'nova-none' }}.png')"></div>
+                    </a>
                 </div>
             </nav>
 
