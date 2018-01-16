@@ -1,0 +1,25 @@
+{% extends '@nova/auth/master.twig' %}
+
+{% set banner_classes = 'banner--large landing__banner' %}
+
+{% block banner_content %}
+    <h1 style="align-self: center; text-align: left; flex-grow: 1; padding-left: 2em">Welcome, thanks for dropping by!</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="platform form" id="auth-form">
+        <div>
+            <input class="form__text" type="text" name="username" placeholder="Username">
+        </div>
+        <div>
+            <input class="form__text" type="password" name="password" placeholder="Password">
+        </div>
+        <div>
+            <input class="form__text" type="text" name="email" placeholder="E-mail">
+        </div>
+        <div>
+            <button class="button">Create your account!</button>
+        </div>
+    </div>
+    {{ parent() }}
+{% endblock %}

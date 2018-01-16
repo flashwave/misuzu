@@ -16,6 +16,6 @@ class HomeController extends Controller
 
     public function isReady(): string
     {
-        return 'no';
+        return flashii_is_ready() ? 'yes' : 'no';
     }
 }
