@@ -42,8 +42,8 @@ class AuthController extends Controller
         $user->user_chat_key = $_SESSION['chat_key'] = bin2hex(random_bytes(16));
         $user->save();
 
-        setcookie('msz_tmp_id', $_SESSION['user_id'], time() + 604800, '/');
-        setcookie('msz_tmp_key', $_SESSION['chat_key'], time() + 604800, '/');
+        setcookie('msz_tmp_id', $_SESSION['user_id'], time() + 604800, '/', '.flashii.net');
+        setcookie('msz_tmp_key', $_SESSION['chat_key'], time() + 604800, '/', '.flashii.net');
 
         return ['error' => 'You are now logged in!', 'next' => '/'];
     }
