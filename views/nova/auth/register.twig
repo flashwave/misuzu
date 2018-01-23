@@ -3,23 +3,41 @@
 {% set banner_classes = 'banner--large landing__banner' %}
 
 {% block banner_content %}
-    <h1 style="align-self: center; text-align: left; flex-grow: 1; padding-left: 2em">Welcome, thanks for dropping by!</h1>
+    <h1 style="align-self: center; text-align: left; flex-grow: 1; padding-left: 2em">
+        {% if has_registrations %}
+            Your IP address already has an account!
+        {% elseif not flashii_is_ready() %}
+            You'll have to wait a little longer!
+        {% else %}
+            Welcome, thanks for dropping by!
+        {% endif %}
+    </h1>
 {% endblock %}
 
 {% block content %}
-    <div class="platform form" id="auth-form">
-        <div>
-            <input class="form__text" type="text" name="username" placeholder="Username">
+    {% if has_registrations %}
+        <div class="platform" style="text-align: left;">
+            <p>As a temporary security measure we only allow one account per IP address, this will definitely be changed in the future but for now; sorry for the possible inconvenience!</p>
         </div>
-        <div>
-            <input class="form__text" type="password" name="password" placeholder="Password">
+    {% elseif not flashii_is_ready() %}
+        <div class="platform" style="text-align: left;">
+            <p>You'll be able to register once the countdown on the landing page runs out!</p>
         </div>
-        <div>
-            <input class="form__text" type="text" name="email" placeholder="E-mail">
+    {% else %}
+        <div class="platform form" id="auth-form">
+            <div>
+                <input class="form__text" type="text" name="username" placeholder="Username">
+            </div>
+            <div>
+                <input class="form__text" type="password" name="password" placeholder="Password">
+            </div>
+            <div>
+                <input class="form__text" type="text" name="email" placeholder="E-mail">
+            </div>
+            <div>
+                <button class="button">Create your account!</button>
+            </div>
         </div>
-        <div>
-            <button class="button">Create your account!</button>
-        </div>
-    </div>
-    {{ parent() }}
+        {{ parent() }}
+    {% endif %}
 {% endblock %}

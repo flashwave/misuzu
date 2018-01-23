@@ -48,17 +48,40 @@ class AuthController extends Controller
         return ['error' => 'You are now logged in!', 'next' => '/'];
     }
 
-    public function register()
+    private function hasRegistrations(?string $ipAddr = null): bool
     {
-        if (!flashii_is_ready()) {
-            return "not yet!";
+        $ipAddr = IP::unpack($ipAddr ?? IP::remote());
+
+        if (User::where('register_ip', $ipAddr)->orWhere('last_ip', $ipAddr)->count()) {
+            return true;
         }
 
+        return false;
+    }
+
+    public function register()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $app = Application::getInstance();
             $twig = $app->templating;
+            $twig->vars([
+                'has_registrations' => $this->hasRegistrations(),
+            ]);
 
             return $twig->render('auth.register');
+        }
+
+        if (!flashii_is_ready()) {
+            return [
+                'error' => "Nice try, but you'll have to wait a little longer. I appreciate your excitement though!"
+            ];
+        }
+
+        if ($this->hasRegistrations()) {
+            return [
+                'error' => "Someone already used an account from this IP address!\r\n"
+                    . "But don't worry, this is a temporary measure and you'll be able to register sometime soon."
+            ];
         }
 
         if (!isset($_POST['username'], $_POST['password'], $_POST['email'])) {
