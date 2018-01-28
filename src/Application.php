@@ -97,7 +97,6 @@ class Application extends ApplicationBase
         $twig->addFilter('json_decode');
         $twig->addFilter('byte_symbol');
 
-        $twig->addFunction('flashii_is_ready');
         $twig->addFunction('byte_symbol');
         $twig->addFunction('session_id');
         $twig->addFunction('config', [$this->config, 'get']);

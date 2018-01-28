@@ -6,7 +6,6 @@ use Misuzu\Controllers\UserController;
 
 return [
     Route::get('/', 'index', HomeController::class),
-    Route::get('/is_ready', 'isReady', HomeController::class),
 
     Route::get('/auth/login', 'login', AuthController::class),
     Route::post('/auth/login', 'login', AuthController::class),

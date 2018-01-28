@@ -9,11 +9,7 @@
 {% block content %}
     <div class="platform form" id="auth-form">
         <div>
-            {% if flashii_is_ready() %}
-                <a href="/auth/register"><button class="button" type="button">Click here if you don't have an account yet</button></a>
-            {% else %}
-                <p style="padding: .2em">You can't create an account yet, but you may log in if you have one already!</p>
-            {% endif %}
+            <a href="/auth/register"><button class="button" type="button">Click here if you don't have an account yet</button></a>
         </div>
         <div>
             <input class="form__text" type="text" name="username" placeholder="Username">

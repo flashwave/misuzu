@@ -13,9 +13,4 @@ class HomeController extends Controller
 
         return $twig->render('home.landing');
     }
-
-    public function isReady(): string
-    {
-        return flashii_is_ready() ? 'yes' : 'no';
-    }
 }
