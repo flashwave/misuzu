@@ -62,12 +62,6 @@ function byte_symbol($bytes, $decimal = false)
     return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
 }
 
-function flashii_is_ready()
-{
-    $ipAddr = \Misuzu\Net\IP::remote();
-    return in_array($ipAddr, ['83.85.244.163', '127.0.0.1', '::1']) || time() > 1517443200;
-}
-
 function get_country_code(string $ipAddr, string $fallback = 'XX'): string
 {
     if (function_exists("geoip_country_code_by_name")) {
