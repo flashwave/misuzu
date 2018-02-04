@@ -43,10 +43,6 @@ class Application extends ApplicationBase
 
     public function __destruct()
     {
-        if ($this->hasConfig) {
-            $this->config->save();
-        }
-
         ExceptionHandler::unregister();
     }
 

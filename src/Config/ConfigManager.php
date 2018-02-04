@@ -33,8 +33,6 @@ class ConfigManager
 
         if (File::exists($this->filename)) {
             $this->load();
-        } else {
-            $this->save();
         }
     }
 
