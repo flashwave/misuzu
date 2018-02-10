@@ -23,6 +23,7 @@ if (!$migrator->repositoryExists()) {
 }
 
 $migrator->run(__DIR__ . '/database');
+//$migrator->rollback(__DIR__ . '/database');
 
 foreach ($migrator->getNotes() as $note) {
     echo strip_tags($note) . PHP_EOL;

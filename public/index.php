@@ -5,11 +5,15 @@ use Aitemu\RouterRequest;
 
 require_once __DIR__ . '/../misuzu.php';
 
-ob_start('ob_gzhandler');
+//ob_start('ob_gzhandler');
 
 $app = Application::getInstance();
 
-$app->startRouter(include_once __DIR__ . '/../routes.php');
+if (isset($_COOKIE['msz_uid'], $_COOKIE['msz_sid'])) {
+    $app->startSession((int)$_COOKIE['msz_uid'], $_COOKIE['msz_sid']);
+}
+
+$app->startRouter(include __DIR__ . '/../routes.php');
 $app->startTemplating();
 
 echo $app->router->resolve(

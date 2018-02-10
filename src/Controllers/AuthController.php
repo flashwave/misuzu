@@ -2,11 +2,13 @@
 namespace Misuzu\Controllers;
 
 use Aitemu\RouterResponse;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Misuzu\Application;
 use Misuzu\Database;
 use Misuzu\Net\IP;
 use Misuzu\Users\User;
+use Misuzu\Users\Session;
 
 class AuthController extends Controller
 {
@@ -36,23 +38,48 @@ class AuthController extends Controller
             return ['error' => 'Invalid username or password!'];
         }
 
-        $_SESSION['user_id'] = $user->user_id;
-        $_SESSION['username'] = $user->username;
+        $session = new Session;
+        $session->user_id = $user->user_id;
+        $session->session_ip = IP::unpack(IP::remote());
+        $session->user_agent = 'Misuzu Testing 1';
+        $session->expires_on = Carbon::now()->addMonth();
+        $session->session_key = bin2hex(random_bytes(32));
+        $session->save();
 
-        $user->user_chat_key = $_SESSION['chat_key'] = bin2hex(random_bytes(16));
+        Application::getInstance()->session = $session;
+        $this->setCookie('uid', $session->user_id, 604800);
+        $this->setCookie('sid', $session->session_key, 604800);
+
+        // Temporary key generation for chat login.
+        // Should eventually be replaced with a callback login system.
+        // Also uses different cookies since $httponly is required to be false for these.
+        $user->user_chat_key = bin2hex(random_bytes(16));
         $user->save();
 
-        setcookie('msz_tmp_id', $_SESSION['user_id'], time() + 604800, '/', '.flashii.net');
-        setcookie('msz_tmp_key', $_SESSION['chat_key'], time() + 604800, '/', '.flashii.net');
+        setcookie('msz_tmp_id', $user->user_id, time() + 604800, '/', '.flashii.net');
+        setcookie('msz_tmp_key', $user->user_chat_key, time() + 604800, '/', '.flashii.net');
 
         return ['error' => 'You are now logged in!', 'next' => '/'];
+    }
+
+    private function setCookie(string $name, string $value, int $expires): void
+    {
+        setcookie(
+            "msz_{$name}",
+            $value,
+            time() + $expires,
+            '/',
+            '',
+            !empty($_SERVER['HTTPS']),
+            true
+        );
     }
 
     private function hasRegistrations(?string $ipAddr = null): bool
     {
         $ipAddr = IP::unpack($ipAddr ?? IP::remote());
 
-        if (User::where('register_ip', $ipAddr)->orWhere('last_ip', $ipAddr)->count()) {
+        if (User::withTrashed()->where('register_ip', $ipAddr)->orWhere('last_ip', $ipAddr)->count()) {
             return true;
         }
 
@@ -137,7 +164,6 @@ class AuthController extends Controller
         $user->register_ip = IP::unpack(IP::remote());
         $user->last_ip = IP::unpack(IP::remote());
         $user->user_country = get_country_code(IP::remote());
-        $user->user_registered = time();
         $user->save();
 
         return ['error' => 'Welcome to Flashii! You may now log in.', 'next' => '/auth/login'];
@@ -145,8 +171,19 @@ class AuthController extends Controller
 
     public function logout()
     {
-        session_destroy();
-        return 'Logged out.<meta http-equiv="refresh" content="0; url=/">';
+        $app = Application::getInstance();
+
+        if ($app->session === null) {
+            echo "You aren't logged in.";
+        } else {
+            echo "You've been logged out.";
+            $this->setCookie('uid', '', -3600);
+            $this->setCookie('sid', '', -3600);
+            $app->session->delete();
+            $app->session = null;
+        }
+
+        return '<meta http-equiv="refresh" content="1; url=/">';
     }
 
     private function validateUsername(string $username): string

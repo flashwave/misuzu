@@ -3,6 +3,7 @@ namespace Misuzu;
 
 use Aitemu\RouteCollection;
 use Misuzu\Config\ConfigManager;
+use Misuzu\Users\Session;
 use UnexpectedValueException;
 use InvalidArgumentException;
 
@@ -22,8 +23,13 @@ class Application extends ApplicationBase
      */
     private const DATABASE_CONNECTIONS = [
         'mysql-main',
-        //'mysql-ayase',
     ];
+
+    /**
+     * Session instance.
+     * @var \Misuzu\Users\Session
+     */
+    public $session = null;
 
     /**
      * Constructor, called by ApplicationBase::start() which also passes the arguments through.
@@ -36,14 +42,20 @@ class Application extends ApplicationBase
         ExceptionHandler::register();
         ExceptionHandler::debug($this->debugMode);
         $this->addModule('config', new ConfigManager($configFile));
-
-        // temporary session system
-        session_start();
     }
 
     public function __destruct()
     {
         ExceptionHandler::unregister();
+    }
+
+    public function startSession(int $user_id, string $session_key): void
+    {
+        $session = Session::where('session_key', $session_key)->where('user_id', $user_id)->first();
+
+        if ($session !== null) {
+            $this->session = $session;
+        }
     }
 
     /**
@@ -68,7 +80,7 @@ class Application extends ApplicationBase
         $database = $this->database;
 
         foreach (self::DATABASE_CONNECTIONS as $name) {
-            $section = 'Database.' . $name;
+            $section = "Database.{$name}";
 
             if (!$config->contains($section)) {
                 throw new InvalidArgumentException("Database {$name} is not configured.");
@@ -100,7 +112,7 @@ class Application extends ApplicationBase
         $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
 
-        $twig->vars(['app' => $this, 'tsession' => $_SESSION]);
+        $twig->var('app', $this);
 
         $twig->addPath('nova', __DIR__ . '/../views/nova');
     }
