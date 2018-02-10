@@ -114,6 +114,16 @@ class TemplateEngine
     }
 
     /**
+     * Sets a render var.
+     * @param string $name
+     * @param mixed $value
+     */
+    public function var(string $name, $value): void
+    {
+        $this->vars[$name] = $value;
+    }
+
+    /**
      * Sets render vars.
      * @param array $vars
      */

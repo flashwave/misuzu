@@ -13,5 +13,5 @@ return [
     Route::post('/auth/register', 'register', AuthController::class),
     Route::get('/auth/logout', 'logout', AuthController::class),
 
-    Route::get('/user/{id:i}', 'view', UserController::class),
+    Route::get('/users/{id:i}', 'view', UserController::class),
 ];
