@@ -6,8 +6,6 @@
     <h1 style="align-self: center; text-align: left; flex-grow: 1; padding-left: 2em">
         {% if has_registrations %}
             Your IP address already has an account!
-        {% elseif not allowed_to_register %}
-            You'll have to wait a little longer!
         {% else %}
             Welcome, thanks for dropping by!
         {% endif %}
@@ -18,10 +16,6 @@
     {% if has_registrations %}
         <div class="platform" style="text-align: left;">
             <p>As a temporary security measure we only allow one account per IP address, this will definitely be changed in the future but for now; sorry for the possible inconvenience!</p>
-        </div>
-    {% elseif not allowed_to_register %}
-        <div class="platform" style="text-align: left;">
-            <p>You'll be able to register once the site enter public beta!</p>
         </div>
     {% else %}
         <div class="platform form" id="auth-form">
