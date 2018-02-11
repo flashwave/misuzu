@@ -64,12 +64,12 @@ class Application extends ApplicationBase
         }
     }
 
-    public function getSession(): Session
+    public function getSession(): ?Session
     {
         return $this->session;
     }
 
-    public function setSession(Session $session): void
+    public function setSession(?Session $session): void
     {
         $this->session = $session;
     }

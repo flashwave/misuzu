@@ -11,7 +11,7 @@ class Role extends Model
     public static function createRole(
         string $name,
         ?int $hierarchy = null,
-        Colour $colour = null,
+        ?Colour $colour = null,
         ?string $title = null,
         ?string $description = null,
         bool $secret = false

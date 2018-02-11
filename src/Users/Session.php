@@ -12,7 +12,7 @@ class Session extends Model
     public static function createSession(
         User $user,
         ?string $userAgent = null,
-        Carbon $expires = null,
+        ?Carbon $expires = null,
         ?string $ipAddress = null
     ): Session {
         $ipAddress = $ipAddress ?? IP::remote();

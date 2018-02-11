@@ -171,15 +171,16 @@ class AuthController extends Controller
     public function logout()
     {
         $app = Application::getInstance();
+        $session = $app->getSession();
 
-        if ($app->session === null) {
+        if ($session === null) {
             echo "You aren't logged in.";
         } else {
             echo "You've been logged out.";
             $this->setCookie('uid', '', -3600);
             $this->setCookie('sid', '', -3600);
-            $app->session->delete();
-            $app->session = null;
+            $session->delete();
+            $app->setSession(null);
         }
 
         return '<meta http-equiv="refresh" content="1; url=/">';
