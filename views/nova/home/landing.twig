@@ -3,12 +3,14 @@
 {% set banner_classes = 'banner--insane landing__banner' %}
 
 {% block banner_content %}
-    <h1 style="align-self: center; text-align: left; flex-grow: 1; padding-left: 2em">Well, this is embarrassing...</h1>
-{% endblock %}
-
-{% block content %}
-    <div class="platform" style="text-align: left;">
-        <p>Long story short, almost nothing is ready and going live now (or within the next week) will just lead to greater disappointment. I set up a <a href="https://twitter.com/flashiinet" class="container__footer-link" target="_blank" rel="noreferrer noopener">Twitter</a> again on which I'll eventually inform when the site goes in public beta.</p>
-        <p>I offer my sincerest apologies for not being able to live up to the hype I've created (twice, even) but understand that this decision will make for a less rushed end product and less coping with hurried code in the future.</p>
+    <div class="landing__inner">
+        <div class="landing__buttons">
+            <a href="/auth/register" class="landing__button">register</a>
+            <a href="/auth/login" class="landing__button">login</a>
+        </div>
+        <div class="landing__text">
+            <p>Registration soon, but not now.</p>
+            <p>Keep an eye on <a href="https://twitter.com/flashiinet" class="container__footer-link" target="_blank" rel="noreferrer noopener">Twitter</a>!</p>
+        </div>
     </div>
 {% endblock %}

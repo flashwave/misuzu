@@ -29,30 +29,31 @@ class AuthController extends Controller
         $password = $_POST['password'] ?? '';
 
         try {
-            $user = User::where('username', $username)->firstOrFail();
+            $user = User::where('username', $username)->orWhere('email', $username)->firstOrFail();
         } catch (ModelNotFoundException $e) {
             return ['error' => 'Invalid username or password!'];
         }
 
-        if (!password_verify($password, $user->password)) {
+        if (!$user->validatePassword($password)) {
             return ['error' => 'Invalid username or password!'];
         }
 
         $session = new Session;
         $session->user_id = $user->user_id;
-        $session->session_ip = IP::unpack(IP::remote());
+        $session->session_ip = IP::remote();
         $session->user_agent = 'Misuzu Testing 1';
         $session->expires_on = Carbon::now()->addMonth();
         $session->session_key = bin2hex(random_bytes(32));
         $session->save();
 
-        Application::getInstance()->session = $session;
+        Application::getInstance()->setSession($session);
         $this->setCookie('uid', $session->user_id, 604800);
         $this->setCookie('sid', $session->session_key, 604800);
 
         // Temporary key generation for chat login.
         // Should eventually be replaced with a callback login system.
         // Also uses different cookies since $httponly is required to be false for these.
+        $user->last_ip = IP::remote();
         $user->user_chat_key = bin2hex(random_bytes(16));
         $user->save();
 
@@ -78,6 +79,10 @@ class AuthController extends Controller
     private function hasRegistrations(?string $ipAddr = null): bool
     {
         $ipAddr = IP::unpack($ipAddr ?? IP::remote());
+
+        if ($ipAddr === IP::unpack('127.0.0.1') || $ipAddr === IP::unpack('::1')) {
+            return false;
+        }
 
         if (User::withTrashed()->where('register_ip', $ipAddr)->orWhere('last_ip', $ipAddr)->count()) {
             return true;
@@ -157,14 +162,7 @@ class AuthController extends Controller
             return ['error' => 'Your password is considered too weak!'];
         }
 
-        $user = new User;
-        $user->username = $username;
-        $user->password = password_hash($password, PASSWORD_ARGON2I);
-        $user->email = $email;
-        $user->register_ip = IP::unpack(IP::remote());
-        $user->last_ip = IP::unpack(IP::remote());
-        $user->user_country = get_country_code(IP::remote());
-        $user->save();
+        User::createUser($username, $password, $email);
 
         return ['error' => 'Welcome to Flashii! You may now log in.', 'next' => '/auth/login'];
     }
