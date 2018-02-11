@@ -1,0 +1,21 @@
+{% set title = title|default('Flashii') %}
+{% set description = description|default("Where the carrot doesn't fall far from the floor.") %}
+
+        <title>{{ title }}</title>
+
+        <meta name="twitter:title" content="{{ title }}">
+        <meta property="og:title" content="{{ title }}">
+
+        <meta name="description" content="{{ description }}">
+        <meta name="twitter:description" content="{{ description }}">
+        <meta property="og:description" content="{{ description }}">
+
+        <meta name="twitter:card" content="summary">
+
+        <meta property="og:type" content="object">
+        <meta property="og:site_name" content="Flashii">
+
+{% if icon is defined %}
+        <meta name="twitter:image:src" content="{{ icon }}">
+        <meta property="og:image" content="{{ icon }}">
+{% endif %}
