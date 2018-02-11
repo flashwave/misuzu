@@ -51,7 +51,6 @@ class CreateSessionsTable extends Migration
     public function down()
     {
         $schema = Database::connection()->getSchemaBuilder();
-        $schema->drop('sessions');
 
         $schema->table('users', function (Blueprint $table) {
             $table->integer('user_registered')
@@ -61,5 +60,7 @@ class CreateSessionsTable extends Migration
             $table->dropSoftDeletes();
             $table->dropTimestamps();
         });
+
+        $schema->drop('sessions');
     }
 }

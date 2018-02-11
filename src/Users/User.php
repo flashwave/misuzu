@@ -72,4 +72,9 @@ class User extends Model
     {
         return $this->hasMany(Session::class, 'user_id');
     }
+
+    public function roles()
+    {
+        return $this->hasMany(UserRole::class, 'user_id');
+    }
 }

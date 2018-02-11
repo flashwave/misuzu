@@ -33,6 +33,18 @@ class ColourTest extends TestCase
         $this->assertEquals($colour->hex, '000000');
     }
 
+    public function testNull()
+    {
+        $colour = new Colour(null);
+
+        $this->assertTrue($colour->inherit);
+        $this->assertEquals($colour->raw, 0x40000000);
+        $this->assertEquals($colour->red, 0);
+        $this->assertEquals($colour->green, 0);
+        $this->assertEquals($colour->blue, 0);
+        $this->assertEquals($colour->hex, '000000');
+    }
+
     public function testFromRaw()
     {
         $colour = new Colour(static::RAW_HEX6);
