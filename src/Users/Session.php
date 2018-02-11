@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu\Users;
 
+use Carbon\Carbon;
 use Misuzu\Model;
 use Misuzu\Net\IP;
 
