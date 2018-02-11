@@ -12,6 +12,14 @@ use Misuzu\Users\Session;
 
 class AuthController extends Controller
 {
+    private const USERNAME_VALIDATION_ERRORS = [
+        'trim' => 'Your username may not start or end with spaces!',
+        'short' => "Your username is too short, it has to be at least " . User::USERNAME_MIN_LENGTH . " characters!",
+        'long' => "Your username is too long, it can't be longer than " . User::USERNAME_MAX_LENGTH . " characters!",
+        'invalid' => 'Your username contains invalid characters.',
+        'spacing' => 'Please use either underscores or spaces, not both!',
+    ];
+
     public function login()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -38,14 +46,7 @@ class AuthController extends Controller
             return ['error' => 'Invalid username or password!'];
         }
 
-        $session = new Session;
-        $session->user_id = $user->user_id;
-        $session->session_ip = IP::remote();
-        $session->user_agent = 'Misuzu Testing 1';
-        $session->expires_on = Carbon::now()->addMonth();
-        $session->session_key = bin2hex(random_bytes(32));
-        $session->save();
-
+        $session = Session::createSession($user, 'Misuzu T1');
         Application::getInstance()->setSession($session);
         $this->setCookie('uid', $session->user_id, 604800);
         $this->setCookie('sid', $session->session_key, 604800);
@@ -128,12 +129,12 @@ class AuthController extends Controller
         }
 
         $username = $_POST['username'] ?? '';
-        $username_validate = $this->validateUsername($username);
+        $username_validate = User::validateUsername($username);
         $password = $_POST['password'] ?? '';
         $email = $_POST['email'] ?? '';
 
         if ($username_validate !== '') {
-            return ['error' => $username_validate];
+            return ['error' => self::USERNAME_VALIDATION_ERRORS[$username_validate]];
         }
 
         try {
@@ -182,32 +183,5 @@ class AuthController extends Controller
         }
 
         return '<meta http-equiv="refresh" content="1; url=/">';
-    }
-
-    private function validateUsername(string $username): string
-    {
-        $username_length = strlen($username);
-
-        if (($username ?? '') !== trim($username)) {
-            return 'Your username may not start or end with spaces!';
-        }
-
-        if ($username_length < 3) {
-            return "Your username is too short, it has to be at least 3 characters!";
-        }
-
-        if ($username_length > 16) {
-            return "Your username is too long, it can't be longer than 16 characters!";
-        }
-
-        if (strpos($username, '  ') !== false || !preg_match('#^[A-Za-z0-9-\[\]_ ]+$#u', $username)) {
-            return 'Your username contains invalid characters.';
-        }
-
-        if (strpos($username, '_') !== false && strpos($username, ' ') !== false) {
-            return 'Please use either underscores or spaces, not both!';
-        }
-
-        return '';
     }
 }
