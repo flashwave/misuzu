@@ -86,9 +86,9 @@ class Colour
         }
     }
 
-    public function __construct(int $raw)
+    public function __construct(?int $raw)
     {
-        $this->rawValue = $raw;
+        $this->rawValue = $raw ?? self::INHERIT;
     }
 
     public static function fromRGB(int $red, int $green, int $blue): Colour

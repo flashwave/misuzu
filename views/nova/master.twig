@@ -1,9 +1,11 @@
+{% from '@nova/macros.twig' import link %}
+
 <!doctype html>
 <html>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-        <title>Flashii</title>
+        {% include '@nova/_layout/meta.twig' %}
         <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/css?family=Exo+2:200,200italic,300,300italic,400,400italic" rel="stylesheet" type="text/css">
         <link href="/css/libraries.css" rel="stylesheet" type="text/css" data-turbolinks-track>
@@ -21,7 +23,7 @@
                         {% endif %}
                     </div>
                     <a class="header__user" href="{{ app.session is not null ? '/users/' ~ app.session.user_id : '/auth/login' }}">
-                        <div class="header__username">{{ app.session is not null ? app.session.user.first.username : 'login' }}</div>
+                        <div class="header__username">{{ app.session is not null ? app.session.user.username : 'login' }}</div>
                         <div class="header__avatar" style="background-image: url('https://static.flash.moe/images/{{ app.session is not null ? 'discord-logo' : 'nova-none' }}.png')"></div>
                     </a>
                 </div>
@@ -41,15 +43,15 @@
 
             <div class="container__footer">
                 <div class="container__footer-copyright">
-                    <a href="https://flash.moe" class="container__footer-link">flash.moe 2013-{{ ''|date('Y') }}</a> |
-                    <a href="https://github.com/flashwave/misuzu/tree/{{ git_branch() }}" class="container__footer-link">{{ git_branch() }}</a>#<a href="https://github.com/flashwave/misuzu/commit/{{ git_hash(true) }}" class="container__footer-link">{{ git_hash() }}</a>
+                    {{ link('https://flash.moe', 'flash.moe 2013-' ~ ''|date('Y'), 'container__footer-link') }} |
+                    {{ link('https://github.com/flashwave/misuzu/tree/' ~ git_branch(), git_branch(), 'container__footer-link') }}#{{ link('https://github.com/flashwave/misuzu/commit/' ~ git_hash(true), git_hash(), 'container__footer-link') }}
                 </div>
                 <div class="container__footer-links">
-                    <a href="#" class="container__footer-link">Terms of Service</a>
-                    <a href="#" class="container__footer-link">Rules</a>
-                    <a href="#" class="container__footer-link">Contact</a>
-                    <a href="#" class="container__footer-link">Status</a>
-                    <a href="https://twitter.com/flashiinet" class="container__footer-link" target="_blank" rel="noreferrer noopener">@flashiinet</a>
+                    {{ link('#', 'Terms of Service', 'container__footer-link') }}
+                    {{ link('#', 'Rules', 'container__footer-link') }}
+                    {{ link('#', 'Contact', 'container__footer-link') }}
+                    {{ link('#', 'Status', 'container__footer-link') }}
+                    {{ link('https://twitter.com/flashiinet', '@flashiinet', 'container__footer-link') }}
                 </div>
             </div>
         </div>

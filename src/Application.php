@@ -29,7 +29,7 @@ class Application extends ApplicationBase
      * Session instance.
      * @var \Misuzu\Users\Session
      */
-    public $session = null;
+    private $session = null;
 
     /**
      * Constructor, called by ApplicationBase::start() which also passes the arguments through.
@@ -51,11 +51,27 @@ class Application extends ApplicationBase
 
     public function startSession(int $user_id, string $session_key): void
     {
-        $session = Session::where('session_key', $session_key)->where('user_id', $user_id)->first();
+        $session = Session::where('session_key', $session_key)
+            ->where('user_id', $user_id)
+            ->first();
 
         if ($session !== null) {
-            $this->session = $session;
+            if ($session->hasExpired()) {
+                $session->delete();
+            } else {
+                $this->setSession($session);
+            }
         }
+    }
+
+    public function getSession(): ?Session
+    {
+        return $this->session;
+    }
+
+    public function setSession(?Session $session): void
+    {
+        $this->session = $session;
     }
 
     /**
