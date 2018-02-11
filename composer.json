@@ -34,7 +34,8 @@
     },
     "scripts": {
         "post-install-cmd": [
-            "php misuzu_migrate.php"
+            "php misuzu_migrate.php",
+            "php misuzu_setup.php"
         ]
     },
     "config": {
