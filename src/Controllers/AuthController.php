@@ -95,26 +95,14 @@ class AuthController extends Controller
     public function register()
     {
         $app = Application::getInstance();
-        $allowed_to_reg = $app->config->get('Testing', 'public_registration', 'bool', false)
-            || in_array(
-                IP::remote(),
-                explode(' ', $app->config->get('Testing', 'allow_ip_registration', 'string', '127.0.0.1 ::1'))
-            );
 
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $twig = $app->templating;
             $twig->vars([
                 'has_registrations' => $this->hasRegistrations(),
-                'allowed_to_register' => $allowed_to_reg,
             ]);
 
             return $twig->render('auth.register');
-        }
-
-        if (!$allowed_to_reg) {
-            return [
-                'error' => "Nice try, but you'll have to wait a little longer. I appreciate your excitement though!"
-            ];
         }
 
         if ($this->hasRegistrations()) {
