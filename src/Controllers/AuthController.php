@@ -77,39 +77,13 @@ class AuthController extends Controller
         );
     }
 
-    private function hasRegistrations(?string $ipAddr = null): bool
-    {
-        $ipAddr = IP::unpack($ipAddr ?? IP::remote());
-
-        if ($ipAddr === IP::unpack('127.0.0.1') || $ipAddr === IP::unpack('::1')) {
-            return false;
-        }
-
-        if (User::withTrashed()->where('register_ip', $ipAddr)->orWhere('last_ip', $ipAddr)->count()) {
-            return true;
-        }
-
-        return false;
-    }
-
     public function register()
     {
         $app = Application::getInstance();
 
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $twig = $app->templating;
-            $twig->vars([
-                'has_registrations' => $this->hasRegistrations(),
-            ]);
-
             return $twig->render('auth.register');
-        }
-
-        if ($this->hasRegistrations()) {
-            return [
-                'error' => "Someone already used an account from this IP address!\r\n"
-                    . "But don't worry, this is a temporary measure and you'll be able to register sometime soon."
-            ];
         }
 
         if (!isset($_POST['username'], $_POST['password'], $_POST['email'])) {
