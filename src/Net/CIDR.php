@@ -13,15 +13,22 @@ class CIDR
     /**
      * Matches an IP to a CIDR range.
      * @param string $ipAddr
-     * @param string $range
+     * @param string $network
+     * @param int|null $mask
      * @return bool
      */
-    public static function match(string $ipAddr, string $range): bool
+    public static function match(string $ipAddr, string $network, ?int $mask = null): bool
     {
-        [$net, $mask] = explode('/', $range);
+        if ($mask === null) {
+            [$network, $mask] = explode('/', $network);
+        }
+
+        if (empty($mask)) {
+            throw new InvalidArgumentException('No bitmask supplied.');
+        }
 
         $ipv = IP::version($ipAddr);
-        $rangev = IP::version($net);
+        $rangev = IP::version($network);
 
         if (!$ipv || !$rangev || $ipv !== $rangev) {
             return false;
@@ -29,10 +36,10 @@ class CIDR
 
         switch ($ipv) {
             case IP::V6:
-                return static::matchV6($ipAddr, $net, $mask);
+                return static::matchV6($ipAddr, $network, $mask);
 
             case IP::V4:
-                return static::matchV4($ipAddr, $net, $mask);
+                return static::matchV4($ipAddr, $network, $mask);
 
             default:
                 throw new InvalidArgumentException('Invalid IP type.');
@@ -42,31 +49,31 @@ class CIDR
     /**
      * Matches an IPv4 to a CIDR range.
      * @param string $ipAddr
-     * @param string $net
+     * @param string $network
      * @param int $mask
      * @return bool
      */
-    private static function matchV4(string $ipAddr, string $net, int $mask): bool
+    private static function matchV4(string $ipAddr, string $network, int $mask): bool
     {
         $ipAddr = ip2long($ipAddr);
-        $net = ip2long($net);
+        $network = ip2long($network);
         $mask = -1 << (32 - $mask);
-        return ($ipAddr & $mask) === $net;
+        return ($ipAddr & $mask) === ($network & $mask);
     }
 
     /**
      * Matches an IPv6 to a CIDR range.
      * @param string $ipAddr
-     * @param string $net
+     * @param string $network
      * @param int $mask
      * @return bool
      */
-    private static function matchV6(string $ipAddr, string $net, int $mask): bool
+    private static function matchV6(string $ipAddr, string $network, int $mask): bool
     {
         $ipAddr = inet_pton($ipAddr);
-        $net = inet_pton($net);
+        $network = inet_pton($network);
         $mask = static::createV6Mask($mask);
-        return ($ipAddr & $mask) === $net;
+        return ($ipAddr & $mask) === ($network & $mask);
     }
 
     /**

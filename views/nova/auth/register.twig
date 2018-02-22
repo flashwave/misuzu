@@ -4,34 +4,24 @@
 
 {% block banner_content %}
     <h1 style="align-self: center; text-align: left; flex-grow: 1; padding-left: 2em">
-        {% if has_registrations %}
-            Your IP address already has an account!
-        {% else %}
-            Welcome, thanks for dropping by!
-        {% endif %}
+        Welcome, thanks for dropping by!
     </h1>
 {% endblock %}
 
 {% block content %}
-    {% if has_registrations %}
-        <div class="platform" style="text-align: left;">
-            <p>As a temporary security measure we only allow one account per IP address, this will definitely be changed in the future but for now; sorry for the possible inconvenience!</p>
+    <div class="platform form" id="auth-form">
+        <div>
+            <input class="form__text" type="text" name="username" placeholder="Username">
         </div>
-    {% else %}
-        <div class="platform form" id="auth-form">
-            <div>
-                <input class="form__text" type="text" name="username" placeholder="Username">
-            </div>
-            <div>
-                <input class="form__text" type="password" name="password" placeholder="Password">
-            </div>
-            <div>
-                <input class="form__text" type="text" name="email" placeholder="E-mail">
-            </div>
-            <div>
-                <button class="button">Create your account!</button>
-            </div>
+        <div>
+            <input class="form__text" type="password" name="password" placeholder="Password">
         </div>
-        {{ parent() }}
-    {% endif %}
+        <div>
+            <input class="form__text" type="text" name="email" placeholder="E-mail">
+        </div>
+        <div>
+            <button class="button">Create your account!</button>
+        </div>
+    </div>
+    {{ parent() }}
 {% endblock %}

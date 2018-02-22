@@ -36,6 +36,11 @@ class Session extends Model
         return bin2hex(random_bytes(32));
     }
 
+    public function hasExpired(): bool
+    {
+        return $this->expires_on->isPast();
+    }
+
     public function getSessionIpAttribute(string $ipAddress): string
     {
         return IP::pack($ipAddress);
@@ -44,11 +49,6 @@ class Session extends Model
     public function setSessionIpAttribute(string $ipAddress): void
     {
         $this->attributes['session_ip'] = IP::unpack($ipAddress);
-    }
-
-    public function hasExpired(): bool
-    {
-        return $this->expires_on->isPast();
     }
 
     public function user()
