@@ -1,7 +1,6 @@
 <?php
 namespace Misuzu\Controllers;
 
-use Aitemu\RouterResponse;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Misuzu\Application;
@@ -22,10 +21,14 @@ class AuthController extends Controller
 
     public function login()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            $app = Application::getInstance();
-            $twig = $app->templating;
+        $app = Application::getInstance();
 
+        if ($app->getSession() !== null) {
+            return '<meta http-equiv="refresh" content="0; url=/">';
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $twig = $app->templating;
             return $twig->render('auth.login');
         }
 
@@ -47,7 +50,7 @@ class AuthController extends Controller
         }
 
         $session = Session::createSession($user, 'Misuzu T1');
-        Application::getInstance()->setSession($session);
+        $app->setSession($session);
         $this->setCookie('uid', $session->user_id, 604800);
         $this->setCookie('sid', $session->session_key, 604800);
 
@@ -80,6 +83,10 @@ class AuthController extends Controller
     public function register()
     {
         $app = Application::getInstance();
+
+        if ($app->getSession() !== null) {
+            return '<meta http-equiv="refresh" content="0; url=/">';
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $twig = $app->templating;
