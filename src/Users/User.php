@@ -14,6 +14,7 @@ class User extends Model
 
     public const USERNAME_MIN_LENGTH = 3;
     public const USERNAME_MAX_LENGTH = 16;
+    public const USERNAME_REGEX = '#^[A-Za-z0-9-_ ]+$#u';
 
     protected $primaryKey = 'user_id';
 
@@ -55,7 +56,11 @@ class User extends Model
             return 'long';
         }
 
-        if (strpos($username, '  ') !== false || !preg_match('#^[A-Za-z0-9-\[\]_ ]+$#u', $username)) {
+        if (strpos($username, '  ') !== false) {
+            return 'double-spaces';
+        }
+
+        if (!preg_match(self::USERNAME_REGEX, $username)) {
             return 'invalid';
         }
 

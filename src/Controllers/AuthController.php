@@ -15,6 +15,7 @@ class AuthController extends Controller
         'trim' => 'Your username may not start or end with spaces!',
         'short' => "Your username is too short, it has to be at least " . User::USERNAME_MIN_LENGTH . " characters!",
         'long' => "Your username is too long, it can't be longer than " . User::USERNAME_MAX_LENGTH . " characters!",
+        'double-spaces' => "Your username can't contain double spaces.",
         'invalid' => 'Your username contains invalid characters.',
         'spacing' => 'Please use either underscores or spaces, not both!',
     ];
