@@ -94,12 +94,18 @@ class User extends Model
 
     public function validatePassword(string $password): bool
     {
+        $verification = password_verify($password, $this->password);
+
+        if ($verification !== true) {
+            return false;
+        }
+
         if (password_needs_rehash($this->password, self::PASSWORD_HASH_ALGO)) {
             $this->password = $password;
             $this->save();
         }
 
-        return password_verify($password, $this->password);
+        return true;
     }
 
     public function getDisplayRoleAttribute(?int $value): int
