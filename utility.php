@@ -62,17 +62,30 @@ function byte_symbol($bytes, $decimal = false)
     return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
 }
 
+// this should be rewritten to only load the database once per Application instance.
+// for now this will do since the only time this function is called is once during registration.
+// also make sure an instance of Application with config exists before calling this!
 function get_country_code(string $ipAddr, string $fallback = 'XX'): string
 {
-    if (function_exists("geoip_country_code_by_name")) {
-        try {
-            $code = geoip_country_code_by_name($ipAddr);
+    try {
+        $app = \Misuzu\Application::getInstance();
 
-            if ($code) {
-                return $code;
-            }
-        } catch (\Exception $e) {
+        if (!$app->hasModule('config')) {
+            return $fallback;
         }
+
+        $database_path = $app->config->get('GeoIP', 'database_path');
+
+        if ($database_path === null) {
+            return $fallback;
+        }
+
+        $geoip = new \GeoIp2\Database\Reader($database_path);
+        $record = $geoip->country($ipAddr);
+
+        return $record->country->isoCode;
+    } catch (\Exception $e) {
+        // report error?
     }
 
     return $fallback;
