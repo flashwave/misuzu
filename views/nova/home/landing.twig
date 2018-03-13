@@ -6,11 +6,10 @@
     <div class="landing__inner">
         {% if app.session is null %}
             <div class="landing__buttons">
-                <a href="/auth/register" class="landing__button">register</a>
-                <a href="/auth/login" class="landing__button">login</a>
+                <a href="{{ route('auth.register') }}" class="landing__button">register</a>
+                <a href="{{ route('auth.login') }}" class="landing__button">login</a>
             </div>
             <div class="landing__text">
-                <p>Registration soon, but not now.</p>
                 <p>Keep an eye on <a href="https://twitter.com/flashiinet" class="container__footer-link" target="_blank" rel="noreferrer noopener">Twitter</a>!</p>
             </div>
         {% else %}

@@ -1,17 +1,23 @@
 <?php
-use Aitemu\Route;
+use Misuzu\Application;
 use Misuzu\Controllers\AuthController;
 use Misuzu\Controllers\HomeController;
 use Misuzu\Controllers\UserController;
 
-return [
-    Route::get('/', 'index', HomeController::class),
+$routes = Application::getInstance()->router;
 
-    Route::get('/auth/login', 'login', AuthController::class),
-    Route::post('/auth/login', 'login', AuthController::class),
-    Route::get('/auth/register', 'register', AuthController::class),
-    Route::post('/auth/register', 'register', AuthController::class),
-    Route::get('/auth/logout', 'logout', AuthController::class),
+$routes->get(['/', 'main.index'], [HomeController::class, 'index']);
 
-    Route::get('/users/{id:i}', 'view', UserController::class),
-];
+$routes->group(['prefix' => '/auth'], function ($routes) {
+    $routes->get(['/login', 'auth.login'], [AuthController::class, 'login']);
+    $routes->post(['/login', 'auth.login'], [AuthController::class, 'login']);
+
+    $routes->get(['/logout', 'auth.logout'], [AuthController::class, 'logout']);
+
+    $routes->get(['/register', 'auth.register'], [AuthController::class, 'register']);
+    $routes->post(['/register', 'auth.register'], [AuthController::class, 'register']);
+});
+
+$routes->group(['prefix' => '/users'], function ($routes) {
+    $routes->get(['/{id:i}', 'users.view'], [UserController::class, 'view']);
+});

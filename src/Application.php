@@ -1,9 +1,9 @@
 <?php
 namespace Misuzu;
 
-use Aitemu\RouteCollection;
 use Misuzu\Config\ConfigManager;
 use Misuzu\Users\Session;
+use Phroute\Phroute\RouteCollector;
 use UnexpectedValueException;
 use InvalidArgumentException;
 
@@ -124,7 +124,7 @@ class Application extends ApplicationBase
         $twig->addFunction('byte_symbol');
         $twig->addFunction('session_id');
         $twig->addFunction('config', [$this->config, 'get']);
-        $twig->addFunction('route', [$this->router, 'url']);
+        $twig->addFunction('route', [$this->router, 'route']);
         $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
 
@@ -136,16 +136,12 @@ class Application extends ApplicationBase
     /**
      * Sets up the router module.
      */
-    public function startRouter(array $routes = null): void
+    public function startRouter(): void
     {
         if ($this->hasRouter) {
             throw new UnexpectedValueException('Router module has already been started.');
         }
 
-        $this->addModule('router', $router = new RouteCollection);
-
-        if ($routes !== null) {
-            $router->add($routes);
-        }
+        $this->addModule('router', new RouteCollector);
     }
 }
