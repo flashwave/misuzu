@@ -6,10 +6,15 @@ use Misuzu\IO\Directory;
 use Misuzu\IO\File;
 use Misuzu\IO\FileStream;
 
-define('WORKING_DIR', sys_get_temp_dir() . '/MisuzuFileSystemTest' . time());
-
 class FileSystemTest extends TestCase
 {
+    protected $workingDirectory;
+
+    protected function setUp()
+    {
+        $this->workingDirectory = sys_get_temp_dir() . '/MisuzuFileSystemTest' . time();
+    }
+
     public function testSlashFix()
     {
         $right_slash = DIRECTORY_SEPARATOR;
@@ -24,25 +29,25 @@ class FileSystemTest extends TestCase
     public function testExists()
     {
         $this->assertTrue(Directory::exists(sys_get_temp_dir()));
-        $this->assertFalse(Directory::exists(WORKING_DIR));
+        $this->assertFalse(Directory::exists($this->workingDirectory));
     }
 
     public function testCreateDir()
     {
-        $directory = Directory::create(WORKING_DIR);
+        $directory = Directory::create($this->workingDirectory);
         $this->assertInstanceOf(Directory::class, $directory);
     }
 
     public function testCreateFile()
     {
-        $file = File::open(WORKING_DIR . '/file');
+        $file = File::open($this->workingDirectory . '/file');
         $this->assertInstanceOf(FileStream::class, $file);
         $file->close();
     }
 
     public function testWriteFile()
     {
-        $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_TRUNCATE);
+        $file = new FileStream($this->workingDirectory . '/file', FileStream::MODE_TRUNCATE);
         $this->assertInstanceOf(FileStream::class, $file);
 
         $file->write('mis');
@@ -54,7 +59,7 @@ class FileSystemTest extends TestCase
 
     public function testAppendFile()
     {
-        $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_APPEND);
+        $file = new FileStream($this->workingDirectory . '/file', FileStream::MODE_APPEND);
         $this->assertInstanceOf(FileStream::class, $file);
 
         $file->write(' test');
@@ -65,7 +70,7 @@ class FileSystemTest extends TestCase
 
     public function testPosition()
     {
-        $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_READ);
+        $file = new FileStream($this->workingDirectory . '/file', FileStream::MODE_READ);
         $this->assertInstanceOf(FileStream::class, $file);
 
         $file->seek(0, FileStream::ORIGIN_BEGIN);
@@ -85,7 +90,7 @@ class FileSystemTest extends TestCase
 
     public function testRead()
     {
-        $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_READ);
+        $file = new FileStream($this->workingDirectory . '/file', FileStream::MODE_READ);
         $this->assertInstanceOf(FileStream::class, $file);
 
         $this->assertEquals('misuzu test', $file->read($file->length));
@@ -98,7 +103,7 @@ class FileSystemTest extends TestCase
 
     public function testChar()
     {
-        $file = new FileStream(WORKING_DIR . '/file', FileStream::MODE_READ);
+        $file = new FileStream($this->workingDirectory . '/file', FileStream::MODE_READ);
         $this->assertInstanceOf(FileStream::class, $file);
 
         $file->seek(3, FileStream::ORIGIN_BEGIN);
@@ -109,16 +114,16 @@ class FileSystemTest extends TestCase
 
     public function testDirectoryFiles()
     {
-        $dir = new Directory(WORKING_DIR);
-        $this->assertEquals([realpath(WORKING_DIR . DIRECTORY_SEPARATOR . 'file')], $dir->files());
+        $dir = new Directory($this->workingDirectory);
+        $this->assertEquals([realpath($this->workingDirectory . DIRECTORY_SEPARATOR . 'file')], $dir->files());
     }
 
     public function testDelete()
     {
-        File::delete(WORKING_DIR . '/file');
-        $this->assertFalse(File::exists(WORKING_DIR . '/file'));
+        File::delete($this->workingDirectory . '/file');
+        $this->assertFalse(File::exists($this->workingDirectory . '/file'));
 
-        Directory::delete(WORKING_DIR);
-        $this->assertFalse(Directory::exists(WORKING_DIR));
+        Directory::delete($this->workingDirectory);
+        $this->assertFalse(Directory::exists($this->workingDirectory));
     }
 }
