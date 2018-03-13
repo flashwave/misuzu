@@ -84,14 +84,19 @@ class AuthController extends Controller
     public function register()
     {
         $app = Application::getInstance();
+        $prevent_registration = $app->config->get('Auth', 'prevent_registration', 'bool', false);
 
         if ($app->getSession() !== null) {
             return '<meta http-equiv="refresh" content="0; url=/">';
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            $twig = $app->templating;
-            return $twig->render('auth.register');
+            $app->templating->var('prevent_registration', $prevent_registration);
+            return $app->templating->render('auth.register');
+        }
+
+        if ($prevent_registration) {
+            return ['error' => 'Registration is not allowed on this instance.'];
         }
 
         if (!isset($_POST['username'], $_POST['password'], $_POST['email'])) {
