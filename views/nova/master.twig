@@ -19,10 +19,10 @@
                         <a class="header__entry fa-home" href="/">home</a>
                         <a class="header__entry fa-comments" href="https://chat.flashii.net">chat</a>
                         {% if app.session is not null %}
-                            <a class="header__entry fa-sign-out" href="/auth/logout">logout</a>
+                            <a class="header__entry fa-sign-out" href="/auth.php?m=logout">logout</a>
                         {% endif %}
                     </div>
-                    <a class="header__user" href="{{ app.session is not null ? '/users/' ~ app.session.user_id : '/auth/login' }}">
+                    <a class="header__user" href="{{ app.session is not null ? '/profile.php?u=' ~ app.session.user_id : '/auth.php?m=login' }}">
                         <div class="header__username">{{ app.session is not null ? app.session.user.username : 'login' }}</div>
                         <div class="header__avatar" style="background-image: url('https://static.flash.moe/images/{{ app.session is not null ? 'discord-logo' : 'nova-none' }}.png')"></div>
                     </a>

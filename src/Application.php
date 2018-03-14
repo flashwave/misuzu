@@ -1,7 +1,6 @@
 <?php
 namespace Misuzu;
 
-use Aitemu\RouteCollection;
 use Misuzu\Config\ConfigManager;
 use Misuzu\Users\Session;
 use UnexpectedValueException;
@@ -124,28 +123,11 @@ class Application extends ApplicationBase
         $twig->addFunction('byte_symbol');
         $twig->addFunction('session_id');
         $twig->addFunction('config', [$this->config, 'get']);
-        $twig->addFunction('route', [$this->router, 'url']);
         $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
 
         $twig->var('app', $this);
 
         $twig->addPath('nova', __DIR__ . '/../views/nova');
-    }
-
-    /**
-     * Sets up the router module.
-     */
-    public function startRouter(array $routes = null): void
-    {
-        if ($this->hasRouter) {
-            throw new UnexpectedValueException('Router module has already been started.');
-        }
-
-        $this->addModule('router', $router = new RouteCollection);
-
-        if ($routes !== null) {
-            $router->add($routes);
-        }
     }
 }

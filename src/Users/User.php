@@ -99,9 +99,7 @@ class User extends Model
 
     public function validatePassword(string $password): bool
     {
-        $verification = password_verify($password, $this->password);
-
-        if ($verification !== true) {
+        if (password_verify($password, $this->password) !== true) {
             return false;
         }
 

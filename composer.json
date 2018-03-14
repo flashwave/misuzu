@@ -9,7 +9,7 @@
     "require": {
         "php": ">=7.2",
         "ext-bcmath": "*",
-        "flashwave/aitemu": "dev-master#7997543717d996b56938d5050ea497d62eb71f2e",
+        "ext-mbstring": "*",
         "twig/twig": "~2.4",
         "nesbot/carbon": "~1.22",
         "illuminate/database": "~5.5",

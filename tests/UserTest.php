@@ -14,5 +14,6 @@ class UserTest extends TestCase
         $this->assertEquals(User::validateUsername('flaaaaaaaaaaaaaaaash'), 'long');
         $this->assertEquals(User::validateUsername('F|@$h'), 'invalid');
         $this->assertEquals(User::validateUsername('fl ash_wave'), 'spacing');
+        $this->assertEquals(User::validateUsername('fl  ash'), 'double-spaces');
     }
 }
