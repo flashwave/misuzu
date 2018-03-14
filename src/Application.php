@@ -3,7 +3,6 @@ namespace Misuzu;
 
 use Misuzu\Config\ConfigManager;
 use Misuzu\Users\Session;
-use Phroute\Phroute\RouteCollector;
 use UnexpectedValueException;
 use InvalidArgumentException;
 
@@ -124,24 +123,11 @@ class Application extends ApplicationBase
         $twig->addFunction('byte_symbol');
         $twig->addFunction('session_id');
         $twig->addFunction('config', [$this->config, 'get']);
-        $twig->addFunction('route', [$this->router, 'route']);
         $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
 
         $twig->var('app', $this);
 
         $twig->addPath('nova', __DIR__ . '/../views/nova');
-    }
-
-    /**
-     * Sets up the router module.
-     */
-    public function startRouter(): void
-    {
-        if ($this->hasRouter) {
-            throw new UnexpectedValueException('Router module has already been started.');
-        }
-
-        $this->addModule('router', new RouteCollector);
     }
 }

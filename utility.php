@@ -16,6 +16,28 @@ if (!function_exists('ends_with')) {
     }
 }
 
+function json_encode_m($obj): string
+{
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+    }
+
+    return json_encode($obj);
+}
+
+function set_cookie_m(string $name, string $value, int $expires): void
+{
+    setcookie(
+        "msz_{$name}",
+        $value,
+        time() + $expires,
+        '/',
+        '',
+        !empty($_SERVER['HTTPS']),
+        true
+    );
+}
+
 function password_entropy(string $password): int
 {
     return count(count_chars(utf8_decode($password), 1)) * log(256, 2);
