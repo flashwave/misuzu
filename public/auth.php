@@ -3,7 +3,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Misuzu\Application;
 use Misuzu\Database;
-use Misuzu\Net\IP;
+use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
 use Misuzu\Users\Session;
 
@@ -75,7 +75,7 @@ switch ($mode) {
         // Temporary key generation for chat login.
         // Should eventually be replaced with a callback login system.
         // Also uses different cookies since $httponly is required to be false for these.
-        $user->last_ip = IP::remote();
+        $user->last_ip = IPAddress::remote();
         $user->user_chat_key = bin2hex(random_bytes(16));
         $user->save();
 

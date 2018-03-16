@@ -3,7 +3,7 @@ namespace Misuzu\Users;
 
 use Carbon\Carbon;
 use Misuzu\Model;
-use Misuzu\Net\IP;
+use Misuzu\Net\IPAddress;
 
 class Session extends Model
 {
@@ -14,9 +14,9 @@ class Session extends Model
         User $user,
         ?string $userAgent = null,
         ?Carbon $expires = null,
-        ?string $ipAddress = null
+        ?IPAddress $ipAddress = null
     ): Session {
-        $ipAddress = $ipAddress ?? IP::remote();
+        $ipAddress = $ipAddress ?? IPAddress::remote();
         $userAgent = $userAgent ?? 'Misuzu';
         $expires = $expires ?? Carbon::now()->addMonth();
 
@@ -41,14 +41,14 @@ class Session extends Model
         return $this->expires_on->isPast();
     }
 
-    public function getSessionIpAttribute(string $ipAddress): string
+    public function getSessionIpAttribute(string $ipAddress): IPAddress
     {
-        return IP::pack($ipAddress);
+        return IPAddress::fromRaw($ipAddress);
     }
 
-    public function setSessionIpAttribute(string $ipAddress): void
+    public function setSessionIpAttribute(IPAddress $ipAddress): void
     {
-        $this->attributes['session_ip'] = IP::unpack($ipAddress);
+        $this->attributes['session_ip'] = $ipAddress->getRaw();
     }
 
     public function user()
