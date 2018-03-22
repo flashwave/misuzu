@@ -4,7 +4,7 @@ namespace Misuzu\Users;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Misuzu\Database;
 use Misuzu\Model;
-use Misuzu\Net\IP;
+use Misuzu\Net\IPAddress;
 
 class User extends Model
 {
@@ -24,9 +24,9 @@ class User extends Model
         string $username,
         string $password,
         string $email,
-        ?string $ipAddress = null
+        ?IPAddress $ipAddress = null
     ): User {
-        $ipAddress = $ipAddress ?? IP::remote();
+        $ipAddress = $ipAddress ?? IPAddress::remote();
 
         $user = new User;
         $user->username = $username;
@@ -34,7 +34,7 @@ class User extends Model
         $user->email = $email;
         $user->register_ip = $ipAddress;
         $user->last_ip = $ipAddress;
-        $user->user_country = get_country_code($ipAddress);
+        $user->user_country = $ipAddress->getCountryCode();
         $user->save();
 
         return $user;
@@ -139,24 +139,24 @@ class User extends Model
         }
     }
 
-    public function getRegisterIpAttribute(string $ipAddress): string
+    public function getRegisterIpAttribute(string $ipAddress): IPAddress
     {
-        return IP::pack($ipAddress);
+        return IPAddress::fromRaw($ipAddress);
     }
 
-    public function setRegisterIpAttribute(string $ipAddress): void
+    public function setRegisterIpAttribute(IPAddress $ipAddress): void
     {
-        $this->attributes['register_ip'] = IP::unpack($ipAddress);
+        $this->attributes['register_ip'] = $ipAddress->getRaw();
     }
 
     public function getLastIpAttribute(string $ipAddress): string
     {
-        return IP::pack($ipAddress);
+        return IPAddress::fromRaw($ipAddress);
     }
 
-    public function setLastIpAttribute(string $ipAddress): void
+    public function setLastIpAttribute(IPAddress $ipAddress): void
     {
-        $this->attributes['last_ip'] = IP::unpack($ipAddress);
+        $this->attributes['last_ip'] = $ipAddress->getRaw();
     }
 
     public function setPasswordAttribute(string $password): void
@@ -172,5 +172,10 @@ class User extends Model
     public function roles()
     {
         return $this->hasMany(UserRole::class, 'user_id');
+    }
+
+    public function loginAttempts()
+    {
+        return $this->hasMany(LoginAttempt::class, 'user_id');
     }
 }

@@ -119,6 +119,8 @@ class Application extends ApplicationBase
 
         $twig->addFilter('json_decode');
         $twig->addFilter('byte_symbol');
+        $twig->addFilter('country_name', 'get_country_name');
+        $twig->addFilter('md5'); // using this for logout CSRF for now, remove this when proper CSRF is in place
 
         $twig->addFunction('byte_symbol');
         $twig->addFunction('session_id');
@@ -128,6 +130,6 @@ class Application extends ApplicationBase
 
         $twig->var('app', $this);
 
-        $twig->addPath('nova', __DIR__ . '/../views/nova');
+        $twig->addPath('mio', __DIR__ . '/../views/mio');
     }
 }

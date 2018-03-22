@@ -37,7 +37,7 @@ class TemplateEngine
     private $vars = [];
 
     /**
-     * Creates the twig environment and registers the utility filters and functions.
+     * Creates the twig environment.
      */
     public function __construct(
         ?string $cache = null,

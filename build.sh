@@ -40,24 +40,24 @@ lessc --verbose $STYLE_DIR/$LESS_ENTRY_FILE $PUBLIC_CSS/$STYLE_NAME.css
 echo
 done
 
-# scripts
-echo
-echo "=> TypeScript"
-for SCRIPT_DIR in $ASSETS_TS/*/; do
-SCRIPT_NAME=`basename $SCRIPT_DIR`
-SCRIPT_NAME_LOWER=`echo $SCRIPT_NAME | tr '[A-Z]' '[a-z]'`
-echo "==> $SCRIPT_NAME"
-find $SCRIPT_DIR -name "*.ts" | xargs tsc \
-    -d \
-    -t es5 \
-    --listFiles \
-    --listEmittedFiles \
-    --noImplicitAny \
-    --removeComments \
-    --outFile $PUBLIC_JS/$SCRIPT_NAME_LOWER.js
-mv -v $PUBLIC_JS/$SCRIPT_NAME_LOWER.d.ts $ASSETS_TS/$SCRIPT_NAME.d.ts
-echo
-done
+# scripts (don't need yet, build script gets stuck here bc no files exists)
+# echo
+# echo "=> TypeScript"
+# for SCRIPT_DIR in $ASSETS_TS/*/; do
+# SCRIPT_NAME=`basename $SCRIPT_DIR`
+# SCRIPT_NAME_LOWER=`echo $SCRIPT_NAME | tr '[A-Z]' '[a-z]'`
+# echo "==> $SCRIPT_NAME"
+# find $SCRIPT_DIR -name "*.ts" | xargs tsc \
+#     -d \
+#     -t es5 \
+#     --listFiles \
+#     --listEmittedFiles \
+#     --noImplicitAny \
+#     --removeComments \
+#     --outFile $PUBLIC_JS/$SCRIPT_NAME_LOWER.js
+# mv -v $PUBLIC_JS/$SCRIPT_NAME_LOWER.d.ts $ASSETS_TS/$SCRIPT_NAME.d.ts
+# echo
+# done
 
 # node imports
 echo

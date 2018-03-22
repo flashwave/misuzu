@@ -1,0 +1,52 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    position: relative;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+}
+
+.mio {
+    background-color: #fbeeff;
+    background-image: linear-gradient(180deg, #c2affe, transparent);
+    background-repeat: repeat-x;
+    background-size: 100% 150px;
+    font: 12px/20px Tahoma, Verdana, Arial, Helvetica, sans-serif;
+    color: #000;
+
+    &__wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1px;
+    }
+
+    &--dark {
+        background-color: #23172a;
+        background-image: linear-gradient(180deg, #462e55, transparent);
+        color: #fff;
+    }
+}
+
+// Input elements
+@import "classes/input/button";
+@import "classes/input/text";
+@import "classes/input/textarea";
+
+// Base styles
+@import "classes/avatar";
+@import "classes/container";
+@import "classes/heading";
+
+// Specific styles
+@import "classes/footer";
+@import "classes/header";
+@import "classes/navigation";
+@import "classes/profile";
+
+// Forums
+@import "classes/forum/listing";

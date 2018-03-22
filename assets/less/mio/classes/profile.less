@@ -1,0 +1,120 @@
+@mio-profile-mobile: 700px;
+
+.mio__profile {
+    &__avatar {
+        width: 200px;
+        height: 200px;
+
+        @media (max-width: @mio-profile-mobile) {
+            width: 100px;
+            height: 100px;
+            margin: 20px 0;
+        }
+    }
+
+    &__icon {
+        vertical-align: middle;
+    }
+
+    &__header {
+        height: 300px;
+        background-color: #fbeeff;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: 50%;
+
+        @media (max-width: @mio-profile-mobile) {
+            height: auto;
+            background-size: 700px auto;
+            background-position: center top;
+        }
+
+        &__content {
+            margin: 2px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+
+            @media (max-width: @mio-profile-mobile) {
+                flex-direction: column-reverse;
+                align-items: center;
+                margin: 0;
+            }
+        }
+    }
+
+    &__info {
+        display: flex;
+
+        @media (max-width: @mio-profile-mobile) {
+            flex-direction: column;
+            background-color: #9475b2;
+            width: 100%;
+            padding-top: 2px;
+        }
+
+        &__section {
+            margin-right: 2px;
+
+            @media (max-width: @mio-profile-mobile) {
+                margin: 0 1px;
+            }
+        }
+
+        &__block {
+            border: 1px solid #9475b2;
+            padding: 2px 4px;
+            margin-bottom: 2px;
+            background-color: rgba(251, 238, 255, .9);
+
+            @media (max-width: @mio-profile-mobile) {
+                background-color: #fbeeff;
+            }
+        }
+
+        &__row {
+            display: flex;
+        }
+
+        &__column {
+            min-width: 80px;
+
+            @media (max-width: @mio-profile-mobile) {
+                min-width: auto;
+                flex-grow: 1;
+                text-align: right;
+            }
+
+            &--heading {
+                font-weight: bold;
+
+                @media (max-width: @mio-profile-mobile) {
+                    text-align: left;
+                }
+            }
+
+            &--numeric {
+                text-align: right;
+            }
+
+            &--user-title {
+                text-align: center;
+                width: 100%;
+                font-style: italic;
+            }
+
+            &--icons {
+                text-align: center;
+                min-width: 0;
+            }
+
+            &--country {
+                font-size: .8em;
+                line-height: 1.4em;
+                width: 110px;
+                text-align: center;
+                align-self: flex-end;
+            }
+        }
+    }
+}
