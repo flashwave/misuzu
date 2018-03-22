@@ -1,0 +1,15 @@
+{% extends '@mio/user/master.twig' %}
+{% from '@mio/macros.twig' import navigation %}
+
+{% set title = 'User not found!' %}
+
+{% block content %}
+    <div class="mio__container">
+        <div class="mio__container__title">User not found!</div>
+        <div class="mio__container__content">
+            <p>Check the url and try again.</p>
+        </div>
+    </div>
+
+    {{ navigation(mio_navigation, false) }}
+{% endblock %}
