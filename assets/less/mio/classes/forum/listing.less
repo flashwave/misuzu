@@ -1,0 +1,81 @@
+@mio-forum-listing-mobile: 500px;
+
+.mio__forum__listing {
+    &__forums {
+        margin: 0;
+    }
+
+    &__entry {
+        display: flex;
+        padding: 2px 0;
+        align-items: center;
+
+        &:not(:last-child) {
+            border-bottom: 1px solid #9475b2;
+        }
+
+        &__icon {
+            width: 50px;
+            line-height: 50px;
+            font-size: 2.5em;
+            text-align: center;
+            flex-grow: 0;
+            flex-shrink: 0;
+        }
+
+        &__info {
+            flex-grow: 1;
+            flex-shrink: 1;
+        }
+
+        &__title {
+            font-size: 1.2em;
+            line-height: 1.5em;
+            color: #306;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+
+        &__description {
+            font-size: .8em;
+            line-height: 1.3em;
+        }
+
+        &__stats {
+            text-align: right;
+            flex-grow: 0;
+            flex-shrink: 0;
+            font-style: italic;
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+
+            @media (max-width: @mio-forum-listing-mobile) {
+                display: none;
+            }
+        }
+
+        &__topics {
+            font-size: 1.5em;
+            color: #222;
+        }
+
+        &__posts {
+            font-size: .9em;
+            color: #555;
+        }
+
+        &__activity {
+            flex-grow: 0;
+            flex-shrink: 0;
+            text-align: right;
+            margin: 0 10px;
+            width: 220px;
+
+            @media (max-width: @mio-forum-listing-mobile) {
+                display: none;
+            }
+        }
+    }
+}

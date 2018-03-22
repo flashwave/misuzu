@@ -113,6 +113,23 @@ function get_country_code(string $ipAddr, string $fallback = 'XX'): string
     return $fallback;
 }
 
+function get_country_name(string $code): string
+{
+    switch (strtolower($code)) {
+        case 'xx':
+            return 'Unknown';
+
+        case 'a1':
+            return 'Anonymous Proxy';
+
+        case 'a2':
+            return 'Satellite Provider';
+
+        default:
+            return locale_get_display_region("-{$code}", 'en');
+    }
+}
+
 function is_int_ex($value, int $boundary_low, int $boundary_high): bool
 {
     return is_int($value) && $value >= $boundary_low && $value <= $boundary_high;

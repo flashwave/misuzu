@@ -1,0 +1,44 @@
+@auth-mobile: 500px;
+@auth-title-height: 40px;
+@auth-form-height: 200px;
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    position: relative;
+}
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    background: #5e3e71 url('https://static.flash.moe/images/grid.png');
+    font: 12px/20px sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.auth {
+    min-width: 400px;
+    min-height: @auth-form-height;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    @media (max-width: @auth-mobile) {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+@import "classes/button";
+@import "classes/container";
+@import "classes/form";
+@import "classes/logout";
+@import "classes/text";

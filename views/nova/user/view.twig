@@ -55,7 +55,7 @@
     <div class="profile__content">
         {% spaceless %}
         <div class="profile__container profile__container--left">
-            <div class="profile__avatar" style="background-image: url('https://static.flash.moe/images/discord-logo.png');"></div>
+            <div class="profile__avatar" style="background-image: url('https://secret.flashii.net/avatar-serve.php?id={{ profile.user_id }}');"></div>
             <div class="platform profile__platform profile__hierarchies">
                 {% for id, data in hierarchies %}
                     {% if data.display %}

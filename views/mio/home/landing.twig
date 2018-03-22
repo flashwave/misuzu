@@ -1,0 +1,25 @@
+{% extends '@mio/home/master.twig' %}
+{% from '@mio/macros.twig' import navigation, link %}
+
+{% block content %}
+    <div class="mio__container">
+        <div class="mio__container__title">Welcome!</div>
+        <div class="mio__container__content">
+            <p>Welcome to Flashii, the site is still heavily in development. You can follow us on {{ link('https://twitter.com/flashiinet', 'Twitter') }} where we'll post updates every so often, we'll also announce when the site is ready for public use there!</p>
+            {% if app.session == null %}
+                <p>You can <a href="/auth.php?m=register">create an account</a> already though, if you'd like!</p>
+            {% else %}
+                <p>If you want a custom avatar, let me (flash) know and I'll set it for you. The settings page doesn't exist yet..</p>
+            {% endif %}
+        </div>
+        <div class="mio__container__title">What happened to the previous design?</div>
+        <div class="mio__container__content">
+            <p>I decided to shelve it for a bit. I'm working on this all by myself and I'm not a designer, so coming up with good designs that flow nicely together isn't easy for me.</p>
+            <p>This layout is a LOT simpler to work with than the other one, so this'll be the main design until later.</p>
+            <p>A dark mode will also be available at a later date and for those that grow attached this to javascript light style, you will eventually be able to switch to this design whenever you like from your settings!</p>
+        </div>
+    </div>
+
+    {{ navigation(mio_navigation, '/') }}
+{% endblock %}
+

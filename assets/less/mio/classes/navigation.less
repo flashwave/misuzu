@@ -1,0 +1,111 @@
+@mio-navigation-mobile: 1000px;
+
+.mio__navigation {
+    margin: 5px 0;
+    width: 100%;
+    display: flex;
+    border: 0 solid #000;
+    border-top-width: 1px;
+    align-items: flex-start;
+    justify-content: center;
+
+    @media (max-width: @mio-navigation-mobile) {
+        border: none;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    &--top {
+        border-top-width: 0;
+        border-bottom-width: 1px;
+        align-items: flex-end;
+
+        .mio__navigation__option {
+            border-top-width: 1px;
+            border-bottom-width: 0;
+
+            &--selected {
+                top: 1px;
+            }
+        }
+    }
+
+    &__option {
+        list-style: none;
+        background-color: #c9bbcc;
+        border: 1px solid #000;
+        border-top-width: 0;
+        flex-grow: 0;
+
+        @media (max-width: @mio-navigation-mobile) {
+            background-color: #9475b2;
+            width: 100%;
+            border: none;
+            flex-grow: 1;
+            margin-bottom: 1px;
+        }
+
+        &:not(:first-child) {
+            border-left-width: 0;
+        }
+
+        &--selected {
+            background-color: #fbeeff;
+            top: -1px;
+
+            @media (max-width: @mio-navigation-mobile) {
+                background-color: #A586c3;
+                top: 0;
+            }
+
+            &:not(:first-child) {
+                margin-left: -1px;
+                border-left-width: 1px;
+            }
+
+            .mio__navigation__link {
+                padding: 3px 1em;
+            }
+        }
+    }
+
+    &__link {
+        display: block;
+        padding: 2px 1em;
+        color: #000;
+        text-decoration: none;
+
+        @media (max-width: @mio-navigation-mobile) {
+            padding: 10px 15px;
+            color: #306;
+            font-size: 1.5em;
+        }
+
+        &:hover {
+            color: #609;
+        }
+    }
+}
+
+.mio--dark {
+    .mio__navigation,
+    .mio__navigation__option {
+        border-color: #9475b2;
+    }
+
+    .mio__navigation__option {
+        background-color: #462e55;
+    }
+
+    .mio__navigation__option--selected {
+        background-color: #23172a;
+    }
+
+    .mio__navigation__link {
+        color: #9475b2;
+
+        &:hover {
+            color: #a586c3;
+        }
+    }
+}
