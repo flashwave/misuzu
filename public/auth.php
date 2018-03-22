@@ -41,7 +41,7 @@ switch ($mode) {
         }
 
         // this is temporary, don't scream at me for using md5
-        if (isset($_GET['s']) && md5($app->getSession()->session_key) === $_GET['s']) {
+        if (isset($_GET['s']) && tmp_csrf_verify($_GET['s'])) {
             set_cookie_m('uid', '', -3600);
             set_cookie_m('sid', '', -3600);
             $app->getSession()->delete();

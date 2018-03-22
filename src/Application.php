@@ -127,6 +127,7 @@ class Application extends ApplicationBase
         $twig->addFunction('config', [$this->config, 'get']);
         $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
+        $twig->addFunction('csrf_token', 'tmp_csrf_token');
 
         $twig->var('app', $this);
 
