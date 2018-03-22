@@ -34,7 +34,7 @@ class User extends Model
         $user->email = $email;
         $user->register_ip = $ipAddress;
         $user->last_ip = $ipAddress;
-        $user->user_country = get_country_code($ipAddress->getString());
+        $user->user_country = $ipAddress->getCountryCode();
         $user->save();
 
         return $user;
@@ -172,5 +172,10 @@ class User extends Model
     public function roles()
     {
         return $this->hasMany(UserRole::class, 'user_id');
+    }
+
+    public function loginAttempts()
+    {
+        return $this->hasMany(LoginAttempt::class, 'user_id');
     }
 }

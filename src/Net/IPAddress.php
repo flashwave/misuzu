@@ -39,6 +39,11 @@ final class IPAddress
         return inet_ntop($this->ipRaw);
     }
 
+    public function getCountryCode(): string
+    {
+        return get_country_code($this->getString());
+    }
+
     public function __construct(int $version, string $rawIp)
     {
         if (!array_key_exists($version, self::BYTE_COUNT)) {

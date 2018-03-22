@@ -6,6 +6,7 @@ use Misuzu\Database;
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
 use Misuzu\Users\Session;
+use Misuzu\Users\LoginAttempt;
 
 require_once __DIR__ . '/../misuzu.php';
 
@@ -61,8 +62,20 @@ switch ($mode) {
         $auth_login_error = '';
 
         while ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $ipAddress = IPAddress::remote();
+
             if (!isset($_POST['username'], $_POST['password'])) {
                 $auth_login_error = "You didn't fill all the forms!";
+                break;
+            }
+
+            $loginAttempts = LoginAttempt::fromIpAddress(IPAddress::remote())
+                ->where('was_successful', false)
+                ->where('created_at', '>', Carbon::now()->subHour()->toDateTimeString())
+                ->get();
+
+            if ($loginAttempts->count() >= 5) {
+                $auth_login_error = 'Too many failed login attempts, try again later.';
                 break;
             }
 
@@ -72,16 +85,20 @@ switch ($mode) {
             try {
                 $user = User::where('username', $username)->orWhere('email', $username)->firstOrFail();
             } catch (ModelNotFoundException $e) {
+                LoginAttempt::recordFail($ipAddress);
                 $auth_login_error = 'Invalid username or password!';
                 break;
             }
 
             if (!$user->validatePassword($password)) {
+                LoginAttempt::recordFail($ipAddress, $user);
                 $auth_login_error = 'Invalid username or password!';
                 break;
             }
 
-            $session = Session::createSession($user, 'Misuzu T2');
+            LoginAttempt::recordSuccess($ipAddress, $user);
+
+            $session = Session::createSession($user, 'Misuzu T2', null, $ipAddress);
             $app->setSession($session);
             set_cookie_m('uid', $session->user_id, 604800);
             set_cookie_m('sid', $session->session_key, 604800);
@@ -89,7 +106,7 @@ switch ($mode) {
             // Temporary key generation for chat login.
             // Should eventually be replaced with a callback login system.
             // Also uses different cookies since $httponly is required to be false for these.
-            $user->last_ip = IPAddress::remote();
+            $user->last_ip = $ipAddress;
             $user->user_chat_key = bin2hex(random_bytes(16));
             $user->save();
 
