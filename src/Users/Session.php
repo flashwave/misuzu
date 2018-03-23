@@ -49,6 +49,7 @@ class Session extends Model
     public function setSessionIpAttribute(IPAddress $ipAddress): void
     {
         $this->attributes['session_ip'] = $ipAddress->getRaw();
+        $this->attributes['session_country'] = $ipAddress->getCountryCode();
     }
 
     public function user()

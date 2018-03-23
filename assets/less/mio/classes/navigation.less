@@ -4,7 +4,9 @@
     margin: 5px 0;
     width: 100%;
     display: flex;
-    border: 0 solid #000;
+    border-width: 0;
+    border-color: #000;
+    border-style: solid;
     border-top-width: 1px;
     align-items: flex-start;
     justify-content: center;
@@ -24,8 +26,10 @@
             border-top-width: 1px;
             border-bottom-width: 0;
 
-            &--selected {
-                top: 1px;
+            @media (min-width: @mio-navigation-mobile) {
+                &--selected {
+                    top: 1px;
+                }
             }
         }
     }
@@ -63,8 +67,10 @@
                 border-left-width: 1px;
             }
 
-            .mio__navigation__link {
-                padding: 3px 1em;
+            @media (min-width: @mio-navigation-mobile) {
+                .mio__navigation__link {
+                    padding: 3px 1em;
+                }
             }
         }
     }

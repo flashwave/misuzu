@@ -130,6 +130,26 @@ function get_country_name(string $code): string
     }
 }
 
+// this is temporary, don't scream at me for using md5
+// BIG TODO: make these functions not dependent on sessions so they can be used outside of those.
+function tmp_csrf_verify(string $token, ?\Misuzu\Users\Session $session = null): bool
+{
+    if ($session === null) {
+        $session = \Misuzu\Application::getInstance()->getSession();
+    }
+
+    return hash_equals(tmp_csrf_token($session), $token);
+}
+
+function tmp_csrf_token(?\Misuzu\Users\Session $session = null): string
+{
+    if ($session === null) {
+        $session = \Misuzu\Application::getInstance()->getSession();
+    }
+
+    return md5($session->session_key);
+}
+
 function is_int_ex($value, int $boundary_low, int $boundary_high): bool
 {
     return is_int($value) && $value >= $boundary_low && $value <= $boundary_high;

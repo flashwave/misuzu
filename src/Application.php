@@ -120,13 +120,14 @@ class Application extends ApplicationBase
         $twig->addFilter('json_decode');
         $twig->addFilter('byte_symbol');
         $twig->addFilter('country_name', 'get_country_name');
-        $twig->addFilter('md5'); // using this for logout CSRF for now, remove this when proper CSRF is in place
+        $twig->addFilter('flip', 'array_flip');
 
         $twig->addFunction('byte_symbol');
         $twig->addFunction('session_id');
         $twig->addFunction('config', [$this->config, 'get']);
         $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
+        $twig->addFunction('csrf_token', 'tmp_csrf_token');
 
         $twig->var('app', $this);
 

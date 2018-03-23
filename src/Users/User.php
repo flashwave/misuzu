@@ -40,7 +40,7 @@ class User extends Model
         return $user;
     }
 
-    public static function validateUsername(string $username): string
+    public static function validateUsername(string $username, bool $checkInUse = false): string
     {
         $username_length = strlen($username);
 
@@ -66,6 +66,36 @@ class User extends Model
 
         if (strpos($username, '_') !== false && strpos($username, ' ') !== false) {
             return 'spacing';
+        }
+
+        if ($checkInUse && static::where('username', $username)->count() > 0) {
+            return 'in-use';
+        }
+
+        return '';
+    }
+
+    public static function validateEmail(string $email, bool $checkInUse = false): string
+    {
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            return 'format';
+        }
+
+        if (!check_mx_record($email)) {
+            return 'dns';
+        }
+
+        if ($checkInUse && static::where('email', $email)->count() > 0) {
+            return 'in-use';
+        }
+
+        return '';
+    }
+
+    public static function validatePassword(string $password): string
+    {
+        if (password_entropy($password) < 32) {
+            return 'weak';
         }
 
         return '';
@@ -97,7 +127,7 @@ class User extends Model
             ->count() > 0;
     }
 
-    public function validatePassword(string $password): bool
+    public function verifyPassword(string $password): bool
     {
         if (password_verify($password, $this->password) !== true) {
             return false;

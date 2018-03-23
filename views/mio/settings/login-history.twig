@@ -1,0 +1,7 @@
+{% extends '@mio/settings/master.twig' %}
+
+{% block settings_content %}
+    {% for login_attempt in user_login_attempts %}
+        <p>{{ login_attempt.attempt_id }}, {{ login_attempt.was_successful }}, {{ login_attempt.attempt_ip.string }}, {{ login_attempt.user_agent }}, {{ login_attempt.attempt_country }}, {{ login_attempt.created_at }}</p>
+    {% endfor %}
+{% endblock %}
