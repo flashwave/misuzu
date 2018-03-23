@@ -12,6 +12,15 @@
         }
     }
 
+    &__account-link {
+        color: inherit;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
     &__icon {
         vertical-align: middle;
     }
@@ -69,6 +78,10 @@
 
             @media (max-width: @mio-profile-mobile) {
                 background-color: #fbeeff;
+            }
+
+            &--links:empty {
+                display: none;
             }
         }
 

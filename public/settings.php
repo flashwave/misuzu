@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (!empty($_POST['profile']['youtube'])) {
                         $youtube_regex = preg_match(
                             '#^(?:https?://(?:www.)?youtube.com/(?:(?:user|c|channel)/)?)?'
-                            . '(UC[a-zA-Z0-9-_]{1,50}|[a-zA-Z0-9-_%]{1,100})/?$#u',
+                            . '(UC[a-zA-Z0-9-_]{1,22}|[a-zA-Z0-9-_%]{1,100})/?$#u',
                             $_POST['profile']['youtube'],
                             $youtube_matches
                         );
@@ -259,7 +259,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            if (!empty($_POST['current_password']) && (isset($_POST['password']) || isset($_OST['email']))) {
+            if (!empty($_POST['current_password'])
+                || (
+                    (isset($_POST['password']) || isset($_OST['email']))
+                    && (!empty($_POST['password']['new']) || !empty($_POST['email']['new']))
+                )
+            ) {
                 if (!$settings_user->verifyPassword($_POST['current_password'])) {
                     $settings_errors[] = "Your current password was incorrect.";
                     break;
