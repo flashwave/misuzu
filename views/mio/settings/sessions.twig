@@ -1,0 +1,7 @@
+{% extends '@mio/settings/master.twig' %}
+
+{% block settings_content %}
+    {% for session in user_sessions %}
+        <p>{{ session.session_id }}, {{ session.session_ip.string }}, {{ session.user_agent|default('-') }}, {{ session.session_country }}, {{ session.created_at }}, {{ session.expires_on }}</p>
+    {% endfor %}
+{% endblock %}

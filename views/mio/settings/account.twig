@@ -1,0 +1,171 @@
+{% extends '@mio/settings/master.twig' %}
+
+{% block settings_content %}
+    <form method="post" action="?m=account" class="mio__settings__account">
+        <div class="mio__settings__account__row">
+            <div class="mio__settings__account__column">
+                <div class="mio__settings__account__title">Profile</div>
+
+                <label class="mio__settings__account__input">
+                    <div class="mio__settings__account__input__name">
+                        Twitter
+                    </div>
+                    <div class="mio__settings__account__input__value">
+                        <input type="text" name="profile[twitter]" value="{{ settings_user.user_twitter }}" class="mio__input__text mio__settings__account__input__value__text">
+                    </div>
+                </label>
+
+                <label class="mio__settings__account__input">
+                    <div class="mio__settings__account__input__name">
+                        osu!
+                    </div>
+                    <div class="mio__settings__account__input__value">
+                        <input type="text" name="profile[osu]" value="{{ settings_user.user_osu }}" class="mio__input__text mio__settings__account__input__value__text">
+                    </div>
+                </label>
+
+                <label class="mio__settings__account__input">
+                    <div class="mio__settings__account__input__name">
+                        Website
+                    </div>
+                    <div class="mio__settings__account__input__value">
+                        <input type="url" name="profile[website]" value="{{ settings_user.user_website }}" class="mio__input__text mio__settings__account__input__value__text">
+                    </div>
+                </label>
+
+                <label class="mio__settings__account__input">
+                    <div class="mio__settings__account__input__name">
+                        Youtube
+                    </div>
+                    <div class="mio__settings__account__input__value">
+                        <input type="text" name="profile[youtube]" value="{{ settings_user.user_youtube }}" class="mio__input__text mio__settings__account__input__value__text">
+                    </div>
+                </label>
+
+                <label class="mio__settings__account__input">
+                    <div class="mio__settings__account__input__name">
+                        Steam
+                    </div>
+                    <div class="mio__settings__account__input__value">
+                        <input type="text" name="profile[steam]" value="{{ settings_user.user_steam }}" class="mio__input__text mio__settings__account__input__value__text">
+                    </div>
+                </label>
+
+                <label class="mio__settings__account__input">
+                    <div class="mio__settings__account__input__name">
+                        Twitch.TV
+                    </div>
+                    <div class="mio__settings__account__input__value">
+                        <input type="text" name="profile[twitchtv]" value="{{ settings_user.user_twitchtv }}" class="mio__input__text mio__settings__account__input__value__text">
+                    </div>
+                </label>
+
+                <label class="mio__settings__account__input">
+                    <div class="mio__settings__account__input__name">
+                        Last.fm
+                    </div>
+                    <div class="mio__settings__account__input__value">
+                        <input type="text" name="profile[lastfm]" value="{{ settings_user.user_lastfm }}" class="mio__input__text mio__settings__account__input__value__text">
+                    </div>
+                </label>
+
+                <label class="mio__settings__account__input">
+                    <div class="mio__settings__account__input__name">
+                        Github
+                    </div>
+                    <div class="mio__settings__account__input__value">
+                        <input type="text" name="profile[github]" value="{{ settings_user.user_github }}" class="mio__input__text mio__settings__account__input__value__text">
+                    </div>
+                </label>
+
+                <label class="mio__settings__account__input">
+                    <div class="mio__settings__account__input__name">
+                        Skype
+                    </div>
+                    <div class="mio__settings__account__input__value">
+                        <input type="text" name="profile[skype]" value="{{ settings_user.user_skype }}" class="mio__input__text mio__settings__account__input__value__text">
+                    </div>
+                </label>
+
+                <label class="mio__settings__account__input">
+                    <div class="mio__settings__account__input__name">
+                        Discord
+                    </div>
+                    <div class="mio__settings__account__input__value">
+                        <input type="text" name="profile[discord]" value="{{ settings_user.user_discord }}" class="mio__input__text mio__settings__account__input__value__text">
+                    </div>
+                </label>
+            </div>
+
+            <div class="mio__settings__account__column mio__settings__account__column--no-margin">
+                <div class="mio__settings__account__row">
+                    <div class="mio__settings__account__column">
+                        <div class="mio__settings__account__title">E-mail</div>
+
+                        <label class="mio__settings__account__input">
+                            <div class="mio__settings__account__input__name">
+                                New E-mail Address
+                            </div>
+                            <div class="mio__settings__account__input__value">
+                                <input type="text" name="email[new]" class="mio__input__text mio__settings__account__input__value__text">
+                            </div>
+                        </label>
+
+                        <label class="mio__settings__account__input">
+                            <div class="mio__settings__account__input__name">
+                                Confirmation
+                            </div>
+                            <div class="mio__settings__account__input__value">
+                                <input type="text" name="email[confirm]" class="mio__input__text mio__settings__account__input__value__text">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mio__settings__account__row">
+                    <div class="mio__settings__account__column">
+                        <div class="mio__settings__account__title">Password</div>
+
+                        <label class="mio__settings__account__input">
+                            <div class="mio__settings__account__input__name">
+                                New Password
+                            </div>
+                            <div class="mio__settings__account__input__value">
+                                <input type="password" name="password[new]" class="mio__input__text mio__settings__account__input__value__text">
+                            </div>
+                        </label>
+
+                        <label class="mio__settings__account__input">
+                            <div class="mio__settings__account__input__name">
+                                Confirmation
+                            </div>
+                            <div class="mio__settings__account__input__value">
+                                <input type="password" name="password[confirm]" class="mio__input__text mio__settings__account__input__value__text">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mio__settings__account__row">
+                    <div class="mio__settings__account__column">
+                        <div class="mio__settings__account__title">Confirmation</div>
+
+                        <label class="mio__settings__account__input">
+                            <div class="mio__settings__account__input__name">
+                                Current Password
+                            </div>
+                            <div class="mio__settings__account__input__value">
+                                <input type="password" name="current_password" placeholder="only needed for e-mail and password updating" class="mio__input__text mio__settings__account__input__value__text">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mio__settings__account__row mio__settings__account__row--buttons">
+            <button class="mio__input__button" name="csrf" value="{{ csrf_token() }}">Update</button>
+            <button class="mio__input__button" type="reset">Reset</button>
+        </div>
+    </form>
+{% endblock %}

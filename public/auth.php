@@ -17,6 +17,7 @@ $username_validation_errors = [
     'double-spaces' => "Your username can't contain double spaces.",
     'invalid' => 'Your username contains invalid characters.',
     'spacing' => 'Please use either underscores or spaces, not both!',
+    'in-use' => 'This username is already taken!',
 ];
 
 $mode = $_GET['m'] ?? 'login';
@@ -59,6 +60,7 @@ switch ($mode) {
             break;
         }
 
+        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         $auth_login_error = '';
 
         while ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -85,20 +87,20 @@ switch ($mode) {
             try {
                 $user = User::where('username', $username)->orWhere('email', $username)->firstOrFail();
             } catch (ModelNotFoundException $e) {
-                LoginAttempt::recordFail($ipAddress);
+                LoginAttempt::recordFail($ipAddress, null, $user_agent);
                 $auth_login_error = 'Invalid username or password!';
                 break;
             }
 
-            if (!$user->validatePassword($password)) {
-                LoginAttempt::recordFail($ipAddress, $user);
+            if (!$user->verifyPassword($password)) {
+                LoginAttempt::recordFail($ipAddress, $user, $user_agent);
                 $auth_login_error = 'Invalid username or password!';
                 break;
             }
 
-            LoginAttempt::recordSuccess($ipAddress, $user);
+            LoginAttempt::recordSuccess($ipAddress, $user, $user_agent);
 
-            $session = Session::createSession($user, 'Misuzu T2', null, $ipAddress);
+            $session = Session::createSession($user, $user_agent, null, $ipAddress);
             $app->setSession($session);
             set_cookie_m('uid', $session->user_id, 604800);
             set_cookie_m('sid', $session->session_key, 604800);
@@ -142,41 +144,24 @@ switch ($mode) {
             }
 
             $username = $_POST['username'] ?? '';
-            $username_validate = User::validateUsername($username);
             $password = $_POST['password'] ?? '';
             $email = $_POST['email'] ?? '';
 
+            $username_validate = User::validateUsername($username, true);
             if ($username_validate !== '') {
                 $auth_register_error = $username_validation_errors[$username_validate];
                 break;
             }
 
-            try {
-                $existing = User::where('username', $username)->firstOrFail();
-
-                if ($existing->user_id > 0) {
-                    $auth_register_error = 'This username is already taken!';
-                    break;
-                }
-            } catch (ModelNotFoundException $e) {
-            }
-
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !check_mx_record($email)) {
-                $auth_register_error = 'The e-mail address you entered is invalid!';
+            $email_validate = User::validateEmail($email, true);
+            if ($email_validate !== '') {
+                $auth_register_error = $email_validate === 'in-use'
+                    ? 'This e-mail address has already been used!'
+                    : 'The e-mail address you entered is invalid!';
                 break;
             }
 
-            try {
-                $existing = User::where('email', $email)->firstOrFail();
-
-                if ($existing->user_id > 0) {
-                    $auth_register_error = 'This e-mail address has already been used!';
-                    break;
-                }
-            } catch (ModelNotFoundException $e) {
-            }
-
-            if (password_entropy($password) < 32) {
+            if (User::validatePassword($password) !== '') {
                 $auth_register_error = 'Your password is too weak!';
                 break;
             }

@@ -9,21 +9,26 @@ class LoginAttempt extends Model
 {
     protected $primaryKey = 'attempt_id';
 
-    public static function recordSuccess(IPAddress $ipAddress, User $user): LoginAttempt
+    public static function recordSuccess(IPAddress $ipAddress, User $user, ?string $userAgent = null): LoginAttempt
     {
-        return static::recordAttempt(true, $ipAddress, $user);
+        return static::recordAttempt(true, $ipAddress, $user, $userAgent);
     }
 
-    public static function recordFail(IPAddress $ipAddress, ?User $user = null): LoginAttempt
+    public static function recordFail(IPAddress $ipAddress, ?User $user = null, ?string $userAgent = null): LoginAttempt
     {
-        return static::recordAttempt(false, $ipAddress, $user);
+        return static::recordAttempt(false, $ipAddress, $user, $userAgent);
     }
 
-    public static function recordAttempt(bool $success, IPAddress $ipAddress, ?User $user = null): LoginAttempt
-    {
+    public static function recordAttempt(
+        bool $success,
+        IPAddress $ipAddress,
+        ?User $user = null,
+        ?string $userAgent = null
+    ): LoginAttempt {
         $attempt = new static;
         $attempt->was_successful = $success;
         $attempt->attempt_ip = $ipAddress;
+        $attempt->user_agent = $userAgent ?? '';
 
         if ($user !== null) {
             $attempt->user_id = $user;

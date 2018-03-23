@@ -26,8 +26,10 @@
             border-top-width: 1px;
             border-bottom-width: 0;
 
-            &--selected {
-                top: 1px;
+            @media (min-width: @mio-navigation-mobile) {
+                &--selected {
+                    top: 1px;
+                }
             }
         }
     }

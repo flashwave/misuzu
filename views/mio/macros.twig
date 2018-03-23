@@ -4,13 +4,14 @@
 {% endspaceless %}
 {% endmacro %}
 
-{% macro navigation(links, current, top) %}
+{% macro navigation(links, current, top, fmt) %}
     {% set top = top|default(false) == true %}
     {% set current = current|default(null) %}
+    {% set fmt = fmt|default('%s') %}
 
     <ul class="mio__navigation{% if top %} mio__navigation--top{% endif %}">
     {% for name, url in links %}
-        <li class="mio__navigation__option{% if url == current or name == current %} mio__navigation__option--selected{% endif %}"><a href="{{ url }}" class="mio__navigation__link">{{ name }}</a></li>
+        <li class="mio__navigation__option{% if url == current or name == current %} mio__navigation__option--selected{% endif %}"><a href="{{ fmt|format(url) }}" class="mio__navigation__link">{{ name }}</a></li>
     {% endfor %}
     </ul>
 {% endmacro %}
