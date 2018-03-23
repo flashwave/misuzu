@@ -6,95 +6,16 @@
             <div class="mio__settings__account__column">
                 <div class="mio__settings__account__title">Profile</div>
 
-                <label class="mio__settings__account__input">
+                {% for name, props in settings_profile_fields %}
+                <label class="mio__settings__account__input mio__settings__account__input--{{ name }}">
                     <div class="mio__settings__account__input__name">
-                        Twitter
+                        {{ props.name }}
                     </div>
                     <div class="mio__settings__account__input__value">
-                        <input type="text" name="profile[twitter]" value="{{ settings_user.user_twitter }}" class="mio__input__text mio__settings__account__input__value__text">
+                        <input type="{{ props.type|default('text') }}" name="profile[{{ name }}]" value="{{ settings_user['user_' ~ name] }}" class="mio__input__text mio__settings__account__input__value__text">
                     </div>
                 </label>
-
-                <label class="mio__settings__account__input">
-                    <div class="mio__settings__account__input__name">
-                        osu!
-                    </div>
-                    <div class="mio__settings__account__input__value">
-                        <input type="text" name="profile[osu]" value="{{ settings_user.user_osu }}" class="mio__input__text mio__settings__account__input__value__text">
-                    </div>
-                </label>
-
-                <label class="mio__settings__account__input">
-                    <div class="mio__settings__account__input__name">
-                        Website
-                    </div>
-                    <div class="mio__settings__account__input__value">
-                        <input type="url" name="profile[website]" value="{{ settings_user.user_website }}" class="mio__input__text mio__settings__account__input__value__text">
-                    </div>
-                </label>
-
-                <label class="mio__settings__account__input">
-                    <div class="mio__settings__account__input__name">
-                        Youtube
-                    </div>
-                    <div class="mio__settings__account__input__value">
-                        <input type="text" name="profile[youtube]" value="{{ settings_user.user_youtube }}" class="mio__input__text mio__settings__account__input__value__text">
-                    </div>
-                </label>
-
-                <label class="mio__settings__account__input">
-                    <div class="mio__settings__account__input__name">
-                        Steam
-                    </div>
-                    <div class="mio__settings__account__input__value">
-                        <input type="text" name="profile[steam]" value="{{ settings_user.user_steam }}" class="mio__input__text mio__settings__account__input__value__text">
-                    </div>
-                </label>
-
-                <label class="mio__settings__account__input">
-                    <div class="mio__settings__account__input__name">
-                        Twitch.TV
-                    </div>
-                    <div class="mio__settings__account__input__value">
-                        <input type="text" name="profile[twitchtv]" value="{{ settings_user.user_twitchtv }}" class="mio__input__text mio__settings__account__input__value__text">
-                    </div>
-                </label>
-
-                <label class="mio__settings__account__input">
-                    <div class="mio__settings__account__input__name">
-                        Last.fm
-                    </div>
-                    <div class="mio__settings__account__input__value">
-                        <input type="text" name="profile[lastfm]" value="{{ settings_user.user_lastfm }}" class="mio__input__text mio__settings__account__input__value__text">
-                    </div>
-                </label>
-
-                <label class="mio__settings__account__input">
-                    <div class="mio__settings__account__input__name">
-                        Github
-                    </div>
-                    <div class="mio__settings__account__input__value">
-                        <input type="text" name="profile[github]" value="{{ settings_user.user_github }}" class="mio__input__text mio__settings__account__input__value__text">
-                    </div>
-                </label>
-
-                <label class="mio__settings__account__input">
-                    <div class="mio__settings__account__input__name">
-                        Skype
-                    </div>
-                    <div class="mio__settings__account__input__value">
-                        <input type="text" name="profile[skype]" value="{{ settings_user.user_skype }}" class="mio__input__text mio__settings__account__input__value__text">
-                    </div>
-                </label>
-
-                <label class="mio__settings__account__input">
-                    <div class="mio__settings__account__input__name">
-                        Discord
-                    </div>
-                    <div class="mio__settings__account__input__value">
-                        <input type="text" name="profile[discord]" value="{{ settings_user.user_discord }}" class="mio__input__text mio__settings__account__input__value__text">
-                    </div>
-                </label>
+                {% endfor %}
             </div>
 
             <div class="mio__settings__account__column mio__settings__account__column--no-margin">
