@@ -28,7 +28,7 @@
                         <div class="mio__container mio__header__user">
                             <div class="mio__container__title">Hey, {{ app.session.user.username }}!</div>
                             <div class="mio__container__content mio__header__user__content">
-                                <div class="mio__avatar mio__header__user__avatar" style="background-image:url('https://secret.flashii.net/avatar-serve.php?id={{ app.session.user.user_id }}');"></div>
+                                <div class="mio__avatar mio__header__user__avatar" style="background-image:url('/profile.php?u={{ app.session.user.user_id }}&amp;m=avatar');"></div>
                                 <div class="mio__header__user__links__container">
                                     <ul class="mio__header__user__links">
                                         <li class="mio__header__user__option"><a class="mio__header__user__link" href="/profile.php?u={{ app.session.user.user_id }}">Profile</a></li>

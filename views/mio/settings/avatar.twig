@@ -1,5 +1,24 @@
 {% extends '@mio/settings/master.twig' %}
 
 {% block settings_content %}
-    <p>Sorry for getting your hopes up with the button, but not yet! Read the front page while logged in.</p>
+    <div class="mio__settings__avatar">
+        <div class="mio__settings__avatar__forms">
+            <form class="mio__settings__avatar__form" method="post" action="?m=avatar" enctype="multipart/form-data">
+                <label class="mio__input__upload__label">
+                    <input type="file" name="avatar" class="mio__input__upload">
+                    Pick file...
+                </label>
+                <button class="mio__input__button" name="upload" value="{{ csrf_token() }}">Upload</button>
+            </form>
+            <form class="mio__settings__avatar__form" method="post" action="?m=avatar">
+                <button class="mio__input__button" name="delete" value="{{ csrf_token() }}">Delete</button>
+            </form>
+            {% if can_import_old_avatar %}
+                <form class="mio__settings__avatar__form" method="post" action="?m=avatar">
+                    <button class="mio__input__button" name="import" value="{{ csrf_token() }}">Import old avatar</button>
+                </form>
+            {% endif %}
+        </div>
+        <div class="mio__avatar mio__settings__avatar__preview" style="background-image:url('/profile.php?u={{ settings_user.user_id }}&amp;m=avatar')"></div>
+    </div>
 {% endblock %}

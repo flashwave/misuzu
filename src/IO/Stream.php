@@ -20,14 +20,14 @@ abstract class Stream
         throw new InvalidArgumentException;
     }
 
-    abstract protected function getCanRead(): bool;
-    abstract protected function getCanSeek(): bool;
-    abstract protected function getCanTimeout(): bool;
-    abstract protected function getCanWrite(): bool;
-    abstract protected function getLength(): int;
-    abstract protected function getPosition(): int;
-    abstract protected function getReadTimeout(): int;
-    abstract protected function getWriteTimeout(): int;
+    abstract public function getCanRead(): bool;
+    abstract public function getCanSeek(): bool;
+    abstract public function getCanTimeout(): bool;
+    abstract public function getCanWrite(): bool;
+    abstract public function getLength(): int;
+    abstract public function getPosition(): int;
+    abstract public function getReadTimeout(): int;
+    abstract public function getWriteTimeout(): int;
 
     abstract public function flush(): void;
     abstract public function close(): void;

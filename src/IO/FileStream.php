@@ -124,44 +124,44 @@ class FileStream extends Stream
         }
     }
 
-    protected function getCanRead(): bool
+    public function getCanRead(): bool
     {
         return ($this->fileMode & static::MODE_READ) > 0 && is_readable($this->filePath);
     }
 
-    protected function getCanSeek(): bool
+    public function getCanSeek(): bool
     {
         return ($this->fileMode & static::MODE_APPEND_RAW) == 0 && $this->getCanRead();
     }
 
-    protected function getCanTimeout(): bool
+    public function getCanTimeout(): bool
     {
         return false;
     }
 
-    protected function getCanWrite(): bool
+    public function getCanWrite(): bool
     {
         return ($this->fileMode & static::MODE_WRITE) > 0 && is_writable($this->filePath);
     }
 
-    protected function getLength(): int
+    public function getLength(): int
     {
         $this->ensureHandleActive();
         return fstat($this->fileHandle)['size'];
     }
 
-    protected function getPosition(): int
+    public function getPosition(): int
     {
         $this->ensureHandleActive();
         return ftell($this->fileHandle);
     }
 
-    protected function getReadTimeout(): int
+    public function getReadTimeout(): int
     {
         return -1;
     }
 
-    protected function getWriteTimeout(): int
+    public function getWriteTimeout(): int
     {
         return -1;
     }

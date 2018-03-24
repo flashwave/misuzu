@@ -1,5 +1,6 @@
 <?php
 use Misuzu\Application;
+use Misuzu\IO\File;
 use Misuzu\Users\User;
 use Misuzu\Users\Session;
 
@@ -11,6 +12,62 @@ if ($settings_session === null) {
     header('Location: /');
     return;
 }
+
+$csrf_error_str = "Couldn't verify you, please refresh the page and retry.";
+
+$settings_profile_fields = [
+    'twitter' => [
+        'name' => 'Twitter',
+        'regex' => '#^(?:https?://(?:www\.)?twitter.com/(?:\#!\/)?)?@?([A-Za-z0-9_]{1,20})/?$#u',
+        'no-match' => 'Twitter field was invalid.',
+    ],
+    'osu' => [
+        'name' => 'osu!',
+        'regex' => '#^(?:https?://osu.ppy.sh/u(?:sers)?/)?([a-zA-Z0-9-\[\]_ ]{1,20})/?$#u',
+        'no-match' => 'osu! field was invalid.',
+    ],
+    'website' => [
+        'name' => 'Website',
+        'type' => 'url',
+        'regex' => '#^((?:https?)://.{1,240})$#u',
+        'no-match' => 'Website field was invalid.',
+    ],
+    'youtube' => [
+        'name' => 'Youtube',
+        'regex' => '#^(?:https?://(?:www.)?youtube.com/(?:(?:user|c|channel)/)?)?(UC[a-zA-Z0-9-_]{1,22}|[a-zA-Z0-9-_%]{1,100})/?$#u',
+        'no-match' => 'Youtube field was invalid.',
+    ],
+    'steam' => [
+        'name' => 'Steam',
+        'regex' => '#^(?:https?://(?:www.)?steamcommunity.com/(?:id|profiles)/)?([a-zA-Z0-9_-]{2,100})/?$#u',
+        'no-match' => 'Steam field was invalid.',
+    ],
+    'twitchtv' => [
+        'name' => 'Twitch.tv',
+        'regex' => '#^(?:https?://(?:www.)?twitch.tv/)?([0-9A-Za-z_]{3,25})/?$#u',
+        'no-match' => 'Twitch.tv field was invalid.',
+    ],
+    'lastfm' => [
+        'name' => 'Last.fm',
+        'regex' => '#^(?:https?://(?:www.)?last.fm/user/)?([a-zA-Z]{1}[a-zA-Z0-9_-]{1,14})/?$#u',
+        'no-match' => 'Last.fm field was invalid.',
+    ],
+    'github' => [
+        'name' => 'Github',
+        'regex' => '#^(?:https?://(?:www.)?github.com/?)?([a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38})/?$#u',
+        'no-match' => 'Github field was invalid.',
+    ],
+    'skype' => [
+        'name' => 'Skype',
+        'regex' => '#^((?:live:)?[a-zA-Z][\w\.,\-_@]{1,100})$#u',
+        'no-match' => 'Skype field was invalid.',
+    ],
+    'discord' => [
+        'name' => 'Discord',
+        'regex' => '#^(.{1,32}\#[0-9]{4})$#u',
+        'no-match' => 'Discord field was invalid.',
+    ],
+];
 
 $settings_user = $settings_session->user;
 
@@ -37,225 +94,42 @@ if (!array_key_exists($settings_mode, $settings_modes)) {
 
 $settings_errors = [];
 
+$avatar_filename = "{$settings_user->user_id}.msz";
+$avatar_max_width = $app->config->get('Avatar', 'max_width', 'int', 4000);
+$avatar_max_height = $app->config->get('Avatar', 'max_height', 'int', 4000);
+$avatar_max_filesize = $app->config->get('Avatar', 'max_filesize', 'int', 1000000);
+$avatar_max_filesize_human = byte_symbol($avatar_max_filesize, true);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     switch ($settings_mode) {
         case 'account':
             if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
-                $settings_errors[] = "Couldn't verify you, please refresh the page and retry.";
+                $settings_errors[] = $csrf_error_str;
                 break;
             }
 
             if (isset($_POST['profile']) && is_array($_POST['profile'])) {
-                if (isset($_POST['profile']['twitter'])) {
-                    $user_twitter = '';
+                foreach ($settings_profile_fields as $name => $props) {
+                    if (isset($_POST['profile'][$name])) {
+                        $field_value = '';
 
-                    if (!empty($_POST['profile']['twitter'])) {
-                        $twitter_regex = preg_match(
-                            '#^(?:https?://(?:www\.)?twitter.com/(?:\#!\/)?)?@?([A-Za-z0-9_]{1,20})/?$#u',
-                            $_POST['profile']['twitter'],
-                            $twitter_matches
-                        );
+                        if (!empty($_POST['profile'][$name])) {
+                            $field_regex = preg_match(
+                                $props['regex'],
+                                $_POST['profile'][$name],
+                                $field_matches
+                            );
 
-                        if ($twitter_regex !== 1) {
-                            $settings_errors[] = "Invalid Twitter field.";
-                            break;
+                            if ($field_regex !== 1) {
+                                $settings_errors[] = $props['no-match'];
+                                break;
+                            }
+
+                            $field_value = $field_matches[1];
                         }
 
-                        $user_twitter = $twitter_matches[1];
+                        $settings_user->{"user_{$name}"} = $field_value;
                     }
-
-                    $settings_user->user_twitter = $user_twitter;
-                }
-
-                if (isset($_POST['profile']['osu'])) {
-                    $user_osu = '';
-
-                    if (!empty($_POST['profile']['osu'])) {
-                        $osu_regex = preg_match(
-                            '#^(?:https?://osu.ppy.sh/u(?:sers)?/)?([a-zA-Z0-9-\[\]_ ]{1,20})/?$#u',
-                            $_POST['profile']['osu'],
-                            $osu_matches
-                        );
-
-                        if ($osu_regex !== 1) {
-                            $settings_errors[] = "Invalid osu! field.";
-                            break;
-                        }
-
-                        $user_osu = $osu_matches[1];
-                    }
-
-                    $settings_user->user_osu = $user_osu;
-                }
-
-                if (isset($_POST['profile']['website'])) {
-                    $user_website = '';
-
-                    if (!empty($_POST['profile']['website'])) {
-                        $website_regex = preg_match(
-                            '#^(?:https?)://(.{1,240})$#u',
-                            $_POST['profile']['website'],
-                            $website_matches
-                        );
-
-                        if ($website_regex !== 1) {
-                            $settings_errors[] = "Invalid website field.";
-                            break;
-                        }
-
-                        $user_website = $website_matches[0];
-                    }
-
-                    $settings_user->user_website = $user_website;
-                }
-
-                if (isset($_POST['profile']['youtube'])) {
-                    $user_youtube = '';
-
-                    if (!empty($_POST['profile']['youtube'])) {
-                        $youtube_regex = preg_match(
-                            '#^(?:https?://(?:www.)?youtube.com/(?:(?:user|c|channel)/)?)?'
-                            . '(UC[a-zA-Z0-9-_]{1,22}|[a-zA-Z0-9-_%]{1,100})/?$#u',
-                            $_POST['profile']['youtube'],
-                            $youtube_matches
-                        );
-
-                        if ($youtube_regex !== 1) {
-                            $settings_errors[] = "Invalid Youtube field.";
-                            break;
-                        }
-
-                        $user_youtube = $youtube_matches[1];
-                    }
-
-                    $settings_user->user_youtube = $user_youtube;
-                }
-
-                if (isset($_POST['profile']['steam'])) {
-                    $user_steam = '';
-
-                    if (!empty($_POST['profile']['steam'])) {
-                        $steam_regex = preg_match(
-                            '#^(?:https?://(?:www.)?steamcommunity.com/(?:id|profiles)/)?([a-zA-Z0-9_-]{2,100})/?$#u',
-                            $_POST['profile']['steam'],
-                            $steam_matches
-                        );
-
-                        if ($steam_regex !== 1) {
-                            $settings_errors[] = "Invalid Steam field.";
-                            break;
-                        }
-
-                        $user_steam = $steam_matches[1];
-                    }
-
-                    $settings_user->user_steam = $user_steam;
-                }
-
-                if (isset($_POST['profile']['twitchtv'])) {
-                    $user_twitchtv = '';
-
-                    if (!empty($_POST['profile']['twitchtv'])) {
-                        $twitchtv_regex = preg_match(
-                            '#^(?:https?://(?:www.)?twitch.tv/)?([0-9A-Za-z_]{3,25})/?$#u',
-                            $_POST['profile']['twitchtv'],
-                            $twitchtv_matches
-                        );
-
-                        if ($twitchtv_regex !== 1) {
-                            $settings_errors[] = "Invalid Twitch.TV field.";
-                            break;
-                        }
-
-                        $user_twitchtv = $twitchtv_matches[1];
-                    }
-
-                    $settings_user->user_twitchtv = $user_twitchtv;
-                }
-
-                if (isset($_POST['profile']['lastfm'])) {
-                    $user_lastfm = '';
-
-                    if (!empty($_POST['profile']['lastfm'])) {
-                        $lastfm_regex = preg_match(
-                            '#^(?:https?://(?:www.)?last.fm/user/)?([a-zA-Z]{1}[a-zA-Z0-9_-]{1,14})/?$#u',
-                            $_POST['profile']['lastfm'],
-                            $lastfm_matches
-                        );
-
-                        if ($lastfm_regex !== 1) {
-                            $settings_errors[] = "Invalid Last.fm field.";
-                            break;
-                        }
-
-                        $user_lastfm = $lastfm_matches[1];
-                    }
-
-                    $settings_user->user_lastfm = $user_lastfm;
-                }
-
-                if (isset($_POST['profile']['github'])) {
-                    $user_github = '';
-
-                    if (!empty($_POST['profile']['github'])) {
-                        $github_regex = preg_match(
-                            '#^(?:https?://(?:www.)?github.com/?)?'
-                            . '([a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38})/?$#u',
-                            $_POST['profile']['github'],
-                            $github_matches
-                        );
-
-                        if ($github_regex !== 1) {
-                            $settings_errors[] = "Invalid Github field.";
-                            break;
-                        }
-
-                        $user_github = $github_matches[1];
-                    }
-
-                    $settings_user->user_github = $user_github;
-                }
-
-                if (isset($_POST['profile']['skype'])) {
-                    $user_skype = '';
-
-                    if (!empty($_POST['profile']['skype'])) {
-                        $skype_regex = preg_match(
-                            '#^((?:live:)?[a-zA-Z][\w\.,\-_@]{1,100})$#u',
-                            $_POST['profile']['skype'],
-                            $skype_matches
-                        );
-
-                        if ($skype_regex !== 1) {
-                            $settings_errors[] = "Invalid Skype field.";
-                            break;
-                        }
-
-                        $user_skype = $skype_matches[1];
-                    }
-
-                    $settings_user->user_skype = $user_skype;
-                }
-
-                if (isset($_POST['profile']['discord'])) {
-                    $user_discord = '';
-
-                    if (!empty($_POST['profile']['discord'])) {
-                        $discord_regex = preg_match(
-                            '#^(.{1,32}\#[0-9]{4})$#u',
-                            $_POST['profile']['discord'],
-                            $discord_matches
-                        );
-
-                        if ($discord_regex !== 1) {
-                            $settings_errors[] = "Invalid Discord field.";
-                            break;
-                        }
-
-                        $user_discord = $discord_matches[1];
-                    }
-
-                    $settings_user->user_discord = $user_discord;
                 }
             }
 
@@ -328,6 +202,110 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $settings_user->save();
             }
             break;
+
+        case 'avatar':
+            if (isset($_POST['import'])
+                && !File::exists($app->getStore('avatars/original')->filename($avatar_filename))) {
+                if (!tmp_csrf_verify($_POST['import'])) {
+                    $settings_errors[] = $csrf_error_str;
+                    break;
+                }
+
+                $old_avatar_url = trim(file_get_contents(
+                    "https://secret.flashii.net/avatar-serve.php?id={$settings_user->user_id}&r"
+                ));
+
+                if (empty($old_avatar_url)) {
+                    $settings_errors[] = 'No old avatar was found for you.';
+                    break;
+                }
+
+                File::writeAll(
+                    $app->getStore('avatars/original')->filename($avatar_filename),
+                    file_get_contents($old_avatar_url)
+                );
+                break;
+            }
+
+            if (isset($_POST['delete'])) {
+                if (!tmp_csrf_verify($_POST['delete'])) {
+                    $settings_errors[] = $csrf_error_str;
+                    break;
+                }
+
+                File::delete($app->getStore('avatars/original')->filename($avatar_filename));
+                File::delete($app->getStore('avatars/200x200')->filename($avatar_filename));
+                break;
+            }
+
+            if (isset($_POST['upload'])) {
+                if (!tmp_csrf_verify($_POST['upload'])) {
+                    $settings_errors[] = $csrf_error_str;
+                    break;
+                }
+
+                switch ($_FILES['avatar']['error']) {
+                    case UPLOAD_ERR_OK:
+                        break;
+
+                    case UPLOAD_ERR_PARTIAL:
+                        $settings_errors[] = 'The upload was interrupted, please try again!';
+                        break;
+
+                    case UPLOAD_ERR_INI_SIZE:
+                    case UPLOAD_ERR_FORM_SIZE:
+                        $settings_errors[] = "Your avatar is not allowed to be larger in filesize than {$avatar_max_filesize_human}!";
+                        break;
+
+                    case UPLOAD_ERR_NO_TMP_DIR:
+                    case UPLOAD_ERR_CANT_WRITE:
+                        $settings_errors[] = 'Unable to save your avatar, contact an administator!';
+                        break;
+
+                    case UPLOAD_ERR_EXTENSION:
+                    default:
+                        $settings_errors[] = 'Something happened?';
+                        break;
+                }
+
+                if (count($settings_errors) > 0) {
+                    break;
+                }
+
+                $upload_path = $_FILES['avatar']['tmp_name'];
+                $upload_meta = getimagesize($upload_path);
+
+                if (!$upload_meta
+                    || !in_array($upload_meta[2], [IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG], true)
+                    || $upload_meta[0] < 1
+                    || $upload_meta[1] < 1) {
+                    $settings_errors[] = 'Please provide a valid image.';
+                    break;
+                }
+
+                if ($upload_meta[0] > $avatar_max_width || $upload_meta[1] > $avatar_max_height) {
+                    $settings_errors[] = "Your avatar can't be larger than {$avatar_max_width}x{$avatar_max_height}, yours was {$upload_meta[0]}x{$upload_meta[1]}";
+                    break;
+                }
+
+                if (filesize($upload_path) > $avatar_max_filesize) {
+                    $settings_errors[] = "Your avatar is not allowed to be larger in filesize than {$avatar_max_filesize_human}!";
+                    break;
+                }
+
+                $avatar_path = $app->getStore('avatars/original')->filename($avatar_filename);
+                move_uploaded_file($upload_path, $avatar_path);
+
+                $crop_path = $app->getStore('avatars/200x200')->filename($avatar_filename);
+
+                if (File::exists($crop_path)) {
+                    File::delete($crop_path);
+                }
+                break;
+            }
+
+            $settings_errors[] = "You shouldn't have done that.";
+            break;
     }
 }
 
@@ -335,6 +313,17 @@ $app->templating->vars(compact('settings_errors'));
 $app->templating->var('settings_title', $settings_modes[$settings_mode]);
 
 switch ($settings_mode) {
+    case 'account':
+        $app->templating->vars(compact('settings_profile_fields'));
+        break;
+
+    case 'avatar':
+        $app->templating->var(
+            'can_import_old_avatar',
+            !File::exists($app->getStore('avatars/original')->filename($avatar_filename))
+        );
+        break;
+
     case 'sessions':
         $app->templating->var('user_sessions', $settings_user->sessions->reverse());
         break;
