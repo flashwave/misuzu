@@ -11,6 +11,8 @@ matrix:
     fast_finish: true
 
 before_install:
+    - pecl install imagick
+    - pecl install redis
     - composer install
 
 script: ./vendor/bin/phpunit
