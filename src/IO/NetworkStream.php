@@ -49,42 +49,42 @@ class NetworkStream extends Stream
         }
     }
 
-    protected function getCanRead(): bool
+    public function getCanRead(): bool
     {
         return true;
     }
 
-    protected function getCanSeek(): bool
+    public function getCanSeek(): bool
     {
         return false;
     }
 
-    protected function getCanTimeout(): bool
+    public function getCanTimeout(): bool
     {
         return true;
     }
 
-    protected function getCanWrite(): bool
+    public function getCanWrite(): bool
     {
         return true;
     }
 
-    protected function getLength(): int
+    public function getLength(): int
     {
         return -1;
     }
 
-    protected function getPosition(): int
+    public function getPosition(): int
     {
         return -1;
     }
 
-    protected function getReadTimeout(): int
+    public function getReadTimeout(): int
     {
         return -1;
     }
 
-    protected function getWriteTimeout(): int
+    public function getWriteTimeout(): int
     {
         return -1;
     }

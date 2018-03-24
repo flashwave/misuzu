@@ -1,5 +1,6 @@
 <?php
 use Misuzu\Application;
+use Misuzu\IO\File;
 use Misuzu\Users\User;
 use Misuzu\Users\Session;
 
@@ -11,6 +12,8 @@ if ($settings_session === null) {
     header('Location: /');
     return;
 }
+
+$csrf_error_str = "Couldn't verify you, please refresh the page and retry.";
 
 $settings_profile_fields = [
     'twitter' => [
@@ -91,11 +94,17 @@ if (!array_key_exists($settings_mode, $settings_modes)) {
 
 $settings_errors = [];
 
+$avatar_filename = "{$settings_user->user_id}.msz";
+$avatar_max_width = $app->config->get('Avatar', 'max_width', 'int', 4000);
+$avatar_max_height = $app->config->get('Avatar', 'max_height', 'int', 4000);
+$avatar_max_filesize = $app->config->get('Avatar', 'max_filesize', 'int', 1000000);
+$avatar_max_filesize_human = byte_symbol($avatar_max_filesize, true);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     switch ($settings_mode) {
         case 'account':
             if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
-                $settings_errors[] = "Couldn't verify you, please refresh the page and retry.";
+                $settings_errors[] = $csrf_error_str;
                 break;
             }
 
@@ -193,6 +202,110 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $settings_user->save();
             }
             break;
+
+        case 'avatar':
+            if (isset($_POST['import'])
+                && !File::exists($app->getStore('avatars/original')->filename($avatar_filename))) {
+                if (!tmp_csrf_verify($_POST['import'])) {
+                    $settings_errors[] = $csrf_error_str;
+                    break;
+                }
+
+                $old_avatar_url = trim(file_get_contents(
+                    "https://secret.flashii.net/avatar-serve.php?id={$settings_user->user_id}&r"
+                ));
+
+                if (empty($old_avatar_url)) {
+                    $settings_errors[] = 'No old avatar was found for you.';
+                    break;
+                }
+
+                File::writeAll(
+                    $app->getStore('avatars/original')->filename($avatar_filename),
+                    file_get_contents($old_avatar_url)
+                );
+                break;
+            }
+
+            if (isset($_POST['delete'])) {
+                if (!tmp_csrf_verify($_POST['delete'])) {
+                    $settings_errors[] = $csrf_error_str;
+                    break;
+                }
+
+                File::delete($app->getStore('avatars/original')->filename($avatar_filename));
+                File::delete($app->getStore('avatars/200x200')->filename($avatar_filename));
+                break;
+            }
+
+            if (isset($_POST['upload'])) {
+                if (!tmp_csrf_verify($_POST['upload'])) {
+                    $settings_errors[] = $csrf_error_str;
+                    break;
+                }
+
+                switch ($_FILES['avatar']['error']) {
+                    case UPLOAD_ERR_OK:
+                        break;
+
+                    case UPLOAD_ERR_PARTIAL:
+                        $settings_errors[] = 'The upload was interrupted, please try again!';
+                        break;
+
+                    case UPLOAD_ERR_INI_SIZE:
+                    case UPLOAD_ERR_FORM_SIZE:
+                        $settings_errors[] = "Your avatar is not allowed to be larger in filesize than {$avatar_max_filesize_human}!";
+                        break;
+
+                    case UPLOAD_ERR_NO_TMP_DIR:
+                    case UPLOAD_ERR_CANT_WRITE:
+                        $settings_errors[] = 'Unable to save your avatar, contact an administator!';
+                        break;
+
+                    case UPLOAD_ERR_EXTENSION:
+                    default:
+                        $settings_errors[] = 'Something happened?';
+                        break;
+                }
+
+                if (count($settings_errors) > 0) {
+                    break;
+                }
+
+                $upload_path = $_FILES['avatar']['tmp_name'];
+                $upload_meta = getimagesize($upload_path);
+
+                if (!$upload_meta
+                    || !in_array($upload_meta[2], [IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG], true)
+                    || $upload_meta[0] < 1
+                    || $upload_meta[1] < 1) {
+                    $settings_errors[] = 'Please provide a valid image.';
+                    break;
+                }
+
+                if ($upload_meta[0] > $avatar_max_width || $upload_meta[1] > $avatar_max_height) {
+                    $settings_errors[] = "Your avatar can't be larger than {$avatar_max_width}x{$avatar_max_height}, yours was {$upload_meta[0]}x{$upload_meta[1]}";
+                    break;
+                }
+
+                if (filesize($upload_path) > $avatar_max_filesize) {
+                    $settings_errors[] = "Your avatar is not allowed to be larger in filesize than {$avatar_max_filesize_human}!";
+                    break;
+                }
+
+                $avatar_path = $app->getStore('avatars/original')->filename($avatar_filename);
+                move_uploaded_file($upload_path, $avatar_path);
+
+                $crop_path = $app->getStore('avatars/200x200')->filename($avatar_filename);
+
+                if (File::exists($crop_path)) {
+                    File::delete($crop_path);
+                }
+                break;
+            }
+
+            $settings_errors[] = "You shouldn't have done that.";
+            break;
     }
 }
 
@@ -202,6 +315,13 @@ $app->templating->var('settings_title', $settings_modes[$settings_mode]);
 switch ($settings_mode) {
     case 'account':
         $app->templating->vars(compact('settings_profile_fields'));
+        break;
+
+    case 'avatar':
+        $app->templating->var(
+            'can_import_old_avatar',
+            !File::exists($app->getStore('avatars/original')->filename($avatar_filename))
+        );
         break;
 
     case 'sessions':

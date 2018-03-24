@@ -12,7 +12,22 @@ class Directory
      * Path to this directory.
      * @var string
      */
-    public $path;
+    private $path;
+
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    public function isReadable(): bool
+    {
+        return is_readable($this->getPath());
+    }
+
+    public function isWritable(): bool
+    {
+        return is_writable($this->getPath());
+    }
 
     /**
      * Fixes the path, sets proper slashes and checks if the directory exists.
@@ -21,11 +36,13 @@ class Directory
      */
     public function __construct(string $path)
     {
-        $this->path = static::fixSlashes(rtrim($path, '/\\'));
+        $path = static::fixSlashes(rtrim($path, '/\\'));
 
-        if (!static::exists($this->path)) {
+        if (!static::exists($path)) {
             throw new DirectoryDoesNotExistException;
         }
+
+        $this->path = realpath($path);
     }
 
     /**
@@ -44,6 +61,11 @@ class Directory
         }, glob($this->path . '/' . $pattern));
     }
 
+    public function filename(string $filename): string
+    {
+        return $this->getPath() . '/' . $filename;
+    }
+
     /**
      * Creates a directory if it doesn't already exist.
      * @param string $path
@@ -52,15 +74,31 @@ class Directory
      */
     public static function create(string $path): Directory
     {
-        $path = static::fixSlashes($path);
-
         if (static::exists($path)) {
             throw new DirectoryExistsException;
         }
 
-        mkdir($path);
+        $split_path = explode('/', $path);
+        $existing_path = '/';
+
+        foreach ($split_path as $path_part) {
+            $existing_path .= $path_part . '/';
+
+            if (!Directory::exists($existing_path)) {
+                mkdir($existing_path);
+            }
+        }
 
         return new static($path);
+    }
+
+    public static function createOrOpen(string $path): Directory
+    {
+        if (static::exists($path)) {
+            return new Directory($path);
+        } else {
+            return Directory::create($path);
+        }
     }
 
     /**

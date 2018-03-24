@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu\IO;
 
+use Exception;
+
 /**
  * Static file meta functions.
  * @package Misuzu\IO
@@ -11,6 +13,27 @@ class File
     public static function open(string $filename): FileStream
     {
         return new FileStream($filename, FileStream::MODE_READ_WRITE, true);
+    }
+
+    public static function readToEnd(string $filename, bool $lock = false): string
+    {
+        $output = '';
+
+        try {
+            $file = new FileStream($filename, FileStream::MODE_READ, $lock);
+            $output = $file->read($file->getLength());
+            $file->close();
+        } catch (Exception $ex) {
+        }
+
+        return $output;
+    }
+
+    public static function writeAll(string $filename, string $data): void
+    {
+        $file = new FileStream($filename, FileStream::MODE_TRUNCATE, true);
+        $file->write($data);
+        $file->close();
     }
 
     /**

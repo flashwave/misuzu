@@ -2,6 +2,7 @@
 namespace Misuzu;
 
 use Misuzu\Config\ConfigManager;
+use Misuzu\IO\Directory;
 use Misuzu\Users\Session;
 use UnexpectedValueException;
 use InvalidArgumentException;
@@ -46,6 +47,48 @@ class Application extends ApplicationBase
     public function __destruct()
     {
         ExceptionHandler::unregister();
+    }
+
+    public function inDebugMode(): bool
+    {
+        return $this->debugMode;
+    }
+
+    public function getPath(string $path): string
+    {
+        if (!starts_with($path, '/')) {
+            $path = __DIR__ . '/../' . $path;
+        }
+
+        return Directory::fixSlashes(rtrim($path, '/'));
+    }
+
+    public function getStoragePath(string $append = ''): Directory
+    {
+        $path = '';
+
+        if (starts_with($append, '/')) {
+            $path = $append;
+        } else {
+            $path = $this->config->get('Storage', 'path', 'string', __DIR__ . '/../store');
+
+            if (!empty($append)) {
+                $path .= '/' . $append;
+            }
+        }
+
+        return Directory::createOrOpen($this->getPath($path));
+    }
+
+    public function getStore(string $purpose): Directory
+    {
+        $override_key = "override_{$purpose}";
+
+        if ($this->config->contains('Storage', $override_key)) {
+            return new Directory($this->config->get('Storage', $override_key));
+        }
+
+        return $this->getStoragePath($purpose);
     }
 
     public function startSession(int $user_id, string $session_key): void

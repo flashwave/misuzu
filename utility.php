@@ -150,6 +150,53 @@ function tmp_csrf_token(?\Misuzu\Users\Session $session = null): string
     return md5($session->session_key);
 }
 
+function crop_image_centred_path(string $filename, int $target_width, int $target_height): \Imagick
+{
+    return crop_image_centred(new \Imagick($filename), $target_width, $target_height);
+}
+
+function crop_image_centred(Imagick $image, int $target_width, int $target_height): Imagick
+{
+    $image->setImageFormat($image->getNumberImages() > 1 ? 'gif' : 'png');
+    $image = $image->coalesceImages();
+
+    $width = $image->getImageWidth();
+    $height = $image->getImageHeight();
+
+    if ($width > $height) {
+        $resize_width = $width * $target_height / $height;
+        $resize_height = $target_height;
+    } else {
+        $resize_width = $target_width;
+        $resize_height = $height * $target_width / $width;
+    }
+
+    do {
+        $image->resizeImage(
+            $resize_width,
+            $resize_height,
+            Imagick::FILTER_LANCZOS,
+            0.9
+        );
+
+        $image->cropImage(
+            $target_width,
+            $target_height,
+            ($resize_width - $target_width) / 2,
+            ($resize_height - $target_height) / 2
+        );
+
+        $image->setImagePage(
+            $target_width,
+            $target_height,
+            0,
+            0
+        );
+    } while ($image->nextImage());
+
+    return $image->deconstructImages();
+}
+
 function is_int_ex($value, int $boundary_low, int $boundary_high): bool
 {
     return is_int($value) && $value >= $boundary_low && $value <= $boundary_high;
