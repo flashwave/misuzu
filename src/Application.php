@@ -82,7 +82,7 @@ class Application extends ApplicationBase
 
     public function getStore(string $purpose): Directory
     {
-        $override_key = "override_{$purpose}";
+        $override_key = 'override_' . str_replace('/', '_', $purpose);
 
         if ($this->config->contains('Storage', $override_key)) {
             return new Directory($this->config->get('Storage', $override_key));
