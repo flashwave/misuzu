@@ -91,11 +91,12 @@
                         </div>
                     </div>
 
+                    {% if app.session != null %}
                     {% spaceless %}
                     <div class="mio__profile__info__section">
                         <div class="mio__profile__info__block mio__profile__info__block--links">
                             {% for name, data in profile_fields %}
-                                {% if (data.display is defined ? data.display : data.value|length > 0) %}
+                                {% if (data.display is defined ? data.display : true) and data.value|length > 0 %}
                                     <div class="mio__profile__info__row mio__profile__info__row--field-{{ name }}">
                                         <div class="mio__profile__info__column mio__profile__info__column--heading">
                                             {{ data.title }}
@@ -114,6 +115,7 @@
                         </div>
                     </div>
                     {% endspaceless %}
+                    {% endif %}
                 </div>
                 <div class="mio__avatar mio__profile__avatar" style="background-image:url('/profile.php?u={{ profile.user_id }}&amp;m=avatar');"></div>
             </div>
