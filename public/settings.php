@@ -248,6 +248,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     case UPLOAD_ERR_OK:
                         break;
 
+                    case UPLOAD_ERR_NO_FILE:
+                        $settings_errors[] = 'Select a file before hitting upload!';
+                        break;
+
                     case UPLOAD_ERR_PARTIAL:
                         $settings_errors[] = 'The upload was interrupted, please try again!';
                         break;
