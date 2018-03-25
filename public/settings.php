@@ -87,6 +87,7 @@ if ($settings_mode === null) {
 $app->templating->vars(compact('settings_mode', 'settings_modes', 'settings_user'));
 
 if (!array_key_exists($settings_mode, $settings_modes)) {
+    http_response_code(404);
     $app->templating->var('settings_title', 'Not Found');
     echo $app->templating->render("settings.notfound");
     return;
