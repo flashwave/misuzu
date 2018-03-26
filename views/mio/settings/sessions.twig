@@ -1,6 +1,10 @@
 {% extends '@mio/settings/master.twig' %}
 
 {% block settings_content %}
+    <div class="mio__settings__description">
+        <p>These are the active logins to your account, clicking the Kill button will force a logout on that session. Your current login is highlighted with a darker purple so you don't accidentally force yourself to logout.</p>
+    </div>
+
     <div class="mio__settings__sessions">
         {% for session in user_sessions %}
             <div class="mio__settings__sessions__entry{% if session.session_id == settings_session.session_id %} mio__settings__sessions__entry--current{% endif %}" id="session-{{ session.session_id }}">
