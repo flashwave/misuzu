@@ -1,6 +1,7 @@
 {% extends '@mio/user/master.twig' %}
 {% from '@mio/macros.twig' import navigation, link %}
 
+{% set icon = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
 {% set title = 'Profile of ' ~ profile.username %}
 
 {% set youtube_is_channel_id = profile.user_youtube|slice(0, 2) == 'UC' and profile.youtube|length == 24 %}
@@ -117,7 +118,7 @@
                     {% endspaceless %}
                     {% endif %}
                 </div>
-                <div class="mio__avatar mio__profile__avatar" style="background-image:url('/profile.php?u={{ profile.user_id }}&amp;m=avatar');"></div>
+                <div class="mio__avatar mio__profile__avatar" style="background-image:url('{{ icon }}');"></div>
             </div>
         </div>
     </div>
