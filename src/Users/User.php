@@ -40,6 +40,14 @@ class User extends Model
         return $user;
     }
 
+    public static function findLogin(string $usernameOrEmail): ?User
+    {
+        $usernameOrEmail = strtolower($usernameOrEmail);
+        return User::whereRaw("LOWER(`username`) = '{$usernameOrEmail}'")
+            ->orWhere('email', $usernameOrEmail)
+            ->first();
+    }
+
     public static function validateUsername(string $username, bool $checkInUse = false): string
     {
         $username_length = strlen($username);
@@ -68,7 +76,7 @@ class User extends Model
             return 'spacing';
         }
 
-        if ($checkInUse && static::where('username', $username)->count() > 0) {
+        if ($checkInUse && static::whereRaw("LOWER(`username`) = LOWER('{$username}')")->count() > 0) {
             return 'in-use';
         }
 
@@ -85,7 +93,7 @@ class User extends Model
             return 'dns';
         }
 
-        if ($checkInUse && static::where('email', $email)->count() > 0) {
+        if ($checkInUse && static::whereRaw("LOWER(`email`) = LOWER('{$email}')")->count() > 0) {
             return 'in-use';
         }
 
@@ -192,6 +200,11 @@ class User extends Model
     public function setPasswordAttribute(string $password): void
     {
         $this->attributes['password'] = password_hash($password, self::PASSWORD_HASH_ALGO);
+    }
+
+    public function setEmailAttribute(string $email): void
+    {
+        $this->attributes['email'] = strtolower($email);
     }
 
     public function sessions()

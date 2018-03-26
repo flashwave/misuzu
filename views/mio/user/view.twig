@@ -1,6 +1,7 @@
 {% extends '@mio/user/master.twig' %}
 {% from '@mio/macros.twig' import navigation, link %}
 
+{% set icon = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
 {% set title = 'Profile of ' ~ profile.username %}
 
 {% set youtube_is_channel_id = profile.user_youtube|slice(0, 2) == 'UC' and profile.youtube|length == 24 %}
@@ -91,11 +92,12 @@
                         </div>
                     </div>
 
+                    {% if app.session != null %}
                     {% spaceless %}
                     <div class="mio__profile__info__section">
                         <div class="mio__profile__info__block mio__profile__info__block--links">
                             {% for name, data in profile_fields %}
-                                {% if (data.display is defined ? data.display : data.value|length > 0) %}
+                                {% if (data.display is defined ? data.display : true) and data.value|length > 0 %}
                                     <div class="mio__profile__info__row mio__profile__info__row--field-{{ name }}">
                                         <div class="mio__profile__info__column mio__profile__info__column--heading">
                                             {{ data.title }}
@@ -114,8 +116,9 @@
                         </div>
                     </div>
                     {% endspaceless %}
+                    {% endif %}
                 </div>
-                <div class="mio__avatar mio__profile__avatar" style="background-image:url('/profile.php?u={{ profile.user_id }}&amp;m=avatar');"></div>
+                <div class="mio__avatar mio__profile__avatar" style="background-image:url('{{ icon }}');"></div>
             </div>
         </div>
     </div>

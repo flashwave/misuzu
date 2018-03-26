@@ -1,0 +1,69 @@
+@mio-settings-sessions-mobile: 1000px;
+
+.mio__settings__sessions {
+    &__country {
+        vertical-align: middle;
+    }
+
+    @media (max-width: @mio-settings-sessions-mobile) {
+        &__button {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    &__entry {
+        display: flex;
+        border: 1px solid #9475b2;
+        justify-content: space-between;
+        padding: 1px;
+        flex-wrap: wrap;
+
+        &:not(:last-child) {
+            margin-bottom: 1px;
+        }
+
+        &--current {
+            background-color: #c2affe;
+        }
+    }
+
+    &__column {
+        flex-grow: 1;
+
+        &:not(:last-child) {
+            margin-left: 5px;
+            margin-right: 1px;
+        }
+
+        &--ip,
+        &--created,
+        &--expires,
+        &--options {
+            flex-grow: 0;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: @mio-settings-sessions-mobile) {
+            &--options {
+                text-align: center;
+                flex-grow: 1;
+                width: 100%;
+            }
+        }
+
+        &--user-agent {
+            flex-shrink: 1;
+            flex-grow: 1;
+        }
+
+        &--created,
+        &--expires {
+            min-width: 120px;
+        }
+
+        &__name {
+            font-weight: 700;
+        }
+    }
+}

@@ -2,23 +2,47 @@
 
 {% block settings_content %}
     <div class="mio__settings__avatar">
-        <div class="mio__settings__avatar__forms">
-            <form class="mio__settings__avatar__form" method="post" action="?m=avatar" enctype="multipart/form-data">
-                <label class="mio__input__upload__label">
-                    <input type="file" name="avatar" class="mio__input__upload">
-                    Pick file...
-                </label>
-                <button class="mio__input__button" name="upload" value="{{ csrf_token() }}">Upload</button>
-            </form>
-            <form class="mio__settings__avatar__form" method="post" action="?m=avatar">
-                <button class="mio__input__button" name="delete" value="{{ csrf_token() }}">Delete</button>
-            </form>
-            {% if can_import_old_avatar %}
-                <form class="mio__settings__avatar__form" method="post" action="?m=avatar">
-                    <button class="mio__input__button" name="import" value="{{ csrf_token() }}">Import old avatar</button>
+        <div class="mio__settings__avatar__sections">
+            <div class="mio__settings__avatar__requirements">
+                <ul class="mio__settings__avatar__requirements__list">
+                    <li>Your avatar may not be larger than <strong>{{ avatar_max_width }}x{{ avatar_max_height }}</strong>.</li>
+                    <li>The avatar will be centre cropped to be <strong>200x200</strong>.</li>
+                    <li>Your avatar may not exceed the <strong>{{ avatar_max_filesize|byte_symbol(true) }}</strong> filesize limit.</li>
+                    <li>Animated gif images are allowed.</li>
+                    <li>Keep things sane and suitable for all ages.</li>
+                </ul>
+            </div>
+            <div class="mio__settings__avatar__forms">
+                <form class="mio__settings__avatar__form" method="post" action="?m=avatar" enctype="multipart/form-data">
+                    <input type="hidden" name="MAX_FILE_SIZE" value="{{ avatar_max_filesize }}">
+                    <label class="mio__input__upload__label">
+                        <input accept="image/png,image/jpeg,image/gif" type="file" name="avatar" class="mio__input__upload" id="avatar-selection">
+                        Pick file...
+                    </label>
+                    <button class="mio__input__button" name="upload" value="{{ csrf_token() }}">Upload</button>
                 </form>
-            {% endif %}
+                <form class="mio__settings__avatar__form" method="post" action="?m=avatar">
+                    {% if user_has_avatar %}
+                        <button class="mio__input__button" name="delete" value="{{ csrf_token() }}">Delete</button>
+                    {% else %}
+                        <button class="mio__input__button" name="import" value="{{ csrf_token() }}">Import old avatar</button>
+                    {% endif %}
+                </form>
+            </div>
         </div>
-        <div class="mio__avatar mio__settings__avatar__preview" style="background-image:url('/profile.php?u={{ settings_user.user_id }}&amp;m=avatar')"></div>
+        <div class="mio__settings__avatar__preview__container">
+            <div class="mio__avatar mio__settings__avatar__preview" id="avatar-preview" style="background-image:url('/profile.php?u={{ settings_user.user_id }}&amp;m=avatar')"></div>
+        </div>
     </div>
+    <script>
+        function updateAvatarPreview(url, element) {
+            url = url || "/profile.php?u={{ settings_user.user_id }}&m=avatar";
+            element = element || document.getElementById('avatar-preview');
+            element.style.backgroundImage = 'url(\'' + url + '\')';
+        }
+
+        document.getElementById('avatar-selection').addEventListener('change', function (ev) {
+            updateAvatarPreview(URL.createObjectURL(ev.target.files[0]));
+        });
+    </script>
 {% endblock %}

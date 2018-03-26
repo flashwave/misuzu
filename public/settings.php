@@ -84,9 +84,10 @@ if ($settings_mode === null) {
     $settings_mode = key($settings_modes);
 }
 
-$app->templating->vars(compact('settings_mode', 'settings_modes', 'settings_user'));
+$app->templating->vars(compact('settings_mode', 'settings_modes', 'settings_user', 'settings_session'));
 
 if (!array_key_exists($settings_mode, $settings_modes)) {
+    http_response_code(404);
     $app->templating->var('settings_title', 'Not Found');
     echo $app->templating->render("settings.notfound");
     return;
@@ -233,8 +234,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
                 }
 
-                File::delete($app->getStore('avatars/original')->filename($avatar_filename));
-                File::delete($app->getStore('avatars/200x200')->filename($avatar_filename));
+                $delete_this = [
+                    $app->getStore('avatars/original')->filename($avatar_filename),
+                    $app->getStore('avatars/200x200')->filename($avatar_filename),
+                ];
+
+                foreach ($delete_this as $delete_avatar) {
+                    if (File::exists($delete_avatar)) {
+                        File::delete($delete_avatar);
+                    }
+                }
                 break;
             }
 
@@ -246,6 +255,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 switch ($_FILES['avatar']['error']) {
                     case UPLOAD_ERR_OK:
+                        break;
+
+                    case UPLOAD_ERR_NO_FILE:
+                        $settings_errors[] = 'Select a file before hitting upload!';
                         break;
 
                     case UPLOAD_ERR_PARTIAL:
@@ -306,6 +319,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $settings_errors[] = "You shouldn't have done that.";
             break;
+
+        case 'sessions':
+            if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
+                $settings_errors[] = $csrf_error_str;
+                break;
+            }
+
+            $session_id = (int)($_POST['session'] ?? 0);
+
+            if ($session_id < 1) {
+                $settings_errors[] = 'no';
+                break;
+            }
+
+            $session = Session::find($session_id);
+
+            if ($session === null || $session->user_id !== $settings_user->user_id) {
+                $settings_errors[] = 'You may only end your own sessions.';
+                break;
+            }
+
+            if ($session->session_id === $app->getSession()->session_id) {
+                header('Location: /auth.php?m=logout&s=' . tmp_csrf_token());
+                return;
+            }
+
+            $session->delete();
+            break;
     }
 }
 
@@ -318,10 +359,13 @@ switch ($settings_mode) {
         break;
 
     case 'avatar':
-        $app->templating->var(
-            'can_import_old_avatar',
-            !File::exists($app->getStore('avatars/original')->filename($avatar_filename))
-        );
+        $user_has_avatar = File::exists($app->getStore('avatars/original')->filename($avatar_filename));
+        $app->templating->vars(compact(
+            'avatar_max_width',
+            'avatar_max_height',
+            'avatar_max_filesize',
+            'user_has_avatar'
+        ));
         break;
 
     case 'sessions':
