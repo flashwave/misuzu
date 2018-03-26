@@ -84,7 +84,7 @@ if ($settings_mode === null) {
     $settings_mode = key($settings_modes);
 }
 
-$app->templating->vars(compact('settings_mode', 'settings_modes', 'settings_user'));
+$app->templating->vars(compact('settings_mode', 'settings_modes', 'settings_user', 'settings_session'));
 
 if (!array_key_exists($settings_mode, $settings_modes)) {
     http_response_code(404);
@@ -318,6 +318,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $settings_errors[] = "You shouldn't have done that.";
+            break;
+
+        case 'sessions':
+            if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
+                $settings_errors[] = $csrf_error_str;
+                break;
+            }
+
+            $session_id = (int)($_POST['session'] ?? 0);
+
+            if ($session_id < 1) {
+                $settings_errors[] = 'no';
+                break;
+            }
+
+            $session = Session::find($session_id);
+
+            if ($session === null || $session->user_id !== $settings_user->user_id) {
+                $settings_errors[] = 'You may only end your own sessions.';
+                break;
+            }
+
+            if ($session->session_id === $app->getSession()->session_id) {
+                header('Location: /auth.php?m=logout&s=' . tmp_csrf_token());
+                return;
+            }
+
+            $session->delete();
             break;
     }
 }
