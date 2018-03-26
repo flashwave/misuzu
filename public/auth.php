@@ -84,9 +84,9 @@ switch ($mode) {
             $username = $_POST['username'] ?? '';
             $password = $_POST['password'] ?? '';
 
-            try {
-                $user = User::where('username', $username)->orWhere('email', $username)->firstOrFail();
-            } catch (ModelNotFoundException $e) {
+            $user = User::findLogin($username);
+
+            if ($user === null) {
                 LoginAttempt::recordFail($ipAddress, null, $user_agent);
                 $auth_login_error = 'Invalid username or password!';
                 break;
