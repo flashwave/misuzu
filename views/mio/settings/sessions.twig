@@ -9,7 +9,10 @@
                         IP
                     </div>
                     <div class="mio__settings__sessions__column__value">
-                        {{ session.session_ip.string }} <img class="mio__settings__sessions__country" src="https://static.flash.moe/flags/fff/{{ session.session_country|lower }}.png" alt="{{ session.session_country }}" title="{{ session.session_country|country_name }}">
+                        {{ session.session_ip.string }}
+                        {% if session.session_country != 'XX' %}
+                            <img class="mio__settings__sessions__country" src="https://static.flash.moe/flags/fff/{{ session.session_country|lower }}.png" alt="{{ session.session_country }}" title="{{ session.session_country|country_name }}">
+                        {% endif %}
                     </div>
                 </div>
                 <div class="mio__settings__sessions__column mio__settings__sessions__column--created" onmouseenter="this.children[1].textContent = '{{ session.created_at }}';" onmouseleave="this.children[1].textContent = '{{ session.created_at.diffForHumans }}';">
