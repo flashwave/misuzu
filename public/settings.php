@@ -234,8 +234,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
                 }
 
-                File::delete($app->getStore('avatars/original')->filename($avatar_filename));
-                File::delete($app->getStore('avatars/200x200')->filename($avatar_filename));
+                $delete_this = [
+                    $app->getStore('avatars/original')->filename($avatar_filename),
+                    $app->getStore('avatars/200x200')->filename($avatar_filename),
+                ];
+
+                foreach ($delete_this as $delete_avatar) {
+                    if (File::exists($delete_avatar)) {
+                        File::delete($delete_avatar);
+                    }
+                }
                 break;
             }
 
@@ -323,10 +331,13 @@ switch ($settings_mode) {
         break;
 
     case 'avatar':
-        $app->templating->var(
-            'can_import_old_avatar',
-            !File::exists($app->getStore('avatars/original')->filename($avatar_filename))
-        );
+        $user_has_avatar = File::exists($app->getStore('avatars/original')->filename($avatar_filename));
+        $app->templating->vars(compact(
+            'avatar_max_width',
+            'avatar_max_height',
+            'avatar_max_filesize',
+            'user_has_avatar'
+        ));
         break;
 
     case 'sessions':

@@ -165,9 +165,10 @@ class Application extends ApplicationBase
         $twig->addFilter('country_name', 'get_country_name');
         $twig->addFilter('flip', 'array_flip');
 
-        $twig->addFunction('byte_symbol');
-        $twig->addFunction('session_id');
+        // avoid using config() in templates whenever possible
+        // in all honesty this shouldn't even be a thing
         $twig->addFunction('config', [$this->config, 'get']);
+
         $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
         $twig->addFunction('csrf_token', 'tmp_csrf_token');

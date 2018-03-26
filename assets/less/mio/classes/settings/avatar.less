@@ -1,20 +1,48 @@
+@mio-settings-avatar-mobile: 700px;
+
 .mio__settings__avatar {
     display: flex;
     min-height: 200px;
     justify-content: space-between;
 
+    @media (max-width: @mio-settings-avatar-mobile) {
+        flex-direction: column-reverse;
+
+        &__sections {
+            text-align: center;
+        }
+    }
+
     &__form {
-        display: block;
+        display: inline-block;
         margin-bottom: 2px;
     }
 
+    &__requirements {
+        text-align: left;
+        display: inline-block;
+        border: 3px double #9475b2;
+        padding: .5em 2em;
+
+        &__list {
+            list-style: square;
+        }
+    }
+
     &__forms {
-        text-align: center;
+        padding-top: 2px;
         flex-grow: 1;
     }
 
     &__preview {
         flex-grow: 1;
         flex-shrink: 0;
+        min-width: 200px;
+        min-height: 200px;
+        display: inline-block;
+
+        &__container {
+            text-align: center;
+        }
     }
 }
