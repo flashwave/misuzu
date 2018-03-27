@@ -71,25 +71,20 @@ $settings_profile_fields = [
 
 $settings_user = $settings_session->user;
 
-$settings_mode = $_GET['m'] ?? null;
 $settings_modes = [
     'account' => 'Account',
     'avatar' => 'Avatar',
     'sessions' => 'Sessions',
     'login-history' => 'Login History',
 ];
-
-// if no mode is explicitly set just go to the index
-if ($settings_mode === null) {
-    $settings_mode = key($settings_modes);
-}
+$settings_mode = $_GET['m'] ?? key($settings_modes);
 
 $app->templating->vars(compact('settings_mode', 'settings_modes', 'settings_user', 'settings_session'));
 
 if (!array_key_exists($settings_mode, $settings_modes)) {
     http_response_code(404);
     $app->templating->var('settings_title', 'Not Found');
-    echo $app->templating->render("settings.notfound");
+    echo $app->templating->render('settings.notfound');
     return;
 }
 

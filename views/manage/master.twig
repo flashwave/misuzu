@@ -1,0 +1,55 @@
+{% from '@manage/macros.twig' import link %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Flashii Broom Closet</title>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+        <link href="/css/manage.css" rel="stylesheet">
+    </head>
+    <body class="manage">
+        <div class="wrapper">
+            <nav class="header">
+                <div class="header__wrapper">
+                    <a class="header__logo" href="/manage.php">
+                        Broom Closet
+                    </a>
+
+                    <div class="header__navigation">
+                        {% for mode, data in manage_modes %}
+                            <a class="header__link{% if mode == manage_mode %} header__link--active{% endif %}" href="?m={{ mode }}">{{ data.title }}</a>
+                        {% endfor %}
+                    </div>
+
+                    <div class="header__user">
+                        <input type="checkbox" id="manage-user-menu-state" class="header__user__state">
+                        <label for="manage-user-menu-state" class="header__link header__user__toggle" style="background-image:url('/profile.php?u={{ manage_user.user_id }}&amp;m=avatar');">{{ manage_user.username }}</label>
+                        <div class="header__user__menu">
+                            <div class="header__user__section">
+                                <a class="header__user__link" href="/profile.php?u={{ manage_user.user_id }}">Profile</a>
+                                <a class="header__user__link" href="/settings.php">Settings</a>
+                            </div>
+                            <div class="header__user__section">
+                                <a class="header__user__link" href="/">Return</a>
+                                <a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            {% block content %}
+                <div class="container">
+                    <p> This page has no content.</p>
+                </div>
+            {% endblock %}
+
+            <footer class="footer">
+                {{ link('https://flash.moe', 'flash.moe', 'footer__link') }} 2013-{{
+                ''|date('Y') }} /
+                {{ link('https://github.com/flashwave/misuzu/tree/' ~ git_branch(), git_branch(), 'footer__link') }} # {{ link('https://github.com/flashwave/misuzu/commit/' ~ git_hash(true), git_hash(), 'footer__link') }}
+            </footer>
+        </div>
+    </body>
+</html>

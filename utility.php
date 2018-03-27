@@ -197,6 +197,24 @@ function crop_image_centred(Imagick $image, int $target_width, int $target_heigh
     return $image->deconstructImages();
 }
 
+function create_pagination($paginator)
+{
+    $window = \Illuminate\Pagination\UrlWindow::make($paginator);
+
+    $pagination = array_map(
+        function ($str) {
+            return substr($str, 2);
+        },
+        array_merge(
+            $window['first'] ?? [],
+            $window['slider'] ?? [],
+            $window['last'] ?? []
+        )
+    );
+
+    return $pagination;
+}
+
 function is_int_ex($value, int $boundary_low, int $boundary_high): bool
 {
     return is_int($value) && $value >= $boundary_low && $value <= $boundary_high;

@@ -51,7 +51,7 @@ switch ($mode) {
             return;
         }
 
-        echo $app->templating->render('logout');
+        echo $app->templating->render('@auth.logout');
         break;
 
     case 'login':
@@ -175,6 +175,6 @@ switch ($mode) {
             $app->templating->var('auth_register_error', $auth_register_error);
         }
 
-        echo $app->templating->render('auth');
+        echo $app->templating->render('@auth.auth');
         break;
 }

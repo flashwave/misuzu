@@ -1,0 +1,20 @@
+.listing {
+    display: flex;
+    flex-direction: column;
+
+    &__entry {
+        border-right: 4px solid #a00;
+        padding-right: 1px;
+        display: block;
+
+        &:not(:last-child) {
+            margin-bottom: 2px;
+        }
+
+        &__content {
+            width: 100%;
+            background-color: #333;
+            min-height: 50px;
+        }
+    }
+}

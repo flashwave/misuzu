@@ -1,0 +1,38 @@
+{% macro link(url, content, class) %}
+{% spaceless %}
+<a href="{{ url }}" {% if '://' in url %} target="_blank" rel="noreferrer noopener"{% endif %} {% if class is defined %}class="{{ class }}"{% endif %}>{{ content|raw }}</a>
+{% endspaceless %}
+{% endmacro %}
+
+{% macro pagination(url, pages, current, class, name) %}
+    {% set pagess = pages|create_pagination %}
+    {% set separator %}{% if '%3F' in url|default('')|url_encode %}&{% else %}?{% endif %}{% endset %}
+    {% set current_page = current|default(1) %}
+    {% set url = url ~ separator ~ name|default('page') ~ "=" %}
+
+    <div class="pagination {{ class }}">
+        {% if pages is defined and pages|length > 1 %}
+            {% if current_page > 1 %}
+                {% if pages|length > 2 %}
+                    <a class="pagination__button" href="{{ url ~ 1 }}" title="Jump to first page">&lt;&lt;</a>
+                {% endif %}
+
+                <a class="pagination__button" href="{{ url ~ (current_page - 1) }}" title="Previous page">&lt;</a>
+            {% endif %}
+
+            {% for id, page in pages %}
+                {% if (id + 1) > (current_page - 5) and (id + 1) < (current_page + 5) %}
+                    <a class="pagination__button{% if id == current_page - 1 %} pagination__button--current{% endif %}" href="{{ url ~ (id + 1) }}" title="Page {{ id + 1 }}">{{ id + 1 }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if current_page < pages|length %}
+                <a class="pagination__button" href="{{ url ~ (current_page + 1) }}" title="Next page">&gt;</a>
+
+                {% if pages|length > 2 %}
+                    <a class="pagination__button" href="{{ url ~ pages|length }}" title="Jump to last page">&gt;&gt;</a>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    </div>
+{% endmacro %}

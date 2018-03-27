@@ -1,0 +1,19 @@
+{% extends '@manage/master.twig' %}
+{% from '@manage/macros.twig' import pagination %}
+
+{% block content %}
+    <div class="container listing user-listing">
+        {% for user in manage_users %}
+            <label class="listing__entry user-listing__entry">
+                <div class="listing__entry__content user-listing__entry__content">
+                    <input type="checkbox">
+                    <div class="listing__entry__column user-listing__entry__column user-listing__entry__column--username">
+                        {{ user.username }}
+                    </div>
+                </div>
+            </label>
+        {% endfor %}
+    </div>
+
+    {{ pagination('?m=users', manage_users, users_page, null, 'p') }}
+{% endblock %}
