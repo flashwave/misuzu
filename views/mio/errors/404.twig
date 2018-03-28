@@ -1,0 +1,8 @@
+{% extends '@mio/errors/master.twig' %}
+
+{% set error_code = 404 %}
+{% set error_text = 'Not Found!' %}
+
+{% block error_message %}
+    <p>Couldn't find what you were looking for. Check the spelling in the URL or go back to the previous page.</p>
+{% endblock %}

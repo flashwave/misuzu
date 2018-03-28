@@ -25,5 +25,18 @@ if (PHP_SAPI !== 'cli') {
         ob_start('ob_gzhandler');
     }
 
+    $manage_mode = starts_with($_SERVER['REQUEST_URI'], '/manage');
+
     $app->startTemplating();
+    $app->templating->addPath('mio', __DIR__ . '/views/mio');
+
+    if ($manage_mode) {
+        if (Application::getInstance()->getSession() === null) {
+            http_response_code(403);
+            echo $app->templating->render('errors.403');
+            exit;
+        }
+
+        $app->templating->addPath('manage', __DIR__ . '/views/manage');
+    }
 }

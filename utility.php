@@ -199,20 +199,7 @@ function crop_image_centred(Imagick $image, int $target_width, int $target_heigh
 
 function create_pagination($paginator)
 {
-    $window = \Illuminate\Pagination\UrlWindow::make($paginator);
-
-    $pagination = array_map(
-        function ($str) {
-            return substr($str, 2);
-        },
-        array_merge(
-            $window['first'] ?? [],
-            $window['slider'] ?? [],
-            $window['last'] ?? []
-        )
-    );
-
-    return $pagination;
+    return \Illuminate\Pagination\UrlWindow::make($paginator);
 }
 
 function is_int_ex($value, int $boundary_low, int $boundary_high): bool

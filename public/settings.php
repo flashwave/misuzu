@@ -8,8 +8,9 @@ require_once __DIR__ . '/../misuzu.php';
 
 $settings_session = Application::getInstance()->getSession();
 
-if ($settings_session === null) {
-    header('Location: /');
+if (Application::getInstance()->getSession() === null) {
+    http_response_code(403);
+    echo $app->templating->render('errors.403');
     return;
 }
 

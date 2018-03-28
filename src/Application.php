@@ -175,7 +175,5 @@ class Application extends ApplicationBase
         $twig->addFunction('csrf_token', 'tmp_csrf_token');
 
         $twig->var('app', $this);
-
-        $twig->addPath('mio', __DIR__ . '/../views/mio');
     }
 }

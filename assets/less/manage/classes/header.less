@@ -9,8 +9,7 @@
         margin: 0 auto;
     }
 
-    &__logo,
-    &__link {
+    &__logo {
         padding: 8px 10px;
         color: #fff;
         text-decoration: none;
@@ -31,30 +30,19 @@
         flex-shrink: 0;
     }
 
-    &__link {
-        cursor: pointer;
-        transition: background-color .2s;
-
-        &:hover {
-            background-color: #333;
-        }
-
-        &--active,
-        &:active {
-            background-color: #222;
-        }
-    }
-
     &__user {
         flex-grow: 0;
         flex-shrink: 1;
+    }
+
+    &__menu {
+        margin: 0 1px;
 
         &__toggle {
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: right;
-            padding-right: 45px;
-            min-width: 100px;
+            padding: 8px 10px;
+            display: block;
+            cursor: pointer;
+            min-width: 50px;
             transition: background-color .2s, min-width .2s;
             -webkit-touch-callout: none;
             -webkit-user-select: none;
@@ -62,24 +50,39 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+
+            &--profile {
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: right;
+                padding-right: 45px;
+            }
+
+            &:hover {
+                background-color: #333;
+            }
+
+            &--active,
+            &:active {
+                background-color: #222;
+            }
         }
 
         &__state {
             display: none;
 
-            &:checked ~ .header__user__toggle {
+            &:checked ~ .header__menu__toggle {
                 background-color: #333;
                 min-width: 150px;
             }
 
-            &:checked ~ .header__user__menu {
+            &:checked ~ .header__menu__options {
                 max-height: 250px;
             }
         }
 
-        &__menu {
+        &__options {
             overflow: hidden;
-            text-align: right;
             max-height: 0px;
             width: 100%;
             position: absolute;
@@ -87,6 +90,10 @@
             z-index: 1000;
             transition: max-height .2s;
             box-shadow: 0 5px 5px 0 fade(#444, 80%);
+
+            &--user {
+                text-align: right;
+            }
         }
 
         &__link {
