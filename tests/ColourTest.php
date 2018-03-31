@@ -25,72 +25,72 @@ class ColourTest extends TestCase
     {
         $colour = Colour::none();
 
-        $this->assertTrue($colour->inherit);
-        $this->assertEquals($colour->raw, 0x40000000);
-        $this->assertEquals($colour->red, 0);
-        $this->assertEquals($colour->green, 0);
-        $this->assertEquals($colour->blue, 0);
-        $this->assertEquals($colour->hex, '000000');
+        $this->assertTrue($colour->getInherit());
+        $this->assertEquals($colour->getRaw(), 0x40000000);
+        $this->assertEquals($colour->getRed(), 0);
+        $this->assertEquals($colour->getGreen(), 0);
+        $this->assertEquals($colour->getBlue(), 0);
+        $this->assertEquals($colour->getHex(), '000000');
     }
 
     public function testNull()
     {
         $colour = new Colour(null);
 
-        $this->assertTrue($colour->inherit);
-        $this->assertEquals($colour->raw, 0x40000000);
-        $this->assertEquals($colour->red, 0);
-        $this->assertEquals($colour->green, 0);
-        $this->assertEquals($colour->blue, 0);
-        $this->assertEquals($colour->hex, '000000');
+        $this->assertTrue($colour->getInherit());
+        $this->assertEquals($colour->getRaw(), 0x40000000);
+        $this->assertEquals($colour->getRed(), 0);
+        $this->assertEquals($colour->getGreen(), 0);
+        $this->assertEquals($colour->getBlue(), 0);
+        $this->assertEquals($colour->getHex(), '000000');
     }
 
     public function testFromRaw()
     {
         $colour = new Colour(static::RAW_HEX6);
 
-        $this->assertEquals($colour->hex, static::STR_HEX6);
-        $this->assertEquals($colour->raw, static::RAW_HEX6);
-        $this->assertEquals($colour->red, static::RED_HEX6);
-        $this->assertEquals($colour->green, static::GREEN_HEX6);
-        $this->assertEquals($colour->blue, static::BLUE_HEX6);
-        $this->assertFalse($colour->inherit);
+        $this->assertEquals($colour->getHex(), static::STR_HEX6);
+        $this->assertEquals($colour->getRaw(), static::RAW_HEX6);
+        $this->assertEquals($colour->getRed(), static::RED_HEX6);
+        $this->assertEquals($colour->getGreen(), static::GREEN_HEX6);
+        $this->assertEquals($colour->getBlue(), static::BLUE_HEX6);
+        $this->assertFalse($colour->getInherit());
     }
 
     public function testFromRGB()
     {
         $colour = Colour::fromRGB(static::RED_HEX6, static::GREEN_HEX6, static::BLUE_HEX6);
 
-        $this->assertEquals($colour->hex, static::STR_HEX6);
-        $this->assertEquals($colour->raw, static::RAW_HEX6);
-        $this->assertEquals($colour->red, static::RED_HEX6);
-        $this->assertEquals($colour->green, static::GREEN_HEX6);
-        $this->assertEquals($colour->blue, static::BLUE_HEX6);
-        $this->assertFalse($colour->inherit);
+        $this->assertEquals($colour->getHex(), static::STR_HEX6);
+        $this->assertEquals($colour->getRaw(), static::RAW_HEX6);
+        $this->assertEquals($colour->getRed(), static::RED_HEX6);
+        $this->assertEquals($colour->getGreen(), static::GREEN_HEX6);
+        $this->assertEquals($colour->getBlue(), static::BLUE_HEX6);
+        $this->assertFalse($colour->getInherit());
     }
 
     public function testFromHex()
     {
         $colour = Colour::fromHex(static::SSTR_HEX6);
 
-        $this->assertEquals($colour->hex, static::STR_HEX6);
-        $this->assertEquals($colour->raw, static::RAW_HEX6);
-        $this->assertEquals($colour->red, static::RED_HEX6);
-        $this->assertEquals($colour->green, static::GREEN_HEX6);
-        $this->assertEquals($colour->blue, static::BLUE_HEX6);
-        $this->assertFalse($colour->inherit);
+        $this->assertEquals($colour->getHex(), static::STR_HEX6);
+        $this->assertEquals($colour->getRaw(), static::RAW_HEX6);
+        $this->assertEquals($colour->getRed(), static::RED_HEX6);
+        $this->assertEquals($colour->getGreen(), static::GREEN_HEX6);
+        $this->assertEquals($colour->getBlue(), static::BLUE_HEX6);
+        $this->assertFalse($colour->getInherit());
     }
 
     public function testFromHex3()
     {
         $colour = Colour::fromHex(static::SSTR_HEX3);
 
-        $this->assertEquals($colour->hex, static::STR_HEX3);
-        $this->assertEquals($colour->raw, static::RAW_HEX3);
-        $this->assertEquals($colour->red, static::RED_HEX3);
-        $this->assertEquals($colour->green, static::GREEN_HEX3);
-        $this->assertEquals($colour->blue, static::BLUE_HEX3);
-        $this->assertFalse($colour->inherit);
+        $this->assertEquals($colour->getHex(), static::STR_HEX3);
+        $this->assertEquals($colour->getRaw(), static::RAW_HEX3);
+        $this->assertEquals($colour->getRed(), static::RED_HEX3);
+        $this->assertEquals($colour->getGreen(), static::GREEN_HEX3);
+        $this->assertEquals($colour->getBlue(), static::BLUE_HEX3);
+        $this->assertFalse($colour->getInherit());
     }
 
     /**

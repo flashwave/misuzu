@@ -17,12 +17,20 @@ if (PHP_SAPI !== 'cli') {
         exit;
     }
 
-    if (isset($_COOKIE['msz_uid'], $_COOKIE['msz_sid'])) {
-        $app->startSession((int)$_COOKIE['msz_uid'], $_COOKIE['msz_sid']);
-    }
-
     if (!$app->inDebugMode()) {
         ob_start('ob_gzhandler');
+    }
+
+    if ($app->config->get('Auth', 'lockdown', 'bool', false)) {
+        http_response_code(503);
+        $app->startTemplating();
+        $app->templating->addPath('auth', __DIR__ . '/views/auth');
+        echo $app->templating->render('lockdown');
+        exit;
+    }
+
+    if (isset($_COOKIE['msz_uid'], $_COOKIE['msz_sid'])) {
+        $app->startSession((int)$_COOKIE['msz_uid'], $_COOKIE['msz_sid']);
     }
 
     $manage_mode = starts_with($_SERVER['REQUEST_URI'], '/manage');
@@ -31,7 +39,7 @@ if (PHP_SAPI !== 'cli') {
     $app->templating->addPath('mio', __DIR__ . '/views/mio');
 
     if ($manage_mode) {
-        if (Application::getInstance()->getSession() === null) {
+        if (Application::getInstance()->getSession() === null || $_SERVER['HTTP_HOST'] !== 'misuzu.misaka.nl') {
             http_response_code(403);
             echo $app->templating->render('errors.403');
             exit;

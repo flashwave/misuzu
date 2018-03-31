@@ -14,57 +14,61 @@
     {% endfor %}
 {% endmacro %}
 
-{% macro paginate(paginator, base_url, className) %}
-    {% from _self import pagination_segment %}
+{% macro paginate(paginator, base_url, className, alwaysRender) %}
+    {% set alwaysRender = alwaysRender|default(false) %}
 
-    {% set url_window = paginator|create_pagination %}
-    {% set separator = '%3F' in base_url|default('')|url_encode ? '&' : '?' %}
-    {% set base_url = base_url ~ separator %}
+    {% if alwaysRender or paginator.hasMorePages %}
+        {% set separator = '%3F' in base_url|default('')|url_encode ? '&' : '?' %}
+        {% set base_url = base_url ~ separator %}
 
-    <ul class="pagination{{ className is defined and className|length > 0 ? ' ' ~ className : '' }}">
-        {% if paginator.onFirstPage %}
-            <li class="pagination__option pagination__option--prev">
-                <span class="pagination__link pagination__link--prev">
-                    &laquo;
-                </span>
-            </li>
-        {% else %}
-            <li class="pagination__option pagination__option--prev">
-                <a href="{{ base_url ~ paginator.previousPageUrl|slice(2) }}" class="pagination__link pagination__link--prev" rel="prev">
-                    &laquo;
-                </a>
-            </li>
-        {% endif %}
+        <ul class="pagination{{ className is defined and className|length > 0 ? ' ' ~ className : '' }}">
+            {% if paginator.onFirstPage %}
+                <li class="pagination__option pagination__option--prev">
+                    <span class="pagination__link pagination__link--prev">
+                        &laquo;
+                    </span>
+                </li>
+            {% else %}
+                <li class="pagination__option pagination__option--prev">
+                    <a href="{{ base_url ~ paginator.previousPageUrl|slice(2) }}" class="pagination__link pagination__link--prev" rel="prev">
+                        &laquo;
+                    </a>
+                </li>
+            {% endif %}
 
-        <li class="pagination__separator"></li>
-
-        {% if url_window.first is iterable %}
-            {{ pagination_segment(url_window.first, base_url, paginator.currentPage) }}
             <li class="pagination__separator"></li>
-        {% endif %}
 
-        {% if url_window.slider is iterable %}
-            {{ pagination_segment(url_window.slider, base_url, paginator.currentPage) }}
-            <li class="pagination__separator"></li>
-        {% endif %}
+            {% from _self import pagination_segment %}
+            {% set url_window = paginator|create_pagination %}
 
-        {% if url_window.last is iterable %}
-            {{ pagination_segment(url_window.last, base_url, paginator.currentPage) }}
-            <li class="pagination__separator"></li>
-        {% endif %}
+            {% if url_window.first is iterable %}
+                {{ pagination_segment(url_window.first, base_url, paginator.currentPage) }}
+                <li class="pagination__separator"></li>
+            {% endif %}
 
-        {% if paginator.hasMorePages %}
-            <li class="pagination__option pagination__option--next">
-                <a href="{{ base_url ~ paginator.nextPageUrl|slice(2) }}" class="pagination__link pagination__link--next" rel="next">
-                    &raquo;
-                </a>
-            </li>
-        {% else %}
-            <li class="pagination__option pagination__option--next">
-                <span class="pagination__link pagination__link--next">
-                    &raquo;
-                </span>
-            </li>
-        {% endif %}
-    </ul>
+            {% if url_window.slider is iterable %}
+                {{ pagination_segment(url_window.slider, base_url, paginator.currentPage) }}
+                <li class="pagination__separator"></li>
+            {% endif %}
+
+            {% if url_window.last is iterable %}
+                {{ pagination_segment(url_window.last, base_url, paginator.currentPage) }}
+                <li class="pagination__separator"></li>
+            {% endif %}
+
+            {% if paginator.hasMorePages %}
+                <li class="pagination__option pagination__option--next">
+                    <a href="{{ base_url ~ paginator.nextPageUrl|slice(2) }}" class="pagination__link pagination__link--next" rel="next">
+                        &raquo;
+                    </a>
+                </li>
+            {% else %}
+                <li class="pagination__option pagination__option--next">
+                    <span class="pagination__link pagination__link--next">
+                        &raquo;
+                    </span>
+                </li>
+            {% endif %}
+        </ul>
+    {% endif %}
 {% endmacro %}

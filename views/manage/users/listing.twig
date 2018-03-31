@@ -4,12 +4,13 @@
 {% block content %}
     <div class="container listing user-listing">
         {% for user in manage_users %}
-            <label class="listing__entry user-listing__entry">
+            <label class="listing__entry user-listing__entry"{% if not user.displayColour.inherit %} style="border-color: {{ user.displayColour }}"{% endif %}>
                 <div class="listing__entry__content user-listing__entry__content">
-                    <input type="checkbox">
+                    <input class="listing__entry__selector" type="checkbox">
                     <a href="/profile.php?u={{ user.user_id }}" class="listing__entry__column user-listing__entry__column user-listing__entry__column--username">
                         {{ user.username }}
                     </a>
+                    <div class="user-listing__avatar" style="background-image:url('/profile.php?u={{ user.user_id }}&amp;m=avatar');"></div>
                 </div>
             </label>
         {% endfor %}

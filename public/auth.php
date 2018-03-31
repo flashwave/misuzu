@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Misuzu\Application;
 use Misuzu\Database;
 use Misuzu\Net\IPAddress;
+use Misuzu\Users\Role;
 use Misuzu\Users\User;
 use Misuzu\Users\Session;
 use Misuzu\Users\LoginAttempt;
@@ -166,7 +167,8 @@ switch ($mode) {
                 break;
             }
 
-            User::createUser($username, $password, $email);
+            $user = User::createUser($username, $password, $email);
+            $user->addRole(Role::find(1), true);
             $app->templating->var('auth_register_message', 'Welcome to Flashii! You may now log in.');
             break;
         }

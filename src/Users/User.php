@@ -2,6 +2,7 @@
 namespace Misuzu\Users;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Misuzu\Colour;
 use Misuzu\Database;
 use Misuzu\Model;
 use Misuzu\Net\IPAddress;
@@ -107,6 +108,12 @@ class User extends Model
         }
 
         return '';
+    }
+
+    public function getDisplayColour(): Colour
+    {
+        $role = Role::find($this->display_role);
+        return $role === null ? Colour::none() : $role->role_colour;
     }
 
     public function addRole(Role $role, bool $setDisplay = false): void
