@@ -46,6 +46,26 @@ class Role extends Model
         return $user->hasRole($this);
     }
 
+    public function getRoleColourAttribute(int $colour): Colour
+    {
+        return new Colour($colour);
+    }
+
+    public function setRoleColourAttribute(Colour $colour): void
+    {
+        $this->attributes['role_colour'] = $colour->getRaw();
+    }
+
+    public function getRoleDescriptionAttribute(?string $description): string
+    {
+        return empty($description) ? '' : $description;
+    }
+
+    public function setRoleDescriptionAttribute(string $description): void
+    {
+        $this->attributes['role_description'] = empty($description) ? null : $description;
+    }
+
     public function users()
     {
         return $this->hasMany(UserRole::class, 'role_id');

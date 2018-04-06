@@ -1,0 +1,156 @@
+{% from '@manage/macros.twig' import link %}
+
+{% set menus = [
+    {
+        'name': 'general',
+        'title': 'General',
+        'sections': [
+            [
+                {
+                    'name': 'overview',
+                    'title': 'Overview',
+                    'url': '/manage/index.php',
+                },
+                {
+                    'name': 'logs',
+                    'title': 'Logs',
+                },
+            ],
+            [
+                {
+                    'name': 'emotes',
+                    'title': 'Emoticons',
+                },
+                {
+                    'name': 'settings',
+                    'title': 'Settings',
+                },
+            ],
+        ],
+    },
+    {
+        'name': 'users',
+        'title': 'Users',
+        'sections': [
+            [
+                {
+                    'name': 'listing',
+                    'title': 'Listing',
+                },
+            ],
+            [
+                {
+                    'name': 'roles',
+                    'title': 'Roles',
+                },
+                {
+                    'name': 'perms',
+                    'title': 'Permissions',
+                },
+            ],
+            [
+                {
+                    'name': 'report',
+                    'title': 'Reports',
+                },
+                {
+                    'name': 'restrictions',
+                    'title': 'Restrictions',
+                },
+                {
+                    'name': 'blacklist',
+                    'title': 'Blacklisting',
+                },
+            ],
+        ],
+    },
+    {
+        'name': 'forum',
+        'title': 'Forum',
+        'sections': [
+            [
+                {
+                    'name': 'forums',
+                    'title': 'Listing',
+                },
+                {
+                    'name': 'perms',
+                    'title': 'Permissions',
+                },
+                {
+                    'name': 'settings',
+                    'title': 'Settings',
+                },
+            ],
+        ],
+    },
+] %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Flashii Broom Closet</title>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+        <link href="/css/manage.css" rel="stylesheet">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body class="manage">
+        <div class="wrapper">
+            <nav class="header">
+                <div class="header__wrapper">
+                    <a class="header__logo" href="/manage/index.php">
+                        Broom Closet
+                    </a>
+
+                    <div class="header__navigation">
+                        {% for menu in menus %}
+                            <div class="header__menu">
+                                <input type="checkbox" id="menu-{{ menu.name }}-state" class="header__menu__state">
+                                <label for="menu-{{ menu.name }}-state" class="header__menu__toggle">{{ menu.title }}</label>
+                                <div class="header__menu__options">
+                                    {% for section in menu.sections %}
+                                        <div class="header__menu__section">
+                                            {% for item in section %}
+                                                <a class="header__menu__link header__menu__link--{{ menu.name }}-{{ item.name }}" href="{{ item.url|default(menu.name ~ '-' ~ item.name ~ '.php') }}">{{ item.title }}</a>
+                                            {% endfor %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="header__user">
+                        <div class="header__menu">
+                            <input type="checkbox" id="menu-user-state" class="header__menu__state">
+                            <label for="menu-user-state" class="header__menu__toggle header__menu__toggle--profile" style="background-image:url('/profile.php?u={{ app.session.user.user_id }}&amp;m=avatar');">{{ app.session.user.username }}</label>
+                            <div class="header__menu__options header__menu__options--user">
+                                <div class="header__menu__section">
+                                    <a class="header__menu__link" href="/profile.php?u={{ app.session.user.user_id }}">Profile</a>
+                                    <a class="header__menu__link" href="/settings.php">Settings</a>
+                                </div>
+                                <div class="header__menu__section">
+                                    <a class="header__menu__link" href="/">Return</a>
+                                    <a class="header__menu__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Logout</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            {% block content %}
+                <div class="container">
+                    <p> This page has no content.</p>
+                </div>
+            {% endblock %}
+
+            <footer class="footer">
+                {{ link('https://flash.moe', 'flash.moe', 'footer__link') }} 2013-{{
+                ''|date('Y') }} /
+                {{ link('https://github.com/flashwave/misuzu/tree/' ~ git_branch(), git_branch(), 'footer__link') }} # {{ link('https://github.com/flashwave/misuzu/commit/' ~ git_hash(true), git_hash(), 'footer__link') }}
+            </footer>
+        </div>
+    </body>
+</html>

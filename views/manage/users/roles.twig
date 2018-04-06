@@ -1,0 +1,23 @@
+{% extends '@manage/users/master.twig' %}
+{% from '@manage/macros.twig' import paginate %}
+
+{% block content %}
+    <div class="container">
+        <a href="?m=create" class="button">Create new Role</a>
+    </div>
+
+    <div class="container listing role-listing">
+        {% for role in manage_roles %}
+            <a href="?m=edit&amp;i={{ role.role_id }}" class="listing__entry role-listing__entry"{% if not role.role_colour.inherit %} style="border-color: {{ role.role_colour }}"{% endif %}>
+                <div class="listing__entry__content role-listing__entry__content">
+                    {{ role.role_name }}
+                    {{ role.users.count }} users
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="container container--center">
+        {{ paginate(manage_roles) }}
+    </div>
+{% endblock %}

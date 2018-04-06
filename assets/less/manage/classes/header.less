@@ -1,0 +1,133 @@
+.header {
+    background-color: #111;
+    background-image: linear-gradient(0deg, #222, #333);
+    font-size: 1.5em;
+
+    &__wrapper {
+        display: flex;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    &__logo {
+        padding: 8px 10px;
+        color: #fff;
+        text-decoration: none;
+        display: block;
+    }
+
+    &__navigation {
+        display: flex;
+    }
+
+    &__navigation {
+        flex-grow: 1;
+        flex-shrink: 1;
+    }
+
+    &__logo {
+        flex-grow: 0;
+        flex-shrink: 0;
+    }
+
+    &__user {
+        flex-grow: 0;
+        flex-shrink: 1;
+    }
+
+    &__menu {
+        margin: 0 1px;
+
+        &__toggle {
+            padding: 8px 10px;
+            display: block;
+            cursor: pointer;
+            min-width: 50px;
+            transition: background-color .2s, min-width .2s;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+
+            &--profile {
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: right;
+                padding-right: 45px;
+            }
+
+            &:hover {
+                background-color: #333;
+            }
+
+            &--active,
+            &:active {
+                background-color: #222;
+            }
+        }
+
+        &__state {
+            display: none;
+
+            &:checked ~ .header__menu__toggle {
+                background-color: #333;
+                min-width: 150px;
+            }
+
+            &:checked ~ .header__menu__options {
+                max-height: 250px;
+            }
+        }
+
+        &__options {
+            overflow: hidden;
+            max-height: 0px;
+            width: 100%;
+            position: absolute;
+            background-color: #333;
+            z-index: 1000;
+            transition: max-height .2s;
+            box-shadow: 0 5px 5px 0 fade(#444, 80%);
+
+            &--user {
+                text-align: right;
+            }
+        }
+
+        &__link {
+            padding: 8px 10px;
+            display: block;
+            color: inherit;
+            text-decoration: none;
+            transition: background-color .2s;
+
+            &:hover {
+                background-color: #444;
+            }
+
+            &:active {
+                background-color: #2a2a2a;
+            }
+        }
+
+        &__section {
+            margin: 1px 2px;
+
+            &:first-child {
+                margin-top: 2px;
+            }
+
+            &:last-child {
+                margin-bottom: 2px;
+            }
+
+            &:not(:last-child) {
+                padding-bottom: 1px;
+                margin-bottom: 1px;
+                border-bottom: 1px solid #444;
+            }
+        }
+    }
+}

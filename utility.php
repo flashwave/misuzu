@@ -197,42 +197,12 @@ function crop_image_centred(Imagick $image, int $target_width, int $target_heigh
     return $image->deconstructImages();
 }
 
-function is_int_ex($value, int $boundary_low, int $boundary_high): bool
+function create_pagination($paginator)
 {
-    return is_int($value) && $value >= $boundary_low && $value <= $boundary_high;
+    return \Illuminate\Pagination\UrlWindow::make($paginator);
 }
 
-function is_sbyte($value): bool
+function running_on_windows(): bool
 {
-    return is_int_ex($value, -0x80, 0x7F);
-}
-
-function is_byte($value): bool
-{
-    return is_int_ex($value, 0x0, 0xFF);
-}
-
-function is_int16($value): bool
-{
-    return is_int_ex($value, -0x8000, 0x7FFF);
-}
-
-function is_uint16($value): bool
-{
-    return is_int_ex($value, 0x0, 0xFFFF);
-}
-
-function is_int32($value): bool
-{
-    return is_int_ex($value, -0x80000000, 0x7FFFFFFF);
-}
-
-function is_uint32($value): bool
-{
-    return is_int_ex($value, 0x0, 0xFFFFFFFF);
-}
-
-function is_int64($value): bool
-{
-    return is_int_ex($value, -0x8000000000000000, 0x7FFFFFFFFFFFFFFF);
+    return starts_with(strtolower(PHP_OS), 'win');
 }

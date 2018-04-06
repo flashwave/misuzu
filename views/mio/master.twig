@@ -13,26 +13,28 @@
         {% include '@mio/_layout/meta.twig' %}
         <link href="https://static.flash.moe/fonts/visitor/visitor1.css" rel="stylesheet">
         <link href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" rel="stylesheet">
-        <link href="/css/mio.css" rel="stylesheet" type="text/css">
+        <link href="/css/mio.css" rel="stylesheet">
     </head>
     <body class="mio">
         <div class="mio__wrapper">
-            <div class="mio__header">
+            <nav class="mio__header">
                 <div class="mio__header__logo">
                     <a href="/" class="mio__header__logo__link">
                         <img class="mio__header__logo__image" src="https://static.flash.moe/logos/logo-exo.png" alt="Flashii">
                     </a>
                 </div>
+
                 <div class="mio__header__menu">
                     {% if app.session is not null %}
                         <div class="mio__container mio__header__user">
                             <div class="mio__container__title">Hey, {{ app.session.user.username }}!</div>
                             <div class="mio__container__content mio__header__user__content">
-                                <div class="mio__avatar mio__header__user__avatar" style="background-image:url('/profile.php?u={{ app.session.user.user_id }}&amp;m=avatar');"></div>
+                                <a href="/settings.php?m=avatar" class="mio__avatar mio__header__user__avatar" style="background-image:url('/profile.php?u={{ app.session.user.user_id }}&amp;m=avatar');"></a>
                                 <div class="mio__header__user__links__container">
                                     <ul class="mio__header__user__links">
                                         <li class="mio__header__user__option"><a class="mio__header__user__link" href="/profile.php?u={{ app.session.user.user_id }}">Profile</a></li>
                                         <li class="mio__header__user__option"><a class="mio__header__user__link" href="/settings.php">Settings</a></li>
+                                        <li class="mio__header__user__option"><a class="mio__header__user__link" href="{{ manage_link|default('/manage/index.php') }}">Manage</a></li>
                                         <li class="mio__header__user__option"><a class="mio__header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Logout</a></li>
                                     </ul>
                                 </div>
@@ -42,7 +44,7 @@
                         <a href="/auth.php" class="mio__input__button">Login/Register</a>
                     {% endif %}
                 </div>
-            </div>
+            </nav>
 
             {% block content %}
                 <div class="mio__container">
@@ -55,20 +57,20 @@
                 {{ navigation(mio_navigation) }}
             {% endblock %}
 
-            <div class="mio__footer">
+            <footer class="mio__footer">
                 <div class="mio__footer__copyright">
                     {{ link('https://flash.moe', 'flash.moe', 'mio__footer__copyright__link') }} 2013-{{
                     ''|date('Y') }} /
                     {{ link('https://github.com/flashwave/misuzu/tree/' ~ git_branch(), git_branch(), 'mio__footer__copyright__link') }} # {{ link('https://github.com/flashwave/misuzu/commit/' ~ git_hash(true), git_hash(), 'mio__footer__copyright__link') }}
                 </div>
                 <div class="mio__footer__links">
-                    {{ link('#', 'Terms of Service', 'mio__footer__links__link') }}
-                    {{ link('#', 'Rules', 'mio__footer__links__link') }}
-                    {{ link('#', 'Contact', 'mio__footer__links__link') }}
-                    {{ link('#', 'Status', 'mio__footer__links__link') }}
+                    {{ link('#', 'Terms of Service', 'mio__footer__links__link') }} |
+                    {{ link('#', 'Rules', 'mio__footer__links__link') }} |
+                    {{ link('#', 'Contact', 'mio__footer__links__link') }} |
+                    {{ link('#', 'Status', 'mio__footer__links__link') }} |
                     {{ link('https://twitter.com/flashiinet', 'Twitter', 'mio__footer__links__link') }}
                 </div>
-            </div>
+            </footer>
         </div>
     </body>
 </html>

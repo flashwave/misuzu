@@ -1,15 +1,6 @@
-@mio-settings-sessions-mobile: 1000px;
-
-.mio__settings__sessions {
+.mio__settings__login-history {
     &__country {
         vertical-align: middle;
-    }
-
-    @media (max-width: @mio-settings-sessions-mobile) {
-        &__button {
-            width: 100%;
-            text-align: center;
-        }
     }
 
     &__entry {
@@ -22,33 +13,20 @@
         &:not(:last-child) {
             margin-bottom: 1px;
         }
-
-        &--current {
-            background-color: #c2affe;
-        }
     }
 
     &__column {
         flex-grow: 1;
-
-        &:not(:last-child) {
-            margin-left: 5px;
-            margin-right: 1px;
-        }
+        margin-left: 5px;
+        margin-right: 1px;
 
         &--ip,
         &--created,
-        &--expires,
-        &--options {
-            flex-grow: 0;
+        &--success {
             flex-shrink: 0;
-        }
 
-        @media (max-width: @mio-settings-sessions-mobile) {
-            &--options {
-                text-align: center;
-                flex-grow: 1;
-                width: 100%;
+            &:not(:last-child) {
+                flex-grow: 0;
             }
         }
 
@@ -62,12 +40,22 @@
         }
 
         &--created,
-        &--expires {
+        &--success {
             min-width: 120px;
         }
 
         &__name {
             font-weight: 700;
+        }
+
+        &__value {
+            &--successful {
+                color: #0a0;
+            }
+
+            &--failed {
+                color: #c00;
+            }
         }
     }
 }

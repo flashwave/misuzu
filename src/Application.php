@@ -164,6 +164,7 @@ class Application extends ApplicationBase
         $twig->addFilter('byte_symbol');
         $twig->addFilter('country_name', 'get_country_name');
         $twig->addFilter('flip', 'array_flip');
+        $twig->addFilter('create_pagination');
 
         // avoid using config() in templates whenever possible
         // in all honesty this shouldn't even be a thing
@@ -174,7 +175,5 @@ class Application extends ApplicationBase
         $twig->addFunction('csrf_token', 'tmp_csrf_token');
 
         $twig->var('app', $this);
-
-        $twig->addPath('mio', __DIR__ . '/../views/mio');
     }
 }

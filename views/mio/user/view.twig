@@ -4,7 +4,7 @@
 {% set icon = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
 {% set title = 'Profile of ' ~ profile.username %}
 
-{% set youtube_is_channel_id = profile.user_youtube|slice(0, 2) == 'UC' and profile.youtube|length == 24 %}
+{% set youtube_is_channel_id = profile.user_youtube|slice(0, 2) == 'UC' and profile.user_youtube|length == 24 %}
 
 {% set profile_fields = {
     "twitter": {
@@ -27,7 +27,7 @@
         "title": "Youtube",
         "value": profile.user_youtube,
         "link": "https://youtube.com/" ~ (youtube_is_channel_id ? "channel/" : '') ~ "%s",
-        "format": youtube_is_channel_id ? "Channel of " ~ profile.username : "%s",
+        "format": youtube_is_channel_id ? "Channel" : "%s",
     },
     "steam": {
         "title": "Steam",

@@ -14,6 +14,8 @@ class Directory
      */
     private $path;
 
+    public const SEPARATOR = DIRECTORY_SEPARATOR;
+
     public function getPath(): string
     {
         return $this->path;
@@ -58,12 +60,12 @@ class Directory
             }
 
             return realpath($path);
-        }, glob($this->path . '/' . $pattern));
+        }, glob($this->path . self::SEPARATOR . $pattern));
     }
 
     public function filename(string $filename): string
     {
-        return $this->getPath() . '/' . $filename;
+        return $this->getPath() . self::SEPARATOR . $filename;
     }
 
     /**
@@ -78,11 +80,12 @@ class Directory
             throw new DirectoryExistsException;
         }
 
-        $split_path = explode('/', $path);
-        $existing_path = '/';
+        $path = Directory::fixSlashes($path);
+        $split_path = explode(self::SEPARATOR, $path);
+        $existing_path = running_on_windows() ? '' : self::SEPARATOR;
 
         foreach ($split_path as $path_part) {
-            $existing_path .= $path_part . '/';
+            $existing_path .= $path_part . self::SEPARATOR;
 
             if (!Directory::exists($existing_path)) {
                 mkdir($existing_path);
@@ -146,8 +149,8 @@ class Directory
      * @param string $path
      * @return string
      */
-    public static function fixSlashes(string $path): string
+    public static function fixSlashes(string $path, string $separator = self::SEPARATOR): string
     {
-        return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
+        return str_replace(['/', '\\'], $separator, $path);
     }
 }
