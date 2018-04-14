@@ -3,15 +3,15 @@
     {% set site_twitter = site_twitter|default(globals.site_twitter) %}
 
     {% if title is defined %}
-        {% set title = title ~ ' :: ' ~ globals.site_name %}
+        {% set browser_title = title ~ ' :: ' ~ globals.site_name %}
     {% else %}
-        {% set title = globals.site_name %}
+        {% set browser_title = globals.site_name %}
     {% endif %}
 
-        <title>{{ title }}</title>
+        <title>{{ browser_title }}</title>
 
-        <meta name="twitter:title" content="{{ title|slice(0, 70) }}">
-        <meta property="og:title" content="{{ title }}">
+        <meta name="twitter:title" content="{{ title|default(globals.site_name)|slice(0, 70) }}">
+        <meta property="og:title" content="{{ title|default(globals.site_name) }}">
         <meta property="og:site_name" content="{{ globals.site_name }}">
 
     {% if description|length > 0 %}
