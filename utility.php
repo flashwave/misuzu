@@ -206,3 +206,9 @@ function running_on_windows(): bool
 {
     return starts_with(strtolower(PHP_OS), 'win');
 }
+
+function first_paragraph(string $text, string $delimiter = "\n"): string
+{
+    $index = mb_strpos($text, $delimiter);
+    return $index === false ? $text : mb_substr($text, 0, $index);
+}

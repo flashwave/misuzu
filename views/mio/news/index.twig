@@ -1,0 +1,39 @@
+{% extends '@mio/news/master.twig' %}
+
+{% set title = 'News' %}
+{% set canonical_url = '/news.php' %}
+
+{% block news_content %}
+    <div class="mio__container">
+        <div class="mio__container__title">News</div>
+        <div class="mio__container__content">
+            <div class="mio__news__category__posts">
+                {% for post in posts %}
+                    <div class="mio__container mio__news__preview">
+                        <div class="mio__container__title mio__news__preview__title">
+                            {{ post.post_title }}
+                        </div>
+                        <div class="mio__container__content mio__news__preview__content">
+                            <div class="mio__news__preview__text">
+                                {{ post.post_text|first_paragraph }}
+                            </div>
+                            <div class="mio__news__preview__info">
+                                Posted on {{ post.created_at }} by {{ post.user.username }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="mio__news__category__menu">
+                <div class="mio__news__category__listing">
+                    {% for category in categories %}
+                        <a href="/news.php?c={{ category.category_id }}">{{ category.category_name }}</a>
+                    {% endfor %}
+                </div>
+                <div class="mio__news__category__pagination">
+                    pagination here
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
