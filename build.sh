@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 ASSETS_PATH='./assets'
 ASSETS_LESS="$ASSETS_PATH/less"

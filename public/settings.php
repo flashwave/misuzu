@@ -91,6 +91,7 @@ if (!array_key_exists($settings_mode, $settings_modes)) {
 
 $settings_errors = [];
 
+$prevent_registration = $app->config->get('Auth', 'prevent_registration', 'bool', false);
 $avatar_filename = "{$settings_user->user_id}.msz";
 $avatar_max_width = $app->config->get('Avatar', 'max_width', 'int', 4000);
 $avatar_max_height = $app->config->get('Avatar', 'max_height', 'int', 4000);
@@ -130,68 +131,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            if (!empty($_POST['current_password'])
+            if (!$prevent_registration) {
+                if (!empty($_POST['current_password'])
                 || (
                     (isset($_POST['password']) || isset($_OST['email']))
                     && (!empty($_POST['password']['new']) || !empty($_POST['email']['new']))
                 )
-            ) {
-                if (!$settings_user->verifyPassword($_POST['current_password'])) {
-                    $settings_errors[] = "Your current password was incorrect.";
-                    break;
-                }
-
-                if (!empty($_POST['email']['new'])) {
-                    if (empty($_POST['email']['confirm']) || $_POST['email']['new'] !== $_POST['email']['confirm']) {
-                        $settings_errors[] = "The given e-mail addresses did not match.";
+                ) {
+                    if (!$settings_user->verifyPassword($_POST['current_password'])) {
+                        $settings_errors[] = "Your current password was incorrect.";
                         break;
                     }
 
-                    if ($_POST['email']['new'] === $settings_user->email) {
-                        $settings_errors[] = "This is your e-mail address already!";
-                        break;
-                    }
-
-                    $email_validate = User::validateEmail($_POST['email']['new'], true);
-
-                    if ($email_validate !== '') {
-                        switch ($email_validate) {
-                            case 'dns':
-                                $settings_errors[] = "No valid MX record exists for this domain.";
-                                break;
-
-                            case 'format':
-                                $settings_errors[] = "The given e-mail address was incorrectly formatted.";
-                                break;
-
-                            case 'in-use':
-                                $settings_errors[] = "This e-mail address has already been used by another user.";
-                                break;
-
-                            default:
-                                $settings_errors[] = "Unknown e-mail validation error.";
+                    if (!empty($_POST['email']['new'])) {
+                        if (empty($_POST['email']['confirm']) || $_POST['email']['new'] !== $_POST['email']['confirm']) {
+                            $settings_errors[] = "The given e-mail addresses did not match.";
+                            break;
                         }
-                        break;
+
+                        if ($_POST['email']['new'] === $settings_user->email) {
+                            $settings_errors[] = "This is your e-mail address already!";
+                            break;
+                        }
+
+                        $email_validate = User::validateEmail($_POST['email']['new'], true);
+
+                        if ($email_validate !== '') {
+                            switch ($email_validate) {
+                                case 'dns':
+                                    $settings_errors[] = "No valid MX record exists for this domain.";
+                                    break;
+
+                                case 'format':
+                                    $settings_errors[] = "The given e-mail address was incorrectly formatted.";
+                                    break;
+
+                                case 'in-use':
+                                    $settings_errors[] = "This e-mail address has already been used by another user.";
+                                    break;
+
+                                default:
+                                    $settings_errors[] = "Unknown e-mail validation error.";
+                            }
+                            break;
+                        }
+
+                        $settings_user->email = $_POST['email']['new'];
                     }
 
-                    $settings_user->email = $_POST['email']['new'];
-                }
-
-                if (!empty($_POST['password']['new'])) {
-                    if (empty($_POST['password']['confirm'])
+                    if (!empty($_POST['password']['new'])) {
+                        if (empty($_POST['password']['confirm'])
                         || $_POST['password']['new'] !== $_POST['password']['confirm']) {
-                        $settings_errors[] = "The given passwords did not match.";
-                        break;
+                            $settings_errors[] = "The given passwords did not match.";
+                            break;
+                        }
+
+                        $password_validate = User::validatePassword($_POST['password']['new'], true);
+
+                        if ($password_validate !== '') {
+                            $settings_errors[] = "The given passwords was too weak.";
+                            break;
+                        }
+
+                        $settings_user->password = $_POST['password']['new'];
                     }
-
-                    $password_validate = User::validatePassword($_POST['password']['new'], true);
-
-                    if ($password_validate !== '') {
-                        $settings_errors[] = "The given passwords was too weak.";
-                        break;
-                    }
-
-                    $settings_user->password = $_POST['password']['new'];
                 }
             }
 
@@ -351,7 +354,7 @@ $app->templating->var('settings_title', $settings_modes[$settings_mode]);
 
 switch ($settings_mode) {
     case 'account':
-        $app->templating->vars(compact('settings_profile_fields'));
+        $app->templating->vars(compact('settings_profile_fields', 'prevent_registration'));
         break;
 
     case 'avatar':

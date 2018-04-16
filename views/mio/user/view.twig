@@ -1,7 +1,8 @@
 {% extends '@mio/user/master.twig' %}
 {% from '@mio/macros.twig' import navigation, link %}
 
-{% set icon = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
+{% set image = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
+{% set canonical_url = '/profile.php?u=' ~ profile.user_id %}
 {% set title = 'Profile of ' ~ profile.username %}
 
 {% set youtube_is_channel_id = profile.user_youtube|slice(0, 2) == 'UC' and profile.user_youtube|length == 24 %}
@@ -63,29 +64,29 @@
 {% block content %}
     {{ navigation(mio_navigation, false, true) }}
 
-    <div class="mio__profile">
-        <div class="mio__container mio__profile__header">
-            <div class="mio__container__title">Profile of {{ profile.username }}</div>
-            <div class="mio__container__content mio__profile__header__content">
-                <div class="mio__profile__info">
-                    <div class="mio__profile__info__section">
-                        <div class="mio__profile__info__block">
-                            <div class="mio__profile__info__row">
-                                <div class="mio__profile__info__column mio__profile__info__column--icons">
-                                    <img class="mio__profile__icon" src="https://static.flash.moe/flags/fff/{{ profile.user_country|lower }}.png" alt="{{ profile.user_country }}">
+    <div class="profile">
+        <div class="container profile__header">
+            <div class="container__title">Profile of {{ profile.username }}</div>
+            <div class="container__content profile__header__content">
+                <div class="profile__info">
+                    <div class="profile__info__section">
+                        <div class="profile__info__block">
+                            <div class="profile__info__row">
+                                <div class="profile__info__column profile__info__column--icons">
+                                    <img class="profile__icon" src="https://static.flash.moe/flags/fff/{{ profile.user_country|lower }}.png" alt="{{ profile.user_country }}">
                                 </div>
-                                <div class="mio__profile__info__column mio__profile__info__column--country">
+                                <div class="profile__info__column profile__info__column--country">
                                     {{ profile.user_country|country_name }}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mio__profile__info__block">
-                            <div class="mio__profile__info__row" title="{{ profile.created_at.format('r') }}">
-                                <div class="mio__profile__info__column mio__profile__info__column--heading">
+                        <div class="profile__info__block">
+                            <div class="profile__info__row" title="{{ profile.created_at.format('r') }}">
+                                <div class="profile__info__column profile__info__column--heading">
                                     Joined
                                 </div>
-                                <div class="mio__profile__info__column">
+                                <div class="profile__info__column">
                                     {{ profile.created_at.diffForHumans }}
                                 </div>
                             </div>
@@ -94,18 +95,18 @@
 
                     {% if app.session != null %}
                     {% spaceless %}
-                    <div class="mio__profile__info__section">
-                        <div class="mio__profile__info__block mio__profile__info__block--links">
+                    <div class="profile__info__section">
+                        <div class="profile__info__block profile__info__block--links">
                             {% for name, data in profile_fields %}
                                 {% if (data.display is defined ? data.display : true) and data.value|length > 0 %}
-                                    <div class="mio__profile__info__row mio__profile__info__row--field-{{ name }}">
-                                        <div class="mio__profile__info__column mio__profile__info__column--heading">
+                                    <div class="profile__info__row profile__info__row--field-{{ name }}">
+                                        <div class="profile__info__column profile__info__column--heading">
                                             {{ data.title }}
                                         </div>
-                                        <div class="mio__profile__info__column">
+                                        <div class="profile__info__column">
                                             {% set profile_field_value = (data.format is defined ? data.format : '%s')|format(data.value) %}
                                             {% if data.link is defined %}
-                                                {{ link(data.link|format(data.value), profile_field_value, 'mio__profile__account-link') }}
+                                                {{ link(data.link|format(data.value), profile_field_value, 'profile__account-link') }}
                                             {% else %}
                                                 {{ profile_field_value }}
                                             {% endif %}
@@ -118,7 +119,7 @@
                     {% endspaceless %}
                     {% endif %}
                 </div>
-                <div class="mio__avatar mio__profile__avatar" style="background-image:url('{{ icon }}');"></div>
+                <div class="avatar profile__avatar" style="background-image:url('{{ image }}');"></div>
             </div>
         </div>
     </div>

@@ -1,21 +1,59 @@
-{% set title = title|default('Flashii') %}
-{% set description = description|default("Where the floor doesn't fall far from the carrot.") %}
+{% spaceless %}
+    {% set description = description|default(globals.site_description) %}
+    {% set site_twitter = site_twitter|default(globals.site_twitter) %}
 
-        <title>{{ title }}</title>
+    {% if title is defined %}
+        {% set browser_title = title ~ ' :: ' ~ globals.site_name %}
+    {% else %}
+        {% set browser_title = globals.site_name %}
+    {% endif %}
 
-        <meta name="twitter:title" content="{{ title }}">
-        <meta property="og:title" content="{{ title }}">
+        <title>{{ browser_title }}</title>
 
+        <meta name="twitter:title" content="{{ title|default(globals.site_name)|slice(0, 70) }}">
+        <meta property="og:title" content="{{ title|default(globals.site_name) }}">
+        <meta property="og:site_name" content="{{ globals.site_name }}">
+
+    {% if description|length > 0 %}
         <meta name="description" content="{{ description }}">
         <meta name="twitter:description" content="{{ description }}">
         <meta property="og:description" content="{{ description }}">
+    {% endif %}
 
-        <meta name="twitter:card" content="summary">
+    {% if site_twitter|length > 0 %}
+        <meta name="twitter:site" content="{{ site_twitter }}">
+    {% endif %}
 
         <meta property="og:type" content="object">
-        <meta property="og:site_name" content="Flashii">
+        <meta name="twitter:card" content="summary">
 
-{% if icon is defined %}
-        <meta name="twitter:image:src" content="{{ icon }}">
-        <meta property="og:image" content="{{ icon }}">
-{% endif %}
+    {% if image is defined %}
+        {% if image|slice(0, 1) == '/' %}
+            {% if globals.site_url is not defined or globals.site_url|length < 1 %}
+                {% set image = '' %}
+            {% else %}
+                {% set image = globals.site_url|trim('/') ~ image %}
+            {% endif %}
+        {% endif %}
+
+        {% if image|length > 0 %}
+            <meta name="twitter:image:src" content="{{ image }}">
+            <meta property="og:image" content="{{ image }}">
+        {% endif %}
+    {% endif %}
+
+    {% if canonical_url is defined %}
+        {% if canonical_url|slice(0, 1) == '/' %}
+            {% if globals.site_url is not defined or globals.site_url|length < 1 %}
+                {% set canonical_url = '' %}
+            {% else %}
+                {% set canonical_url = globals.site_url|trim('/') ~ canonical_url %}
+            {% endif %}
+        {% endif %}
+
+        {% if canonical_url|length > 0 %}
+            <link rel="canonical" href="{{ canonical_url }}">
+            <link rel="og:url" href="{{ canonical_url }}">
+        {% endif %}
+    {% endif %}
+{% endspaceless %}

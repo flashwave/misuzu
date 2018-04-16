@@ -40,7 +40,7 @@ function set_cookie_m(string $name, string $value, int $expires): void
 
 function password_entropy(string $password): int
 {
-    return count(count_chars(utf8_decode($password), 1)) * log(256, 2);
+    return count(count_chars(utf8_decode($password), 1)) * 8;
 }
 
 function check_mx_record(string $email): bool
@@ -205,4 +205,15 @@ function create_pagination($paginator)
 function running_on_windows(): bool
 {
     return starts_with(strtolower(PHP_OS), 'win');
+}
+
+function first_paragraph(string $text, string $delimiter = "\n"): string
+{
+    $index = mb_strpos($text, $delimiter);
+    return $index === false ? $text : mb_substr($text, 0, $index);
+}
+
+function is_valid_page(\Illuminate\Pagination\LengthAwarePaginator $paginator, int $attemptedPage): bool
+{
+    return $attemptedPage >= 1 && $attemptedPage <= $paginator->lastPage();
 }

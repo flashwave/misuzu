@@ -160,15 +160,19 @@ class Application extends ApplicationBase
         $this->addModule('templating', $twig = new TemplateEngine);
         $twig->debug($this->debugMode);
 
+        $twig->var('globals', [
+            'site_name' => $this->config->get('Site', 'name', 'string', 'Flashii'),
+            'site_description' => $this->config->get('Site', 'description'),
+            'site_twitter' => $this->config->get('Site', 'twitter'),
+            'site_url' => $this->config->get('Site', 'url'),
+        ]);
+
         $twig->addFilter('json_decode');
         $twig->addFilter('byte_symbol');
         $twig->addFilter('country_name', 'get_country_name');
         $twig->addFilter('flip', 'array_flip');
         $twig->addFilter('create_pagination');
-
-        // avoid using config() in templates whenever possible
-        // in all honesty this shouldn't even be a thing
-        $twig->addFunction('config', [$this->config, 'get']);
+        $twig->addFilter('first_paragraph');
 
         $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $twig->addFunction('git_branch', [Application::class, 'gitBranch']);

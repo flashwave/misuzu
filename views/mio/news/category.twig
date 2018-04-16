@@ -1,0 +1,46 @@
+{% extends '@mio/news/master.twig' %}
+{% from '@mio/macros.twig' import paginate %}
+{% from '@mio/news/macros.twig' import news_preview %}
+
+{% set title = category.category_name ~ ' :: News' %}
+{% set canonical_url = '/news.php?c=' ~ category.category_id ~ (page_id > 1 ? '&p=' ~ page_id : '') %}
+
+{% block news_content %}
+    <div class="container news__container">
+        <div class="container__title news__container__title">News » {{ category.category_name }}</div>
+
+        <div class="container__content news__container__content">
+            <div class="news__preview__listing">
+                {% for post in posts %}
+                    {{ news_preview(post) }}
+                {% endfor %}
+            </div>
+
+            <div class="news__sidebar">
+                {% if category.category_description|length > 0 %}
+                    <div class="container news__container">
+                        <div class="container__title">
+                            Description
+                        </div>
+                        <div class="container__content">
+                            {{ category.category_description }}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if featured|length > 0 %}
+                    <div class="container news__list">
+                        <div class="container__title">
+                            Featured Posts
+                        </div>
+                        <div class="container__content">
+                            {% for featured_post in featured %}
+                                <a class="news__list__item" href="/news.php?n={{ featured_post.post_id }}">{{ featured_post.post_title }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                {{ paginate(posts, '?c=' ~ category.category_id, 'news__') }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

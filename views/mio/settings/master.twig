@@ -8,21 +8,21 @@
 
     {% block settings_container %}
         {% if settings_errors is defined and settings_errors|length > 0 %}
-            <div class="mio__container">
-                <div class="mio__container__title">Information</div>
-                <div class="mio__container__content">
-                    <ul class="mio__settings__errors">
+            <div class="container">
+                <div class="container__title">Information</div>
+                <div class="container__content">
+                    <ul class="settings__errors">
                         {% for error in settings_errors %}
-                            <li class="mio__settings__errors__entry">{{ error }}</li>
+                            <li class="settings__errors__entry">{{ error }}</li>
                         {% endfor %}
                     </ul>
                 </div>
             </div>
         {% endif %}
 
-    <div class="mio__container mio__settings mio__settings--{{ settings_mode }}">
-        <div class="mio__container__title mio__settings__title mio__settings__title--{{ settings_mode }}">{{ title }}</div>
-        <div class="mio__container__content mio__settings__content mio__settings__content--{{ settings_mode }}">
+    <div class="container settings settings--{{ settings_mode }}">
+        <div class="container__title settings__title settings__title--{{ settings_mode }}">{{ title }}</div>
+        <div class="container__content settings__content settings__content--{{ settings_mode }}">
             {% block settings_content %}
                 This is a blank settings page.
             {% endblock %}
