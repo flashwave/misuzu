@@ -1,16 +1,31 @@
-.mio__container {
+.container {
     border: 1px solid #9475b2;
     background-color: #fbeeff;
     margin: 2px 0;
 
 
     &__title {
+        display: block;
+        text-decoration: none;
         background-color: #9475b2;
         color: #306;
         font-size: 1.17em;
         font-weight: 700;
         padding: 3px;
         font-family: @mio-font-heading;
+
+        &--link:hover {
+            text-decoration: underline;
+        }
+
+        &__link {
+            color: inherit;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
     }
 
     &__content {

@@ -4,6 +4,7 @@ namespace Misuzu\News;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Misuzu\Users\User;
 use Misuzu\Model;
+use Parsedown;
 
 final class NewsPost extends Model
 {
@@ -11,6 +12,11 @@ final class NewsPost extends Model
 
     protected $table = 'news_posts';
     protected $primaryKey = 'post_id';
+
+    public function getHtml(): string
+    {
+        return (new Parsedown)->text($this->post_text);
+    }
 
     public function user()
     {

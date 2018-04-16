@@ -1,103 +1,105 @@
 {% extends '@mio/settings/master.twig' %}
 
 {% block settings_content %}
-    <form method="post" action="?m=account" class="mio__settings__account">
-        <div class="mio__settings__account__row">
-            <div class="mio__settings__account__column">
-                <div class="mio__settings__account__title">Profile</div>
+    <form method="post" action="?m=account" class="settings__account">
+        <div class="settings__account__row">
+            <div class="settings__account__column">
+                <div class="settings__account__title">Profile</div>
 
                 {% for name, props in settings_profile_fields %}
-                <label class="mio__settings__account__input mio__settings__account__input--{{ name }}">
-                    <div class="mio__settings__account__input__name">
+                <label class="settings__account__input settings__account__input--{{ name }}">
+                    <div class="settings__account__input__name">
                         {{ props.name }}
                     </div>
-                    <div class="mio__settings__account__input__value">
-                        <input type="{{ props.type|default('text') }}" name="profile[{{ name }}]" value="{{ settings_user['user_' ~ name] }}" class="mio__input__text mio__settings__account__input__value__text">
+                    <div class="settings__account__input__value">
+                        <input type="{{ props.type|default('text') }}" name="profile[{{ name }}]" value="{{ settings_user['user_' ~ name] }}" class="input__text settings__account__input__value__text">
                     </div>
                 </label>
                 {% endfor %}
             </div>
 
-            <div class="mio__settings__account__column mio__settings__account__column--no-margin">
-                {% if prevent_registration %}
-                    <div class="mio__settings__account__row">
-                        <div class="mio__settings__account__column">
-                            <div class="mio__settings__account__title">E-mail and Password changing</div>
-                            <div style="text-align: center; padding: 5px;"> <!-- PUT CSS IN CSS FILE -->
-                                <a class="mio__input__button" href="https://flashii.net/settings.php?m=account">visit main site</a>
+            {% if prevent_registration %}
+                <div class="settings__account__column settings__account__column--no-margin settings__account__column--disabled">
+                    <div class="settings__account__row">
+                        <div class="settings__account__column">
+                            <div class="settings__account__title">E-mail and Password changing</div>
+                            <div class="settings__account__disabled">
+                                <a class="input__button" href="https://flashii.net/settings.php?m=account">visit main site</a>
                             </div>
                         </div>
                     </div>
-                {% else %}
-                    <div class="mio__settings__account__row">
-                        <div class="mio__settings__account__column">
-                            <div class="mio__settings__account__title">E-mail</div>
+                </div>
+            {% else %}
+                <div class="settings__account__column settings__account__column--no-margin">
+                    <div class="settings__account__row">
+                        <div class="settings__account__column">
+                            <div class="settings__account__title">E-mail</div>
 
-                            <label class="mio__settings__account__input">
-                                <div class="mio__settings__account__input__name">
+                            <label class="settings__account__input">
+                                <div class="settings__account__input__name">
                                     New E-mail Address
                                 </div>
-                                <div class="mio__settings__account__input__value">
-                                    <input type="text" name="email[new]" class="mio__input__text mio__settings__account__input__value__text">
+                                <div class="settings__account__input__value">
+                                    <input type="text" name="email[new]" class="input__text settings__account__input__value__text">
                                 </div>
                             </label>
 
-                            <label class="mio__settings__account__input">
-                                <div class="mio__settings__account__input__name">
+                            <label class="settings__account__input">
+                                <div class="settings__account__input__name">
                                     Confirmation
                                 </div>
-                                <div class="mio__settings__account__input__value">
-                                    <input type="text" name="email[confirm]" class="mio__input__text mio__settings__account__input__value__text">
+                                <div class="settings__account__input__value">
+                                    <input type="text" name="email[confirm]" class="input__text settings__account__input__value__text">
                                 </div>
                             </label>
                         </div>
                     </div>
 
-                    <div class="mio__settings__account__row">
-                        <div class="mio__settings__account__column">
-                            <div class="mio__settings__account__title">Password</div>
+                    <div class="settings__account__row">
+                        <div class="settings__account__column">
+                            <div class="settings__account__title">Password</div>
 
-                            <label class="mio__settings__account__input">
-                                <div class="mio__settings__account__input__name">
+                            <label class="settings__account__input">
+                                <div class="settings__account__input__name">
                                     New Password
                                 </div>
-                                <div class="mio__settings__account__input__value">
-                                    <input type="password" name="password[new]" class="mio__input__text mio__settings__account__input__value__text">
+                                <div class="settings__account__input__value">
+                                    <input type="password" name="password[new]" class="input__text settings__account__input__value__text">
                                 </div>
                             </label>
 
-                            <label class="mio__settings__account__input">
-                                <div class="mio__settings__account__input__name">
+                            <label class="settings__account__input">
+                                <div class="settings__account__input__name">
                                     Confirmation
                                 </div>
-                                <div class="mio__settings__account__input__value">
-                                    <input type="password" name="password[confirm]" class="mio__input__text mio__settings__account__input__value__text">
+                                <div class="settings__account__input__value">
+                                    <input type="password" name="password[confirm]" class="input__text settings__account__input__value__text">
                                 </div>
                             </label>
                         </div>
                     </div>
 
-                    <div class="mio__settings__account__row">
-                        <div class="mio__settings__account__column">
-                            <div class="mio__settings__account__title">Confirmation</div>
+                    <div class="settings__account__row">
+                        <div class="settings__account__column">
+                            <div class="settings__account__title">Confirmation</div>
 
-                            <label class="mio__settings__account__input">
-                                <div class="mio__settings__account__input__name">
+                            <label class="settings__account__input">
+                                <div class="settings__account__input__name">
                                     Current Password
                                 </div>
-                                <div class="mio__settings__account__input__value">
-                                    <input type="password" name="current_password" placeholder="only needed for e-mail and password updating" class="mio__input__text mio__settings__account__input__value__text">
+                                <div class="settings__account__input__value">
+                                    <input type="password" name="current_password" placeholder="only needed for e-mail and password updating" class="input__text settings__account__input__value__text">
                                 </div>
                             </label>
                         </div>
                     </div>
-                {% endif %}
-            </div>
+                </div>
+            {% endif %}
         </div>
 
-        <div class="mio__settings__account__row mio__settings__account__row--buttons">
-            <button class="mio__input__button" name="csrf" value="{{ csrf_token() }}">Update</button>
-            <button class="mio__input__button" type="reset">Reset</button>
+        <div class="settings__account__row settings__account__row--buttons">
+            <button class="input__button" name="csrf" value="{{ csrf_token() }}">Update</button>
+            <button class="input__button" type="reset">Reset</button>
         </div>
     </form>
 {% endblock %}

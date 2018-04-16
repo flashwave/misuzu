@@ -4,26 +4,60 @@
 {% set canonical_url = '/news.php?n=' ~ post.post_id %}
 
 {% block news_content %}
-    <div class="mio__container">
-        <div class="mio__container__title">{{ post.category.category_name }} » {{ post.post_title }}</div>
-        <div class="mio__container__content">
-            <div class="mio__news__post__text">
-                {{ post.post_text|raw }}
+    <div class="container news__post">
+        <div class="container__title">
+            <a href="/news.php?c={{ post.category.category_id }}" class="container__title__link">{{ post.category.category_name }}</a> »
+            {{ post.post_title }}
+        </div>
+
+        <div class="container__content news__post__content">
+            <div class="news__post__text">
+                {{ post.html|raw }}
             </div>
-            <div class="mio__news__post__info">
-                <div class="mio__news__post__user">
-                    <div class="mio__news__post__username">
-                        {{ post.user.username }}
+
+            <div class="news__sidebar news__post__details">
+                <a class="news__post__detail news__post__user" href="/profile.php?u={{ post.user.user_id }}">
+                    <div class="news__post__username">{{ post.user.username }}</div>
+                    <div class="avatar news__post__avatar" style="background-image:url('/profile.php?u={{ post.user.user_id }}&amp;m=avatar');"></div>
+                </a>
+
+                <a class="news__post__detail news__post__info" href="/news.php?c={{ post.category.category_id }}">
+                    <div class="news__post__info__name">
+                        Category
                     </div>
-                    <div class="mio__news__post__avatar" style="background-image:url('/profile.php?u={{ post.user.user_id }}&amp;m=avatar');"></div>
+                    <div class="news__post__info__value">
+                        {{ post.category.category_name }}
+                    </div>
+                </a>
+
+                <div class="news__post__detail news__post__info">
+                    <div class="news__post__info__name">
+                        Posted
+                    </div>
+                    <div class="news__post__info__value">
+                        {{ post.created_at }}
+                    </div>
                 </div>
-                <div class="mio__news__post__info">
-                    Category: <a href="/news.php?c={{ post.category.category_id }}">{{ post.category.category_name }}</a>
-                </div>
-                <div class="mio__news__post__info">
-                    Posted: {{ post.created_at }}
-                </div>
+
+                {# TODO: make this work
+                {% if post.updated_at is defined %}
+                    <div class="news__post__detail news__post__info">
+                        <div class="news__post__info__name">
+                            Updated
+                        </div>
+                        <div class="news__post__info__value">
+                            {{ post.updated_at }}
+                        </div>
+                    </div>
+                {% endif %} #}
             </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="container__title">Comments</div>
+        <div class="container__content">
+            Eventually&trade;
         </div>
     </div>
 {% endblock %}

@@ -1,46 +1,46 @@
 {% extends '@mio/settings/master.twig' %}
 
 {% block settings_content %}
-    <div class="mio__settings__description">
+    <div class="settings__description">
         <p>These are all the login attempts to your account. If any attempt that you don't recognise is marked as successful your account may be compromised, ask a staff member for advice in this case.</p>
     </div>
 
-    <div class="mio__settings__login-history">
+    <div class="settings__login-history">
         {% for attempt in user_login_attempts %}
-            <div class="mio__settings__login-history__entry" id="attempt-{{ attempt.attempt_id }}">
-                <div class="mio__settings__login-history__column mio__settings__login-history__column--ip">
-                    <div class="mio__settings__login-history__column__name">
+            <div class="settings__login-history__entry" id="attempt-{{ attempt.attempt_id }}">
+                <div class="settings__login-history__column settings__login-history__column--ip">
+                    <div class="settings__login-history__column__name">
                         IP
                     </div>
-                    <div class="mio__settings__login-history__column__value">
+                    <div class="settings__login-history__column__value">
                         {{ attempt.attempt_ip.string }}
                         {% if attempt.attempt_country != 'XX' %}
-                            <img class="mio__settings__login-history__country" src="https://static.flash.moe/flags/fff/{{ attempt.attempt_country|lower }}.png" alt="{{ attempt.attempt_country }}" title="{{ attempt.attempt_country|country_name }}">
+                            <img class="settings__login-history__country" src="https://static.flash.moe/flags/fff/{{ attempt.attempt_country|lower }}.png" alt="{{ attempt.attempt_country }}" title="{{ attempt.attempt_country|country_name }}">
                         {% endif %}
                     </div>
                 </div>
-                <div class="mio__settings__login-history__column mio__settings__login-history__column--success">
-                    <div class="mio__settings__login-history__column__name">
+                <div class="settings__login-history__column settings__login-history__column--success">
+                    <div class="settings__login-history__column__name">
                         Was Successful?
                     </div>
-                    <div class="mio__settings__login-history__column__value mio__settings__login-history__column__value--{{ attempt.was_successful ? 'successful' : 'failed' }}">
+                    <div class="settings__login-history__column__value settings__login-history__column__value--{{ attempt.was_successful ? 'successful' : 'failed' }}">
                         {{ attempt.was_successful ? 'Yes' : 'No' }}
                     </div>
                 </div>
-                <div class="mio__settings__login-history__column mio__settings__login-history__column--created" onmouseenter="this.children[1].textContent = '{{ attempt.created_at }}';" onmouseleave="this.children[1].textContent = '{{ attempt.created_at.diffForHumans }}';">
-                    <div class="mio__settings__login-history__column__name">
+                <div class="settings__login-history__column settings__login-history__column--created" onmouseenter="this.children[1].textContent = '{{ attempt.created_at }}';" onmouseleave="this.children[1].textContent = '{{ attempt.created_at.diffForHumans }}';">
+                    <div class="settings__login-history__column__name">
                         Attempted
                     </div>
-                    <div class="mio__settings__login-history__column__value">
+                    <div class="settings__login-history__column__value">
                         {{ attempt.created_at.diffForHumans }}
                     </div>
                 </div>
                 {% if attempt.user_agent|length > 0 %}
-                    <div class="mio__settings__login-history__column mio__settings__login-history__column--user_agent">
-                        <div class="mio__settings__login-history__column__name">
+                    <div class="settings__login-history__column settings__login-history__column--user_agent">
+                        <div class="settings__login-history__column__name">
                             User Agent
                         </div>
-                        <div class="mio__settings__login-history__column__value">
+                        <div class="settings__login-history__column__value">
                             {{ attempt.user_agent }}
                         </div>
                     </div>

@@ -4,8 +4,9 @@ use Misuzu\News\NewsPost;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$category_id = empty($_GET['c']) ? null : (int)$_GET['c'];
-$post_id = empty($_GET['n']) ? null : (int)$_GET['n'];
+$category_id = isset($_GET['c']) ? (int)$_GET['c'] : null;
+$post_id = isset($_GET['n']) ? (int)$_GET['n'] : null;
+$page_id = (int)($_GET['p'] ?? 1);
 
 if ($post_id !== null) {
     $post = NewsPost::find($post_id);
@@ -29,13 +30,26 @@ if ($category_id !== null) {
         return;
     }
 
-    $posts = $category->posts()->orderBy('created_at', 'desc')->paginate(5);
-    $featured = $category->where('is_featured', 1)->orderBy('created_at', 'desc')->take(10);
-    echo $app->templating->render('news.category', compact('category', 'posts', 'featured'));
+    $posts = $category->posts()->orderBy('created_at', 'desc')->paginate(5, ['*'], 'p', $page_id);
+
+    if (!is_valid_page($posts, $page_id)) {
+        http_response_code(404);
+        echo $app->templating->render('errors.404');
+        return;
+    }
+
+    $featured = $category->posts()->where('is_featured', 1)->orderBy('created_at', 'desc')->take(10)->get();
+    echo $app->templating->render('news.category', compact('category', 'posts', 'featured', 'page_id'));
     return;
 }
 
 $categories = NewsCategory::where('is_hidden', false)->get();
-$posts = NewsPost::where('is_featured', true)->paginate(5);
+$posts = NewsPost::where('is_featured', true)->orderBy('created_at', 'desc')->paginate(5, ['*'], 'p', $page_id);
 
-echo $app->templating->render('news.index', compact('categories', 'posts'));
+if (!is_valid_page($posts, $page_id)) {
+    http_response_code(404);
+    echo $app->templating->render('errors.404');
+    return;
+}
+
+echo $app->templating->render('news.index', compact('categories', 'posts', 'page_id'));

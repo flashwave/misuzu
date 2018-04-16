@@ -1,6 +1,6 @@
 @mio-navigation-mobile: 1000px;
 
-.mio__navigation {
+.navigation {
     margin: 5px 0;
     width: 100%;
     display: flex;
@@ -22,7 +22,7 @@
         border-bottom-width: 1px;
         align-items: flex-end;
 
-        .mio__navigation__option {
+        .navigation__option {
             border-top-width: 1px;
             border-bottom-width: 0;
 
@@ -68,7 +68,7 @@
             }
 
             @media (min-width: @mio-navigation-mobile) {
-                .mio__navigation__link {
+                .navigation__link {
                     padding: 3px 1em;
                 }
             }
@@ -94,20 +94,20 @@
 }
 
 .mio--dark {
-    .mio__navigation,
-    .mio__navigation__option {
+    .navigation,
+    .navigation__option {
         border-color: #9475b2;
     }
 
-    .mio__navigation__option {
+    .navigation__option {
         background-color: #462e55;
     }
 
-    .mio__navigation__option--selected {
+    .navigation__option--selected {
         background-color: #23172a;
     }
 
-    .mio__navigation__link {
+    .navigation__link {
         color: #9475b2;
 
         &:hover {

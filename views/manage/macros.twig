@@ -17,7 +17,7 @@
 {% macro paginate(paginator, base_url, className, alwaysRender) %}
     {% set alwaysRender = alwaysRender|default(false) %}
 
-    {% if alwaysRender or paginator.hasMorePages %}
+    {% if alwaysRender or paginator.lastPage > 1 %}
         {% set separator = '%3F' in base_url|default('')|url_encode ? '&' : '?' %}
         {% set base_url = base_url ~ separator %}
 
