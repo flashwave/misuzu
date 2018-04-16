@@ -40,7 +40,7 @@ function set_cookie_m(string $name, string $value, int $expires): void
 
 function password_entropy(string $password): int
 {
-    return count(count_chars(utf8_decode($password), 1)) * log(256, 2);
+    return count(count_chars(utf8_decode($password), 1)) * 8;
 }
 
 function check_mx_record(string $email): bool
