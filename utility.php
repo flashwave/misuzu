@@ -30,7 +30,7 @@ function set_cookie_m(string $name, string $value, int $expires): void
     setcookie(
         "msz_{$name}",
         $value,
-        time() + $expires,
+        $expires,
         '/',
         '',
         !empty($_SERVER['HTTPS']),

@@ -103,18 +103,18 @@ switch ($mode) {
 
             $session = Session::createSession($user, $user_agent, null, $ipAddress);
             $app->setSession($session);
-            set_cookie_m('uid', $session->user_id, 604800);
-            set_cookie_m('sid', $session->session_key, 604800);
+            $cookie_life = Carbon::now()->addMonth()->timestamp;
+            set_cookie_m('uid', $session->user_id, $cookie_life);
+            set_cookie_m('sid', $session->session_key, $cookie_life);
 
             // Temporary key generation for chat login.
             // Should eventually be replaced with a callback login system.
             // Also uses different cookies since $httponly is required to be false for these.
-            $user->last_ip = $ipAddress;
             $user->user_chat_key = bin2hex(random_bytes(16));
             $user->save();
 
-            setcookie('msz_tmp_id', $user->user_id, time() + 604800, '/', '.flashii.net');
-            setcookie('msz_tmp_key', $user->user_chat_key, time() + 604800, '/', '.flashii.net');
+            setcookie('msz_tmp_id', $user->user_id, $cookie_life, '/', '.flashii.net');
+            setcookie('msz_tmp_key', $user->user_chat_key, $cookie_life, '/', '.flashii.net');
             header('Location: /');
             return;
         }

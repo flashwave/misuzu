@@ -72,6 +72,12 @@
                     <div class="profile__info__section">
                         <div class="profile__info__block">
                             <div class="profile__info__row">
+                                <div class="profile__info__column profile__info__column--user-title">
+                                    {{ profile.userTitle }}
+                                </div>
+                            </div>
+
+                            <div class="profile__info__row">
                                 <div class="profile__info__column profile__info__column--icons">
                                     <img class="profile__icon" src="https://static.flash.moe/flags/fff/{{ profile.user_country|lower }}.png" alt="{{ profile.user_country }}">
                                 </div>
@@ -90,6 +96,21 @@
                                     {{ profile.created_at.diffForHumans }}
                                 </div>
                             </div>
+
+                            {% if profile.last_seen.timestamp > 0 %}
+                            <div class="profile__info__row" title="{{ profile.last_seen.format('r') }}">
+                                <div class="profile__info__column profile__info__column--heading">
+                                    Last Seen
+                                </div>
+                                <div class="profile__info__column">
+                                    {% if profile.last_seen.timestamp + 5 >= ''|date('U') %}
+                                        Online now
+                                    {% else %}
+                                        {{ profile.last_seen.diffForHumans }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
