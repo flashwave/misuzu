@@ -71,11 +71,13 @@
                 <div class="profile__info">
                     <div class="profile__info__section">
                         <div class="profile__info__block">
+                            {% if profile.userTitle is not empty %}
                             <div class="profile__info__row">
-                                <div class="profile__info__column profile__info__column--user-title">
+                                <div class="profile__info__column profile__info__column--user-title"{% if not profile.displayColour.inherit %} style="color:{{ profile.displayColour }}"{% endif %}>
                                     {{ profile.userTitle }}
                                 </div>
                             </div>
+                            {% endif %}
 
                             <div class="profile__info__row">
                                 <div class="profile__info__column profile__info__column--icons">
@@ -103,7 +105,7 @@
                                     Last Seen
                                 </div>
                                 <div class="profile__info__column">
-                                    {% if profile.last_seen.timestamp + 5 >= ''|date('U') %}
+                                    {% if profile.last_seen.addMinute.timestamp >= ''|date('U') %}
                                         Online now
                                     {% else %}
                                         {{ profile.last_seen.diffForHumans }}
@@ -140,7 +142,7 @@
                     {% endspaceless %}
                     {% endif %}
                 </div>
-                <div class="avatar profile__avatar" style="background-image:url('{{ image }}');"></div>
+                <div class="avatar profile__avatar" style="background-image:url('{{ image }}')"></div>
             </div>
         </div>
     </div>

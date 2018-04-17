@@ -204,29 +204,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             break;
 
         case 'avatar':
-            if (isset($_POST['import'])
-                && !File::exists($app->getStore('avatars/original')->filename($avatar_filename))) {
-                if (!tmp_csrf_verify($_POST['import'])) {
-                    $settings_errors[] = $csrf_error_str;
-                    break;
-                }
-
-                $old_avatar_url = trim(file_get_contents(
-                    "https://secret.flashii.net/avatar-serve.php?id={$settings_user->user_id}&r"
-                ));
-
-                if (empty($old_avatar_url)) {
-                    $settings_errors[] = 'No old avatar was found for you.';
-                    break;
-                }
-
-                File::writeAll(
-                    $app->getStore('avatars/original')->filename($avatar_filename),
-                    file_get_contents($old_avatar_url)
-                );
-                break;
-            }
-
             if (isset($_POST['delete'])) {
                 if (!tmp_csrf_verify($_POST['delete'])) {
                     $settings_errors[] = $csrf_error_str;
