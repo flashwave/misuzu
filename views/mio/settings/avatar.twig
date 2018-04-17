@@ -21,12 +21,9 @@
                     </label>
                     <button class="input__button" name="upload" value="{{ csrf_token() }}">Upload</button>
                 </form>
+
                 <form class="settings__avatar__form" method="post" action="?m=avatar">
-                    {% if user_has_avatar %}
-                        <button class="input__button" name="delete" value="{{ csrf_token() }}">Delete</button>
-                    {% else %}
-                        <button class="input__button" name="import" value="{{ csrf_token() }}">Import old avatar</button>
-                    {% endif %}
+                    <button class="input__button{% if not user_has_avatar %} input__button--disabled{% endif %}" name="delete" value="{{ csrf_token() }}"{% if not user_has_avatar %} disabled{% endif %}>Delete</button>
                 </form>
             </div>
         </div>

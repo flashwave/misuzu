@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu\Users;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Misuzu\Colour;
 use Misuzu\Database;
@@ -20,6 +21,8 @@ class User extends Model
     protected $primaryKey = 'user_id';
 
     private $displayRoleValidated = false;
+    private $displayRoleInstance;
+    private $userTitleValue;
 
     public static function createUser(
         string $username,
@@ -110,10 +113,44 @@ class User extends Model
         return '';
     }
 
+    // it's probably safe to assume that this will always return a valid role
+    public function getDisplayRole(): ?Role
+    {
+        if ($this->displayRoleInstance === null) {
+            $this->displayRoleInstance = Role::find($this->display_role);
+        }
+
+        return $this->displayRoleInstance;
+    }
+
     public function getDisplayColour(): Colour
     {
-        $role = Role::find($this->display_role);
+        $role = $this->getDisplayRole();
         return $role === null ? Colour::none() : $role->role_colour;
+    }
+
+    private function getUserTitlePrivate(): string
+    {
+        if (!empty($this->user_title)) {
+            return $this->user_title;
+        }
+
+        $role = $this->getDisplayRole();
+
+        if ($role !== null && !empty($role->role_title)) {
+            return $role->role_title;
+        }
+
+        return '';
+    }
+
+    public function getUserTitle(): string
+    {
+        if (empty($this->userTitleValue)) {
+            $this->userTitleValue = $this->getUserTitlePrivate();
+        }
+
+        return $this->userTitleValue;
     }
 
     public function addRole(Role $role, bool $setDisplay = false): void
@@ -159,11 +196,12 @@ class User extends Model
     public function getDisplayRoleAttribute(?int $value): int
     {
         if (!$this->displayRoleValidated) {
-            if ($value === null || UserRole::where('user_id', $this->user_id)->where('role_id', $value)->count() > 0) {
+            if ($value === null
+                || UserRole::where('user_id', $this->user_id)->where('role_id', $value)->count() < 1) {
                 $highestRole = Database::table('roles')
                     ->join('user_roles', 'roles.role_id', '=', 'user_roles.role_id')
                     ->where('user_id', $this->user_id)
-                    ->orderBy('roles.role_hierarchy')
+                    ->orderBy('roles.role_hierarchy', 'desc')
                     ->first(['roles.role_id']);
 
                 $value = $highestRole->role_id;
@@ -182,6 +220,11 @@ class User extends Model
         if (UserRole::where('user_id', $this->user_id)->where('role_id', $value)->count() > 0) {
             $this->attributes['display_role'] = $value;
         }
+    }
+
+    public function getLastSeenAttribute(?string $dateTime): Carbon
+    {
+        return $dateTime === null ? Carbon::createFromTimestamp(-1) : new Carbon($dateTime);
     }
 
     public function getRegisterIpAttribute(string $ipAddress): IPAddress

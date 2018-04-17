@@ -13,7 +13,9 @@
                     {{ post.created_at }}
                 </div>
                 <a class="news__preview__user" href="/profile.php?u={{ post.user.user_id }}">
-                    <div class="news__preview__user__name">{{ post.user.username }}</div>
+                    <div class="news__preview__user__name"{% if not post.user.displayColour.inherit %} style="color:{{ post.user.displayColour }}"{% endif %}>
+                        {{ post.user.username }}
+                    </div>
                     <div class="avatar news__preview__user__avatar" style="background-image:url('/profile.php?u={{ post.user.user_id }}&amp;m=avatar')"></div>
                 </a>
             </div>

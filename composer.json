@@ -9,7 +9,6 @@
     "require": {
         "php": ">=7.2",
         "ext-bcmath": "*",
-        "ext-imagick": "*",
         "ext-mbstring": "*",
         "twig/twig": "~2.4",
         "nesbot/carbon": "~1.22",
