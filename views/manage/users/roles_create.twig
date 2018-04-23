@@ -1,9 +1,15 @@
 {% extends '@manage/users/master.twig' %}
 
 {% block content %}
-    <form action="?m={{ edit_role is defined ? 'edit&i=' ~ edit_role.role_id : 'create' }}" method="post">
+    <form action="?v=role{{ edit_role is defined ? '&r=' ~ edit_role.role_id : '' }}" method="post">
         <div class="container">
-            <h1 class="container__title container__title">Creating a new Role</h1>
+            <h1 class="container__title">
+                {% if edit_role is defined %}
+                    Editing <span style="color:{{ edit_role.role_colour.inherit ? 'inherit' : edit_role.role_colour }}">{{ edit_role.role_name }}</span> ({{ edit_role.role_id }})
+                {% else %}
+                    Creating a new Role
+                {% endif %}
+            </h1>
 
             <label class="form__label">
                 <div class="form__label__text">Role Name</div>

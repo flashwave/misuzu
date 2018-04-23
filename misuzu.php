@@ -46,7 +46,7 @@ if (PHP_SAPI !== 'cli') {
     $app->templating->addPath('mio', __DIR__ . '/views/mio');
 
     if ($manage_mode) {
-        if ($app->getSession() === null || $_SERVER['HTTP_HOST'] !== 'misuzu.misaka.nl') {
+        if ($app->getSession() === null || $app->getSession()->user->user_id !== 1) {
             http_response_code(403);
             echo $app->templating->render('errors.403');
             exit;

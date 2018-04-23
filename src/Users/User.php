@@ -237,7 +237,7 @@ class User extends Model
         $this->attributes['register_ip'] = $ipAddress->getRaw();
     }
 
-    public function getLastIpAttribute(string $ipAddress): string
+    public function getLastIpAttribute(string $ipAddress): IPAddress
     {
         return IPAddress::fromRaw($ipAddress);
     }

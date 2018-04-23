@@ -1,0 +1,182 @@
+{% extends '@manage/users/master.twig' %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="container__title">
+            Viewing <span style="color:{{ view_user.displayColour.inherit ? 'inherit' : view_user.displayColour }}">{{ view_user.username }}</span> ({{ view_user.user_id }})
+        </h1>
+
+        <label class="form__label">
+            <div class="form__label__text">Username</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="text" value="{{ view_user.username }}" name="user[username]" maxlength="16">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">E-mail address</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="text" value="{{ view_user.email }}" name="user[email]" maxlength="255">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">Register IP</div>
+            <div class="form__label__input">
+                <input class="input input--text" readonly type="text" value="{{ view_user.register_ip.string }}">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">Last IP</div>
+            <div class="form__label__input">
+                <input class="input input--text" readonly type="text" value="{{ view_user.last_ip.string }}">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">Country</div>
+            <div class="form__label__input">
+                <input class="input input--text" readonly type="text" value="{{ view_user.user_country }}">
+            </div>
+        </label>
+
+        <div>
+            <button class="button" name="csrf" value="{{ csrf_token() }}">Update</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="container__title">
+            Avatar
+        </h1>
+
+        <label class="form__label">
+            <div class="form__label__text">New Avatar</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="file" name="user[avatar]">
+            </div>
+        </label>
+
+        <div>
+            <button class="button" name="csrf" value="{{ csrf_token() }}">Upload</button>
+            <button class="button" name="csrf" value="{{ csrf_token() }}">Delete</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="container__title">
+            Password
+        </h1>
+
+        <label class="form__label">
+            <div class="form__label__text">New Password</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="password" name="user[password]">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">Confirm Password</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="password" name="user[password_confirm]">
+            </div>
+        </label>
+
+        <div>
+            <button class="button" name="csrf" value="{{ csrf_token() }}">Update</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="container__title">
+            Profile fields
+        </h1>
+
+        <label class="form__label">
+            <div class="form__label__text">Twitter</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="text" value="{{ view_user.user_twitter }}" name="user[twitter]">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">osu!</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="text" value="{{ view_user.user_osu }}" name="user[osu]">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">Website</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="url" value="{{ view_user.user_website }}" name="user[website]">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">Youtube</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="text" value="{{ view_user.user_youtube }}" name="user[youtube]">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">Steam</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="text" value="{{ view_user.user_steam }}" name="user[steam]">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">Twitch.tv</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="text" value="{{ view_user.user_twitchtv }}" name="user[twitchtv]">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">Last.fm</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="text" value="{{ view_user.user_twitchtv }}" name="user[twitchtv]">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">Github</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="text" value="{{ view_user.user_github }}" name="user[github]">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">Skype</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="text" value="{{ view_user.user_skype }}" name="user[skype]">
+            </div>
+        </label>
+
+        <label class="form__label">
+            <div class="form__label__text">Discord</div>
+            <div class="form__label__input">
+                <input class="input input--text" type="text" value="{{ view_user.user_discord }}" name="user[discord]">
+            </div>
+        </label>
+
+        <div>
+            <button class="button" name="csrf" value="{{ csrf_token() }}">Update</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="container__title">Roles</h1>
+    </div>
+
+    <div class="container">
+        <h1 class="container__title">Permissions</h1>
+    </div>
+
+    <div class="container">
+        <h1 class="container__title">Sessions</h1>
+    </div>
+{% endblock %}

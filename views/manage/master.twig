@@ -9,21 +9,24 @@
                 {
                     'name': 'overview',
                     'title': 'Overview',
-                    'url': '/manage/index.php',
+                    'url': '/manage/index.php?v=overview',
                 },
                 {
                     'name': 'logs',
                     'title': 'Logs',
+                    'url': '/manage/index.php?v=logs',
                 },
             ],
             [
                 {
                     'name': 'emotes',
                     'title': 'Emoticons',
+                    'url': '/manage/index.php?v=emoticons',
                 },
                 {
                     'name': 'settings',
                     'title': 'Settings',
+                    'url': '/manage/index.php?v=settings',
                 },
             ],
         ],
@@ -36,30 +39,36 @@
                 {
                     'name': 'listing',
                     'title': 'Listing',
+                    'url': '/manage/users.php?v=listing',
                 },
             ],
             [
                 {
                     'name': 'roles',
                     'title': 'Roles',
+                    'url': '/manage/users.php?v=roles',
                 },
                 {
                     'name': 'perms',
                     'title': 'Permissions',
+                    'url': '/manage/users.php?v=permissions',
                 },
             ],
             [
                 {
                     'name': 'report',
                     'title': 'Reports',
+                    'url': '/manage/users.php?v=reports',
                 },
                 {
                     'name': 'restrictions',
                     'title': 'Restrictions',
+                    'url': '/manage/users.php?v=restrictions',
                 },
                 {
                     'name': 'blacklist',
                     'title': 'Blacklisting',
+                    'url': '/manage/users.php?v=blacklist',
                 },
             ],
         ],
@@ -72,14 +81,17 @@
                 {
                     'name': 'forums',
                     'title': 'Listing',
+                    'url': '/manage/forums.php?v=listing',
                 },
                 {
                     'name': 'perms',
                     'title': 'Permissions',
+                    'url': '/manage/forums.php?v=permissions',
                 },
                 {
                     'name': 'settings',
                     'title': 'Settings',
+                    'url': '/manage/forums.php?v=settings',
                 },
             ],
         ],
@@ -112,7 +124,7 @@
                                     {% for section in menu.sections %}
                                         <div class="header__menu__section">
                                             {% for item in section %}
-                                                <a class="header__menu__link header__menu__link--{{ menu.name }}-{{ item.name }}" href="{{ item.url|default(menu.name ~ '-' ~ item.name ~ '.php') }}">{{ item.title }}</a>
+                                                <a class="header__menu__link header__menu__link--{{ menu.name }}-{{ item.name }}" href="{{ item.url }}">{{ item.title }}</a>
                                             {% endfor %}
                                         </div>
                                     {% endfor %}
@@ -124,7 +136,7 @@
                     <div class="header__user">
                         <div class="header__menu">
                             <input type="checkbox" id="menu-user-state" class="header__menu__state">
-                            <label for="menu-user-state" class="header__menu__toggle header__menu__toggle--profile" style="background-image:url('/profile.php?u={{ app.session.user.user_id }}&amp;m=avatar');">{{ app.session.user.username }}</label>
+                            <label for="menu-user-state" class="header__menu__toggle header__menu__toggle--profile" style="background-image:url('/profile.php?u={{ app.session.user.user_id }}&amp;m=avatar');color:{{ app.session.user.displayColour.inherit ? 'inherit' : app.session.user.displayColour }}">{{ app.session.user.username }}</label>
                             <div class="header__menu__options header__menu__options--user">
                                 <div class="header__menu__section">
                                     <a class="header__menu__link" href="/profile.php?u={{ app.session.user.user_id }}">Profile</a>
@@ -142,7 +154,7 @@
 
             {% block content %}
                 <div class="container">
-                    <p> This page has no content.</p>
+                    <p>This page has no content.</p>
                 </div>
             {% endblock %}
 
