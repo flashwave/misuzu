@@ -1,4 +1,5 @@
 {% extends '@mio/settings/master.twig' %}
+{% from '@mio/macros.twig' import paginate %}
 
 {% block settings_content %}
     <div class="settings__description">
@@ -19,6 +20,7 @@
                         {% endif %}
                     </div>
                 </div>
+
                 <div class="settings__sessions__column settings__sessions__column--created" onmouseenter="this.children[1].textContent = '{{ session.created_at }}';" onmouseleave="this.children[1].textContent = '{{ session.created_at.diffForHumans }}';">
                     <div class="settings__sessions__column__name">
                         Created
@@ -27,6 +29,7 @@
                         {{ session.created_at.diffForHumans }}
                     </div>
                 </div>
+
                 <div class="settings__sessions__column settings__sessions__column--expires" onmouseenter="this.children[1].textContent = '{{ session.expires_on }}';" onmouseleave="this.children[1].textContent = '{{ session.expires_on.diffForHumans }}';">
                     <div class="settings__sessions__column__name">
                         Expires
@@ -35,6 +38,7 @@
                         {{ session.expires_on.diffForHumans }}
                     </div>
                 </div>
+
                 {% if session.user_agent|length > 0 %}
                     <div class="settings__sessions__column settings__sessions__column--user_agent">
                         <div class="settings__sessions__column__name">
@@ -45,6 +49,7 @@
                         </div>
                     </div>
                 {% endif %}
+
                 <form class="settings__sessions__column settings__sessions__column--options" method="post" action="?m=sessions">
                     <input type="hidden" name="csrf" value="{{ csrf_token() }}">
                     <input type="hidden" name="session" value="{{ session.session_id }}">
@@ -52,5 +57,7 @@
                 </form>
             </div>
         {% endfor %}
+
+        {{ paginate(user_sessions, '?m=sessions', 'settings__') }}
     </div>
 {% endblock %}

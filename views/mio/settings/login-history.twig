@@ -1,4 +1,5 @@
 {% extends '@mio/settings/master.twig' %}
+{% from '@mio/macros.twig' import paginate %}
 
 {% block settings_content %}
     <div class="settings__description">
@@ -47,5 +48,7 @@
                 {% endif %}
             </div>
         {% endfor %}
+
+        {{ paginate(user_login_attempts, '?m=login-history', 'settings__') }}
     </div>
 {% endblock %}

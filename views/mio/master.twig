@@ -13,7 +13,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         {% include '@mio/_layout/meta.twig' %}
         <link href="https://static.flash.moe/fonts/visitor/visitor1.css" rel="stylesheet">
-        <link href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" rel="stylesheet">
         <link href="/css/mio.css" rel="stylesheet">
     </head>
     <body class="mio">
@@ -31,11 +30,14 @@
                             <div class="container__title">Hey, {{ app.session.user.username }}!</div>
                             <div class="container__content header__user__content">
                                 <a href="/settings.php?m=avatar" class="avatar header__user__avatar" style="background-image:url('/profile.php?u={{ app.session.user.user_id }}&amp;m=avatar');"></a>
+
                                 <div class="header__user__links__container">
                                     <ul class="header__user__links">
                                         <li class="header__user__option"><a class="header__user__link" href="/profile.php?u={{ app.session.user.user_id }}">Profile</a></li>
                                         <li class="header__user__option"><a class="header__user__link" href="/settings.php">Settings</a></li>
-                                        <li class="header__user__option"><a class="header__user__link" href="{{ manage_link|default('/manage/index.php') }}">Manage</a></li>
+                                        {% if app.session.user.user_id == 1 %}
+                                            <li class="header__user__option"><a class="header__user__link" href="{{ manage_link|default('/manage/index.php') }}">Manage</a></li>
+                                        {% endif %}
                                         <li class="header__user__option"><a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Logout</a></li>
                                     </ul>
                                 </div>
@@ -64,6 +66,7 @@
                     ''|date('Y') }} /
                     {{ link('https://github.com/flashwave/misuzu/tree/' ~ git_branch(), git_branch(), 'footer__copyright__link') }} # {{ link('https://github.com/flashwave/misuzu/commit/' ~ git_hash(true), git_hash(), 'footer__copyright__link') }}
                 </div>
+
                 <div class="footer__links">
                     {{ link('#', 'Terms of Service', 'footer__links__link') }} |
                     {{ link('#', 'Rules', 'footer__links__link') }} |

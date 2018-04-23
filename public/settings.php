@@ -8,6 +8,8 @@ require_once __DIR__ . '/../misuzu.php';
 
 $settings_session = Application::getInstance()->getSession();
 
+$page_id = (int)($_GET['p'] ?? 1);
+
 if (Application::getInstance()->getSession() === null) {
     http_response_code(403);
     echo $app->templating->render('errors.403');
@@ -345,11 +347,19 @@ switch ($settings_mode) {
         break;
 
     case 'sessions':
-        $app->templating->var('user_sessions', $settings_user->sessions->reverse());
+        $sessions = $settings_user->sessions()
+           ->orderBy('session_id', 'desc')
+           ->paginate(15, ['*'], 'p', $page_id);
+
+        $app->templating->var('user_sessions', $sessions);
         break;
 
     case 'login-history':
-        $app->templating->var('user_login_attempts', $settings_user->loginAttempts->reverse());
+        $login_attempts = $settings_user->loginAttempts()
+            ->orderBy('attempt_id', 'desc')
+            ->paginate(15, ['*'], 'p', $page_id);
+
+        $app->templating->var('user_login_attempts', $login_attempts);
         break;
 }
 

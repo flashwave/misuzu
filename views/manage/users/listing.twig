@@ -4,19 +4,18 @@
 {% block content %}
     <div class="container listing user-listing">
         {% for user in manage_users %}
-            <label class="listing__entry user-listing__entry"{% if not user.displayColour.inherit %} style="border-color: {{ user.displayColour }}"{% endif %}>
+            <a href="?v=view&amp;u={{ user.user_id }}" class="listing__entry user-listing__entry"{% if not user.displayColour.inherit %} style="border-color: {{ user.displayColour }}"{% endif %}>
                 <div class="listing__entry__content user-listing__entry__content">
-                    <input class="listing__entry__selector" type="checkbox">
-                    <a href="/profile.php?u={{ user.user_id }}" class="listing__entry__column user-listing__entry__column user-listing__entry__column--username">
+                    <div class="listing__entry__column user-listing__entry__column user-listing__entry__column--username">
                         {{ user.username }}
-                    </a>
+                    </div>
                     <div class="user-listing__avatar" style="background-image:url('/profile.php?u={{ user.user_id }}&amp;m=avatar');"></div>
                 </div>
-            </label>
+            </a>
         {% endfor %}
     </div>
 
     <div class="container container--center">
-        {{ paginate(manage_users) }}
+        {{ paginate(manage_users, '?v=listing') }}
     </div>
 {% endblock %}
