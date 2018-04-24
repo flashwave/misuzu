@@ -71,7 +71,7 @@ class Application extends ApplicationBase
      */
     public function getConfig(): ConfigManager
     {
-        if (is_null($this->configInstance)){
+        if (is_null($this->configInstance)) {
             throw new UnexpectedValueException('Internal ConfigManager instance is null, how did you even manage to do this?');
         }
 
@@ -275,7 +275,7 @@ class Application extends ApplicationBase
      */
     public function getTemplating(): TemplateEngine
     {
-        if (is_null($this->templatingInstance)){
+        if (is_null($this->templatingInstance)) {
             throw new UnexpectedValueException('Internal templating engine instance is null, did you run startDatabase yet?');
         }
 
