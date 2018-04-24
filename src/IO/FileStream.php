@@ -3,14 +3,45 @@ namespace Misuzu\IO;
 
 use ErrorException;
 
+/**
+ * Class FileStream
+ * @package Misuzu\IO
+ */
 class FileStream extends Stream
 {
+    /**
+     * Open a file for reading only.
+     */
     public const MODE_READ = 0x1;
+
+    /**
+     * Open a file for writing only.
+     */
     public const MODE_WRITE = 0x2;
+
+    /**
+     * Truncate a file.
+     */
     private const MODE_TRUNCATE_RAW = 0x4;
+
+    /**
+     * Append to a file.
+     */
     private const MODE_APPEND_RAW = 0x8;
+
+    /**
+     * Open a file for reading and writing.
+     */
     public const MODE_READ_WRITE = self::MODE_READ | self::MODE_WRITE;
+
+    /**
+     * Truncate and open a file for writing.
+     */
     public const MODE_TRUNCATE = self::MODE_TRUNCATE_RAW | self::MODE_WRITE;
+
+    /**
+     * Open a file for writing and append to the end.
+     */
     public const MODE_APPEND = self::MODE_APPEND_RAW | self::MODE_WRITE;
 
     protected $fileHandle;
@@ -18,6 +49,14 @@ class FileStream extends Stream
     protected $fileMode;
     protected $isLocked;
 
+    /**
+     * FileStream constructor.
+     * @param string $path
+     * @param int    $mode
+     * @param bool   $lock
+     * @throws FileDoesNotExistException
+     * @throws IOException
+     */
     public function __construct(string $path, int $mode, bool $lock = true)
     {
         $this->isLocked = $lock;
@@ -37,6 +76,9 @@ class FileStream extends Stream
         }
     }
 
+    /**
+     * Clears up the resources used by this stream.
+     */
     public function __destruct()
     {
         if (!is_resource($this->fileHandle)) {
@@ -46,6 +88,12 @@ class FileStream extends Stream
         $this->close();
     }
 
+    /**
+     * Creates a file mode string from our own flags.
+     * @param int $mode
+     * @return string
+     * @throws IOException
+     */
     protected static function constructFileMode(int $mode): string
     {
         $mode_read = ($mode & static::MODE_READ) > 0;
@@ -84,18 +132,25 @@ class FileStream extends Stream
 
         // should be at least two characters because of the b flag
         if (strlen($mode_string) < 2) {
-            throw IOException('Failed to construct mode???');
+            throw new IOException('Failed to construct mode???');
         }
 
         return $mode_string;
     }
 
-    public function getResource(): resource
+    /**
+     * @return int
+     * @throws IOException
+     */
+    public function getResource(): int
     {
         $this->ensureHandleActive();
         return $this->fileHandle;
     }
 
+    /**
+     * @throws IOException
+     */
     protected function ensureHandleActive(): void
     {
         if (!is_resource($this->fileHandle)) {
@@ -103,6 +158,9 @@ class FileStream extends Stream
         }
     }
 
+    /**
+     * @throws IOException
+     */
     protected function ensureCanRead(): void
     {
         if (!$this->getCanRead()) {
@@ -110,6 +168,9 @@ class FileStream extends Stream
         }
     }
 
+    /**
+     * @throws IOException
+     */
     protected function ensureCanWrite(): void
     {
         if (!$this->getCanWrite()) {
@@ -117,6 +178,9 @@ class FileStream extends Stream
         }
     }
 
+    /**
+     * @throws IOException
+     */
     protected function ensureCanSeek(): void
     {
         if (!$this->getCanSeek()) {
@@ -124,54 +188,86 @@ class FileStream extends Stream
         }
     }
 
+    /**
+     * @return bool
+     */
     public function getCanRead(): bool
     {
         return ($this->fileMode & static::MODE_READ) > 0 && is_readable($this->filePath);
     }
 
+    /**
+     * @return bool
+     */
     public function getCanSeek(): bool
     {
         return ($this->fileMode & static::MODE_APPEND_RAW) == 0 && $this->getCanRead();
     }
 
+    /**
+     * @return bool
+     */
     public function getCanTimeout(): bool
     {
         return false;
     }
 
+    /**
+     * @return bool
+     */
     public function getCanWrite(): bool
     {
         return ($this->fileMode & static::MODE_WRITE) > 0 && is_writable($this->filePath);
     }
 
+    /**
+     * @return int
+     * @throws IOException
+     */
     public function getLength(): int
     {
         $this->ensureHandleActive();
         return fstat($this->fileHandle)['size'];
     }
 
+    /**
+     * @return int
+     * @throws IOException
+     */
     public function getPosition(): int
     {
         $this->ensureHandleActive();
         return ftell($this->fileHandle);
     }
 
+    /**
+     * @return int
+     */
     public function getReadTimeout(): int
     {
         return -1;
     }
 
+    /**
+     * @return int
+     */
     public function getWriteTimeout(): int
     {
         return -1;
     }
 
+    /**
+     * @throws IOException
+     */
     public function flush(): void
     {
         $this->ensureHandleActive();
         fflush($this->fileHandle);
     }
 
+    /**
+     * @throws IOException
+     */
     public function close(): void
     {
         $this->ensureHandleActive();
@@ -183,6 +279,11 @@ class FileStream extends Stream
         fclose($this->fileHandle);
     }
 
+    /**
+     * @param int $length
+     * @return string
+     * @throws IOException
+     */
     public function read(int $length): string
     {
         $this->ensureHandleActive();
@@ -197,6 +298,10 @@ class FileStream extends Stream
         return $read;
     }
 
+    /**
+     * @return int
+     * @throws IOException
+     */
     public function readChar(): int
     {
         $this->ensureHandleActive();
@@ -205,6 +310,11 @@ class FileStream extends Stream
         return ord(fgetc($this->fileHandle));
     }
 
+    /**
+     * @param string $data
+     * @return int
+     * @throws IOException
+     */
     public function write(string $data): int
     {
         $this->ensureHandleActive();
@@ -219,11 +329,20 @@ class FileStream extends Stream
         return $write;
     }
 
+    /**
+     * @param int $char
+     * @throws IOException
+     */
     public function writeChar(int $char): void
     {
-        $this->write(chr($char), 0, 1);
+        $this->write(chr($char));
     }
 
+    /**
+     * @param int $offset
+     * @param int $origin
+     * @throws IOException
+     */
     public function seek(int $offset, int $origin): void
     {
         $this->ensureHandleActive();

@@ -12,7 +12,7 @@ $profile_user = User::find($user_id);
 switch ($mode) {
     case 'avatar':
         $avatar_filename = $app->getPath(
-            $app->config->get('Avatar', 'default_path', 'string', 'public/images/no-avatar.png')
+            $app->getConfig()->get('Avatar', 'default_path', 'string', 'public/images/no-avatar.png')
         );
 
         if ($profile_user !== null) {
@@ -46,11 +46,11 @@ switch ($mode) {
     default:
         if ($profile_user === null) {
             http_response_code(404);
-            echo $app->templating->render('user.notfound');
+            echo $app->getTemplating()->render('user.notfound');
             break;
         }
 
-        $app->templating->var('profile', $profile_user);
-        echo $app->templating->render('user.view');
+        $app->getTemplating()->var('profile', $profile_user);
+        echo $app->getTemplating()->render('user.view');
         break;
 }

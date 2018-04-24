@@ -35,18 +35,15 @@ abstract class ApplicationBase
     }
 
     /**
-     * Creates an instance of whichever class extends ApplicationBase.
-     * I have no idea how to make a param for the ... thingy so ech.
-     * @return ApplicationBase
+     * ApplicationBase constructor.
      */
-    public static function start(...$params): ApplicationBase
+    public function __construct()
     {
         if (!is_null(self::$instance) || self::$instance instanceof ApplicationBase) {
             throw new UnexpectedValueException('An Application has already been set up.');
         }
 
-        self::$instance = new static(...$params);
-        return self::getInstance();
+        self::$instance = $this;
     }
 
     /**
@@ -76,43 +73,5 @@ abstract class ApplicationBase
     public static function gitBranch(): string
     {
         return trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
-    }
-
-    public function __get($name)
-    {
-        if (starts_with($name, 'has') && strlen($name) > 3 && ctype_upper($name[3])) {
-            $name = lcfirst(substr($name, 3));
-            return $this->hasModule($name);
-        }
-
-        if ($this->hasModule($name)) {
-            return $this->modules[$name];
-        }
-
-        throw new InvalidArgumentException('Invalid property.');
-    }
-
-    /**
-     * Adds a module to this application.
-     * @param string $name
-     * @param mixed $module
-     */
-    public function addModule(string $name, $module): void
-    {
-        if ($this->hasModule($name)) {
-            throw new InvalidArgumentException('This module has already been registered.');
-        }
-
-        $this->modules[$name] = $module;
-    }
-
-    /**
-     * Checks if a module is registered.
-     * @param string $name
-     * @return bool
-     */
-    public function hasModule(string $name): bool
-    {
-        return array_key_exists($name, $this->modules) && !is_null($this->modules[$name]);
     }
 }

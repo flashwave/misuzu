@@ -1,5 +1,4 @@
 <?php
-use Misuzu\Application;
 use Misuzu\Colour;
 use Misuzu\Users\Role;
 use Misuzu\Users\User;
@@ -12,8 +11,8 @@ $page_id = (int)($_GET['p'] ?? 1);
 switch ($_GET['v'] ?? null) {
     case 'listing':
         $manage_users = User::paginate(32, ['*'], 'p', $page_id);
-        $app->templating->vars(compact('manage_users'));
-        echo $app->templating->render('@manage.users.listing');
+        $app->getTemplating()->vars(compact('manage_users'));
+        echo $app->getTemplating()->render('@manage.users.listing');
         break;
 
     case 'view':
@@ -31,14 +30,14 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $app->templating->var('view_user', $view_user);
-        echo $app->templating->render('@manage.users.view');
+        $app->getTemplating()->var('view_user', $view_user);
+        echo $app->getTemplating()->render('@manage.users.view');
         break;
 
     case 'roles':
         $manage_roles = Role::paginate(32, ['*'], 'p', $page_id);
-        $app->templating->vars(compact('manage_roles'));
-        echo $app->templating->render('@manage.users.roles');
+        $app->getTemplating()->vars(compact('manage_roles'));
+        echo $app->getTemplating()->render('@manage.users.roles');
         break;
 
     case 'role':
@@ -121,9 +120,9 @@ switch ($_GET['v'] ?? null) {
                 break;
             }
 
-            $app->templating->vars(compact('edit_role'));
+            $app->getTemplating()->vars(compact('edit_role'));
         }
 
-        echo $app->templating->render('@manage.users.roles_create');
+        echo $app->getTemplating()->render('@manage.users.roles_create');
         break;
 }

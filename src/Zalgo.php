@@ -1,8 +1,15 @@
 <?php
 namespace Misuzu;
 
+/**
+ * Class Zalgo
+ * @package Misuzu
+ */
 class Zalgo
 {
+    /**
+     * Characters that crawl upwards.
+     */
     private const ZALGO_CHARS_UP = [
         "\u{030d}", "\u{030e}", "\u{0304}", "\u{0305}", "\u{033f}",
         "\u{0311}", "\u{0306}", "\u{0310}", "\u{0352}", "\u{0357}",
@@ -16,6 +23,9 @@ class Zalgo
         "\u{033e}", "\u{035b}", "\u{0346}", "\u{031a}",
     ];
 
+    /**
+     * Characters that crawl downwards.
+     */
     private const ZALGO_CHARS_DOWN = [
         "\u{0316}", "\u{0317}", "\u{0318}", "\u{0319}", "\u{031c}",
         "\u{031d}", "\u{031e}", "\u{031f}", "\u{0320}", "\u{0324}",
@@ -27,6 +37,9 @@ class Zalgo
         "\u{0355}", "\u{0356}", "\u{0359}", "\u{035a}", "\u{0323}",
     ];
 
+    /**
+     * Characters that dwell in the middle.
+     */
     private const ZALGO_CHARS_MIDDLE = [
         "\u{0315}", "\u{031b}", "\u{0340}", "\u{0341}", "\u{0358}",
         "\u{0321}", "\u{0322}", "\u{0327}", "\u{0328}", "\u{0334}",
@@ -35,20 +48,50 @@ class Zalgo
         "\u{0337}", "\u{0361}", "\u{0489}",
     ];
 
+    /**
+     * Minimal Zalgo.
+     */
     public const ZALGO_MODE_MINI = 1;
+
+    /**
+     * Medium Zalgo.
+     */
     public const ZALGO_MODE_NORMAL = 2;
+
+    /**
+     * MAXIMUM ZALGO.
+     */
     public const ZALGO_MODE_MAX = 3;
 
+    /**
+     * Index of valid modes.
+     */
     private const ZALGO_MODES = [
         self::ZALGO_MODE_MINI,
         self::ZALGO_MODE_NORMAL,
         self::ZALGO_MODE_MAX,
     ];
 
+    /**
+     * Flag for having characters crawl upwards.
+     */
     public const ZALGO_DIR_UP = 0x1;
+
+    /**
+     * Flag for having characters dwell in the middle.
+     */
     public const ZALGO_DIR_MID = 0x2;
+
+    /**
+     * Flag for having characters crawl downwards.
+     */
     public const ZALGO_DIR_DOWN = 0x4;
 
+    /**
+     * (Try to) restore a Zalgofied string back to normal.
+     * @param string $text
+     * @return string
+     */
     public static function strip(string $text): string
     {
         $text = str_replace(self::ZALGO_CHARS_UP, '', $text);
@@ -58,6 +101,11 @@ class Zalgo
         return $text;
     }
 
+    /**
+     * Checks a string for Zalgo characters.
+     * @param string $char
+     * @return bool
+     */
     private static function isZalgo(string $char): bool
     {
         return in_array($char, self::ZALGO_CHARS_UP)
@@ -65,6 +113,12 @@ class Zalgo
             || in_array($char, self::ZALGO_CHARS_DOWN);
     }
 
+    /**
+     * Gets a random Zalgo character.
+     * @param array $array
+     * @param int   $length
+     * @return string
+     */
     private static function getZalgo(array $array, int $length): string
     {
         $string = '';
@@ -76,6 +130,13 @@ class Zalgo
         return $string;
     }
 
+    /**
+     * Runs Zalgo over a string.
+     * @param string $text
+     * @param int    $mode
+     * @param int    $direction
+     * @return string
+     */
     public static function run(
         string $text,
         int $mode = self::ZALGO_MODE_MINI,
@@ -105,6 +166,9 @@ class Zalgo
             }
 
             $str .= $char;
+            $num_up = 0;
+            $num_mid = 0;
+            $num_down = 0;
 
             switch ($mode) {
                 case self::ZALGO_MODE_MINI:

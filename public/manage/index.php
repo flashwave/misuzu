@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../misuzu.php';
 
 switch ($_GET['v'] ?? null) {
     case 'overview':
-        echo $app->templating->render('@manage.general.overview');
+        echo $app->getTemplating()->render('@manage.general.overview');
         break;
 
     case 'logs':

@@ -10,11 +10,22 @@ use Exception;
  */
 class File
 {
+    /**
+     * @param string $filename
+     * @return FileStream
+     * @throws FileDoesNotExistException
+     * @throws IOException
+     */
     public static function open(string $filename): FileStream
     {
         return new FileStream($filename, FileStream::MODE_READ_WRITE, true);
     }
 
+    /**
+     * @param string $filename
+     * @param bool   $lock
+     * @return string
+     */
     public static function readToEnd(string $filename, bool $lock = false): string
     {
         $output = '';
@@ -29,6 +40,12 @@ class File
         return $output;
     }
 
+    /**
+     * @param string $filename
+     * @param string $data
+     * @throws FileDoesNotExistException
+     * @throws IOException
+     */
     public static function writeAll(string $filename, string $data): void
     {
         $file = new FileStream($filename, FileStream::MODE_TRUNCATE, true);
@@ -40,6 +57,8 @@ class File
      * Creates an instance of a temporary file.
      * @param string $prefix
      * @return FileStream
+     * @throws FileDoesNotExistException
+     * @throws IOException
      */
     public static function temp(string $prefix = 'Misuzu'): FileStream
     {

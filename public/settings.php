@@ -12,7 +12,7 @@ $page_id = (int)($_GET['p'] ?? 1);
 
 if (Application::getInstance()->getSession() === null) {
     http_response_code(403);
-    echo $app->templating->render('errors.403');
+    echo $app->getTemplating()->render('errors.403');
     return;
 }
 
@@ -82,22 +82,22 @@ $settings_modes = [
 ];
 $settings_mode = $_GET['m'] ?? key($settings_modes);
 
-$app->templating->vars(compact('settings_mode', 'settings_modes', 'settings_user', 'settings_session'));
+$app->getTemplating()->vars(compact('settings_mode', 'settings_modes', 'settings_user', 'settings_session'));
 
 if (!array_key_exists($settings_mode, $settings_modes)) {
     http_response_code(404);
-    $app->templating->var('settings_title', 'Not Found');
-    echo $app->templating->render('settings.notfound');
+    $app->getTemplating()->var('settings_title', 'Not Found');
+    echo $app->getTemplating()->render('settings.notfound');
     return;
 }
 
 $settings_errors = [];
 
-$prevent_registration = $app->config->get('Auth', 'prevent_registration', 'bool', false);
+$prevent_registration = $app->getConfig()->get('Auth', 'prevent_registration', 'bool', false);
 $avatar_filename = "{$settings_user->user_id}.msz";
-$avatar_max_width = $app->config->get('Avatar', 'max_width', 'int', 4000);
-$avatar_max_height = $app->config->get('Avatar', 'max_height', 'int', 4000);
-$avatar_max_filesize = $app->config->get('Avatar', 'max_filesize', 'int', 1000000);
+$avatar_max_width = $app->getConfig()->get('Avatar', 'max_width', 'int', 4000);
+$avatar_max_height = $app->getConfig()->get('Avatar', 'max_height', 'int', 4000);
+$avatar_max_filesize = $app->getConfig()->get('Avatar', 'max_filesize', 'int', 1000000);
 $avatar_max_filesize_human = byte_symbol($avatar_max_filesize, true);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -328,17 +328,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$app->templating->vars(compact('settings_errors'));
-$app->templating->var('settings_title', $settings_modes[$settings_mode]);
+$app->getTemplating()->vars(compact('settings_errors'));
+$app->getTemplating()->var('settings_title', $settings_modes[$settings_mode]);
 
 switch ($settings_mode) {
     case 'account':
-        $app->templating->vars(compact('settings_profile_fields', 'prevent_registration'));
+        $app->getTemplating()->vars(compact('settings_profile_fields', 'prevent_registration'));
         break;
 
     case 'avatar':
         $user_has_avatar = File::exists($app->getStore('avatars/original')->filename($avatar_filename));
-        $app->templating->vars(compact(
+        $app->getTemplating()->vars(compact(
             'avatar_max_width',
             'avatar_max_height',
             'avatar_max_filesize',
@@ -351,7 +351,7 @@ switch ($settings_mode) {
            ->orderBy('session_id', 'desc')
            ->paginate(15, ['*'], 'p', $page_id);
 
-        $app->templating->var('user_sessions', $sessions);
+        $app->getTemplating()->var('user_sessions', $sessions);
         break;
 
     case 'login-history':
@@ -359,8 +359,8 @@ switch ($settings_mode) {
             ->orderBy('attempt_id', 'desc')
             ->paginate(15, ['*'], 'p', $page_id);
 
-        $app->templating->var('user_login_attempts', $login_attempts);
+        $app->getTemplating()->var('user_login_attempts', $login_attempts);
         break;
 }
 
-echo $app->templating->render("settings.{$settings_mode}");
+echo $app->getTemplating()->render("settings.{$settings_mode}");

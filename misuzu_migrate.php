@@ -6,16 +6,13 @@
 
 namespace Misuzu;
 
-use Illuminate\Database\Capsule\Manager;
-use Illuminate\Database\ConnectionResolver;
 use Illuminate\Database\Migrations\DatabaseMigrationRepository;
-use Illuminate\Database\Schema\Builder;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
 
 require_once __DIR__ . '/misuzu.php';
 
-$repository = new DatabaseMigrationRepository(Application::getInstance()->database->getDatabaseManager(), 'migrations');
+$repository = new DatabaseMigrationRepository(Application::getInstance()->getDatabase()->getDatabaseManager(), 'migrations');
 $migrator = new Migrator($repository, $repository->getConnectionResolver(), new Filesystem);
 
 if (!$migrator->repositoryExists()) {

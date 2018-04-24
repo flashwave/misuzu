@@ -5,4 +5,4 @@ require_once __DIR__ . '/../misuzu.php';
 
 $featured_news = NewsPost::where('is_featured', true)->orderBy('created_at', 'desc')->take(3)->get();
 
-echo $app->templating->render('home.landing', compact('featured_news'));
+echo $app->getTemplating()->render('home.landing', compact('featured_news'));

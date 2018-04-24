@@ -1,8 +1,5 @@
 <?php
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Misuzu\Application;
-use Misuzu\Database;
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\Role;
 use Misuzu\Users\User;
@@ -23,16 +20,16 @@ $username_validation_errors = [
 
 $mode = $_GET['m'] ?? 'login';
 $prevent_registration = $app->config->get('Auth', 'prevent_registration', 'bool', false);
-$app->templating->var('auth_mode', $mode);
-$app->templating->addPath('auth', __DIR__ . '/../views/auth');
-$app->templating->var('prevent_registration', $prevent_registration);
+$app->getTemplating()->var('auth_mode', $mode);
+$app->getTemplating()->addPath('auth', __DIR__ . '/../views/auth');
+$app->getTemplating()->var('prevent_registration', $prevent_registration);
 
 if (!empty($_REQUEST['username'])) {
-    $app->templating->var('auth_username', $_REQUEST['username']);
+    $app->getTemplating()->var('auth_username', $_REQUEST['username']);
 }
 
 if (!empty($_REQUEST['email'])) {
-    $app->templating->var('auth_email', $_REQUEST['email']);
+    $app->getTemplating()->var('auth_email', $_REQUEST['email']);
 }
 
 switch ($mode) {
@@ -52,7 +49,7 @@ switch ($mode) {
             return;
         }
 
-        echo $app->templating->render('@auth.logout');
+        echo $app->getTemplating()->render('@auth.logout');
         break;
 
     case 'login':
@@ -120,10 +117,10 @@ switch ($mode) {
         }
 
         if (!empty($auth_login_error)) {
-            $app->templating->var('auth_login_error', $auth_login_error);
+            $app->getTemplating()->var('auth_login_error', $auth_login_error);
         }
 
-        echo $app->templating->render('auth');
+        echo $app->getTemplating()->render('auth');
         break;
 
     case 'register':
@@ -169,14 +166,14 @@ switch ($mode) {
 
             $user = User::createUser($username, $password, $email);
             $user->addRole(Role::find(1), true);
-            $app->templating->var('auth_register_message', 'Welcome to Flashii! You may now log in.');
+            $app->getTemplating()->var('auth_register_message', 'Welcome to Flashii! You may now log in.');
             break;
         }
 
         if (!empty($auth_register_error)) {
-            $app->templating->var('auth_register_error', $auth_register_error);
+            $app->getTemplating()->var('auth_register_error', $auth_register_error);
         }
 
-        echo $app->templating->render('@auth.auth');
+        echo $app->getTemplating()->render('@auth.auth');
         break;
 }

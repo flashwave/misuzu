@@ -3,7 +3,7 @@ namespace Misuzu;
 
 require_once 'vendor/autoload.php';
 
-$app = Application::start(
+$app = new Application(
     __DIR__ . '/config/config.ini',
     IO\Directory::exists(__DIR__ . '/vendor/phpunit/phpunit')
 );
@@ -21,11 +21,11 @@ if (PHP_SAPI !== 'cli') {
         ob_start('ob_gzhandler');
     }
 
-    if ($app->config->get('Auth', 'lockdown', 'bool', false)) {
+    if ($app->getConfig()->get('Auth', 'lockdown', 'bool', false)) {
         http_response_code(503);
         $app->startTemplating();
-        $app->templating->addPath('auth', __DIR__ . '/views/auth');
-        echo $app->templating->render('lockdown');
+        $app->getTemplating()->addPath('auth', __DIR__ . '/views/auth');
+        echo $app->getTemplating()->render('lockdown');
         exit;
     }
 
@@ -35,7 +35,7 @@ if (PHP_SAPI !== 'cli') {
 
         if ($session !== null) {
             $session->user->last_seen = \Carbon\Carbon::now();
-            $session->user->last_ip = \Misuzu\Net\IPAddress::remote();
+            $session->user->last_ip = Net\IPAddress::remote();
             $session->user->save();
         }
     }
@@ -43,15 +43,15 @@ if (PHP_SAPI !== 'cli') {
     $manage_mode = starts_with($_SERVER['REQUEST_URI'], '/manage');
 
     $app->startTemplating();
-    $app->templating->addPath('mio', __DIR__ . '/views/mio');
+    $app->getTemplating()->addPath('mio', __DIR__ . '/views/mio');
 
     if ($manage_mode) {
         if ($app->getSession() === null || $app->getSession()->user->user_id !== 1) {
             http_response_code(403);
-            echo $app->templating->render('errors.403');
+            echo $app->getTemplating()->render('errors.403');
             exit;
         }
 
-        $app->templating->addPath('manage', __DIR__ . '/views/manage');
+        $app->getTemplating()->addPath('manage', __DIR__ . '/views/manage');
     }
 }

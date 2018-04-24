@@ -21,7 +21,7 @@ class ConfigManager
 
     /**
      * Creates a file object with the given path and reloads the context.
-     * @param string $filename
+     * @param string|null $filename
      */
     public function __construct(?string $filename = null)
     {
@@ -162,8 +162,11 @@ class ConfigManager
     }
 
     /**
-     * Serialises the $this->collection array to the human readable config format.
-     * @return string
+     * Serialises the $this->collection array to the human managable config format.
+     * @param string $filename
+     * @param array  $collection
+     * @throws \Misuzu\IO\FileDoesNotExistException
+     * @throws \Misuzu\IO\IOException
      */
     public static function write(string $filename, array $collection): void
     {
@@ -188,7 +191,10 @@ class ConfigManager
 
     /**
      * Parses the config file.
-     * @param string $config
+     * @param string $filename
+     * @return array
+     * @throws \Misuzu\IO\FileDoesNotExistException
+     * @throws \Misuzu\IO\IOException
      */
     private static function read(string $filename): array
     {

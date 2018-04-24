@@ -5,10 +5,20 @@ use Illuminate\Database\Capsule\Manager as LaravelDatabaseManager;
 use Misuzu\Config\ConfigManager;
 use InvalidArgumentException;
 
+/**
+ * Class Database
+ * @package Misuzu
+ */
 class Database extends LaravelDatabaseManager
 {
+    /**
+     * @var ConfigManager
+     */
     private $configManager;
 
+    /**
+     * Array of supported abstraction layers, primarily depends on what Illuminate\Database supports in reality.
+     */
     private const SUPPORTED_DB_ALS = [
         'mysql',
         'sqlite',
@@ -16,12 +26,33 @@ class Database extends LaravelDatabaseManager
         'sqlsrv',
     ];
 
+    /**
+     * The default port for MySQL.
+     */
     private const DEFAULT_PORT_MYSQL = 3306;
+
+    /**
+     * The default port for PostgreSQL.
+     */
     private const DEFAULT_PORT_PGSQL = 5432;
+
+    /**
+     * Default port for Microsoft SQL Server.
+     */
     private const DEFAULT_PORT_MSSQL = 1433;
 
+    /**
+     * Default hostname.
+     */
     private const DEFAULT_HOST = '127.0.0.1';
 
+    /**
+     * Database constructor.
+     * @param ConfigManager $config
+     * @param string        $default
+     * @param bool          $startEloquent
+     * @param bool          $setAsGlobal
+     */
     public function __construct(
         ConfigManager $config,
         string $default = 'default',
@@ -42,6 +73,11 @@ class Database extends LaravelDatabaseManager
         }
     }
 
+    /**
+     * Creates a new connection using a ConfigManager instance.
+     * @param string $section
+     * @param string $name
+     */
     public function addConnectionFromConfig(string $section, string $name = 'default'): void
     {
         if (!$this->configManager->contains($section, 'driver')) {
