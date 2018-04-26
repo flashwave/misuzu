@@ -91,12 +91,13 @@ function get_country_code(string $ipAddr, string $fallback = 'XX'): string
 {
     try {
         $app = \Misuzu\Application::getInstance();
+        $config = $app->getConfig();
 
-        if (!$app->hasModule('config')) {
+        if ($config === null) {
             return $fallback;
         }
 
-        $database_path = $app->config->get('GeoIP', 'database_path');
+        $database_path = $config->get('GeoIP', 'database_path');
 
         if ($database_path === null) {
             return $fallback;

@@ -4,6 +4,8 @@ use Misuzu\News\NewsPost;
 
 require_once __DIR__ . '/../misuzu.php';
 
+$templating = $app->getTemplating();
+
 $category_id = isset($_GET['c']) ? (int)$_GET['c'] : null;
 $post_id = isset($_GET['n']) ? (int)$_GET['n'] : null;
 $page_id = (int)($_GET['p'] ?? 1);
@@ -13,11 +15,11 @@ if ($post_id !== null) {
 
     if ($post === null) {
         http_response_code(404);
-        echo $app->getTemplating()->render('errors.404');
+        echo $templating->render('errors.404');
         return;
     }
 
-    echo $app->getTemplating()->render('news.post', compact('post'));
+    echo $templating->render('news.post', compact('post'));
     return;
 }
 
@@ -26,7 +28,7 @@ if ($category_id !== null) {
 
     if ($category === null) {
         http_response_code(404);
-        echo $app->getTemplating()->render('errors.404');
+        echo $templating->render('errors.404');
         return;
     }
 
@@ -34,12 +36,12 @@ if ($category_id !== null) {
 
     if (!is_valid_page($posts, $page_id)) {
         http_response_code(404);
-        echo $app->getTemplating()->render('errors.404');
+        echo $templating->render('errors.404');
         return;
     }
 
     $featured = $category->posts()->where('is_featured', 1)->orderBy('created_at', 'desc')->take(10)->get();
-    echo $app->getTemplating()->render('news.category', compact('category', 'posts', 'featured', 'page_id'));
+    echo $templating->render('news.category', compact('category', 'posts', 'featured', 'page_id'));
     return;
 }
 
@@ -48,8 +50,8 @@ $posts = NewsPost::where('is_featured', true)->orderBy('created_at', 'desc')->pa
 
 if (!is_valid_page($posts, $page_id)) {
     http_response_code(404);
-    echo $app->getTemplating()->render('errors.404');
+    echo $templating->render('errors.404');
     return;
 }
 
-echo $app->getTemplating()->render('news.index', compact('categories', 'posts', 'page_id'));
+echo $templating->render('news.index', compact('categories', 'posts', 'page_id'));

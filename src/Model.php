@@ -1,9 +1,7 @@
 <?php
 namespace Misuzu;
 
-use Closure;
 use Illuminate\Database\Eloquent\Model as BaseModel;
-use Illuminate\Support\Collection;
 
 /**
  * Class Model

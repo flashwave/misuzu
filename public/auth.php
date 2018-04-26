@@ -8,6 +8,10 @@ use Misuzu\Users\LoginAttempt;
 
 require_once __DIR__ . '/../misuzu.php';
 
+$config = $app->getConfig();
+$templating = $app->getTemplating();
+$session = $app->getSession();
+
 $username_validation_errors = [
     'trim' => 'Your username may not start or end with spaces!',
     'short' => "Your username is too short, it has to be at least " . User::USERNAME_MIN_LENGTH . " characters!",
@@ -19,22 +23,22 @@ $username_validation_errors = [
 ];
 
 $mode = $_GET['m'] ?? 'login';
-$prevent_registration = $app->config->get('Auth', 'prevent_registration', 'bool', false);
-$app->getTemplating()->var('auth_mode', $mode);
-$app->getTemplating()->addPath('auth', __DIR__ . '/../views/auth');
-$app->getTemplating()->var('prevent_registration', $prevent_registration);
+$prevent_registration = $config->get('Auth', 'prevent_registration', 'bool', false);
+$templating->var('auth_mode', $mode);
+$templating->addPath('auth', __DIR__ . '/../views/auth');
+$templating->var('prevent_registration', $prevent_registration);
 
 if (!empty($_REQUEST['username'])) {
-    $app->getTemplating()->var('auth_username', $_REQUEST['username']);
+    $templating->var('auth_username', $_REQUEST['username']);
 }
 
 if (!empty($_REQUEST['email'])) {
-    $app->getTemplating()->var('auth_email', $_REQUEST['email']);
+    $templating->var('auth_email', $_REQUEST['email']);
 }
 
 switch ($mode) {
     case 'logout':
-        if ($app->getSession() === null) {
+        if ($session === null) {
             header('Location: /');
             return;
         }
@@ -43,17 +47,17 @@ switch ($mode) {
         if (isset($_GET['s']) && tmp_csrf_verify($_GET['s'])) {
             set_cookie_m('uid', '', -3600);
             set_cookie_m('sid', '', -3600);
-            $app->getSession()->delete();
+            $session->delete();
             $app->setSession(null);
             header('Location: /');
             return;
         }
 
-        echo $app->getTemplating()->render('@auth.logout');
+        echo $templating->render('@auth.logout');
         break;
 
     case 'login':
-        if ($app->getSession() !== null) {
+        if ($session !== null) {
             header('Location: /');
             break;
         }
@@ -117,14 +121,14 @@ switch ($mode) {
         }
 
         if (!empty($auth_login_error)) {
-            $app->getTemplating()->var('auth_login_error', $auth_login_error);
+            $templating->var('auth_login_error', $auth_login_error);
         }
 
-        echo $app->getTemplating()->render('auth');
+        echo $templating->render('auth');
         break;
 
     case 'register':
-        if ($app->getSession() !== null) {
+        if ($session !== null) {
             header('Location: /');
         }
 
@@ -166,14 +170,14 @@ switch ($mode) {
 
             $user = User::createUser($username, $password, $email);
             $user->addRole(Role::find(1), true);
-            $app->getTemplating()->var('auth_register_message', 'Welcome to Flashii! You may now log in.');
+            $templating->var('auth_register_message', 'Welcome to Flashii! You may now log in.');
             break;
         }
 
         if (!empty($auth_register_error)) {
-            $app->getTemplating()->var('auth_register_error', $auth_register_error);
+            $templating->var('auth_register_error', $auth_register_error);
         }
 
-        echo $app->getTemplating()->render('@auth.auth');
+        echo $templating->render('@auth.auth');
         break;
 }

@@ -6,13 +6,14 @@ use Misuzu\Users\Session;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$settings_session = Application::getInstance()->getSession();
+$settings_session = $app->getSession();
+$templating = $app->getTemplating();
 
 $page_id = (int)($_GET['p'] ?? 1);
 
 if (Application::getInstance()->getSession() === null) {
     http_response_code(403);
-    echo $app->getTemplating()->render('errors.403');
+    echo $templating->render('errors.403');
     return;
 }
 
@@ -82,12 +83,12 @@ $settings_modes = [
 ];
 $settings_mode = $_GET['m'] ?? key($settings_modes);
 
-$app->getTemplating()->vars(compact('settings_mode', 'settings_modes', 'settings_user', 'settings_session'));
+$templating->vars(compact('settings_mode', 'settings_modes', 'settings_user', 'settings_session'));
 
 if (!array_key_exists($settings_mode, $settings_modes)) {
     http_response_code(404);
-    $app->getTemplating()->var('settings_title', 'Not Found');
-    echo $app->getTemplating()->render('settings.notfound');
+    $templating->var('settings_title', 'Not Found');
+    echo $templating->render('settings.notfound');
     return;
 }
 
@@ -188,7 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             break;
                         }
 
-                        $password_validate = User::validatePassword($_POST['password']['new'], true);
+                        $password_validate = User::validatePassword($_POST['password']['new']);
 
                         if ($password_validate !== '') {
                             $settings_errors[] = "The given passwords was too weak.";
@@ -328,17 +329,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$app->getTemplating()->vars(compact('settings_errors'));
-$app->getTemplating()->var('settings_title', $settings_modes[$settings_mode]);
+$templating->vars(compact('settings_errors'));
+$templating->var('settings_title', $settings_modes[$settings_mode]);
 
 switch ($settings_mode) {
     case 'account':
-        $app->getTemplating()->vars(compact('settings_profile_fields', 'prevent_registration'));
+        $templating->vars(compact('settings_profile_fields', 'prevent_registration'));
         break;
 
     case 'avatar':
         $user_has_avatar = File::exists($app->getStore('avatars/original')->filename($avatar_filename));
-        $app->getTemplating()->vars(compact(
+        $templating->vars(compact(
             'avatar_max_width',
             'avatar_max_height',
             'avatar_max_filesize',
@@ -351,7 +352,7 @@ switch ($settings_mode) {
            ->orderBy('session_id', 'desc')
            ->paginate(15, ['*'], 'p', $page_id);
 
-        $app->getTemplating()->var('user_sessions', $sessions);
+        $templating->var('user_sessions', $sessions);
         break;
 
     case 'login-history':
@@ -359,8 +360,8 @@ switch ($settings_mode) {
             ->orderBy('attempt_id', 'desc')
             ->paginate(15, ['*'], 'p', $page_id);
 
-        $app->getTemplating()->var('user_login_attempts', $login_attempts);
+        $templating->var('user_login_attempts', $login_attempts);
         break;
 }
 
-echo $app->getTemplating()->render("settings.{$settings_mode}");
+echo $templating->render("settings.{$settings_mode}");

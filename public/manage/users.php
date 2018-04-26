@@ -5,14 +5,16 @@ use Misuzu\Users\User;
 
 require_once __DIR__ . '/../../misuzu.php';
 
+$templating = $app->getTemplating();
+
 $is_post_request = $_SERVER['REQUEST_METHOD'] === 'POST';
 $page_id = (int)($_GET['p'] ?? 1);
 
 switch ($_GET['v'] ?? null) {
     case 'listing':
         $manage_users = User::paginate(32, ['*'], 'p', $page_id);
-        $app->getTemplating()->vars(compact('manage_users'));
-        echo $app->getTemplating()->render('@manage.users.listing');
+        $templating->vars(compact('manage_users'));
+        echo $templating->render('@manage.users.listing');
         break;
 
     case 'view':
@@ -30,14 +32,14 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $app->getTemplating()->var('view_user', $view_user);
-        echo $app->getTemplating()->render('@manage.users.view');
+        $templating->var('view_user', $view_user);
+        echo $templating->render('@manage.users.view');
         break;
 
     case 'roles':
         $manage_roles = Role::paginate(32, ['*'], 'p', $page_id);
-        $app->getTemplating()->vars(compact('manage_roles'));
-        echo $app->getTemplating()->render('@manage.users.roles');
+        $templating->vars(compact('manage_roles'));
+        echo $templating->render('@manage.users.roles');
         break;
 
     case 'role':
@@ -120,9 +122,9 @@ switch ($_GET['v'] ?? null) {
                 break;
             }
 
-            $app->getTemplating()->vars(compact('edit_role'));
+            $templating->vars(compact('edit_role'));
         }
 
-        echo $app->getTemplating()->render('@manage.users.roles_create');
+        echo $templating->render('@manage.users.roles_create');
         break;
 }

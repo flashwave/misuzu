@@ -1,9 +1,11 @@
 <?php
 require_once __DIR__ . '/../../misuzu.php';
 
+$templating = $app->getTemplating();
+
 switch ($_GET['v'] ?? null) {
     case 'overview':
-        echo $app->getTemplating()->render('@manage.general.overview');
+        echo $templating->render('@manage.general.overview');
         break;
 
     case 'logs':

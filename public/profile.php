@@ -1,6 +1,5 @@
 <?php
 use Misuzu\IO\File;
-use Misuzu\IO\FileStream;
 use Misuzu\Users\User;
 
 require_once __DIR__ . '/../misuzu.php';
@@ -44,13 +43,15 @@ switch ($mode) {
 
     case 'view':
     default:
+        $templating = $app->getTemplating();
+
         if ($profile_user === null) {
             http_response_code(404);
-            echo $app->getTemplating()->render('user.notfound');
+            echo $templating->render('user.notfound');
             break;
         }
 
-        $app->getTemplating()->var('profile', $profile_user);
-        echo $app->getTemplating()->render('user.view');
+        $templating->var('profile', $profile_user);
+        echo $templating->render('user.view');
         break;
 }
