@@ -136,7 +136,7 @@
                     <div class="header__user">
                         <div class="header__menu">
                             <input type="checkbox" id="menu-user-state" class="header__menu__state">
-                            <label for="menu-user-state" class="header__menu__toggle header__menu__toggle--profile" style="background-image:url('/profile.php?u={{ app.session.user.user_id }}&amp;m=avatar');color:{{ app.session.user.displayColour.inherit ? 'inherit' : app.session.user.displayColour }}">{{ app.session.user.username }}</label>
+                            <label for="menu-user-state" class="header__menu__toggle header__menu__toggle--profile" style="background-image:url('/profile.php?u={{ app.session.user.user_id }}&amp;m=avatar');color:{{ app.session.user.colour|colour_get_css }}">{{ app.session.user.username }}</label>
                             <div class="header__menu__options header__menu__options--user">
                                 <div class="header__menu__section">
                                     <a class="header__menu__link" href="/profile.php?u={{ app.session.user.user_id }}">Profile</a>

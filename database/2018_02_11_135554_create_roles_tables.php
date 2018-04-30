@@ -1,7 +1,7 @@
 <?php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Misuzu\Database;
+use Misuzu\DatabaseV1;
 
 // phpcs:disable
 class CreateRolesTables extends Migration
@@ -11,7 +11,7 @@ class CreateRolesTables extends Migration
      */
     public function up()
     {
-        $schema = Database::connection()->getSchemaBuilder();
+        $schema = DatabaseV1::connection()->getSchemaBuilder();
         $schema->create('roles', function (Blueprint $table) {
             $table->increments('role_id');
 
@@ -77,7 +77,7 @@ class CreateRolesTables extends Migration
      */
     public function down()
     {
-        $schema = Database::connection()->getSchemaBuilder();
+        $schema = DatabaseV1::connection()->getSchemaBuilder();
 
         $schema->table('users', function (Blueprint $table) {
             $table->dropForeign(['display_role']);

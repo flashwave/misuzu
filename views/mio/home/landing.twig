@@ -18,7 +18,7 @@
         <a class="container__title container__title--link" href="/news.php">Featured News</a>
         <div class="container__content news__container__content">
             <div class="news__preview__listing">
-                {% for post in featured_news %}
+                {% for post in featuredNews %}
                     {{ news_preview(post) }}
                 {% endfor %}
             </div>

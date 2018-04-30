@@ -17,7 +17,7 @@
 
             <div class="news__sidebar news__post__details">
                 <a class="news__post__detail news__post__user" href="/profile.php?u={{ post.user.user_id }}">
-                    <div class="news__post__username">{{ post.user.username }}</div>
+                    <div class="news__post__username" style="color:post.user.colour|colour_get_css">{{ post.user.username }}</div>
                     <div class="avatar news__post__avatar" style="background-image:url('/profile.php?u={{ post.user.user_id }}&amp;m=avatar');"></div>
                 </a>
 

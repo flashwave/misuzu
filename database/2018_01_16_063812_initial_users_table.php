@@ -1,7 +1,7 @@
 <?php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Misuzu\Database;
+use Misuzu\DatabaseV1;
 
 // phpcs:disable
 class InitialUsersTable extends Migration
@@ -11,7 +11,7 @@ class InitialUsersTable extends Migration
      */
     public function up()
     {
-        $schema = Database::connection()->getSchemaBuilder();
+        $schema = DatabaseV1::connection()->getSchemaBuilder();
         $schema->create('users', function (Blueprint $table) {
             $table->increments('user_id');
 
@@ -46,7 +46,7 @@ class InitialUsersTable extends Migration
      */
     public function down()
     {
-        $schema = Database::connection()->getSchemaBuilder();
+        $schema = DatabaseV1::connection()->getSchemaBuilder();
         $schema->drop('users');
     }
 }

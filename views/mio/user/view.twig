@@ -74,7 +74,7 @@
                         <div class="profile__info__block">
                             {% if profile.userTitle is not empty %}
                             <div class="profile__info__row">
-                                <div class="profile__info__column profile__info__column--user-title"{% if not profile.displayColour.inherit %} style="color:{{ profile.displayColour }}"{% endif %}>
+                                <div class="profile__info__column profile__info__column--user-title" style="color:{{ profile.colour|colour_get_css }}">
                                     {{ profile.userTitle }}
                                 </div>
                             </div>

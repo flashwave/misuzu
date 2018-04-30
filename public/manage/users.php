@@ -1,5 +1,4 @@
 <?php
-use Misuzu\Colour;
 use Misuzu\Users\Role;
 use Misuzu\Users\User;
 
@@ -73,20 +72,21 @@ switch ($_GET['v'] ?? null) {
                 break;
             }
 
-            $role_colour = Colour::none();
-            $role_colour->setInherit(!empty($_POST['role']['colour']['inherit']));
+            $role_colour = colour_create();
 
-            if (!$role_colour->getInherit()) {
+            if (!empty($_POST['role']['colour']['inherit'])) {
+                colour_set_inherit($role_colour);
+            } else {
                 foreach (['red', 'green', 'blue'] as $key) {
                     $value = (int)($_POST['role']['colour'][$key] ?? -1);
-                    $setter = 'set' . ucfirst($key);
+                    $func = 'colour_set_' . ucfirst($key);
 
                     if ($value < 0 || $value > 0xFF) {
                         echo 'invalid colour value';
                         break 2;
                     }
 
-                    $role_colour->{$setter}($value);
+                    $func($role_colour, $value);
                 }
             }
 

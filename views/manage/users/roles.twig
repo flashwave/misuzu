@@ -8,7 +8,7 @@
 
     <div class="container listing role-listing">
         {% for role in manage_roles %}
-            <a href="?v=role&amp;r={{ role.role_id }}" class="listing__entry role-listing__entry"{% if not role.role_colour.inherit %} style="border-color: {{ role.role_colour }}"{% endif %}>
+            <a href="?v=role&amp;r={{ role.role_id }}" class="listing__entry role-listing__entry"{% if not role.role_colour|colour_get_inherit %} style="border-color: {{ role.role_colour|colour_get_css }}"{% endif %}>
                 <div class="listing__entry__content role-listing__entry__content">
                     {{ role.role_name }}
                     {{ role.users.count }} users

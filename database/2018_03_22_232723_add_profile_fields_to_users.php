@@ -1,7 +1,7 @@
 <?php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Misuzu\Database;
+use Misuzu\DatabaseV1;
 
 // phpcs:disable
 class AddProfileFieldsToUsers extends Migration
@@ -11,7 +11,7 @@ class AddProfileFieldsToUsers extends Migration
      */
     public function up()
     {
-        $schema = Database::connection()->getSchemaBuilder();
+        $schema = DatabaseV1::connection()->getSchemaBuilder();
         $schema->table('users', function (Blueprint $table) {
             $table->string('user_website', 255)
                 ->default('');
@@ -50,7 +50,7 @@ class AddProfileFieldsToUsers extends Migration
      */
     public function down()
     {
-        $schema = Database::connection()->getSchemaBuilder();
+        $schema = DatabaseV1::connection()->getSchemaBuilder();
         $schema->table('users', function (Blueprint $table) {
             $table->dropColumn([
                 'user_website',

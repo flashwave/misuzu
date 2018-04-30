@@ -1,7 +1,6 @@
 <?php
 namespace Misuzu\Users;
 
-use Misuzu\Colour;
 use Misuzu\Model;
 
 /**
@@ -13,7 +12,7 @@ use Misuzu\Model;
  * @property string $role_title
  * @property string $role_description
  * @property bool $role_secret
- * @property Colour $role_colour
+ * @property int $role_colour
  * @property-read array $users
  */
 class Role extends Model
@@ -27,7 +26,7 @@ class Role extends Model
      * Creates a new role.
      * @param string      $name
      * @param int|null    $hierarchy
-     * @param Colour|null $colour
+     * @param int|null $colour
      * @param null|string $title
      * @param null|string $description
      * @param bool        $secret
@@ -36,13 +35,13 @@ class Role extends Model
     public static function createRole(
         string $name,
         ?int $hierarchy = null,
-        ?Colour $colour = null,
+        ?int $colour = null,
         ?string $title = null,
         ?string $description = null,
         bool $secret = false
     ): Role {
         $hierarchy = $hierarchy ?? 1;
-        $colour = $colour ?? Colour::none();
+        $colour = $colour ?? colour_none();
 
         $role = new Role;
         $role->role_hierarchy = $hierarchy;
@@ -50,7 +49,7 @@ class Role extends Model
         $role->role_title = $title;
         $role->role_description = $description;
         $role->role_secret = $secret;
-        $role->role_colour = $colour->getRaw();
+        $role->role_colour = $colour;
         $role->save();
 
         return $role;
@@ -83,25 +82,6 @@ class Role extends Model
     public function hasUser(User $user): bool
     {
         return $user->hasRole($this);
-    }
-
-    /**
-     * Getter for the role_colour attribute.
-     * @param int $colour
-     * @return Colour
-     */
-    public function getRoleColourAttribute(int $colour): Colour
-    {
-        return new Colour($colour);
-    }
-
-    /**
-     * Setter for the role_colour attribute.
-     * @param Colour $colour
-     */
-    public function setRoleColourAttribute(Colour $colour): void
-    {
-        $this->attributes['role_colour'] = $colour->getRaw();
     }
 
     /**

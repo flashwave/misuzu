@@ -1,33 +1,17 @@
 <?php
 namespace Misuzu\News;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
+use Misuzu\Database;
 use Misuzu\Users\User;
-use Misuzu\Model;
 use Parsedown;
 
 /**
  * Class NewsPost
  * @package Misuzu\News
- * @property-read int $post_id
- * @property int $category_id
- * @property bool $is_featured
- * @property int $user_id
- * @property string $post_title
- * @property string $post_text
- * @property Carbon $scheduled_for
- * @property Carbon|null $deleted_at
- * @property-read User $user
- * @property-read NewsCategory $category
  */
-final class NewsPost extends Model
+final class NewsPost
 {
-    use SoftDeletes;
-
-    protected $table = 'news_posts';
-    protected $primaryKey = 'post_id';
-    protected $dates = ['scheduled_for'];
-
     /**
      * Parses post_text and returns the final HTML.
      * @return string
@@ -37,19 +21,21 @@ final class NewsPost extends Model
         return (new Parsedown)->text($this->post_text);
     }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function user()
+    public function getUser(): ?User
     {
-        return $this->belongsTo(User::class, 'user_id');
+        if (empty($this->user_id) || $this->user_id < 1) {
+            return null;
+        }
+
+        return User::find($this->user_id);
     }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function category()
+    public function getCategory(): ?NewsCategory
     {
-        return $this->belongsTo(NewsCategory::class, 'category_id');
+        if (empty($this->category_id) || $this->category_id < 1) {
+            return null;
+        }
+
+        return NewsCategory::find($this->category_id);
     }
 }

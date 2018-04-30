@@ -1,7 +1,7 @@
 <?php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Misuzu\Database;
+use Misuzu\DatabaseV1;
 
 // phpcs:disable
 class AddSessionCountryAndLoginUserAgent extends Migration
@@ -11,7 +11,7 @@ class AddSessionCountryAndLoginUserAgent extends Migration
      */
     public function up()
     {
-        $schema = Database::connection()->getSchemaBuilder();
+        $schema = DatabaseV1::connection()->getSchemaBuilder();
         $schema->table('sessions', function (Blueprint $table) {
             $table->char('session_country', 2)
                 ->default('XX');
@@ -27,7 +27,7 @@ class AddSessionCountryAndLoginUserAgent extends Migration
      */
     public function down()
     {
-        $schema = Database::connection()->getSchemaBuilder();
+        $schema = DatabaseV1::connection()->getSchemaBuilder();
         $schema->table('sessions', function (Blueprint $table) {
             $table->dropColumn('session_country');
         });

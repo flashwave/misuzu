@@ -3,8 +3,7 @@ namespace Misuzu\Users;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Misuzu\Colour;
-use Misuzu\Database;
+use Misuzu\DatabaseV1;
 use Misuzu\Model;
 use Misuzu\Net\IPAddress;
 
@@ -224,12 +223,12 @@ class User extends Model
 
     /**
      * Gets the display colour.
-     * @return Colour
+     * @return int
      */
-    public function getDisplayColour(): Colour
+    public function getColour(): int
     {
         $role = $this->getDisplayRole();
-        return $role === null ? Colour::none() : $role->role_colour;
+        return $role === null ? colour_none() : $role->role_colour;
     }
 
     /**
@@ -333,7 +332,7 @@ class User extends Model
         if (!$this->displayRoleValidated) {
             if ($value === null
                 || UserRole::where('user_id', $this->user_id)->where('role_id', $value)->count() < 1) {
-                $highestRole = Database::table('roles')
+                $highestRole = DatabaseV1::table('roles')
                     ->join('user_roles', 'roles.role_id', '=', 'user_roles.role_id')
                     ->where('user_id', $this->user_id)
                     ->orderBy('roles.role_hierarchy', 'desc')

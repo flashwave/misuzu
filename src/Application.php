@@ -35,9 +35,15 @@ class Application extends ApplicationBase
 
     /**
      * Database instance.
-     * @var \Misuzu\Database
+     * @var \Misuzu\DatabaseV1
      */
     private $databaseInstance = null;
+
+    /**
+     * Database instance.
+     * @var \Misuzu\Database
+     */
+    private $database;
 
     /**
      * ConfigManager instance.
@@ -200,15 +206,16 @@ class Application extends ApplicationBase
             throw new UnexpectedValueException('Database module has already been started.');
         }
 
-        $this->databaseInstance = new Database($this->configInstance, self::DATABASE_CONNECTIONS[0]);
+        $this->database = new Database($this->configInstance, self::DATABASE_CONNECTIONS[0]);
+        $this->databaseInstance = new DatabaseV1($this->configInstance, self::DATABASE_CONNECTIONS[0]);
         $this->loadDatabaseConnections();
     }
 
     /**
      * Gets the active database instance.
-     * @return Database
+     * @return DatabaseV1
      */
-    public function getDatabase(): Database
+    public function getDatabase(): DatabaseV1
     {
         if (is_null($this->databaseInstance)) {
             throw new UnexpectedValueException('Internal database instance is null, did you run startDatabase yet?');
@@ -261,6 +268,11 @@ class Application extends ApplicationBase
         $this->templatingInstance->addFilter('flip', 'array_flip');
         $this->templatingInstance->addFilter('create_pagination');
         $this->templatingInstance->addFilter('first_paragraph');
+        $this->templatingInstance->addFilter('colour_get_css');
+        $this->templatingInstance->addFilter('colour_get_inherit');
+        $this->templatingInstance->addFilter('colour_get_red');
+        $this->templatingInstance->addFilter('colour_get_green');
+        $this->templatingInstance->addFilter('colour_get_blue');
 
         $this->templatingInstance->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $this->templatingInstance->addFunction('git_branch', [Application::class, 'gitBranch']);
