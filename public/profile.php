@@ -1,12 +1,11 @@
 <?php
+use Misuzu\Database;
 use Misuzu\IO\File;
-use Misuzu\Users\User;
 
 require_once __DIR__ . '/../misuzu.php';
 
 $user_id = (int)($_GET['u'] ?? 0);
 $mode = (string)($_GET['m'] ?? 'view');
-$profile_user = User::find($user_id);
 
 switch ($mode) {
     case 'avatar':
@@ -14,25 +13,23 @@ switch ($mode) {
             $app->getConfig()->get('Avatar', 'default_path', 'string', 'public/images/no-avatar.png')
         );
 
-        if ($profile_user !== null) {
-            $user_avatar = "{$profile_user->user_id}.msz";
-            $cropped_avatar = $app->getStore('avatars/200x200')->filename($user_avatar);
+        $user_avatar = "{$user_id}.msz";
+        $cropped_avatar = $app->getStore('avatars/200x200')->filename($user_avatar);
 
-            if (File::exists($cropped_avatar)) {
-                $avatar_filename = $cropped_avatar;
-            } else {
-                $original_avatar = $app->getStore('avatars/original')->filename($user_avatar);
+        if (File::exists($cropped_avatar)) {
+            $avatar_filename = $cropped_avatar;
+        } else {
+            $original_avatar = $app->getStore('avatars/original')->filename($user_avatar);
 
-                if (File::exists($original_avatar)) {
-                    try {
-                        File::writeAll(
-                            $cropped_avatar,
-                            crop_image_centred_path($original_avatar, 200, 200)->getImagesBlob()
-                        );
+            if (File::exists($original_avatar)) {
+                try {
+                    File::writeAll(
+                        $cropped_avatar,
+                        crop_image_centred_path($original_avatar, 200, 200)->getImagesBlob()
+                    );
 
-                        $avatar_filename = $cropped_avatar;
-                    } catch (Exception $ex) {
-                    }
+                    $avatar_filename = $cropped_avatar;
+                } catch (Exception $ex) {
                 }
             }
         }
@@ -45,13 +42,26 @@ switch ($mode) {
     default:
         $templating = $app->getTemplating();
 
-        if ($profile_user === null) {
+        $getProfile = Database::connection()->prepare('
+            SELECT
+                u.*,
+                r.`role_title` as `user_title`,
+                COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `display_colour`
+            FROM `msz_users` as u
+            LEFT JOIN `msz_roles` as r
+            ON r.`role_id` = u.`display_role`
+            WHERE `user_id` = :user_id
+        ');
+        $getProfile->bindValue('user_id', $user_id);
+        $profile = $getProfile->execute() ? $getProfile->fetch() : [];
+
+        if (!$profile) {
             http_response_code(404);
             echo $templating->render('user.notfound');
             break;
         }
 
-        $templating->var('profile', $profile_user);
+        $templating->vars(compact('profile'));
         echo $templating->render('user.view');
         break;
 }

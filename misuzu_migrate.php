@@ -6,6 +6,7 @@
 
 namespace Misuzu;
 
+exit;
 use Illuminate\Database\Migrations\DatabaseMigrationRepository;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;

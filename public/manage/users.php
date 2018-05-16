@@ -1,9 +1,9 @@
 <?php
-use Misuzu\Users\Role;
-use Misuzu\Users\User;
+use Misuzu\Database;
 
 require_once __DIR__ . '/../../misuzu.php';
 
+$db = Database::connection();
 $templating = $app->getTemplating();
 
 $is_post_request = $_SERVER['REQUEST_METHOD'] === 'POST';
@@ -11,7 +11,17 @@ $page_id = (int)($_GET['p'] ?? 1);
 
 switch ($_GET['v'] ?? null) {
     case 'listing':
-        $manage_users = User::paginate(32, ['*'], 'p', $page_id);
+        $manage_users = $db->query('
+            SELECT
+                u.`user_id`, u.`username`,
+                COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `colour`
+            FROM `msz_users` as u
+            LEFT JOIN `msz_roles` as r
+            ON u.`display_role` = r.`role_id`
+            LIMIT 0, 32
+        ')->fetchAll();
+
+        //$manage_users = UserV1::paginate(32, ['*'], 'p', $page_id);
         $templating->vars(compact('manage_users'));
         echo $templating->render('@manage.users.listing');
         break;
@@ -24,19 +34,44 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $view_user = User::find($user_id);
+        $getUser = $db->prepare('
+            SELECT
+                u.*,
+                INET6_NTOA(u.`register_ip`) as `register_ip_decoded`,
+                INET6_NTOA(u.`last_ip`) as `last_ip_decoded`,
+                COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `colour`
+            FROM `msz_users` as u
+            LEFT JOIN `msz_roles` as r
+            ON u.`display_role` = r.`role_id`
+            WHERE `user_id` = :user_id
+        ');
+        $getUser->bindValue('user_id', $user_id);
+        $getUser->execute();
+        $manageUser = $getUser->execute() ? $getUser->fetch() : [];
 
-        if ($view_user === null) {
+        if (!$manageUser) {
             echo 'Could not find that user.';
             break;
         }
 
-        $templating->var('view_user', $view_user);
+        $templating->var('view_user', $manageUser);
         echo $templating->render('@manage.users.view');
         break;
 
     case 'roles':
-        $manage_roles = Role::paginate(32, ['*'], 'p', $page_id);
+        $manage_roles = $db->query('
+            SELECT
+                `role_id`, `role_colour`, `role_name`,
+                (
+                    SELECT COUNT(`user_id`)
+                    FROM `msz_user_roles` as ur
+                    WHERE ur.`role_id` = r.`role_id`
+                ) as `users`
+            FROM `msz_roles` as r
+            LIMIT 0, 10
+        ')->fetchAll();
+
+        //$manage_roles = Role::paginate(10, ['*'], 'p', $page_id);
         $templating->vars(compact('manage_roles'));
         echo $templating->render('@manage.users.roles');
         break;
@@ -97,15 +132,38 @@ switch ($_GET['v'] ?? null) {
                 break;
             }
 
-            $edit_role = $role_id < 1 ? new Role : Role::find($role_id);
-            $edit_role->role_name = $role_name;
-            $edit_role->role_hierarchy = $role_hierarchy;
-            $edit_role->role_secret = $role_secret;
-            $edit_role->role_colour = $role_colour;
-            $edit_role->role_description = $role_description;
-            $edit_role->save();
+            if ($role_id < 1) {
+                $updateRole = $db->prepare('
+                    INSERT INTO `msz_roles`
+                        (`role_name`, `role_hierarchy`, `role_secret`, `role_colour`, `role_description`, `created_at`)
+                    VALUES
+                        (:role_name, :role_hierarchy, :role_secret, :role_colour, :role_description, NOW())
+                ');
+            } else {
+                $updateRole = $db->prepare('
+                    UPDATE `msz_roles` SET
+                    `role_name` = :role_name,
+                    `role_hierarchy` = :role_hierarchy,
+                    `role_secret` = :role_secret,
+                    `role_colour` = :role_colour,
+                    `role_description` = :role_description
+                    WHERE `role_id` = :role_id
+                ');
+                $updateRole->bindValue('role_id', $role_id);
+            }
 
-            header("Location: ?v=role&r={$edit_role->role_id}");
+            $updateRole->bindValue('role_name', $role_name);
+            $updateRole->bindValue('role_hierarchy', $role_hierarchy);
+            $updateRole->bindValue('role_secret', $role_secret ? 1 : 0);
+            $updateRole->bindValue('role_colour', $role_colour);
+            $updateRole->bindValue('role_description', $role_description);
+            $updateRole->execute();
+
+            if ($role_id < 1) {
+                $role_id = (int)$db->lastInsertId();
+            }
+
+            header("Location: ?v=role&r={$role_id}");
             break;
         }
 
@@ -115,9 +173,15 @@ switch ($_GET['v'] ?? null) {
                 break;
             }
 
-            $edit_role = Role::find($role_id);
+            $getEditRole = $db->prepare('
+                SELECT *
+                FROM `msz_roles`
+                WHERE `role_id` = :role_id
+            ');
+            $getEditRole->bindValue('role_id', $role_id);
+            $edit_role = $getEditRole->execute() ? $getEditRole->fetch() : [];
 
-            if ($edit_role === null) {
+            if (!$edit_role) {
                 echo 'invalid role';
                 break;
             }

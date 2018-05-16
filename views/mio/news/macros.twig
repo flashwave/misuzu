@@ -5,18 +5,18 @@
         </a>
         <div class="container__content news__preview__content">
             <div class="news__preview__text">
-                {{ post.html|first_paragraph|raw }}
+                {{ post.post_text|first_paragraph|raw }}
                 <p><b><i><a href="/news.php?n={{ post.post_id }}">View full post</a></i></b></p>
             </div>
             <div class="news__preview__info">
                 <div class="news__preview__date">
                     {{ post.created_at }}
                 </div>
-                <a class="news__preview__user" href="/profile.php?u={{ post.user.user_id }}">
-                    <div class="news__preview__user__name" style="color:{{ post.user.colour|colour_get_css }}">
-                        {{ post.user.username }}
+                <a class="news__preview__user" href="/profile.php?u={{ post.user_id }}">
+                    <div class="news__preview__user__name" style="color:{{ post.display_colour|colour_get_css }}">
+                        {{ post.username }}
                     </div>
-                    <div class="avatar news__preview__user__avatar" style="background-image:url('/profile.php?u={{ post.user.user_id }}&amp;m=avatar')"></div>
+                    <div class="avatar news__preview__user__avatar" style="background-image:url('/profile.php?u={{ post.user_id }}&amp;m=avatar')"></div>
                 </a>
             </div>
         </div>

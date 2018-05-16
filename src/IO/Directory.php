@@ -94,12 +94,17 @@ class Directory
             throw new DirectoryExistsException;
         }
 
+        $on_windows = running_on_windows();
         $path = Directory::fixSlashes($path);
         $split_path = explode(self::SEPARATOR, $path);
-        $existing_path = running_on_windows() ? '' : self::SEPARATOR;
+        $existing_path = $on_windows ? '' : self::SEPARATOR;
 
         foreach ($split_path as $path_part) {
             $existing_path .= $path_part . self::SEPARATOR;
+
+            if ($on_windows && substr($existing_path, 1, 2) === ':\\') {
+                continue;
+            }
 
             if (!Directory::exists($existing_path)) {
                 mkdir($existing_path);

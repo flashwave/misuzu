@@ -72,10 +72,10 @@
                 <div class="profile__info">
                     <div class="profile__info__section">
                         <div class="profile__info__block">
-                            {% if profile.userTitle is not empty %}
+                            {% if profile.user_title is not empty %}
                             <div class="profile__info__row">
-                                <div class="profile__info__column profile__info__column--user-title" style="color:{{ profile.colour|colour_get_css }}">
-                                    {{ profile.userTitle }}
+                                <div class="profile__info__column profile__info__column--user-title" style="color:{{ profile.display_colour|colour_get_css }}">
+                                    {{ profile.user_title }}
                                 </div>
                             </div>
                             {% endif %}
@@ -91,33 +91,34 @@
                         </div>
 
                         <div class="profile__info__block">
-                            <div class="profile__info__row" title="{{ profile.created_at.format('r') }}">
+                            <div class="profile__info__row" title="{{ profile.created_at }}">{# .format('r') #}
                                 <div class="profile__info__column profile__info__column--heading">
                                     Joined
                                 </div>
                                 <div class="profile__info__column">
-                                    {{ profile.created_at.diffForHumans }}
+                                    {{ profile.created_at }}{# .diffForHumans #}
                                 </div>
                             </div>
 
-                            {% if profile.last_seen.timestamp > 0 %}
-                            <div class="profile__info__row" title="{{ profile.last_seen.format('r') }}">
+                            {# if profile.last_seen.timestamp > 0 #}
+                            <div class="profile__info__row" title="{{ profile.last_seen }}">
                                 <div class="profile__info__column profile__info__column--heading">
                                     Last Seen
                                 </div>
                                 <div class="profile__info__column">
-                                    {% if profile.last_seen.addMinute.timestamp >= ''|date('U') %}
+                                    {#{% if profile.last_seen.addMinute.timestamp >= ''|date('U') %}
                                         Online now
                                     {% else %}
-                                        {{ profile.last_seen.diffForHumans }}
-                                    {% endif %}
+                                        {{ profile.last_seen }}{# .diffForHumans #\}
+                                    {% endif %}#}
+                                    {{ profile.last_seen }}
                                 </div>
                             </div>
-                            {% endif %}
+                            {# endif #}
                         </div>
                     </div>
 
-                    {% if app.session != null %}
+                    {% if app.hasActiveSession %}
                     {% spaceless %}
                     <div class="profile__info__section">
                         <div class="profile__info__block profile__info__block--links">

@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Carbon\Carbon;
 use Misuzu\Config\ConfigManager;
 use Misuzu\IO\Directory;
 use Misuzu\IO\DirectoryDoesNotExistException;
@@ -28,22 +29,22 @@ class Application extends ApplicationBase
     ];
 
     /**
-     * Session instance.
-     * @var \Misuzu\Users\Session
+     * Active Session ID.
+     * @var int
      */
-    private $sessionInstance = null;
+    private $currentSessionId = 0;
+
+    /**
+     * Active User ID.
+     * @var int
+     */
+    private $currentUserId = 0;
 
     /**
      * Database instance.
      * @var \Misuzu\DatabaseV1
      */
     private $databaseInstance = null;
-
-    /**
-     * Database instance.
-     * @var \Misuzu\Database
-     */
-    private $database;
 
     /**
      * ConfigManager instance.
@@ -108,7 +109,7 @@ class Application extends ApplicationBase
      */
     public function getPath(string $path): string
     {
-        if (!starts_with($path, '/')) {
+        if (!starts_with($path, '/') && substr($path, 1, 2) !== ':\\') {
             $path = __DIR__ . '/../' . $path;
         }
 
@@ -161,40 +162,53 @@ class Application extends ApplicationBase
 
     /**
      * Starts a user session.
-     * @param int    $user_id
-     * @param string $session_key
+     * @param int $userId
+     * @param string $sessionKey
      */
-    public function startSession(int $user_id, string $session_key): void
+    public function startSession(int $userId, string $sessionKey): void
     {
-        $session = Session::where('session_key', $session_key)
-            ->where('user_id', $user_id)
-            ->first();
+        $dbc = Database::connection();
 
-        if ($session !== null) {
-            if ($session->hasExpired()) {
-                $session->delete();
+        $findSession = $dbc->prepare('
+            SELECT `session_id`, `expires_on`
+            FROM `msz_sessions`
+            WHERE `user_id` = :user_id
+            AND `session_key` = :session_key
+        ');
+        $findSession->bindValue('user_id', $userId);
+        $findSession->bindValue('session_key', $sessionKey);
+        $sessionData = $findSession->execute() ? $findSession->fetch() : false;
+
+        if ($sessionData) {
+            $expiresOn = new Carbon($sessionData['expires_on']);
+
+            if ($expiresOn->isPast()) {
+                $deleteSession = $dbc->prepare('
+                    DELETE FROM `msz_sessions`
+                    WHERE `session_id` = :session_id
+                ');
+                $deleteSession->bindValue('session_id', $sessionData['session_id']);
+                $deleteSession->execute();
             } else {
-                $this->setSession($session);
+                $this->currentSessionId = (int)$sessionData['session_id'];
+                $this->currentUserId = $userId;
             }
         }
     }
 
-    /**
-     * Gets the current session instance.
-     * @return Session|null
-     */
-    public function getSession(): ?Session
+    public function hasActiveSession(): bool
     {
-        return $this->sessionInstance;
+        return $this->getSessionId() > 0;
     }
 
-    /**
-     * Registers a session.
-     * @param Session|null $sessionInstance
-     */
-    public function setSession(?Session $sessionInstance): void
+    public function getSessionId(): int
     {
-        $this->sessionInstance = $sessionInstance;
+        return $this->currentSessionId;
+    }
+
+    public function getUserId(): int
+    {
+        return $this->currentUserId;
     }
 
     /**
@@ -206,7 +220,7 @@ class Application extends ApplicationBase
             throw new UnexpectedValueException('Database module has already been started.');
         }
 
-        $this->database = new Database($this->configInstance, self::DATABASE_CONNECTIONS[0]);
+        new Database($this->configInstance, self::DATABASE_CONNECTIONS[0]);
         $this->databaseInstance = new DatabaseV1($this->configInstance, self::DATABASE_CONNECTIONS[0]);
         $this->loadDatabaseConnections();
     }

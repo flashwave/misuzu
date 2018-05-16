@@ -133,22 +133,14 @@ function get_country_name(string $code): string
 
 // this is temporary, don't scream at me for using md5
 // BIG TODO: make these functions not dependent on sessions so they can be used outside of those.
-function tmp_csrf_verify(string $token, ?\Misuzu\Users\Session $session = null): bool
+function tmp_csrf_verify(string $token): bool
 {
-    if ($session === null) {
-        $session = \Misuzu\Application::getInstance()->getSession();
-    }
-
-    return hash_equals(tmp_csrf_token($session), $token);
+    return hash_equals(tmp_csrf_token(), $token);
 }
 
-function tmp_csrf_token(?\Misuzu\Users\Session $session = null): string
+function tmp_csrf_token(): string
 {
-    if ($session === null) {
-        $session = \Misuzu\Application::getInstance()->getSession();
-    }
-
-    return md5($session->session_key);
+    return md5($_COOKIE['msz_sid'] ?? 'this is very insecure lmao');
 }
 
 function crop_image_centred_path(string $filename, int $target_width, int $target_height): \Imagick
@@ -217,4 +209,24 @@ function first_paragraph(string $text, string $delimiter = "\n"): string
 function is_valid_page(\Illuminate\Pagination\LengthAwarePaginator $paginator, int $attemptedPage): bool
 {
     return $attemptedPage >= 1 && $attemptedPage <= $paginator->lastPage();
+}
+
+function pdo_prepare_array_update(array $keys, bool $useKeys = false, string $format = '%s'): string
+{
+    return pdo_prepare_array($keys, $useKeys, sprintf($format, '`%1$s` = :%1$s'));
+}
+
+function pdo_prepare_array(array $keys, bool $useKeys = false, string $format = '`%s`'): string
+{
+    $parts = [];
+
+    if ($useKeys) {
+        $keys = array_keys($keys);
+    }
+
+    foreach ($keys as $key) {
+        $parts[] = sprintf($format, $key);
+    }
+
+    return implode(', ', $parts);
 }

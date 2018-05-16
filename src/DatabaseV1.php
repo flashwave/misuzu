@@ -125,7 +125,7 @@ class DatabaseV1 extends LaravelDatabaseManager
                     ? $this->configManager->get($section, 'collation', 'string')
                     : 'utf8mb4_bin';
 
-                $args['strict'] = true;
+                $args['strict'] = false; // breaks mysql 8
                 $args['engine'] = null;
                 break;
 

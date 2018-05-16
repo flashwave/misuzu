@@ -23,22 +23,18 @@
                     </div>
                     <div class="container__content">
                         {% for category in categories %}
-                            {% set post_count = category.posts.count %}
-
-                            {% if post_count > 0 %}
-                                <a class="news__list__item news__list__item--kvp" href="/news.php?c={{ category.category_id }}">
-                                    <div class="news__list__name">
-                                        {{ category.category_name }}
-                                    </div>
-                                    <div class="news__list__value">
-                                        {{ post_count }} post{{ post_count == 1 ? '' : 's' }}
-                                    </div>
-                                </a>
-                            {% endif %}
+                            <a class="news__list__item news__list__item--kvp" href="/news.php?c={{ category.category_id }}">
+                                <div class="news__list__name">
+                                    {{ category.category_name }}
+                                </div>
+                                <div class="news__list__value">
+                                    {{ category.count }} post{{ category.count == 1 ? '' : 's' }}
+                                </div>
+                            </a>
                         {% endfor %}
                     </div>
                 </div>
-                {{ paginate(posts, '', 'news__') }}
+                {# paginate(posts, '', 'news__') #}
             </div>
         </div>
     </div>

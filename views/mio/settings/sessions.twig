@@ -8,34 +8,34 @@
 
     <div class="settings__sessions">
         {% for session in user_sessions %}
-            <div class="settings__sessions__entry{% if session.session_id == settings_session.session_id %} settings__sessions__entry--current{% endif %}" id="session-{{ session.session_id }}">
+            <div class="settings__sessions__entry{% if session.session_id == active_session_id %} settings__sessions__entry--current{% endif %}" id="session-{{ session.session_id }}">
                 <div class="settings__sessions__column settings__sessions__column--ip">
                     <div class="settings__sessions__column__name">
                         IP
                     </div>
                     <div class="settings__sessions__column__value">
-                        {{ session.session_ip.string }}
+                        {{ session.session_ip_decoded }}
                         {% if session.session_country != 'XX' %}
                             <img class="settings__sessions__country" src="https://static.flash.moe/flags/fff/{{ session.session_country|lower }}.png" alt="{{ session.session_country }}" title="{{ session.session_country|country_name }}">
                         {% endif %}
                     </div>
                 </div>
 
-                <div class="settings__sessions__column settings__sessions__column--created" onmouseenter="this.children[1].textContent = '{{ session.created_at }}';" onmouseleave="this.children[1].textContent = '{{ session.created_at.diffForHumans }}';">
+                <div class="settings__sessions__column settings__sessions__column--created" onmouseenter="this.children[1].textContent = '{{ session.created_at }}';" onmouseleave="this.children[1].textContent = '{{ session.created_at }}';"> {# .diffForHumans #}
                     <div class="settings__sessions__column__name">
                         Created
                     </div>
                     <div class="settings__sessions__column__value">
-                        {{ session.created_at.diffForHumans }}
+                        {{ session.created_at }} {# .diffForHumans #}
                     </div>
                 </div>
 
-                <div class="settings__sessions__column settings__sessions__column--expires" onmouseenter="this.children[1].textContent = '{{ session.expires_on }}';" onmouseleave="this.children[1].textContent = '{{ session.expires_on.diffForHumans }}';">
+                <div class="settings__sessions__column settings__sessions__column--expires" onmouseenter="this.children[1].textContent = '{{ session.expires_on }}';" onmouseleave="this.children[1].textContent = '{{ session.expires_on }}';"> {# .diffForHumans #}
                     <div class="settings__sessions__column__name">
                         Expires
                     </div>
                     <div class="settings__sessions__column__value">
-                        {{ session.expires_on.diffForHumans }}
+                        {{ session.expires_on }} {# .diffForHumans #}
                     </div>
                 </div>
 
@@ -53,11 +53,13 @@
                 <form class="settings__sessions__column settings__sessions__column--options" method="post" action="?m=sessions">
                     <input type="hidden" name="csrf" value="{{ csrf_token() }}">
                     <input type="hidden" name="session" value="{{ session.session_id }}">
-                    <button class="input__button settings__sessions__button">Kill</button>
+                    <button class="input__button settings__sessions__button">
+                        {{ session.session_id == active_session_id ? 'Logout' : 'Kill' }}
+                    </button>
                 </form>
             </div>
         {% endfor %}
 
-        {{ paginate(user_sessions, '?m=sessions', 'settings__') }}
+        {# paginate(user_sessions, '?m=sessions', 'settings__') #}
     </div>
 {% endblock %}

@@ -28,12 +28,12 @@
             </div>
         </div>
         <div class="settings__avatar__preview__container">
-            <div class="avatar settings__avatar__preview" id="avatar-preview" style="background-image:url('/profile.php?u={{ settings_user.user_id }}&amp;m=avatar')"></div>
+            <div class="avatar settings__avatar__preview" id="avatar-preview" style="background-image:url('/profile.php?u={{ avatar_user_id }}&amp;m=avatar')"></div>
         </div>
     </div>
     <script>
         function updateAvatarPreview(url, element) {
-            url = url || "/profile.php?u={{ settings_user.user_id }}&m=avatar";
+            url = url || "/profile.php?u={{ avatar_user_id }}&m=avatar";
             element = element || document.getElementById('avatar-preview');
             element.style.backgroundImage = 'url(\'' + url + '\')';
         }

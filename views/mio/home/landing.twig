@@ -5,7 +5,7 @@
 {% set canonical_url = '/' %}
 
 {% block content %}
-    {% if app.session != null %}
+    {% if app.hasActiveSession %}
         <div class="container">
             <div class="container__title">Welcome</div>
             <div class="container__content">

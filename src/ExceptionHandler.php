@@ -112,7 +112,7 @@ class ExceptionHandler
         $is_http = false;//$exception instanceof HttpException;
 
         if (PHP_SAPI === 'cli' || (!$is_http && static::$debugMode)) {
-            if (PHP_SAPI !== 'cli') {
+            if (PHP_SAPI !== 'cli' && !headers_sent()) {
                 http_response_code(500);
                 header('Content-Type: text/plain');
             }
