@@ -26,7 +26,6 @@ class Application extends ApplicationBase
      */
     private const DATABASE_CONNECTIONS = [
         'mysql-main',
-        'mysql-test',
     ];
 
     /**

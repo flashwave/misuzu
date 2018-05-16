@@ -9,7 +9,7 @@ use Misuzu\DatabaseMigrationManager;
 require_once __DIR__ . '/misuzu.php';
 
 define('MSZ_MIGRATABLE_DATABASES', [
-    'mysql-test' => __DIR__ . '/database',
+    'mysql-main' => __DIR__ . '/database',
 ]);
 
 function migrate_log($log): void
