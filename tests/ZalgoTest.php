@@ -2,7 +2,6 @@
 namespace MisuzuTests;
 
 use PHPUnit\Framework\TestCase;
-use Misuzu\Zalgo;
 
 class ZalgoTest extends TestCase
 {
@@ -12,17 +11,17 @@ class ZalgoTest extends TestCase
     {
         $this->assertEquals(
             static::TEST_STRING,
-            Zalgo::strip(Zalgo::run(static::TEST_STRING, Zalgo::ZALGO_MODE_MINI))
+            zalgo_strip(zalgo_run(static::TEST_STRING, MSZ_ZALGO_MODE_MINI))
         );
 
         $this->assertEquals(
             static::TEST_STRING,
-            Zalgo::strip(Zalgo::run(static::TEST_STRING, Zalgo::ZALGO_MODE_NORMAL))
+            zalgo_strip(zalgo_run(static::TEST_STRING, MSZ_ZALGO_MODE_NORMAL))
         );
 
         $this->assertEquals(
             static::TEST_STRING,
-            Zalgo::strip(Zalgo::run(static::TEST_STRING, Zalgo::ZALGO_MODE_MAX))
+            zalgo_strip(zalgo_run(static::TEST_STRING, MSZ_ZALGO_MODE_MAX))
         );
     }
 }
