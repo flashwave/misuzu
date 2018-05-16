@@ -12,10 +12,6 @@
         "ext-mbstring": "*",
         "twig/twig": "~2.4",
         "nesbot/carbon": "~1.22",
-        "illuminate/database": "~5.5",
-        "illuminate/filesystem": "~5.5",
-        "illuminate/pagination": "~5.5",
-        "doctrine/dbal": "~2.6",
         "swiftmailer/swiftmailer": "~6.0",
         "erusev/parsedown": "~1.6",
         "geoip2/geoip2": "~2.0"

@@ -14,7 +14,7 @@
                         IP
                     </div>
                     <div class="settings__login-history__column__value">
-                        {{ attempt.attempt_ip.string }}
+                        {{ attempt.attempt_ip_decoded }}
                         {% if attempt.attempt_country != 'XX' %}
                             <img class="settings__login-history__country" src="https://static.flash.moe/flags/fff/{{ attempt.attempt_country|lower }}.png" alt="{{ attempt.attempt_country }}" title="{{ attempt.attempt_country|country_name }}">
                         {% endif %}
@@ -28,12 +28,12 @@
                         {{ attempt.was_successful ? 'Yes' : 'No' }}
                     </div>
                 </div>
-                <div class="settings__login-history__column settings__login-history__column--created" onmouseenter="this.children[1].textContent = '{{ attempt.created_at }}';" onmouseleave="this.children[1].textContent = '{{ attempt.created_at.diffForHumans }}';">
+                <div class="settings__login-history__column settings__login-history__column--created" onmouseenter="this.children[1].textContent = '{{ attempt.created_at }}';" onmouseleave="this.children[1].textContent = '{{ attempt.created_at }}';"> {#.diffForHumans #}
                     <div class="settings__login-history__column__name">
                         Attempted
                     </div>
                     <div class="settings__login-history__column__value">
-                        {{ attempt.created_at.diffForHumans }}
+                        {{ attempt.created_at }} {#.diffForHumans #}
                     </div>
                 </div>
                 {% if attempt.user_agent|length > 0 %}
@@ -49,6 +49,6 @@
             </div>
         {% endfor %}
 
-        {{ paginate(user_login_attempts, '?m=login-history', 'settings__') }}
+        {{ paginate(login_attempts_count, login_attempts_take, login_attempts_offset, '?m=login-history', 'settings__') }}
     </div>
 {% endblock %}

@@ -1,18 +1,18 @@
 <?php
-use Misuzu\Application;
+use Misuzu\Database;
 use Misuzu\IO\File;
-use Misuzu\Users\User;
-use Misuzu\Users\Session;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$settings_session = Application::getInstance()->getSession();
+$db = Database::connection();
+$templating = $app->getTemplating();
 
-$page_id = (int)($_GET['p'] ?? 1);
+$query_offset = (int)($_GET['o'] ?? 0);
+$query_take = 15;
 
-if (Application::getInstance()->getSession() === null) {
+if (!$app->hasActiveSession()) {
     http_response_code(403);
-    echo $app->templating->render('errors.403');
+    echo $templating->render('errors.403');
     return;
 }
 
@@ -72,8 +72,6 @@ $settings_profile_fields = [
     ],
 ];
 
-$settings_user = $settings_session->user;
-
 $settings_modes = [
     'account' => 'Account',
     'avatar' => 'Avatar',
@@ -82,22 +80,22 @@ $settings_modes = [
 ];
 $settings_mode = $_GET['m'] ?? key($settings_modes);
 
-$app->templating->vars(compact('settings_mode', 'settings_modes', 'settings_user', 'settings_session'));
+$templating->vars(compact('settings_mode', 'settings_modes'));
 
 if (!array_key_exists($settings_mode, $settings_modes)) {
     http_response_code(404);
-    $app->templating->var('settings_title', 'Not Found');
-    echo $app->templating->render('settings.notfound');
+    $templating->var('settings_title', 'Not Found');
+    echo $templating->render('settings.notfound');
     return;
 }
 
 $settings_errors = [];
 
-$prevent_registration = $app->config->get('Auth', 'prevent_registration', 'bool', false);
-$avatar_filename = "{$settings_user->user_id}.msz";
-$avatar_max_width = $app->config->get('Avatar', 'max_width', 'int', 4000);
-$avatar_max_height = $app->config->get('Avatar', 'max_height', 'int', 4000);
-$avatar_max_filesize = $app->config->get('Avatar', 'max_filesize', 'int', 1000000);
+$prevent_registration = $app->getConfig()->get('Auth', 'prevent_registration', 'bool', false);
+$avatar_filename = "{$app->getUserId()}.msz";
+$avatar_max_width = $app->getConfig()->get('Avatar', 'max_width', 'int', 4000);
+$avatar_max_height = $app->getConfig()->get('Avatar', 'max_height', 'int', 4000);
+$avatar_max_filesize = $app->getConfig()->get('Avatar', 'max_filesize', 'int', 1000000);
 $avatar_max_filesize_human = byte_symbol($avatar_max_filesize, true);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -107,6 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $settings_errors[] = $csrf_error_str;
                 break;
             }
+
+            $updatedUserFields = [];
 
             if (isset($_POST['profile']) && is_array($_POST['profile'])) {
                 foreach ($settings_profile_fields as $name => $props) {
@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $field_value = $field_matches[1];
                         }
 
-                        $settings_user->{"user_{$name}"} = $field_value;
+                        $updatedUserFields["user_{$name}"] = $field_value;
                     }
                 }
             }
@@ -140,45 +140,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     && (!empty($_POST['password']['new']) || !empty($_POST['email']['new']))
                 )
                 ) {
-                    if (!$settings_user->verifyPassword($_POST['current_password'])) {
-                        $settings_errors[] = "Your current password was incorrect.";
+                    $fetchPassword = $db->prepare('
+                        SELECT `password`
+                        FROM `msz_users`
+                        WHERE `user_id` = :user_id
+                    ');
+                    $fetchPassword->bindValue('user_id', $app->getUserId());
+                    $currentPassword = $fetchPassword->execute() ? $fetchPassword->fetchColumn() : null;
+
+                    if (empty($currentPassword)) {
+                        $settings_errors[] = 'Something went horribly wrong.';
+                        break;
+                    }
+
+                    if (!password_verify($_POST['current_password'], $currentPassword)) {
+                        $settings_errors[] = 'Your current password was incorrect.';
                         break;
                     }
 
                     if (!empty($_POST['email']['new'])) {
-                        if (empty($_POST['email']['confirm']) || $_POST['email']['new'] !== $_POST['email']['confirm']) {
-                            $settings_errors[] = "The given e-mail addresses did not match.";
+                        if (empty($_POST['email']['confirm'])
+                            || $_POST['email']['new'] !== $_POST['email']['confirm']) {
+                            $settings_errors[] = 'The given e-mail addresses did not match.';
                             break;
                         }
 
-                        if ($_POST['email']['new'] === $settings_user->email) {
-                            $settings_errors[] = "This is your e-mail address already!";
+                        $checkIfAlreadySet = $db->prepare('
+                            SELECT COUNT(`user_id`)
+                            FROM `msz_users`
+                            WHERE LOWER(:email) = LOWER(:email)
+                        ');
+                        $checkIfAlreadySet->bindValue('email', $_POST['email']['new']);
+                        $isAlreadySet = $checkIfAlreadySet->execute()
+                            ? $checkIfAlreadySet->fetchColumn() > 0
+                            : false;
+
+                        if ($isAlreadySet) {
+                            $settings_errors[] = 'This is your e-mail address already!';
                             break;
                         }
 
-                        $email_validate = User::validateEmail($_POST['email']['new'], true);
+                        $email_validate = user_validate_email($_POST['email']['new'], true);
 
                         if ($email_validate !== '') {
                             switch ($email_validate) {
                                 case 'dns':
-                                    $settings_errors[] = "No valid MX record exists for this domain.";
+                                    $settings_errors[] = 'No valid MX record exists for this domain.';
                                     break;
 
                                 case 'format':
-                                    $settings_errors[] = "The given e-mail address was incorrectly formatted.";
+                                    $settings_errors[] = 'The given e-mail address was incorrectly formatted.';
                                     break;
 
                                 case 'in-use':
-                                    $settings_errors[] = "This e-mail address has already been used by another user.";
+                                    $settings_errors[] = 'This e-mail address has already been used by another user.';
                                     break;
 
                                 default:
-                                    $settings_errors[] = "Unknown e-mail validation error.";
+                                    $settings_errors[] = 'Unknown e-mail validation error.';
                             }
                             break;
                         }
 
-                        $settings_user->email = $_POST['email']['new'];
+                        $updatedUserFields['email'] = strtolower($_POST['email']['new']);
                     }
 
                     if (!empty($_POST['password']['new'])) {
@@ -188,20 +212,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             break;
                         }
 
-                        $password_validate = User::validatePassword($_POST['password']['new'], true);
+                        $password_validate = user_validate_password($_POST['password']['new']);
 
                         if ($password_validate !== '') {
                             $settings_errors[] = "The given passwords was too weak.";
                             break;
                         }
 
-                        $settings_user->password = $_POST['password']['new'];
+                        $updatedUserFields['password'] = password_hash($_POST['password']['new'], PASSWORD_ARGON2I);
                     }
                 }
             }
 
-            if (count($settings_errors) < 1 && $settings_user->isDirty()) {
-                $settings_user->save();
+            if (count($settings_errors) < 1 && count($updatedUserFields) > 0) {
+                $updateUser = $db->prepare('
+                    UPDATE `msz_users`
+                    SET ' . pdo_prepare_array_update($updatedUserFields, true) . '
+                    WHERE `user_id` = :user_id
+                ');
+                $updatedUserFields['user_id'] = $app->getUserId();
+                $updateUser->execute($updatedUserFields);
             }
             break;
 
@@ -307,38 +337,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $session_id = (int)($_POST['session'] ?? 0);
 
             if ($session_id < 1) {
-                $settings_errors[] = 'no';
+                $settings_errors[] = 'Invalid session.';
                 break;
             }
 
-            $session = Session::find($session_id);
+            $findSession = $db->prepare('
+                SELECT `session_id`, `user_id`
+                FROM `msz_sessions`
+                WHERE `session_id` = :session_id
+            ');
+            $findSession->bindValue('session_id', $session_id);
+            $session = $findSession->execute() ? $findSession->fetch() : null;
 
-            if ($session === null || $session->user_id !== $settings_user->user_id) {
+            if (!$session || (int)$session['user_id'] !== $app->getUserId()) {
                 $settings_errors[] = 'You may only end your own sessions.';
                 break;
             }
 
-            if ($session->session_id === $app->getSession()->session_id) {
+            if ((int)$session['session_id'] === $app->getSessionId()) {
                 header('Location: /auth.php?m=logout&s=' . tmp_csrf_token());
                 return;
             }
 
-            $session->delete();
+            $deleteSession = $db->prepare('
+                DELETE FROM `msz_sessions`
+                WHERE `session_id` = :session_id
+            ');
+            $deleteSession->bindValue('session_id', $session['session_id']);
+            $deleteSession->execute();
             break;
     }
 }
 
-$app->templating->vars(compact('settings_errors'));
-$app->templating->var('settings_title', $settings_modes[$settings_mode]);
+$templating->vars(compact('settings_errors'));
+$templating->var('settings_title', $settings_modes[$settings_mode]);
 
 switch ($settings_mode) {
     case 'account':
-        $app->templating->vars(compact('settings_profile_fields', 'prevent_registration'));
+        $getUserFields = $db->prepare('
+            SELECT ' . pdo_prepare_array($settings_profile_fields, true, '`user_%s`') . '
+            FROM `msz_users`
+            WHERE `user_id` = :user_id
+        ');
+        $getUserFields->bindValue('user_id', $app->getUserId());
+        $userFields = $getUserFields->execute() ? $getUserFields->fetch() : [];
+
+        $templating->var('settings_profile_values', $userFields);
+        $templating->vars(compact('settings_profile_fields', 'prevent_registration'));
         break;
 
     case 'avatar':
         $user_has_avatar = File::exists($app->getStore('avatars/original')->filename($avatar_filename));
-        $app->templating->vars(compact(
+        $templating->var('avatar_user_id', $app->getUserId());
+        $templating->vars(compact(
             'avatar_max_width',
             'avatar_max_height',
             'avatar_max_filesize',
@@ -347,20 +398,67 @@ switch ($settings_mode) {
         break;
 
     case 'sessions':
-        $sessions = $settings_user->sessions()
-           ->orderBy('session_id', 'desc')
-           ->paginate(15, ['*'], 'p', $page_id);
+        $getSessionCount = $db->prepare('
+            SELECT COUNT(`session_id`)
+            FROM `msz_sessions`
+            WHERE `user_id` = :user_id
+        ');
+        $getSessionCount->bindValue('user_id', $app->getUserId());
+        $sessionCount = $getSessionCount->execute() ? $getSessionCount->fetchColumn() : 0;
 
-        $app->templating->var('user_sessions', $sessions);
+        $getSessions = $db->prepare('
+            SELECT
+                `session_id`, `session_country`, `user_agent`, `created_at`, `expires_on`,
+                INET6_NTOA(`session_ip`) as `session_ip_decoded`
+            FROM `msz_sessions`
+            WHERE `user_id` = :user_id
+            ORDER BY `session_id` DESC
+            LIMIT :offset, :take
+        ');
+        $getSessions->bindValue('offset', $query_offset);
+        $getSessions->bindValue('take', $query_take);
+        $getSessions->bindValue('user_id', $app->getUserId());
+        $sessions = $getSessions->execute() ? $getSessions->fetchAll() : [];
+
+        $templating->vars([
+            'active_session_id' => $app->getSessionId(),
+            'user_sessions' => $sessions,
+            'sessions_offset' => $query_offset,
+            'sessions_take' => $query_take,
+            'sessions_count' => $sessionCount,
+        ]);
         break;
 
     case 'login-history':
-        $login_attempts = $settings_user->loginAttempts()
-            ->orderBy('attempt_id', 'desc')
-            ->paginate(15, ['*'], 'p', $page_id);
+        $getLoginAttemptsCount = $db->prepare('
+            SELECT COUNT(`attempt_id`)
+            FROM `msz_login_attempts`
+            WHERE `user_id` = :user_id
+        ');
+        $getLoginAttemptsCount->bindValue('user_id', $app->getUserId());
+        $loginAttemptsCount = $getLoginAttemptsCount->execute() ? $getLoginAttemptsCount->fetchColumn() : 0;
 
-        $app->templating->var('user_login_attempts', $login_attempts);
+        $getLoginAttempts = $db->prepare('
+            SELECT
+                `attempt_id`, `attempt_country`, `was_successful`, `user_agent`, `created_at`,
+                INET6_NTOA(`attempt_ip`) as `attempt_ip_decoded`
+            FROM `msz_login_attempts`
+            WHERE `user_id` = :user_id
+            ORDER BY `attempt_id` DESC
+            LIMIT :offset, :take
+        ');
+        $getLoginAttempts->bindValue('offset', $query_offset);
+        $getLoginAttempts->bindValue('take', $query_take);
+        $getLoginAttempts->bindValue('user_id', $app->getUserId());
+        $loginAttempts = $getLoginAttempts->execute() ? $getLoginAttempts->fetchAll() : [];
+
+        $templating->vars([
+            'user_login_attempts' => $loginAttempts,
+            'login_attempts_offset' => $query_offset,
+            'login_attempts_take' => $query_take,
+            'login_attempts_count' => $loginAttemptsCount,
+        ]);
         break;
 }
 
-echo $app->templating->render("settings.{$settings_mode}");
+echo $templating->render("settings.{$settings_mode}");

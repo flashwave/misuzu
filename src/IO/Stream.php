@@ -3,6 +3,18 @@ namespace Misuzu\IO;
 
 use InvalidArgumentException;
 
+/**
+ * Class Stream
+ * @package Misuzu\IO
+ * @property-read bool $canRead
+ * @property-read bool $canSeek
+ * @property-read bool $canTimeout
+ * @property-read bool $canWrite
+ * @property-read int $length
+ * @property-read int $position
+ * @property-read int $readTimeout
+ * @property-read int $writeTimeout
+ */
 abstract class Stream
 {
     public const ORIGIN_CURRENT = 0;

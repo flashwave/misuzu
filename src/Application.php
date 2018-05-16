@@ -1,14 +1,17 @@
 <?php
 namespace Misuzu;
 
+use Carbon\Carbon;
 use Misuzu\Config\ConfigManager;
 use Misuzu\IO\Directory;
+use Misuzu\IO\DirectoryDoesNotExistException;
 use Misuzu\Users\Session;
 use UnexpectedValueException;
 use InvalidArgumentException;
 
 /**
  * Handles the set up procedures.
+ * @package Misuzu
  */
 class Application extends ApplicationBase
 {
@@ -26,51 +29,100 @@ class Application extends ApplicationBase
     ];
 
     /**
-     * Session instance.
-     * @var \Misuzu\Users\Session
+     * Active Session ID.
+     * @var int
      */
-    private $session = null;
+    private $currentSessionId = 0;
+
+    /**
+     * Active User ID.
+     * @var int
+     */
+    private $currentUserId = 0;
+
+    /**
+     * ConfigManager instance.
+     * @var \Misuzu\Config\ConfigManager
+     */
+    private $configInstance = null;
+
+    /**
+     * TemplatingEngine instance.
+     * @var \Misuzu\TemplateEngine
+     */
+    private $templatingInstance = null;
 
     /**
      * Constructor, called by ApplicationBase::start() which also passes the arguments through.
-     * @param ?string $configFile
-     * @param bool $debug
+     * @param null|string $configFile
+     * @param bool        $debug
      */
-    protected function __construct(?string $configFile = null, bool $debug = false)
+    public function __construct(?string $configFile = null, bool $debug = false)
     {
+        parent::__construct();
         $this->debugMode = $debug;
         ExceptionHandler::register();
         ExceptionHandler::debug($this->debugMode);
-        $this->addModule('config', new ConfigManager($configFile));
+        $this->configInstance = new ConfigManager($configFile);
     }
 
+    /**
+     * Gets instance of the config manager.
+     * @return ConfigManager
+     */
+    public function getConfig(): ConfigManager
+    {
+        if (is_null($this->configInstance)) {
+            throw new UnexpectedValueException('Internal ConfigManager instance is null, how did you even manage to do this?');
+        }
+
+        return $this->configInstance;
+    }
+
+    /**
+     * Shuts the application down.
+     */
     public function __destruct()
     {
         ExceptionHandler::unregister();
     }
 
+    /**
+     * Gets whether we're in debug mode or not.
+     * @return bool
+     */
     public function inDebugMode(): bool
     {
         return $this->debugMode;
     }
 
+    /**
+     * Gets a storage path.
+     * @param string $path
+     * @return string
+     */
     public function getPath(string $path): string
     {
-        if (!starts_with($path, '/')) {
+        if (!starts_with($path, '/') && substr($path, 1, 2) !== ':\\') {
             $path = __DIR__ . '/../' . $path;
         }
 
         return Directory::fixSlashes(rtrim($path, '/'));
     }
 
+    /**
+     * Gets a data storage path, with config storage path prefix.
+     * @param string $append
+     * @return Directory
+     * @throws DirectoryDoesNotExistException
+     * @throws IO\DirectoryExistsException
+     */
     public function getStoragePath(string $append = ''): Directory
     {
-        $path = '';
-
         if (starts_with($append, '/')) {
             $path = $append;
         } else {
-            $path = $this->config->get('Storage', 'path', 'string', __DIR__ . '/../store');
+            $path = $this->getConfig()->get('Storage', 'path', 'string', __DIR__ . '/../store');
 
             if (!empty($append)) {
                 $path .= '/' . $append;
@@ -80,40 +132,77 @@ class Application extends ApplicationBase
         return Directory::createOrOpen($this->getPath($path));
     }
 
+    /**
+     * Gets a data store, with config overrides!
+     * @param string $purpose
+     * @return Directory
+     * @throws DirectoryDoesNotExistException
+     * @throws IO\DirectoryExistsException
+     */
     public function getStore(string $purpose): Directory
     {
         $override_key = 'override_' . str_replace('/', '_', $purpose);
 
-        if ($this->config->contains('Storage', $override_key)) {
-            return new Directory($this->config->get('Storage', $override_key));
+        if ($this->configInstance->contains('Storage', $override_key)) {
+            try {
+                return new Directory($this->configInstance->get('Storage', $override_key));
+            } catch (DirectoryDoesNotExistException $ex) {
+                // fall through and just get the default path.
+            }
         }
 
         return $this->getStoragePath($purpose);
     }
 
-    public function startSession(int $user_id, string $session_key): void
+    /**
+     * Starts a user session.
+     * @param int $userId
+     * @param string $sessionKey
+     */
+    public function startSession(int $userId, string $sessionKey): void
     {
-        $session = Session::where('session_key', $session_key)
-            ->where('user_id', $user_id)
-            ->first();
+        $dbc = Database::connection();
 
-        if ($session !== null) {
-            if ($session->hasExpired()) {
-                $session->delete();
+        $findSession = $dbc->prepare('
+            SELECT `session_id`, `expires_on`
+            FROM `msz_sessions`
+            WHERE `user_id` = :user_id
+            AND `session_key` = :session_key
+        ');
+        $findSession->bindValue('user_id', $userId);
+        $findSession->bindValue('session_key', $sessionKey);
+        $sessionData = $findSession->execute() ? $findSession->fetch() : false;
+
+        if ($sessionData) {
+            $expiresOn = new Carbon($sessionData['expires_on']);
+
+            if ($expiresOn->isPast()) {
+                $deleteSession = $dbc->prepare('
+                    DELETE FROM `msz_sessions`
+                    WHERE `session_id` = :session_id
+                ');
+                $deleteSession->bindValue('session_id', $sessionData['session_id']);
+                $deleteSession->execute();
             } else {
-                $this->setSession($session);
+                $this->currentSessionId = (int)$sessionData['session_id'];
+                $this->currentUserId = $userId;
             }
         }
     }
 
-    public function getSession(): ?Session
+    public function hasActiveSession(): bool
     {
-        return $this->session;
+        return $this->getSessionId() > 0;
     }
 
-    public function setSession(?Session $session): void
+    public function getSessionId(): int
     {
-        $this->session = $session;
+        return $this->currentSessionId;
+    }
+
+    public function getUserId(): int
+    {
+        return $this->currentUserId;
     }
 
     /**
@@ -121,31 +210,11 @@ class Application extends ApplicationBase
      */
     public function startDatabase(): void
     {
-        if ($this->hasDatabase) {
+        if (Database::hasInstance()) {
             throw new UnexpectedValueException('Database module has already been started.');
         }
 
-        $this->addModule('database', new Database($this->config, self::DATABASE_CONNECTIONS[0]));
-        $this->loadDatabaseConnections();
-    }
-
-    /**
-     * Sets up the required database connections defined in the DATABASE_CONNECTIONS constant.
-     */
-    private function loadDatabaseConnections(): void
-    {
-        $config = $this->config;
-        $database = $this->database;
-
-        foreach (self::DATABASE_CONNECTIONS as $name) {
-            $section = "Database.{$name}";
-
-            if (!$config->contains($section)) {
-                throw new InvalidArgumentException("Database {$name} is not configured.");
-            }
-
-            $database->addConnectionFromConfig($section, $name);
-        }
+        new Database($this->configInstance, self::DATABASE_CONNECTIONS[0]);
     }
 
     /**
@@ -153,31 +222,48 @@ class Application extends ApplicationBase
      */
     public function startTemplating(): void
     {
-        if ($this->hasTemplating) {
+        if (!is_null($this->templatingInstance)) {
             throw new UnexpectedValueException('Templating module has already been started.');
         }
 
-        $this->addModule('templating', $twig = new TemplateEngine);
-        $twig->debug($this->debugMode);
+        $this->templatingInstance = new TemplateEngine;
+        $this->templatingInstance->debug($this->debugMode);
 
-        $twig->var('globals', [
-            'site_name' => $this->config->get('Site', 'name', 'string', 'Flashii'),
-            'site_description' => $this->config->get('Site', 'description'),
-            'site_twitter' => $this->config->get('Site', 'twitter'),
-            'site_url' => $this->config->get('Site', 'url'),
+        $this->templatingInstance->var('globals', [
+            'site_name' => $this->configInstance->get('Site', 'name', 'string', 'Flashii'),
+            'site_description' => $this->configInstance->get('Site', 'description'),
+            'site_twitter' => $this->configInstance->get('Site', 'twitter'),
+            'site_url' => $this->configInstance->get('Site', 'url'),
         ]);
 
-        $twig->addFilter('json_decode');
-        $twig->addFilter('byte_symbol');
-        $twig->addFilter('country_name', 'get_country_name');
-        $twig->addFilter('flip', 'array_flip');
-        $twig->addFilter('create_pagination');
-        $twig->addFilter('first_paragraph');
+        $this->templatingInstance->addFilter('json_decode');
+        $this->templatingInstance->addFilter('byte_symbol');
+        $this->templatingInstance->addFilter('country_name', 'get_country_name');
+        $this->templatingInstance->addFilter('flip', 'array_flip');
+        $this->templatingInstance->addFilter('first_paragraph');
+        $this->templatingInstance->addFilter('colour_get_css');
+        $this->templatingInstance->addFilter('colour_get_inherit');
+        $this->templatingInstance->addFilter('colour_get_red');
+        $this->templatingInstance->addFilter('colour_get_green');
+        $this->templatingInstance->addFilter('colour_get_blue');
 
-        $twig->addFunction('git_hash', [Application::class, 'gitCommitHash']);
-        $twig->addFunction('git_branch', [Application::class, 'gitBranch']);
-        $twig->addFunction('csrf_token', 'tmp_csrf_token');
+        $this->templatingInstance->addFunction('git_hash', [Application::class, 'gitCommitHash']);
+        $this->templatingInstance->addFunction('git_branch', [Application::class, 'gitBranch']);
+        $this->templatingInstance->addFunction('csrf_token', 'tmp_csrf_token');
 
-        $twig->var('app', $this);
+        $this->templatingInstance->var('app', $this);
+    }
+
+    /**
+     * Gets an instance of the templating engine.
+     * @return TemplateEngine
+     */
+    public function getTemplating(): TemplateEngine
+    {
+        if (is_null($this->templatingInstance)) {
+            throw new UnexpectedValueException('Internal templating engine instance is null, did you run startDatabase yet?');
+        }
+
+        return $this->templatingInstance;
     }
 }

@@ -5,19 +5,37 @@ use InvalidArgumentException;
 
 final class IPAddressRange
 {
+    /**
+     * @var IPAddress
+     */
     private $maskAddress;
+
+    /**
+     * @var int
+     */
     private $cidrLength;
 
+    /**
+     * @return IPAddress
+     */
     public function getMaskAddress(): IPAddress
     {
         return $this->maskAddress;
     }
 
+    /**
+     * @return int
+     */
     public function getCidrLength(): int
     {
         return $this->cidrLength;
     }
 
+    /**
+     * IPAddressRange constructor.
+     * @param IPAddress $maskAddress
+     * @param int       $cidrLength
+     */
     public function __construct(IPAddress $maskAddress, int $cidrLength)
     {
         if ($cidrLength > IPAddress::BYTE_COUNT[$maskAddress->getVersion()] * 8) {
@@ -28,11 +46,21 @@ final class IPAddressRange
         $this->cidrLength = $cidrLength;
     }
 
+    /**
+     * Gets a conventional <MASKED ADDRESS>/<CIDR LENGTH> format string.
+     * @return string
+     */
     public function getMaskedString(): string
     {
         return $this->getMaskAddress()->getString() . '/' . $this->getCidrLength();
     }
 
+    /**
+     * Matches an IPAddress to this range.
+     * @param IPAddress $ipAddress
+     * @param bool      $explicitExceptions
+     * @return bool
+     */
     public function match(IPAddress $ipAddress, bool $explicitExceptions = false): bool
     {
         if ($ipAddress->getVersion() !== $this->getMaskAddress()->getVersion()) {
@@ -62,6 +90,11 @@ final class IPAddressRange
         return $this->getMaskAddress()->getRaw() === pack('N*', ...$ipParts);
     }
 
+    /**
+     * Creates an IPAddressRange instance using the conventional notation format.
+     * @param string $maskedString
+     * @return IPAddressRange
+     */
     public static function fromMaskedString(string $maskedString): IPAddressRange
     {
         if (strpos($maskedString, '/') === false) {
@@ -75,8 +108,14 @@ final class IPAddressRange
         return new static($maskedAddress, $cidrLength);
     }
 
-    // very uncertain about this logic in regards to any ip larger than 32 bits
-    // if you _do_ know what you're doing, review this and call me an idiot please
+    /**
+     * Creates an IPAddresRange instance from a dash separated range.
+     * I'm very uncertain about the logic here when it comes to addresses larger than 32 bits.
+     * If you do know what you're doing, please review this and call me an idiot.
+     *
+     * @param string $rangeString
+     * @return IPAddressRange
+     */
     public static function fromRangeString(string $rangeString): IPAddressRange
     {
         if (strpos($rangeString, '-') === false) {

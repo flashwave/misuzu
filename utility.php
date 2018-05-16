@@ -91,12 +91,13 @@ function get_country_code(string $ipAddr, string $fallback = 'XX'): string
 {
     try {
         $app = \Misuzu\Application::getInstance();
+        $config = $app->getConfig();
 
-        if (!$app->hasModule('config')) {
+        if ($config === null) {
             return $fallback;
         }
 
-        $database_path = $app->config->get('GeoIP', 'database_path');
+        $database_path = $config->get('GeoIP', 'database_path');
 
         if ($database_path === null) {
             return $fallback;
@@ -132,22 +133,14 @@ function get_country_name(string $code): string
 
 // this is temporary, don't scream at me for using md5
 // BIG TODO: make these functions not dependent on sessions so they can be used outside of those.
-function tmp_csrf_verify(string $token, ?\Misuzu\Users\Session $session = null): bool
+function tmp_csrf_verify(string $token): bool
 {
-    if ($session === null) {
-        $session = \Misuzu\Application::getInstance()->getSession();
-    }
-
-    return hash_equals(tmp_csrf_token($session), $token);
+    return hash_equals(tmp_csrf_token(), $token);
 }
 
-function tmp_csrf_token(?\Misuzu\Users\Session $session = null): string
+function tmp_csrf_token(): string
 {
-    if ($session === null) {
-        $session = \Misuzu\Application::getInstance()->getSession();
-    }
-
-    return md5($session->session_key);
+    return md5($_COOKIE['msz_sid'] ?? 'this is very insecure lmao');
 }
 
 function crop_image_centred_path(string $filename, int $target_width, int $target_height): \Imagick
@@ -197,11 +190,6 @@ function crop_image_centred(Imagick $image, int $target_width, int $target_heigh
     return $image->deconstructImages();
 }
 
-function create_pagination($paginator)
-{
-    return \Illuminate\Pagination\UrlWindow::make($paginator);
-}
-
 function running_on_windows(): bool
 {
     return starts_with(strtolower(PHP_OS), 'win');
@@ -213,7 +201,22 @@ function first_paragraph(string $text, string $delimiter = "\n"): string
     return $index === false ? $text : mb_substr($text, 0, $index);
 }
 
-function is_valid_page(\Illuminate\Pagination\LengthAwarePaginator $paginator, int $attemptedPage): bool
+function pdo_prepare_array_update(array $keys, bool $useKeys = false, string $format = '%s'): string
 {
-    return $attemptedPage >= 1 && $attemptedPage <= $paginator->lastPage();
+    return pdo_prepare_array($keys, $useKeys, sprintf($format, '`%1$s` = :%1$s'));
+}
+
+function pdo_prepare_array(array $keys, bool $useKeys = false, string $format = '`%s`'): string
+{
+    $parts = [];
+
+    if ($useKeys) {
+        $keys = array_keys($keys);
+    }
+
+    foreach ($keys as $key) {
+        $parts[] = sprintf($format, $key);
+    }
+
+    return implode(', ', $parts);
 }

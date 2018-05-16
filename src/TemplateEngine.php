@@ -37,7 +37,11 @@ class TemplateEngine
     private $vars = [];
 
     /**
-     * Creates the twig environment.
+     * TemplateEngine constructor.
+     * @param null|string $cache
+     * @param bool        $strict
+     * @param bool        $autoReload
+     * @param bool        $debug
      */
     public function __construct(
         ?string $cache = null,
@@ -106,11 +110,14 @@ class TemplateEngine
      */
     public function addPath(string $name, string $path): void
     {
-        if (count($this->loader->getPaths()) < 1) {
-            $this->loader->addPath($path);
-        }
+        try {
+            if (count($this->loader->getPaths()) < 1) {
+                $this->loader->addPath($path);
+            }
 
-        $this->loader->addPath($path, $name);
+            $this->loader->addPath($path, $name);
+        } catch (\Twig_Error_Loader $e) {
+        }
     }
 
     /**
@@ -149,9 +156,12 @@ class TemplateEngine
 
     /**
      * Renders a template file.
-     * @param string $path
-     * @param array $vars
+     * @param string     $path
+     * @param array|null $vars
      * @return string
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      */
     public function render(string $path, ?array $vars = null): string
     {

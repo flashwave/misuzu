@@ -14,18 +14,31 @@ class Directory
      */
     private $path;
 
+    /**
+     * Directory separator used on this system, usually either \ for Windows or / for basically everything else.
+     */
     public const SEPARATOR = DIRECTORY_SEPARATOR;
 
+    /**
+     * Get the path of this directory.
+     * @return string
+     */
     public function getPath(): string
     {
         return $this->path;
     }
 
+    /**
+     * @return bool
+     */
     public function isReadable(): bool
     {
         return is_readable($this->getPath());
     }
 
+    /**
+     * @return bool
+     */
     public function isWritable(): bool
     {
         return is_writable($this->getPath());
@@ -71,8 +84,9 @@ class Directory
     /**
      * Creates a directory if it doesn't already exist.
      * @param string $path
-     * @throws DirectoryExistsException
      * @return Directory
+     * @throws DirectoryDoesNotExistException
+     * @throws DirectoryExistsException
      */
     public static function create(string $path): Directory
     {
@@ -80,12 +94,17 @@ class Directory
             throw new DirectoryExistsException;
         }
 
+        $on_windows = running_on_windows();
         $path = Directory::fixSlashes($path);
         $split_path = explode(self::SEPARATOR, $path);
-        $existing_path = running_on_windows() ? '' : self::SEPARATOR;
+        $existing_path = $on_windows ? '' : self::SEPARATOR;
 
         foreach ($split_path as $path_part) {
             $existing_path .= $path_part . self::SEPARATOR;
+
+            if ($on_windows && substr($path_part, 1, 2) === ':\\') {
+                continue;
+            }
 
             if (!Directory::exists($existing_path)) {
                 mkdir($existing_path);
@@ -95,6 +114,12 @@ class Directory
         return new static($path);
     }
 
+    /**
+     * @param string $path
+     * @return Directory
+     * @throws DirectoryDoesNotExistException
+     * @throws DirectoryExistsException
+     */
     public static function createOrOpen(string $path): Directory
     {
         if (static::exists($path)) {
@@ -107,8 +132,9 @@ class Directory
     /**
      * Deletes a directory, recursively if requested. Use $purge with care!
      * @param string $path
-     * @param bool $purge
+     * @param bool   $purge
      * @throws DirectoryDoesNotExistException
+     * @throws FileDoesNotExistException
      */
     public static function delete(string $path, bool $purge = false): void
     {
@@ -147,6 +173,7 @@ class Directory
     /**
      * Fixes operating system specific slashing.
      * @param string $path
+     * @param string $separator
      * @return string
      */
     public static function fixSlashes(string $path, string $separator = self::SEPARATOR): string

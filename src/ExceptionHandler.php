@@ -78,10 +78,10 @@ class ExceptionHandler
 
     /**
      * Converts regular errors to ErrorException instances.
-     * @param int $severity
+     * @param int    $severity
      * @param string $message
      * @param string $file
-     * @param int $line
+     * @param int    $line
      * @throws ErrorException
      */
     public static function error(int $severity, string $message, string $file, int $line): void
@@ -91,7 +91,7 @@ class ExceptionHandler
 
     /**
      * Shoots a POST request to the report URL.
-     * @todo Implement this (depends on Aitemu\Net\WebClient).
+     * @todo Implement this.
      * @param Throwable $exception
      */
     private static function report(Throwable $exception): void
@@ -112,7 +112,7 @@ class ExceptionHandler
         $is_http = false;//$exception instanceof HttpException;
 
         if (PHP_SAPI === 'cli' || (!$is_http && static::$debugMode)) {
-            if (PHP_SAPI !== 'cli') {
+            if (PHP_SAPI !== 'cli' && !headers_sent()) {
                 http_response_code(500);
                 header('Content-Type: text/plain');
             }

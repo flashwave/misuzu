@@ -3,7 +3,7 @@
 {% from '@mio/news/macros.twig' import news_preview %}
 
 {% set title = 'News' %}
-{% set canonical_url = '/news.php' ~ (page_id > 1 ? '?p=' ~ page_id : '') %}
+{% set canonical_url = '/news.php' ~ (posts_offset > 0 ? '?o=' ~ posts_offset : '') %}
 
 {% block news_content %}
     <div class="container news__container">
@@ -23,22 +23,18 @@
                     </div>
                     <div class="container__content">
                         {% for category in categories %}
-                            {% set post_count = category.posts.count %}
-
-                            {% if post_count > 0 %}
-                                <a class="news__list__item news__list__item--kvp" href="/news.php?c={{ category.category_id }}">
-                                    <div class="news__list__name">
-                                        {{ category.category_name }}
-                                    </div>
-                                    <div class="news__list__value">
-                                        {{ post_count }} post{{ post_count == 1 ? '' : 's' }}
-                                    </div>
-                                </a>
-                            {% endif %}
+                            <a class="news__list__item news__list__item--kvp" href="/news.php?c={{ category.category_id }}">
+                                <div class="news__list__name">
+                                    {{ category.category_name }}
+                                </div>
+                                <div class="news__list__value">
+                                    {{ category.count }} post{{ category.count == 1 ? '' : 's' }}
+                                </div>
+                            </a>
                         {% endfor %}
                     </div>
                 </div>
-                {{ paginate(posts, '', 'news__') }}
+                {{ paginate(posts_count, posts_take, posts_offset, '/news.php', 'news__') }}
             </div>
         </div>
     </div>
