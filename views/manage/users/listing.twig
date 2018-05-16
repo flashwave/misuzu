@@ -16,6 +16,6 @@
     </div>
 
     <div class="container container--center">
-        {# paginate(manage_users, '?v=listing') #}
+        {{ paginate(manage_users_count, manage_users_range, manage_users_offset, '?v=listing') }}
     </div>
 {% endblock %}

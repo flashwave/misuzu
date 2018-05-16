@@ -7,22 +7,38 @@ $db = Database::connection();
 $templating = $app->getTemplating();
 
 $is_post_request = $_SERVER['REQUEST_METHOD'] === 'POST';
+$queryQffset = (int)($_GET['o'] ?? 0);
 $page_id = (int)($_GET['p'] ?? 1);
 
 switch ($_GET['v'] ?? null) {
     case 'listing':
-        $manage_users = $db->query('
+        $usersTake = 32;
+
+        $manageUsersCount = $db->query('
+            SELECT COUNT(`user_id`)
+            FROM `msz_users`
+        ')->fetchColumn();
+
+        $getManageUsers = $db->prepare('
             SELECT
                 u.`user_id`, u.`username`,
                 COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `colour`
             FROM `msz_users` as u
             LEFT JOIN `msz_roles` as r
             ON u.`display_role` = r.`role_id`
-            LIMIT 0, 32
-        ')->fetchAll();
+            LIMIT :offset, :take
+        ');
+        $getManageUsers->bindValue('offset', $queryQffset);
+        $getManageUsers->bindValue('take', $usersTake);
+        $manageUsers = $getManageUsers->execute() ? $getManageUsers->fetchAll() : [];
 
         //$manage_users = UserV1::paginate(32, ['*'], 'p', $page_id);
-        $templating->vars(compact('manage_users'));
+        $templating->vars([
+            'manage_users' => $manageUsers,
+            'manage_users_count' => $manageUsersCount,
+            'manage_users_range' => $usersTake,
+            'manage_users_offset' => $queryQffset,
+        ]);
         echo $templating->render('@manage.users.listing');
         break;
 
@@ -59,7 +75,14 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'roles':
-        $manage_roles = $db->query('
+        $rolesTake = 10;
+
+        $manageRolesCount = $db->query('
+            SELECT COUNT(`role_id`)
+            FROM `msz_roles`
+        ')->fetchColumn();
+
+        $getManageRoles = $db->prepare('
             SELECT
                 `role_id`, `role_colour`, `role_name`,
                 (
@@ -68,11 +91,19 @@ switch ($_GET['v'] ?? null) {
                     WHERE ur.`role_id` = r.`role_id`
                 ) as `users`
             FROM `msz_roles` as r
-            LIMIT 0, 10
-        ')->fetchAll();
+            LIMIT :offset, :take
+        ');
+        $getManageRoles->bindValue('offset', $queryQffset);
+        $getManageRoles->bindValue('take', $rolesTake);
+        $manageRoles = $getManageRoles->execute() ? $getManageRoles->fetchAll() : [];
 
         //$manage_roles = Role::paginate(10, ['*'], 'p', $page_id);
-        $templating->vars(compact('manage_roles'));
+        $templating->vars([
+            'manage_roles' => $manageRoles,
+            'manage_roles_count' => $manageRolesCount,
+            'manage_roles_range' => $rolesTake,
+            'manage_roles_offset' => $queryQffset,
+        ]);
         echo $templating->render('@manage.users.roles');
         break;
 

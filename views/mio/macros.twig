@@ -16,7 +16,7 @@
     </ul>
 {% endmacro %}
 
-{% macro paginate(itemCount, itemRange, currentOffset, baseUrl, classPrefix, alwaysRender, useRanges, offsetParam) %}
+{% macro paginate(itemCount, itemRange, currentOffset, baseUrl, classPrefix, alwaysRender, useRanges, offsetParam, pageRange) %}
     {% set alwaysRender = alwaysRender|default(false) %}
 
     {% if alwaysRender or itemCount > itemRange %}
@@ -27,6 +27,7 @@
         {% set currentPage  = currentOffset // itemRange %}
         {% set useRanges    = useRanges|default(true) %}
         {% set offsetParam  = offsetParam|default(useRanges ? 'o' : 'p') %}
+        {% set pageRange    = pageRange|default(3) %}
 
         <ul class="{{ classPrefix }}pagination">
             {% if currentPage < 1 %}
@@ -57,8 +58,8 @@
 
             <li class="{{ classPrefix }}pagination__separator"></li>
 
-            {% set paginationStart = currentPage - 3 %}
-            {% set paginationStop = currentPage + 3 %}
+            {% set paginationStart = currentPage - pageRange %}
+            {% set paginationStop = currentPage + pageRange %}
 
             {% for i in paginationStart..paginationStop %}
                 {% if i >= 0 and i < pageCount %}

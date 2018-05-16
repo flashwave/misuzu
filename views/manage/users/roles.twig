@@ -18,6 +18,6 @@
     </div>
 
     <div class="container container--center">
-        {# paginate(manage_roles, '?v=roles') #}
+        {{ paginate(manage_roles_count, manage_roles_range, manage_roles_offset, '?v=roles') }}
     </div>
 {% endblock %}
