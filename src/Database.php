@@ -47,11 +47,16 @@ final class Database
 
     public static function getInstance(): Database
     {
-        if (!(self::$instance instanceof static)) {
+        if (!self::hasInstance()) {
             throw new \UnexpectedValueException('No instance of Database exists yet.');
         }
 
         return self::$instance;
+    }
+
+    public static function hasInstance(): bool
+    {
+        return self::$instance instanceof static;
     }
 
     public function __construct(

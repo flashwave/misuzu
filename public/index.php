@@ -1,5 +1,6 @@
 <?php
 use Misuzu\Database;
+use Misuzu\DatabaseMigrationManager;
 
 require_once __DIR__ . '/../misuzu.php';
 
@@ -19,6 +20,6 @@ $featuredNews = Database::connection()
         LIMIT 3
     ')->fetchAll();
 
-//var_dump(Database::connection()->query('SHOW SESSION STATUS LIKE "Questions"')->fetch());
+//var_dump(Database::connection()->query('SHOW SESSION STATUS LIKE "Questions"')->fetch()['Value']);
 
 echo $app->getTemplating()->render('home.landing', compact('featuredNews'));

@@ -190,11 +190,6 @@ function crop_image_centred(Imagick $image, int $target_width, int $target_heigh
     return $image->deconstructImages();
 }
 
-function create_pagination($paginator)
-{
-    return \Illuminate\Pagination\UrlWindow::make($paginator);
-}
-
 function running_on_windows(): bool
 {
     return starts_with(strtolower(PHP_OS), 'win');
@@ -204,11 +199,6 @@ function first_paragraph(string $text, string $delimiter = "\n"): string
 {
     $index = mb_strpos($text, $delimiter);
     return $index === false ? $text : mb_substr($text, 0, $index);
-}
-
-function is_valid_page(\Illuminate\Pagination\LengthAwarePaginator $paginator, int $attemptedPage): bool
-{
-    return $attemptedPage >= 1 && $attemptedPage <= $paginator->lastPage();
 }
 
 function pdo_prepare_array_update(array $keys, bool $useKeys = false, string $format = '%s'): string

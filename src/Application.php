@@ -26,6 +26,7 @@ class Application extends ApplicationBase
      */
     private const DATABASE_CONNECTIONS = [
         'mysql-main',
+        'mysql-test',
     ];
 
     /**
@@ -39,12 +40,6 @@ class Application extends ApplicationBase
      * @var int
      */
     private $currentUserId = 0;
-
-    /**
-     * Database instance.
-     * @var \Misuzu\DatabaseV1
-     */
-    private $databaseInstance = null;
 
     /**
      * ConfigManager instance.
@@ -216,45 +211,11 @@ class Application extends ApplicationBase
      */
     public function startDatabase(): void
     {
-        if (!is_null($this->databaseInstance)) {
+        if (Database::hasInstance()) {
             throw new UnexpectedValueException('Database module has already been started.');
         }
 
         new Database($this->configInstance, self::DATABASE_CONNECTIONS[0]);
-        $this->databaseInstance = new DatabaseV1($this->configInstance, self::DATABASE_CONNECTIONS[0]);
-        $this->loadDatabaseConnections();
-    }
-
-    /**
-     * Gets the active database instance.
-     * @return DatabaseV1
-     */
-    public function getDatabase(): DatabaseV1
-    {
-        if (is_null($this->databaseInstance)) {
-            throw new UnexpectedValueException('Internal database instance is null, did you run startDatabase yet?');
-        }
-
-        return $this->databaseInstance;
-    }
-
-    /**
-     * Sets up the required database connections defined in the DATABASE_CONNECTIONS constant.
-     */
-    private function loadDatabaseConnections(): void
-    {
-        $config = $this->getConfig();
-        $database = $this->getDatabase();
-
-        foreach (self::DATABASE_CONNECTIONS as $name) {
-            $section = "Database.{$name}";
-
-            if (!$config->contains($section)) {
-                throw new InvalidArgumentException("Database {$name} is not configured.");
-            }
-
-            $database->addConnectionFromConfig($section, $name);
-        }
     }
 
     /**

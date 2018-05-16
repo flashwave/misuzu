@@ -1,10 +1,14 @@
 <?php
 /**
  * Setup script
- * @todo Move this into a CLI commands system.
  */
 
 namespace Misuzu;
+
+if (PHP_SAPI !== 'cli') {
+    echo 'This can only be run from a CLI, if you can access this from a web browser your configuration is bad.';
+    exit;
+}
 
 use Misuzu\Database;
 
