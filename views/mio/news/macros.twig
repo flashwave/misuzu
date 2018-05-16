@@ -1,12 +1,12 @@
 {% macro news_preview(post) %}
     <div class="container news__preview">
-        <a href="/news.php?n={{ post.post_id }}" class="container__title container__title--link news__preview__title">
+        <a href="/news.php?p={{ post.post_id }}" class="container__title container__title--link news__preview__title">
             {{ post.post_title }}
         </a>
         <div class="container__content news__preview__content">
             <div class="news__preview__text">
                 {{ post.post_text|first_paragraph|raw }}
-                <p><b><i><a href="/news.php?n={{ post.post_id }}">View full post</a></i></b></p>
+                <p><b><i><a href="/news.php?p={{ post.post_id }}">View full post</a></i></b></p>
             </div>
             <div class="news__preview__info">
                 <div class="news__preview__date">

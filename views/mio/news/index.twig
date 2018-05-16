@@ -3,7 +3,7 @@
 {% from '@mio/news/macros.twig' import news_preview %}
 
 {% set title = 'News' %}
-{% set canonical_url = '/news.php' ~ (page_id > 1 ? '?p=' ~ page_id : '') %}
+{% set canonical_url = '/news.php' ~ (posts_offset > 0 ? '?o=' ~ posts_offset : '') %}
 
 {% block news_content %}
     <div class="container news__container">
@@ -34,7 +34,7 @@
                         {% endfor %}
                     </div>
                 </div>
-                {# paginate(posts, '', 'news__') #}
+                {{ paginate(posts_count, posts_take, posts_offset, '/news.php', 'news__') }}
             </div>
         </div>
     </div>

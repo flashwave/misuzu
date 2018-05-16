@@ -60,6 +60,6 @@
             </div>
         {% endfor %}
 
-        {# paginate(user_sessions, '?m=sessions', 'settings__') #}
+        {{ paginate(sessions_count, sessions_take, sessions_offset, '?m=sessions', 'settings__') }}
     </div>
 {% endblock %}

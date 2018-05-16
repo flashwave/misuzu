@@ -49,6 +49,6 @@
             </div>
         {% endfor %}
 
-        {# paginate(user_login_attempts, '?m=login-history', 'settings__') #}
+        {{ paginate(login_attempts_count, login_attempts_take, login_attempts_offset, '?m=login-history', 'settings__') }}
     </div>
 {% endblock %}

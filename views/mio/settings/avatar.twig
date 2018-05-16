@@ -15,10 +15,7 @@
             <div class="settings__avatar__forms">
                 <form class="settings__avatar__form" method="post" action="?m=avatar" enctype="multipart/form-data">
                     <input type="hidden" name="MAX_FILE_SIZE" value="{{ avatar_max_filesize }}">
-                    <label class="input__upload__label">
-                        <input accept="image/png,image/jpeg,image/gif" type="file" name="avatar" class="input__upload" id="avatar-selection">
-                        Pick file...
-                    </label>
+                    <input accept="image/png,image/jpeg,image/gif" type="file" name="avatar" id="avatar-selection">
                     <button class="input__button" name="upload" value="{{ csrf_token() }}">Upload</button>
                 </form>
 

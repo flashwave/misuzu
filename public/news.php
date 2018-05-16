@@ -7,8 +7,11 @@ $db = Database::connection();
 $templating = $app->getTemplating();
 
 $category_id = isset($_GET['c']) ? (int)$_GET['c'] : null;
-$post_id = isset($_GET['n']) ? (int)$_GET['n'] : null;
-$page_id = (int)($_GET['p'] ?? 1);
+$post_id = isset($_GET['p']) ? (int)$_GET['p'] : (isset($_GET['n']) ? (int)$_GET['n'] : null);
+$posts_offset = (int)($_GET['o'] ?? 0);
+$posts_take = 5;
+
+$templating->vars(compact('posts_offset', 'posts_take'));
 
 if ($post_id !== null) {
     $getPost = $db->prepare('
@@ -42,14 +45,18 @@ if ($post_id !== null) {
 if ($category_id !== null) {
     $getCategory = $db->prepare('
         SELECT
-            `category_id`, `category_name`, `category_description`
-        FROM `msz_news_categories`
-        WHERE `category_id` = :category_id
+            c.`category_id`, c.`category_name`, c.`category_description`,
+            COUNT(p.`post_id`) AS `posts_count`
+        FROM `msz_news_categories` as c
+        LEFT JOIN `msz_news_posts` as p
+        ON c.`category_id` = p.`category_id`
+        WHERE c.`category_id` = :category_id
+        GROUP BY c.`category_id`
     ');
     $getCategory->bindValue(':category_id', $category_id, PDO::PARAM_INT);
     $category = $getCategory->execute() ? $getCategory->fetch() : false;
 
-    if ($category === false) {
+    if ($category === false || $posts_offset < 0 || $posts_offset >= $category['posts_count']) {
         http_response_code(404);
         echo $templating->render('errors.404');
         return;
@@ -70,19 +77,12 @@ if ($category_id !== null) {
         ON u.`display_role` = r.`role_id`
         WHERE p.`category_id` = :category_id
         ORDER BY `created_at` DESC
-        LIMIT 0, 5
+        LIMIT :offset, :take
     ');
+    $getPosts->bindValue('offset', $posts_offset);
+    $getPosts->bindValue('take', $posts_take);
     $getPosts->bindValue('category_id', $category['category_id'], PDO::PARAM_INT);
     $posts = $getPosts->execute() ? $getPosts->fetchAll() : false;
-
-    //$posts = $category->posts()->orderBy('created_at', 'desc')->paginate(5, ['*'], 'p', $page_id);
-
-    //if (!is_valid_page($posts, $page_id)) {
-    if ($posts === false) {
-        http_response_code(404);
-        echo $templating->render('errors.404');
-        return;
-    }
 
     $getFeatured = $db->prepare('
         SELECT `post_id`, `post_title`
@@ -95,7 +95,7 @@ if ($category_id !== null) {
     $getFeatured->bindValue('category_id', $category['category_id'], PDO::PARAM_INT);
     $featured = $getFeatured->execute() ? $getFeatured->fetchAll() : [];
 
-    echo $templating->render('news.category', compact('category', 'posts', 'featured', 'page_id'));
+    echo $templating->render('news.category', compact('category', 'posts', 'featured'));
     return;
 }
 
@@ -111,6 +111,23 @@ $getCategories = $db->prepare('
     HAVING count > 0
 ');
 $categories = $getCategories->execute() ? $getCategories->fetchAll() : [];
+
+$postsCount = (int)$db->query('
+    SELECT COUNT(p.`post_id`) as `posts_count`
+    FROM `msz_news_posts` as p
+    LEFT JOIN `msz_news_categories` as c
+    ON p.`category_id` = c.`category_id`
+    WHERE p.`is_featured` = true
+    AND c.`is_hidden` = false
+')->fetchColumn();
+
+$templating->var('posts_count', $postsCount);
+
+if ($posts_offset < 0 || $posts_offset >= $postsCount) {
+    http_response_code(404);
+    echo $templating->render('errors.404');
+    return;
+}
 
 $getPosts = $db->prepare('
     SELECT
@@ -128,17 +145,16 @@ $getPosts = $db->prepare('
     WHERE p.`is_featured` = true
     AND c.`is_hidden` = false
     ORDER BY p.`created_at` DESC
-    LIMIT 0, 5
+    LIMIT :offset, :take
 ');
+$getPosts->bindValue('offset', $posts_offset);
+$getPosts->bindValue('take', $posts_take);
 $posts = $getPosts->execute() ? $getPosts->fetchAll() : [];
 
-//$posts = NewsPost::where('is_featured', true)->orderBy('created_at', 'desc')->paginate(5, ['*'], 'p', $page_id);
-
-//if (!is_valid_page($posts, $page_id)) {
-if ($posts === false) {
+if (!$posts) {
     http_response_code(404);
     echo $templating->render('errors.404');
     return;
 }
 
-echo $templating->render('news.index', compact('categories', 'posts', 'page_id'));
+echo $templating->render('news.index', compact('categories', 'posts'));

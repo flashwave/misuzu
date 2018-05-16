@@ -1,7 +1,7 @@
 {% extends '@mio/news/master.twig' %}
 
 {% set title = post.post_title ~ ' :: News' %}
-{% set canonical_url = '/news.php?n=' ~ post.post_id %}
+{% set canonical_url = '/news.php?p=' ~ post.post_id %}
 
 {% block news_content %}
     <div class="container news__post">

@@ -7,7 +7,8 @@ require_once __DIR__ . '/../misuzu.php';
 $db = Database::connection();
 $templating = $app->getTemplating();
 
-$page_id = (int)($_GET['p'] ?? 1);
+$query_offset = (int)($_GET['o'] ?? 0);
+$query_take = 15;
 
 if (!$app->hasActiveSession()) {
     http_response_code(403);
@@ -397,9 +398,13 @@ switch ($settings_mode) {
         break;
 
     case 'sessions':
-        /*$sessions = $settings_user->sessions()
-           ->orderBy('session_id', 'desc')
-           ->paginate(15, ['*'], 'p', $page_id);*/
+        $getSessionCount = $db->prepare('
+            SELECT COUNT(`session_id`)
+            FROM `msz_sessions`
+            WHERE `user_id` = :user_id
+        ');
+        $getSessionCount->bindValue('user_id', $app->getUserId());
+        $sessionCount = $getSessionCount->execute() ? $getSessionCount->fetchColumn() : 0;
 
         $getSessions = $db->prepare('
             SELECT
@@ -408,19 +413,30 @@ switch ($settings_mode) {
             FROM `msz_sessions`
             WHERE `user_id` = :user_id
             ORDER BY `session_id` DESC
-            LIMIT 0, 15
+            LIMIT :offset, :take
         ');
+        $getSessions->bindValue('offset', $query_offset);
+        $getSessions->bindValue('take', $query_take);
         $getSessions->bindValue('user_id', $app->getUserId());
         $sessions = $getSessions->execute() ? $getSessions->fetchAll() : [];
 
-        $templating->var('active_session_id', $app->getSessionId());
-        $templating->var('user_sessions', $sessions);
+        $templating->vars([
+            'active_session_id' => $app->getSessionId(),
+            'user_sessions' => $sessions,
+            'sessions_offset' => $query_offset,
+            'sessions_take' => $query_take,
+            'sessions_count' => $sessionCount,
+        ]);
         break;
 
     case 'login-history':
-        /*$login_attempts = $settings_user->loginAttempts()
-            ->orderBy('attempt_id', 'desc')
-            ->paginate(15, ['*'], 'p', $page_id);*/
+        $getLoginAttemptsCount = $db->prepare('
+            SELECT COUNT(`attempt_id`)
+            FROM `msz_login_attempts`
+            WHERE `user_id` = :user_id
+        ');
+        $getLoginAttemptsCount->bindValue('user_id', $app->getUserId());
+        $loginAttemptsCount = $getLoginAttemptsCount->execute() ? $getLoginAttemptsCount->fetchColumn() : 0;
 
         $getLoginAttempts = $db->prepare('
             SELECT
@@ -429,12 +445,19 @@ switch ($settings_mode) {
             FROM `msz_login_attempts`
             WHERE `user_id` = :user_id
             ORDER BY `attempt_id` DESC
-            LIMIT 0, 15
+            LIMIT :offset, :take
         ');
+        $getLoginAttempts->bindValue('offset', $query_offset);
+        $getLoginAttempts->bindValue('take', $query_take);
         $getLoginAttempts->bindValue('user_id', $app->getUserId());
         $loginAttempts = $getLoginAttempts->execute() ? $getLoginAttempts->fetchAll() : [];
 
-        $templating->var('user_login_attempts', $loginAttempts);
+        $templating->vars([
+            'user_login_attempts' => $loginAttempts,
+            'login_attempts_offset' => $query_offset,
+            'login_attempts_take' => $query_take,
+            'login_attempts_count' => $loginAttemptsCount,
+        ]);
         break;
 }
 

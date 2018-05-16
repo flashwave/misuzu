@@ -13,11 +13,17 @@
 
     &__option {
         background: #9475b2;
+        color: #306;
         height: 20px;
         width: 20px;
 
         &:not(:last-child){
             margin-right: 1px;
+        }
+
+        &--disabled {
+            color: #383838;
+            background: #777;
         }
 
         @media (max-width: @mio-news-mobile) {
@@ -34,10 +40,12 @@
         height: 100%;
         text-align: center;
         text-decoration: none;
-        color: #306;
+        color: inherit;
 
         &--prev,
         &--next,
+        &--first,
+        &--last,
         &--active,
         &:hover {
             font-weight: bold;
