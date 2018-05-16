@@ -25,17 +25,17 @@
                 </div>
 
                 <div class="header__menu">
-                    {% if app.session is not null %}
+                    {% if app.hasActiveSession %}
                         <div class="container header__user">
-                            <div class="container__title">Hey, {{ app.session.user.username }}!</div>
+                            <div class="container__title">Hey, {{ current_user.username }}!</div>
                             <div class="container__content header__user__content">
-                                <a href="/settings.php?m=avatar" class="avatar header__user__avatar" style="background-image:url('/profile.php?u={{ app.session.user.user_id }}&amp;m=avatar');"></a>
+                                <a href="/settings.php?m=avatar" class="avatar header__user__avatar" style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');"></a>
 
                                 <div class="header__user__links__container">
                                     <ul class="header__user__links">
-                                        <li class="header__user__option"><a class="header__user__link" href="/profile.php?u={{ app.session.user.user_id }}">Profile</a></li>
+                                        <li class="header__user__option"><a class="header__user__link" href="/profile.php?u={{ current_user.user_id }}">Profile</a></li>
                                         <li class="header__user__option"><a class="header__user__link" href="/settings.php">Settings</a></li>
-                                        {% if app.session.user.user_id == 1 %}
+                                        {% if current_user.user_id == 1 %}
                                             <li class="header__user__option"><a class="header__user__link" href="{{ manage_link|default('/manage/index.php') }}">Manage</a></li>
                                         {% endif %}
                                         <li class="header__user__option"><a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Logout</a></li>

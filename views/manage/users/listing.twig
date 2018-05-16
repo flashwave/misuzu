@@ -4,7 +4,7 @@
 {% block content %}
     <div class="container listing user-listing">
         {% for user in manage_users %}
-            <a href="?v=view&amp;u={{ user.user_id }}" class="listing__entry user-listing__entry"{% if not user.displayColour.inherit %} style="border-color: {{ user.displayColour }}"{% endif %}>
+            <a href="?v=view&amp;u={{ user.user_id }}" class="listing__entry user-listing__entry"{% if not user.colour|colour_get_inherit %} style="border-color: {{ user.colour|colour_get_css }}"{% endif %}>
                 <div class="listing__entry__content user-listing__entry__content">
                     <div class="listing__entry__column user-listing__entry__column user-listing__entry__column--username">
                         {{ user.username }}
@@ -16,6 +16,6 @@
     </div>
 
     <div class="container container--center">
-        {{ paginate(manage_users, '?v=listing') }}
+        {{ paginate(manage_users_count, manage_users_range, manage_users_offset, '?v=listing') }}
     </div>
 {% endblock %}

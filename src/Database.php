@@ -1,45 +1,19 @@
 <?php
 namespace Misuzu;
 
-use Illuminate\Database\Capsule\Manager as LaravelDatabaseManager;
 use Misuzu\Config\ConfigManager;
+use PDO;
 use InvalidArgumentException;
 
-/**
- * Class Database
- * @package Misuzu
- */
-class Database extends LaravelDatabaseManager
+final class Database
 {
     /**
-     * @var ConfigManager
+     * Array of supported abstraction layers.
      */
-    private $configManager;
-
-    /**
-     * Array of supported abstraction layers, primarily depends on what Illuminate\Database supports in reality.
-     */
-    private const SUPPORTED_DB_ALS = [
+    private const SUPPORTED = [
         'mysql',
         'sqlite',
-        'pgsql',
-        'sqlsrv',
     ];
-
-    /**
-     * The default port for MySQL.
-     */
-    private const DEFAULT_PORT_MYSQL = 3306;
-
-    /**
-     * The default port for PostgreSQL.
-     */
-    private const DEFAULT_PORT_PGSQL = 5432;
-
-    /**
-     * Default port for Microsoft SQL Server.
-     */
-    private const DEFAULT_PORT_MSSQL = 1433;
 
     /**
      * Default hostname.
@@ -47,128 +21,137 @@ class Database extends LaravelDatabaseManager
     private const DEFAULT_HOST = '127.0.0.1';
 
     /**
-     * Database constructor.
-     * @param ConfigManager $config
-     * @param string        $default
-     * @param bool          $startEloquent
-     * @param bool          $setAsGlobal
+     * The default port for MySQL.
      */
-    public function __construct(
-        ConfigManager $config,
-        string $default = 'default',
-        bool $startEloquent = true,
-        bool $setAsGlobal = true
-    ) {
-        $this->configManager = $config;
-        parent::__construct();
-
-        $this->container['config']['database.default'] = $default;
-
-        if ($startEloquent) {
-            $this->bootEloquent();
-        }
-
-        if ($setAsGlobal) {
-            $this->setAsGlobal();
-        }
-    }
+    private const DEFAULT_PORT_MYSQL = 3306;
 
     /**
-     * Creates a new connection using a ConfigManager instance.
-     * @param string $section
-     * @param string $name
+     * @var Database
      */
-    public function addConnectionFromConfig(string $section, string $name = 'default'): void
+    private static $instance;
+
+    /**
+     * @var PDO[]
+     */
+    private $connections = [];
+
+    /**
+     * @var ConfigManager
+     */
+    private $configManager;
+
+    /**
+     * @var string
+     */
+    private $default;
+
+    public static function getInstance(): Database
     {
+        if (!self::hasInstance()) {
+            throw new \UnexpectedValueException('No instance of Database exists yet.');
+        }
+
+        return self::$instance;
+    }
+
+    public static function hasInstance(): bool
+    {
+        return self::$instance instanceof static;
+    }
+
+    public function __construct(
+        ConfigManager $config,
+        string $default = 'default'
+    ) {
+        if (self::$instance instanceof static) {
+            throw new \UnexpectedValueException('Only one instance of Database may exist.');
+        }
+
+        self::$instance = $this;
+        $this->default = $default;
+        $this->configManager = $config;
+    }
+
+    public static function connection(?string $name = null): PDO
+    {
+        return self::getInstance()->getConnection($name);
+    }
+
+    public function getConnection(?string $name = null): PDO
+    {
+        $name = $name ?? $this->default;
+        return $this->connections[$name] ?? $this->addConnection($name);
+    }
+
+    public function addConnection(string $name): PDO
+    {
+        $section = "Database.{$name}";
+
         if (!$this->configManager->contains($section, 'driver')) {
             throw new InvalidArgumentException('Config section not found!');
         }
 
         $driver = $this->configManager->get($section, 'driver');
 
-        if (!in_array($driver, self::SUPPORTED_DB_ALS)) {
+        if (!in_array($driver, self::SUPPORTED)) {
             throw new InvalidArgumentException('Unsupported driver.');
         }
 
-        $args = [
-            'driver' => $driver,
-            'database' => $this->configManager->get($section, 'database', 'string', 'misuzu'),
-            'prefix' => $this->configManager->contains($section, 'prefix')
-                ? $this->configManager->get($section, 'prefix', 'string')
-                : '',
+        $dsn = $driver . ':';
+        $options = [
+            PDO::ATTR_CASE => PDO::CASE_NATURAL,
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
+            PDO::ATTR_STRINGIFY_FETCHES => false,
+            PDO::ATTR_EMULATE_PREPARES => false,
         ];
 
         switch ($driver) {
+            case 'sqlite':
+                if ($this->configManager->get($section, 'memory', 'bool', false)) {
+                    $dsn .= ':memory:';
+                } else {
+                    $databasePath = realpath(
+                        $this->configManager->get($section, 'database', 'string', __DIR__ . '/../store/misuzu.db')
+                    );
+
+                    if ($databasePath === false) {
+                        throw new \UnexpectedValueException("Database does not exist.");
+                    }
+
+                    $dsn .= $databasePath . ';';
+                }
+                break;
+
             case 'mysql':
                 $is_unix_socket = $this->configManager->contains($section, 'unix_socket');
 
-                $args['host'] = $is_unix_socket
-                    ? ''
-                    : $this->configManager->get($section, 'host', 'string', self::DEFAULT_HOST);
+                if ($is_unix_socket) {
+                    $dsn .= 'unix_socket=' . $this->configManager->get($section, 'unix_socket', 'string') . ';';
+                } else {
+                    $dsn .= 'host=' . $this->configManager->get($section, 'host', 'string', self::DEFAULT_HOST) . ';';
+                    $dsn .= 'port=' . $this->configManager->get($section, 'port', 'int', self::DEFAULT_PORT_MYSQL) . ';';
+                }
 
-                $args['port'] = $is_unix_socket
-                    ? self::DEFAULT_PORT_MYSQL
-                    : $this->configManager->get($section, 'port', 'int', self::DEFAULT_PORT_MYSQL);
+                $dsn .= 'charset=' . (
+                    $this->configManager->contains($section, 'charset')
+                        ? $this->configManager->get($section, 'charset', 'string')
+                        : 'utf8mb4'
+                ) . ';';
 
-                $args['username'] = $this->configManager->get($section, 'username', 'string');
-                $args['password'] = $this->configManager->get($section, 'password', 'string');
-                $args['unix_socket'] = $is_unix_socket
-                    ? $this->configManager->get($section, 'unix_socket', 'string')
-                    : '';
+                $dsn .= 'dbname=' . $this->configManager->get($section, 'database', 'string', 'misuzu') . ';';
 
-                // these should probably be locked to these types
-                $args['charset'] = $this->configManager->contains($section, 'charset')
-                    ? $this->configManager->get($section, 'charset', 'string')
-                    : 'utf8mb4';
-
-                $args['collation'] = $this->configManager->contains($section, 'collation')
-                    ? $this->configManager->get($section, 'collation', 'string')
-                    : 'utf8mb4_bin';
-
-                $args['strict'] = true;
-                $args['engine'] = null;
-                break;
-
-            case 'pgsql':
-                $is_unix_socket = $this->configManager->contains($section, 'unix_socket');
-
-                $args['host'] = $is_unix_socket
-                    ? ''
-                    : $this->configManager->get($section, 'host', 'string', self::DEFAULT_HOST);
-
-                $args['port'] = $is_unix_socket
-                    ? self::DEFAULT_PORT_PGSQL
-                    : $this->configManager->get($section, 'port', 'int', self::DEFAULT_PORT_PGSQL);
-
-                $args['username'] = $this->configManager->get($section, 'username', 'string');
-                $args['password'] = $this->configManager->get($section, 'password', 'string');
-
-                $args['unix_socket'] = $is_unix_socket
-                    ? $this->configManager->get($section, 'unix_socket', 'string')
-                    : '';
-
-                // these should probably be locked to these types
-                $args['charset'] = $this->configManager->contains($section, 'charset')
-                    ? $this->configManager->get($section, 'charset', 'string')
-                    : 'utf8';
-
-                $args['schema'] = 'public';
-                $args['sslmode'] = 'prefer';
-                break;
-
-            case 'sqlsrv':
-                $args['host'] = $this->configManager->get($section, 'host', 'string', self::DEFAULT_HOST);
-                $args['port'] = $this->configManager->get($section, 'port', 'int', self::DEFAULT_PORT_MSSQL);
-                $args['username'] = $this->configManager->get($section, 'username', 'string');
-                $args['password'] = $this->configManager->get($section, 'password', 'string');
-
-                // these should probably be locked to these types
-                $args['charset'] = $this->configManager->contains($section, 'charset')
-                    ? $this->configManager->get($section, 'charset', 'string')
-                    : 'utf8';
+                $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET SESSION sql_mode='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'";
                 break;
         }
 
-        $this->addConnection($args, $name);
+        $connection = new PDO(
+            $dsn,
+            $this->configManager->get($section, 'username', 'string', null),
+            $this->configManager->get($section, 'password', 'string', null),
+            $options
+        );
+
+        return $this->connections[$name] = $connection;
     }
 }

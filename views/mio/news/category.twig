@@ -3,7 +3,7 @@
 {% from '@mio/news/macros.twig' import news_preview %}
 
 {% set title = category.category_name ~ ' :: News' %}
-{% set canonical_url = '/news.php?c=' ~ category.category_id ~ (page_id > 1 ? '&p=' ~ page_id : '') %}
+{% set canonical_url = '/news.php?c=' ~ category.category_id ~ (posts_offset > 0 ? '&o=' ~ posts_offset : '') %}
 
 {% block news_content %}
     <div class="container news__container">
@@ -34,12 +34,12 @@
                         </div>
                         <div class="container__content">
                             {% for featured_post in featured %}
-                                <a class="news__list__item" href="/news.php?n={{ featured_post.post_id }}">{{ featured_post.post_title }}</a>
+                                <a class="news__list__item" href="/news.php?p={{ featured_post.post_id }}">{{ featured_post.post_title }}</a>
                             {% endfor %}
                         </div>
                     </div>
                 {% endif %}
-                {{ paginate(posts, '?c=' ~ category.category_id, 'news__') }}
+                {{ paginate(category.posts_count, posts_take, posts_offset, '/news.php?c=' ~ category.category_id, 'news__') }}
             </div>
         </div>
     </div>

@@ -15,10 +15,7 @@
             <div class="settings__avatar__forms">
                 <form class="settings__avatar__form" method="post" action="?m=avatar" enctype="multipart/form-data">
                     <input type="hidden" name="MAX_FILE_SIZE" value="{{ avatar_max_filesize }}">
-                    <label class="input__upload__label">
-                        <input accept="image/png,image/jpeg,image/gif" type="file" name="avatar" class="input__upload" id="avatar-selection">
-                        Pick file...
-                    </label>
+                    <input accept="image/png,image/jpeg,image/gif" type="file" name="avatar" id="avatar-selection">
                     <button class="input__button" name="upload" value="{{ csrf_token() }}">Upload</button>
                 </form>
 
@@ -28,12 +25,12 @@
             </div>
         </div>
         <div class="settings__avatar__preview__container">
-            <div class="avatar settings__avatar__preview" id="avatar-preview" style="background-image:url('/profile.php?u={{ settings_user.user_id }}&amp;m=avatar')"></div>
+            <div class="avatar settings__avatar__preview" id="avatar-preview" style="background-image:url('/profile.php?u={{ avatar_user_id }}&amp;m=avatar')"></div>
         </div>
     </div>
     <script>
         function updateAvatarPreview(url, element) {
-            url = url || "/profile.php?u={{ settings_user.user_id }}&m=avatar";
+            url = url || "/profile.php?u={{ avatar_user_id }}&m=avatar";
             element = element || document.getElementById('avatar-preview');
             element.style.backgroundImage = 'url(\'' + url + '\')';
         }

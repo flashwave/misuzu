@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Carbon\Carbon;
 use Misuzu\Config\ConfigManager;
 use Misuzu\IO\Directory;
 use Misuzu\IO\DirectoryDoesNotExistException;
@@ -28,16 +29,16 @@ class Application extends ApplicationBase
     ];
 
     /**
-     * Session instance.
-     * @var \Misuzu\Users\Session
+     * Active Session ID.
+     * @var int
      */
-    private $sessionInstance = null;
+    private $currentSessionId = 0;
 
     /**
-     * Database instance.
-     * @var \Misuzu\Database
+     * Active User ID.
+     * @var int
      */
-    private $databaseInstance = null;
+    private $currentUserId = 0;
 
     /**
      * ConfigManager instance.
@@ -102,7 +103,7 @@ class Application extends ApplicationBase
      */
     public function getPath(string $path): string
     {
-        if (!starts_with($path, '/')) {
+        if (!starts_with($path, '/') && substr($path, 1, 2) !== ':\\') {
             $path = __DIR__ . '/../' . $path;
         }
 
@@ -155,40 +156,53 @@ class Application extends ApplicationBase
 
     /**
      * Starts a user session.
-     * @param int    $user_id
-     * @param string $session_key
+     * @param int $userId
+     * @param string $sessionKey
      */
-    public function startSession(int $user_id, string $session_key): void
+    public function startSession(int $userId, string $sessionKey): void
     {
-        $session = Session::where('session_key', $session_key)
-            ->where('user_id', $user_id)
-            ->first();
+        $dbc = Database::connection();
 
-        if ($session !== null) {
-            if ($session->hasExpired()) {
-                $session->delete();
+        $findSession = $dbc->prepare('
+            SELECT `session_id`, `expires_on`
+            FROM `msz_sessions`
+            WHERE `user_id` = :user_id
+            AND `session_key` = :session_key
+        ');
+        $findSession->bindValue('user_id', $userId);
+        $findSession->bindValue('session_key', $sessionKey);
+        $sessionData = $findSession->execute() ? $findSession->fetch() : false;
+
+        if ($sessionData) {
+            $expiresOn = new Carbon($sessionData['expires_on']);
+
+            if ($expiresOn->isPast()) {
+                $deleteSession = $dbc->prepare('
+                    DELETE FROM `msz_sessions`
+                    WHERE `session_id` = :session_id
+                ');
+                $deleteSession->bindValue('session_id', $sessionData['session_id']);
+                $deleteSession->execute();
             } else {
-                $this->setSession($session);
+                $this->currentSessionId = (int)$sessionData['session_id'];
+                $this->currentUserId = $userId;
             }
         }
     }
 
-    /**
-     * Gets the current session instance.
-     * @return Session|null
-     */
-    public function getSession(): ?Session
+    public function hasActiveSession(): bool
     {
-        return $this->sessionInstance;
+        return $this->getSessionId() > 0;
     }
 
-    /**
-     * Registers a session.
-     * @param Session|null $sessionInstance
-     */
-    public function setSession(?Session $sessionInstance): void
+    public function getSessionId(): int
     {
-        $this->sessionInstance = $sessionInstance;
+        return $this->currentSessionId;
+    }
+
+    public function getUserId(): int
+    {
+        return $this->currentUserId;
     }
 
     /**
@@ -196,44 +210,11 @@ class Application extends ApplicationBase
      */
     public function startDatabase(): void
     {
-        if (!is_null($this->databaseInstance)) {
+        if (Database::hasInstance()) {
             throw new UnexpectedValueException('Database module has already been started.');
         }
 
-        $this->databaseInstance = new Database($this->configInstance, self::DATABASE_CONNECTIONS[0]);
-        $this->loadDatabaseConnections();
-    }
-
-    /**
-     * Gets the active database instance.
-     * @return Database
-     */
-    public function getDatabase(): Database
-    {
-        if (is_null($this->databaseInstance)) {
-            throw new UnexpectedValueException('Internal database instance is null, did you run startDatabase yet?');
-        }
-
-        return $this->databaseInstance;
-    }
-
-    /**
-     * Sets up the required database connections defined in the DATABASE_CONNECTIONS constant.
-     */
-    private function loadDatabaseConnections(): void
-    {
-        $config = $this->getConfig();
-        $database = $this->getDatabase();
-
-        foreach (self::DATABASE_CONNECTIONS as $name) {
-            $section = "Database.{$name}";
-
-            if (!$config->contains($section)) {
-                throw new InvalidArgumentException("Database {$name} is not configured.");
-            }
-
-            $database->addConnectionFromConfig($section, $name);
-        }
+        new Database($this->configInstance, self::DATABASE_CONNECTIONS[0]);
     }
 
     /**
@@ -259,8 +240,12 @@ class Application extends ApplicationBase
         $this->templatingInstance->addFilter('byte_symbol');
         $this->templatingInstance->addFilter('country_name', 'get_country_name');
         $this->templatingInstance->addFilter('flip', 'array_flip');
-        $this->templatingInstance->addFilter('create_pagination');
         $this->templatingInstance->addFilter('first_paragraph');
+        $this->templatingInstance->addFilter('colour_get_css');
+        $this->templatingInstance->addFilter('colour_get_inherit');
+        $this->templatingInstance->addFilter('colour_get_red');
+        $this->templatingInstance->addFilter('colour_get_green');
+        $this->templatingInstance->addFilter('colour_get_blue');
 
         $this->templatingInstance->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $this->templatingInstance->addFunction('git_branch', [Application::class, 'gitBranch']);

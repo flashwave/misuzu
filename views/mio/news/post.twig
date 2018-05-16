@@ -1,32 +1,32 @@
 {% extends '@mio/news/master.twig' %}
 
 {% set title = post.post_title ~ ' :: News' %}
-{% set canonical_url = '/news.php?n=' ~ post.post_id %}
+{% set canonical_url = '/news.php?p=' ~ post.post_id %}
 
 {% block news_content %}
     <div class="container news__post">
         <div class="container__title">
-            <a href="/news.php?c={{ post.category.category_id }}" class="container__title__link">{{ post.category.category_name }}</a> »
+            <a href="/news.php?c={{ post.category_id }}" class="container__title__link">{{ post.category_name }}</a> »
             {{ post.post_title }}
         </div>
 
         <div class="container__content news__post__content">
             <div class="news__post__text">
-                {{ post.html|raw }}
+                {{ post.post_text|raw }}
             </div>
 
             <div class="news__sidebar news__post__details">
-                <a class="news__post__detail news__post__user" href="/profile.php?u={{ post.user.user_id }}">
-                    <div class="news__post__username">{{ post.user.username }}</div>
-                    <div class="avatar news__post__avatar" style="background-image:url('/profile.php?u={{ post.user.user_id }}&amp;m=avatar');"></div>
+                <a class="news__post__detail news__post__user" href="/profile.php?u={{ post.user_id }}">
+                    <div class="news__post__username" style="color:{{ post.display_colour|colour_get_css }}">{{ post.username }}</div>
+                    <div class="avatar news__post__avatar" style="background-image:url('/profile.php?u={{ post.user_id }}&amp;m=avatar');"></div>
                 </a>
 
-                <a class="news__post__detail news__post__info news__post__info--link" href="/news.php?c={{ post.category.category_id }}">
+                <a class="news__post__detail news__post__info news__post__info--link" href="/news.php?c={{ post.category_id }}">
                     <div class="news__post__info__name">
                         Category
                     </div>
                     <div class="news__post__info__value">
-                        {{ post.category.category_name }}
+                        {{ post.category_name }}
                     </div>
                 </a>
 

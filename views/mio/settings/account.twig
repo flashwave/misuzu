@@ -12,7 +12,7 @@
                         {{ props.name }}
                     </div>
                     <div class="settings__account__input__value">
-                        <input type="{{ props.type|default('text') }}" name="profile[{{ name }}]" value="{{ settings_user['user_' ~ name] }}" class="input__text settings__account__input__value__text">
+                        <input type="{{ props.type|default('text') }}" name="profile[{{ name }}]" value="{{ settings_profile_values['user_' ~ name] }}" class="input__text settings__account__input__value__text">
                     </div>
                 </label>
                 {% endfor %}
