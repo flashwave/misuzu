@@ -1,0 +1,27 @@
+{% extends '@mio/forum/master.twig' %}
+{% from '@mio/macros.twig' import navigation %}
+{% from '@mio/forum/macros.twig' import forum_category_listing %}
+
+{% set title = 'Forum Listing' %}
+{% set canonical_url = '/forum/' %}
+
+{% block content %}
+    {% for category in forum_categories %}
+        {% if category.forum_children > 0 %}
+            {{ forum_category_listing(category.forum_subforums, category.forum_name) }}
+        {% endif %}
+    {% endfor %}
+
+    <div class="container">
+        <div class="container__title">Actions</div>
+        <div class="container__content">
+            <button class="input__button">Mark All Read</button>
+            <button class="input__button">Unanswered Posts</button>
+            <button class="input__button">New Posts</button>
+            <button class="input__button">Your Posts</button>
+        </div>
+    </div>
+
+    {{ navigation(mio_navigation, '/forum/') }}
+{% endblock %}
+

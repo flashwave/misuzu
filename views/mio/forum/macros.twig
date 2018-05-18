@@ -1,0 +1,115 @@
+{% macro forum_category_listing(forums, title) %}
+    {% from _self import forum_category_entry %}
+
+    <div class="container forum__listing">
+        <div class="container__title">{{ title }}</div>
+        <div class="container__content forum__listing__forums">
+            {% if forums|length > 0 %}
+                {% for forum in forums %}
+                    {{ forum_category_entry(forum) }}
+                {% endfor %}
+            {% else %}
+                <div class="forum__listing__none">
+                    This category is empty.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro forum_category_entry(forum, forum_icon) %}
+    {% set forum_icon = forum_icon|default(null) %}
+
+    {% if forum_icon is null %}
+        {% if forum.forum_archived is defined and forum.forum_archived %}
+            {% set forum_icon = 'https://static.flash.moe/images/forum-icons/default-archived-%s.png' %}
+        {% elseif forum.forum_type is defined %}
+            {% if forum.forum_type == 2 %}
+                {% set forum_icon = 'https://static.flash.moe/images/forum-icons/default-link-%s.png' %}
+            {% elseif forum.forum_type == 1 %}
+                {% set forum_icon = 'https://static.flash.moe/images/forum-icons/default-category-%s.png' %}
+            {% endif %}
+        {% endif %}
+
+        {% set forum_icon = forum_icon|default('https://static.flash.moe/images/forum-icons/default-forum-%s.png') %}
+    {% endif %}
+
+    <div class="forum__listing__entry">
+        <div class="forum__listing__entry__icon">
+            <img src="{{ forum_icon|format('read') }}" alt="read">
+        </div>
+
+        <div class="forum__listing__entry__info">
+            <a href="/forum/forum.php?f={{ forum.forum_id }}" class="forum__listing__entry__title">{{ forum.forum_name }}</a>
+            <div class="forum__listing__entry__description">
+                {{ forum.forum_description|nl2br }}
+                {% if forum.forum_subforums is defined and forum.forum_subforums|length > 0 %}
+                    <br>
+                    {% set listing = [] %}
+                    {% for subforum in forum.forum_subforums %}
+                        {% set listing = listing|merge(['<a href="/forum/forum.php?f='|raw ~ subforum.forum_id ~ '">'|raw ~ subforum.forum_name ~ '</a>'|raw]) %}
+                    {% endfor %}
+                    {{ listing|join(', ')|raw }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="forum__listing__entry__stats">
+            <div class="forum__listing__entry__topics">{{ forum.forum_topic_count|number_format }}</div>
+            <div class="forum__listing__entry__posts">{{ forum.forum_post_count|number_format }}</div>
+        </div>
+
+        <div class="forum__listing__entry__activity">
+            <div class="forum__listing__entry__activity__none">
+                There are no posts in this forum yet.
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro forum_topic_listing(topics) %}
+    {% from _self import forum_topic_entry %}
+
+    <div class="container forum__topics">
+        <div class="container__title">Topics</div>
+        <div class="container__content forum__topics__listing">
+            {% if topics|length > 0 %}
+                {% for topic in topics %}
+                    {{ forum_topic_entry(topic) }}
+                {% endfor %}
+            {% else %}
+                <div class="forum__topics__none">
+                    There are no topics in this forum.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro forum_topic_entry(topic) %}
+    <div class="forum__topics__entry">
+        <div class="forum__topics__icon">
+            eek
+        </div>
+
+        <div class="forum__topics__info">
+            <div class="forum__topics__info__title">
+                <a href="/forum/topic.php?t={{ topic.topic_id }}">{{ topic.topic_title }}</a>
+            </div>
+            {% if topic.author_id is not null %}
+                <div class="forum__topics__info__author">
+                    by <a href="/profile.php?u={{ topic.author_id }}" style="color:{{ topic.author_colour|colour_get_css }}">{{ topic.author_name }}</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="forum__topics__stats">
+            <div class="forum__topics__stat forum__topics__stat--posts">{{ topic.topic_post_count }}</div>
+            <div class="forum__topics__stat forum__topics__stat--views">{{ topic.topic_view_count }}</div>
+        </div>
+
+        <div class="forum__topics__last-reply">
+            last post data required here, display "no replies" when only one post is present
+        </div>
+    </div>
+{% endmacro %}

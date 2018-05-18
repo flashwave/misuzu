@@ -2,7 +2,6 @@
 namespace Misuzu\DatabaseMigrations\InitialStructure;
 
 use PDO;
-use Misuzu\Database;
 
 function migrate_up(PDO $conn): void
 {

@@ -4,12 +4,13 @@
 {% endspaceless %}
 {% endmacro %}
 
-{% macro navigation(links, current, top, fmt) %}
+{% macro navigation(links, current, top, fmt, align) %}
     {% set top = top|default(false) == true %}
+    {% set align = align|default('centre') %}
     {% set current = current|default(null) %}
     {% set fmt = fmt|default('%s') %}
 
-    <ul class="navigation{% if top %} navigation--top{% endif %}">
+    <ul class="navigation{% if top %} navigation--top{% endif %}{% if align != 'centre' %} navigation--{{ align }}{% endif %}">
     {% for name, url in links %}
         <li class="navigation__option{% if url == current or name == current %} navigation__option--selected{% endif %}"><a href="{{ fmt|format(url) }}" class="navigation__link">{{ name }}</a></li>
     {% endfor %}
