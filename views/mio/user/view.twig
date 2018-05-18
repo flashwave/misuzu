@@ -11,54 +11,54 @@
 {% set profile_fields = {
     "twitter": {
         "title": "Twitter",
-        "value": profile.user_twitter,
+        "value": profile.user_twitter|escape,
         "link": "https://twitter.com/%s",
         "format": "@%s",
     },
     "osu": {
         "title": "osu!",
-        "value": profile.user_osu,
+        "value": profile.user_osu|escape,
         "link": "https://osu.ppy.sh/users/%s",
     },
     "website": {
         "title": "Website",
-        "value": profile.user_website,
+        "value": profile.user_website|escape,
         "link": "%s",
     },
     "youtube": {
         "title": "Youtube",
-        "value": profile.user_youtube,
+        "value": profile.user_youtube|escape,
         "link": "https://youtube.com/" ~ (youtube_is_channel_id ? "channel/" : '') ~ "%s",
         "format": youtube_is_channel_id ? "Channel" : "%s",
     },
     "steam": {
         "title": "Steam",
-        "value": profile.user_steam,
+        "value": profile.user_steam|escape,
         "link": "https://steamcommunity.com/id/%s",
     },
     "twitchtv": {
         "title": "Twitch.tv",
-        "value": profile.user_twitchtv,
+        "value": profile.user_twitchtv|escape,
         "link": "https://twitch.tv/%s",
     },
     "lastfm": {
         "title": "Last.fm",
-        "value": profile.user_lastfm,
+        "value": profile.user_lastfm|escape,
         "link": "http://last.fm/user/%s",
     },
     "github": {
         "title": "Github",
-        "value": profile.user_github,
+        "value": profile.user_github|escape,
         "link": "https://github.com/%s",
     },
     "skype": {
         "title": "Skype",
-        "value": profile.user_skype,
+        "value": profile.user_skype|escape,
         "link": "skype:%s?userinfo",
     },
     "discord": {
         "title": "Discord",
-        "value": profile.user_discord,
+        "value": profile.user_discord|escape,
     },
 } %}
 
