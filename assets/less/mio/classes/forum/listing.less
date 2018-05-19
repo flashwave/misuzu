@@ -23,6 +23,7 @@
             text-align: center;
             flex-grow: 0;
             flex-shrink: 0;
+            align-self: flex-start;
         }
 
         &__info {
@@ -42,9 +43,19 @@
             }
         }
 
-        &__description {
+        &__description,
+        &__subforums {
             font-size: .8em;
             line-height: 1.3em;
+        }
+
+        &__subforum {
+            content: inherit;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
         }
 
         &__stats {

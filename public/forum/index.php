@@ -3,6 +3,8 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../../misuzu.php';
 
+$db = Database::connection();
+
 $categories = $db->query('
     SELECT
         f.`forum_id`, f.`forum_name`, f.`forum_type`,
