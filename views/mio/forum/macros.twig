@@ -17,25 +17,33 @@
     </div>
 {% endmacro %}
 
-{% macro forum_category_entry(forum, forum_icon) %}
-    {% set forum_icon = forum_icon|default(null) %}
+{% macro forum_category_buttons(forum) %}
+    <div class="forum__actions forum__actions__content">
+        <a class="input__button forum__actions__button">New Topic</a>
+    </div>
+{% endmacro %}
 
-    {% if forum_icon is null %}
+{% macro forum_category_entry(forum, forum_type, forum_read, forum_icon) %}
+    {% set forum_type = forum_type|default(null) %}
+    {% set forum_read = forum_read|default(true) ? 'read' : 'unread' %}
+    {% set forum_icon = forum_icon|default('https://static.flash.moe/images/forum-icons/forum-%s-%s.png') %}
+
+    {% if forum_type is null %}
         {% if forum.forum_archived is defined and forum.forum_archived %}
-            {% set forum_icon = 'https://static.flash.moe/images/forum-icons/forum-archive-%s.png' %}
-        {% elseif forum.forum_type is defined %}
+            {% set forum_type = 'archive' %}
+        {% elseif forum.forum_type is defined and forum.forum_type != 0 %}
             {% if forum.forum_type == 2 %}
-                {% set forum_icon = 'https://static.flash.moe/images/forum-icons/forum-link-%s.png' %}
+                {% set forum_type = 'link' %}
             {% elseif forum.forum_type == 1 %}
-                {% set forum_icon = 'https://static.flash.moe/images/forum-icons/forum-category-%s.png' %}
+                {% set forum_type = 'category' %}
             {% endif %}
+        {% else %}
+            {% set forum_type = 'default' %}
         {% endif %}
-
-        {% set forum_icon = forum_icon|default('https://static.flash.moe/images/forum-icons/forum-default-%s.png') %}
     {% endif %}
 
     <div class="forum__listing__entry">
-        <img src="{{ forum_icon|format('read') }}" alt="read" class="forum__listing__entry__icon">
+        <img src="{{ forum_icon|format(forum_type, forum_read) }}" alt="read" class="forum__listing__entry__icon">
 
         <div class="forum__listing__entry__info">
             <a href="/forum/forum.php?f={{ forum.forum_id }}" class="forum__listing__entry__title">{{ forum.forum_name }}</a>
@@ -113,7 +121,7 @@
             </div>
             {% if topic.author_id is not null %}
                 <div class="forum__topics__entry__info__author">
-                    by <a href="/profile.php?u={{ topic.author_id }}" class="forum__topics__entry__info__author__username" style="color:{{ topic.author_colour|colour_get_css }}">
+                    by <a href="/profile.php?u={{ topic.author_id }}" class="forum__topics__entry__info__author__name" style="color:{{ topic.author_colour|colour_get_css }}">
                         {{ topic.author_name }}
                     </a>
                 </div>
@@ -129,15 +137,46 @@
             </div>
         </div>
 
-        <div class="forum__topics__entry__last-post">
-            <div class="forum__topics__entry__last-post__author">
-                by <a href="/profile.php?u={{ topic.author_id }}" class="forum__topics__entry__last-post__author" style="color:{{ topic.author_colour|colour_get_css }}">
-                    {{ topic.author_name }}
+        <div class="forum__topics__entry__activity">
+            <div class="forum__topics__entry__activity__datetime">
+                <a href="/forum/topic.php?p={{ topic.topic_last_post_id }}#p{{ topic.topic_last_post_id }}" class="forum__topics__entry__activity__datetime__link">
+                    {{ topic.topic_first_post_created }}
                 </a>
             </div>
-            <div class="forum__topics__entry__last-post__date">
-                5 years ago
+            {% if topic.topic_last_user_id is not null %}
+                <div class="forum__topics__entry__activity__author">
+                    by <a href="/profile.php?u={{ topic.topic_last_user_id }}" class="forum__topics__entry__activity__author__name" style="color:{{ topic.author_colour|colour_get_css }}">
+                        {{ topic.author_name }}
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro forum_post_listing(posts, opening_post_id) %}
+    {% from _self import forum_post_entry %}
+
+    {% if posts|length > 0 %}
+        {% for post in posts %}
+            {{ forum_post_entry(post, post.post_id == opening_post_id) }}
+        {% endfor %}
+    {% else %}
+        <div class="container">
+            <div class="container__title">Information</div>
+            <div class="container__content">
+                This topic has no associated posts.
             </div>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro forum_post_entry(post, is_opening_post) %}
+    {% set is_opening_post = is_opening_post|default(false) %}
+
+    <div class="container" id="p{{ post.post_id }}">
+        <div class="container__content">
+            {{ post.post_text }}
         </div>
     </div>
 {% endmacro %}

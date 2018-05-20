@@ -112,15 +112,14 @@ $getBreadcrumb = $db->prepare('
 
 while ($lastParent > 0) {
     $getBreadcrumb->bindValue('forum_id', $lastParent);
+    $breadcrumb = $getBreadcrumb->execute() ? $getBreadcrumb->fetch() : [];
 
-    if (!$getBreadcrumb->execute()) {
+    if (!$breadcrumb) {
         break;
     }
 
-    $parentForum = $getBreadcrumb->fetch();
-
-    $breadcrumbs[$parentForum['forum_name']] = '/forum/forum.php?f=' . $parentForum['forum_id'];
-    $lastParent = $parentForum['forum_parent'];
+    $breadcrumbs[$breadcrumb['forum_name']] = '/forum/forum.php?f=' . $breadcrumb['forum_id'];
+    $lastParent = $breadcrumb['forum_parent'];
 }
 
 $breadcrumbs['Forums'] = '/forum/';

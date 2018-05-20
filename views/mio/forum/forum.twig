@@ -1,6 +1,6 @@
 {% extends '@mio/forum/master.twig' %}
-{% from '@mio/macros.twig' import navigation %}
-{% from '@mio/forum/macros.twig' import forum_category_listing, forum_topic_listing %}
+{% from '@mio/macros.twig' import navigation, paginate %}
+{% from '@mio/forum/macros.twig' import forum_category_listing, forum_topic_listing, forum_category_buttons %}
 
 {% set title = forum_info.forum_name %}
 {% set canonical_url = '/forum/forum.php?f=' ~ forum_info.forum_id %}
@@ -13,7 +13,14 @@
     {% endif %}
 
     {% if forum_info.forum_type == 0 %}
+        {% set fcbuttons = forum_category_buttons(forum_info) %}
+        {% set fcpagination = paginate(forum_topics|length, 20, 0, canonical_url) %}
+
+        {{ fcbuttons }}
+        {{ fcpagination }}
         {{ forum_topic_listing(forum_topics) }}
+        {{ fcpagination }}
+        {{ fcbuttons }}
     {% endif %}
 
     {{ navigation(mio_navigation, '/forum/') }}

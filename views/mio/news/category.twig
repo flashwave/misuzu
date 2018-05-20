@@ -39,7 +39,7 @@
                         </div>
                     </div>
                 {% endif %}
-                {{ paginate(category.posts_count, posts_take, posts_offset, '/news.php?c=' ~ category.category_id, 'news__') }}
+                {{ paginate(category.posts_count, posts_take, posts_offset, '/news.php?c=' ~ category.category_id) }}
             </div>
         </div>
     </div>

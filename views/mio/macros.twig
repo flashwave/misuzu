@@ -17,10 +17,13 @@
     </ul>
 {% endmacro %}
 
+{% macro pagination_class(className, classPrefix) %}{{ className }}{% if classPrefix|length > 0 %} {{ classPrefix ~ className }}{% endif %}{% endmacro %}
+
 {% macro paginate(itemCount, itemRange, currentOffset, baseUrl, classPrefix, alwaysRender, useRanges, offsetParam, pageRange) %}
     {% set alwaysRender = alwaysRender|default(false) %}
 
     {% if alwaysRender or itemCount > itemRange %}
+        {% from _self import pagination_class %}
         {% set classPrefix  = classPrefix|default('') %}
         {% set separator    = '%3F' in baseUrl|default('')|url_encode ? '&' : '?' %}
         {% set baseUrl      = baseUrl ~ separator %}
@@ -30,69 +33,69 @@
         {% set offsetParam  = offsetParam|default(useRanges ? 'o' : 'p') %}
         {% set pageRange    = pageRange|default(3) %}
 
-        <ul class="{{ classPrefix }}pagination">
+        <ul class="{{ pagination_class('pagination', classPrefix) }}">
             {% if currentPage < 1 %}
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--first {{ classPrefix }}pagination__option--disabled">
-                    <span class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--first">
+                <li class="{{ pagination_class('pagination__option', classPrefix) }} {{ pagination_class('pagination__option--first', classPrefix) }} {{ pagination_class('pagination__option--disabled', classPrefix) }}">
+                    <span class="{{ pagination_class('pagination__link', classPrefix) }} {{ pagination_class('pagination__link--first', classPrefix) }}">
                         &laquo;
                     </span>
                 </li>
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--prev {{ classPrefix }}pagination__option--disabled">
-                    <span class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--prev">
+                <li class="{{ pagination_class('pagination__option', classPrefix) }} {{ pagination_class('pagination__option--prev', classPrefix) }} {{ pagination_class('pagination__option--disabled', classPrefix) }}">
+                    <span class="{{ pagination_class('pagination__link', classPrefix) }} {{ pagination_class('pagination__link--prev', classPrefix) }}">
                         &lsaquo;
                     </span>
                 </li>
             {% else %}
                 {% set firstUrl = baseUrl|slice(0, (baseUrl|length) - (separator|length)) %}
 
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--first">
-                    <a href="{{ firstUrl }}" class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--first" rel="first">
+                <li class="{{ pagination_class('pagination__option', classPrefix) }} {{ pagination_class('pagination__option--first', classPrefix) }}">
+                    <a href="{{ firstUrl }}" class="{{ pagination_class('pagination__link', classPrefix) }} {{ pagination_class('pagination__link--first', classPrefix) }}" rel="first">
                         &laquo;
                     </a>
                 </li>
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--prev">
-                    <a href="{{ currentPage < 2 ? firstUrl : baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((currentPage - 1) * itemRange) : currentPage) }}" class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--prev" rel="prev">
+                <li class="{{ pagination_class('pagination__option', classPrefix) }} {{ pagination_class('pagination__option--prev', classPrefix) }}">
+                    <a href="{{ currentPage < 2 ? firstUrl : baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((currentPage - 1) * itemRange) : currentPage) }}" class="{{ pagination_class('pagination__link', classPrefix) }} {{ pagination_class('pagination__link--prev', classPrefix) }}" rel="prev">
                         &lsaquo;
                     </a>
                 </li>
             {% endif %}
 
-            <li class="{{ classPrefix }}pagination__separator"></li>
+            <li class="{{ pagination_class('pagination__separator', classPrefix) }}"></li>
 
             {% set paginationStart = currentPage - pageRange %}
             {% set paginationStop = currentPage + pageRange %}
 
             {% for i in paginationStart..paginationStop %}
                 {% if i >= 0 and i < pageCount %}
-                    <li class="{{ classPrefix }}pagination__option{{ currentPage == i ? ' ' ~ classPrefix ~ 'pagination__option--active' : '' }}">
-                        <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? i * itemRange : i + 1) }}" class="{{ classPrefix }}pagination__link{{ currentPage == i ? ' ' ~ classPrefix ~ 'pagination__link--active' : '' }}">
+                    <li class="{{ pagination_class('pagination__option', classPrefix) }}{{ currentPage == i ? ' ' ~ pagination_class('pagination__option--active', classPrefix) : '' }}">
+                        <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? i * itemRange : i + 1) }}" class="{{ pagination_class('pagination__link', classPrefix) }}{{ currentPage == i ? ' ' ~ pagination_class('pagination__link--active', classPrefix) : '' }}">
                             {{ i + 1 }}
                         </a>
                     </li>
                 {% endif %}
             {% endfor %}
 
-            <li class="{{ classPrefix }}pagination__separator"></li>
+            <li class="{{ pagination_class('pagination__separator', classPrefix) }}"></li>
 
             {% if currentPage >= pageCount - 1 %}
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--next {{ classPrefix }}pagination__option--disabled">
-                    <span class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--next">
+                <li class="{{ pagination_class('pagination__option', classPrefix) }} {{ pagination_class('pagination__option--next', classPrefix) }} {{ pagination_class('pagination__option--disabled', classPrefix) }}">
+                    <span class="{{ pagination_class('pagination__link', classPrefix) }} {{ pagination_class('pagination__link--next', classPrefix) }}">
                         &rsaquo;
                     </span>
                 </li>
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--last {{ classPrefix }}pagination__option--disabled">
-                    <span class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--last">
+                <li class="{{ pagination_class('pagination__option', classPrefix) }} {{ pagination_class('pagination__option--last', classPrefix) }} {{ pagination_class('pagination__option--disabled', classPrefix) }}">
+                    <span class="{{ pagination_class('pagination__link', classPrefix) }} {{ pagination_class('pagination__link--last', classPrefix) }}">
                         &raquo;
                     </span>
                 </li>
             {% else %}
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--next">
-                    <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((currentPage + 1) * itemRange) : currentPage + 2) }}" class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--next" rel="next">
+                <li class="{{ pagination_class('pagination__option', classPrefix) }} {{ pagination_class('pagination__option--next', classPrefix) }}">
+                    <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((currentPage + 1) * itemRange) : currentPage + 2) }}" class="{{ pagination_class('pagination__link', classPrefix) }} {{ pagination_class('pagination__link--next', classPrefix) }}" rel="next">
                         &rsaquo;
                     </a>
                 </li>
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--last">
-                    <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((pageCount - 1) * itemRange) : pageCount) }}" class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--last" rel="last">
+                <li class="{{ pagination_class('pagination__option', classPrefix) }} {{ pagination_class('pagination__option--last', classPrefix) }}">
+                    <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((pageCount - 1) * itemRange) : pageCount) }}" class="{{ pagination_class('pagination__link', classPrefix) }} {{ pagination_class('pagination__link--last', classPrefix) }}" rel="last">
                         &raquo;
                     </a>
                 </li>

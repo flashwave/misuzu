@@ -67,8 +67,7 @@ switch ($mode) {
         $auth_login_error = '';
 
         while ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $ipAddressObj = IPAddress::remote();
-            $ipAddress = $ipAddressObj->getString();
+            $ipAddress = IPAddress::remote()->getString();
 
             if (!isset($_POST['username'], $_POST['password'])) {
                 $auth_login_error = "You didn't fill all the forms!";
@@ -127,12 +126,19 @@ switch ($mode) {
 
             $createSession = $db->prepare('
                 INSERT INTO `msz_sessions`
-                    (`user_id`, `session_ip`, `user_agent`, `session_key`, `created_at`, `expires_on`)
+                    (
+                        `user_id`, `session_ip`, `session_country`,
+                        `user_agent`, `session_key`, `created_at`, `expires_on`
+                    )
                 VALUES
-                    (:user_id, INET6_ATON(:session_ip), :user_agent, :session_key, NOW(), NOW() + INTERVAL 1 MONTH)
+                    (
+                        :user_id, INET6_ATON(:session_ip), :session_country,
+                        :user_agent, :session_key, NOW(), NOW() + INTERVAL 1 MONTH
+                    )
             ');
             $createSession->bindValue('user_id', $userId);
             $createSession->bindValue('session_ip', $ipAddress);
+            $createSession->bindValue('session_country', get_country_code($ipAddress));
             $createSession->bindValue('user_agent', $user_agent);
             $createSession->bindValue('session_key', $sessionKey);
 

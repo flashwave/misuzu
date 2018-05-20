@@ -1,0 +1,20 @@
+{% extends '@mio/forum/master.twig' %}
+{% from '@mio/macros.twig' import navigation, paginate %}
+{% from '@mio/forum/macros.twig' import forum_post_listing %}
+
+{% set title = topic_info.topic_title %}
+{% set canonical_url = '/forum/topic.php?t=' ~ topic_info.topic_id %}
+
+{% block content %}
+    {{ navigation(topic_breadcrumbs, topic_breadcrumbs|last, true, null, 'left') }}
+
+    <div class="container">
+        <div class="container__title">
+            {{ topic_info.topic_title }}
+        </div>
+    </div>
+
+    {{ forum_post_listing(topic_posts, topic_info.topic_first_post_id) }}
+
+    {{ navigation(mio_navigation, '/forum/') }}
+{% endblock %}
