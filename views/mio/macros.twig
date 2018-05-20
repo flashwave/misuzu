@@ -19,7 +19,7 @@
 
 {% macro pagination_class(className, classPrefix) %}{{ className }}{% if classPrefix|length > 0 %} {{ classPrefix ~ className }}{% endif %}{% endmacro %}
 
-{% macro paginate(itemCount, itemRange, currentOffset, baseUrl, classPrefix, alwaysRender, useRanges, offsetParam, pageRange) %}
+{% macro pagination(itemCount, itemRange, currentOffset, baseUrl, classPrefix, alwaysRender, useRanges, offsetParam, pageRange) %}
     {% set alwaysRender = alwaysRender|default(false) %}
 
     {% if alwaysRender or itemCount > itemRange %}

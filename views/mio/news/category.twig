@@ -1,5 +1,5 @@
 {% extends '@mio/news/master.twig' %}
-{% from '@mio/macros.twig' import paginate %}
+{% from '@mio/macros.twig' import pagination %}
 {% from '@mio/news/macros.twig' import news_preview %}
 
 {% set title = category.category_name ~ ' :: News' %}
@@ -27,6 +27,7 @@
                         </div>
                     </div>
                 {% endif %}
+
                 {% if featured|length > 0 %}
                     <div class="container news__list">
                         <div class="container__title">
@@ -39,7 +40,8 @@
                         </div>
                     </div>
                 {% endif %}
-                {{ paginate(category.posts_count, posts_take, posts_offset, '/news.php?c=' ~ category.category_id) }}
+
+                {{ pagination(category.posts_count, posts_take, posts_offset, '/news.php?c=' ~ category.category_id) }}
             </div>
         </div>
     </div>

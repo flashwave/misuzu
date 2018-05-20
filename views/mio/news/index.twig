@@ -1,5 +1,5 @@
 {% extends '@mio/news/master.twig' %}
-{% from '@mio/macros.twig' import paginate %}
+{% from '@mio/macros.twig' import pagination %}
 {% from '@mio/news/macros.twig' import news_preview %}
 
 {% set title = 'News' %}
@@ -34,7 +34,8 @@
                         {% endfor %}
                     </div>
                 </div>
-                {{ paginate(posts_count, posts_take, posts_offset, '/news.php') }}
+
+                {{ pagination(posts_count, posts_take, posts_offset, '/news.php') }}
             </div>
         </div>
     </div>
