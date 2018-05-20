@@ -17,14 +17,16 @@
         flex-direction: column;
     }
 
-    &--left {
-        justify-content: left;
-        padding-left: 25px;
-    }
+    @media (min-width: @mio-navigation-mobile) {
+        &--left {
+            justify-content: left;
+            padding-left: 25px;
+        }
 
-    &--right {
-        justify-content: right;
-        padding-right: 25px;
+        &--right {
+            justify-content: right;
+            padding-right: 25px;
+        }
     }
 
     &--top {

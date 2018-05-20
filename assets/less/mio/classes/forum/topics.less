@@ -1,3 +1,96 @@
 .forum__topics {
-    //
+    &__listing {
+        margin: 2px;
+    }
+
+    &__none {
+        margin: 0 3px;
+    }
+
+    &__entry {
+        display: flex;
+        align-items: stretch;
+
+        &:not(:first-child) {
+            margin-top: 1px;
+            padding-top: 1px;
+            border-top: 1px solid #9475b2;
+        }
+
+        &__icon {
+            flex-shrink: 0;
+            flex-grow: 0;
+            align-self: flex-start;
+        }
+
+        &__info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-grow: 1;
+            flex-shrink: 1;
+            padding: 0 2px;
+
+            &__title {
+                &__link {
+                    text-decoration: none;
+                    color: inherit;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
+                }
+
+                &--unread {
+                    font-weight: 700;
+                }
+            }
+
+            &__author {
+                font-size: .9em;
+                line-height: 1.3em;
+
+                &__username {
+                    color: inherit;
+                    font-weight: 700;
+                    text-decoration: none;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
+                }
+            }
+        }
+
+        &__stat {
+            line-height: 1.2em;
+            min-width: 50px;
+
+            &--posts {
+                font-size: 1.3em;
+                color: #111;
+            }
+
+            &--views {
+                font-size: 0.8em;
+                color: #555;
+            }
+        }
+
+        &__stats {
+            text-align: center;
+        }
+
+        &__last-post {
+            min-width: 200px;
+        }
+
+        &__stats,
+        &__last-post {
+            flex-shrink: 0;
+            flex-grow: 0;
+            border-left: 1px solid #9475b2;
+            padding-left: 1px;
+        }
+    }
 }

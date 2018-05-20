@@ -42,11 +42,14 @@ $topics = [];
 if ($forum['forum_type'] == 0) {
     $getTopics = $db->prepare('
         SELECT
-            t.`topic_id`, t.`topic_title`, t.`topic_view_count`,
+            t.`topic_id`, t.`topic_title`, t.`topic_view_count`, t.`topic_status`, t.`topic_type`,
             au.`user_id` as `author_id`, au.`username` as `author_name`,
             COUNT(p.`post_id`) as `topic_post_count`,
             MIN(p.`post_id`) as `topic_first_post_id`,
+            MIN(p.`post_created`) as `topic_first_post_created`,
             MAX(p.`post_id`) as `topic_last_post_id`,
+            MAX(p.`post_created`) as `topic_last_post_created`,
+            MAX(p.`user_id`) as `topic_last_user_id`,
             COALESCE(ar.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `author_colour`
         FROM `msz_forum_topics` as t
         LEFT JOIN `msz_users` as au
@@ -58,7 +61,7 @@ if ($forum['forum_type'] == 0) {
         WHERE t.`forum_id` = :forum_id
         AND t.`topic_deleted` IS NULL
         GROUP BY t.`topic_id`
-        ORDER BY t.`topic_type`, t.`topic_bumped`
+        ORDER BY t.`topic_type` DESC, t.`topic_bumped` DESC
     ');
     $getTopics->bindValue('forum_id', $forum['forum_id']);
     $topics = $getTopics->execute() ? $getTopics->fetchAll() : $topics;

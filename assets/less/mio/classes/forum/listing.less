@@ -2,27 +2,26 @@
 
 .forum__listing {
     &__forums {
-        margin: 0;
+        margin: 2px;
     }
 
     &__none {
-        padding: 2px 5px;
+        margin: 0 3px;
     }
 
     &__entry {
         display: flex;
-        padding: 2px 0;
         align-items: center;
 
         &:not(:last-child) {
             border-bottom: 1px solid #9475b2;
+            margin-bottom: 2px;
+            padding-bottom: 2px;
         }
 
         &__icon {
-            width: 50px;
-            text-align: center;
-            flex-grow: 0;
             flex-shrink: 0;
+            flex-grow: 0;
             align-self: flex-start;
         }
 

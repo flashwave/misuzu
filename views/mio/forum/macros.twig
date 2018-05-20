@@ -22,22 +22,20 @@
 
     {% if forum_icon is null %}
         {% if forum.forum_archived is defined and forum.forum_archived %}
-            {% set forum_icon = 'https://static.flash.moe/images/forum-icons/default-archived-%s.png' %}
+            {% set forum_icon = 'https://static.flash.moe/images/forum-icons/forum-archive-%s.png' %}
         {% elseif forum.forum_type is defined %}
             {% if forum.forum_type == 2 %}
-                {% set forum_icon = 'https://static.flash.moe/images/forum-icons/default-link-%s.png' %}
+                {% set forum_icon = 'https://static.flash.moe/images/forum-icons/forum-link-%s.png' %}
             {% elseif forum.forum_type == 1 %}
-                {% set forum_icon = 'https://static.flash.moe/images/forum-icons/default-category-%s.png' %}
+                {% set forum_icon = 'https://static.flash.moe/images/forum-icons/forum-category-%s.png' %}
             {% endif %}
         {% endif %}
 
-        {% set forum_icon = forum_icon|default('https://static.flash.moe/images/forum-icons/default-forum-%s.png') %}
+        {% set forum_icon = forum_icon|default('https://static.flash.moe/images/forum-icons/forum-default-%s.png') %}
     {% endif %}
 
     <div class="forum__listing__entry">
-        <div class="forum__listing__entry__icon">
-            <img src="{{ forum_icon|format('read') }}" alt="read">
-        </div>
+        <img src="{{ forum_icon|format('read') }}" alt="read" class="forum__listing__entry__icon">
 
         <div class="forum__listing__entry__info">
             <a href="/forum/forum.php?f={{ forum.forum_id }}" class="forum__listing__entry__title">{{ forum.forum_name }}</a>
@@ -85,30 +83,61 @@
     </div>
 {% endmacro %}
 
-{% macro forum_topic_entry(topic) %}
-    <div class="forum__topics__entry">
-        <div class="forum__topics__icon">
-            eek
-        </div>
+{% macro forum_topic_entry(topic, topic_type, topic_read, topic_icon) %}
+    {% set topic_type = topic_type|default(null) %}
+    {% set topic_read = topic_read|default(true) ? 'read' : 'unread' %}
+    {% set topic_icon = topic_icon|default('https://static.flash.moe/images/topic-icons/topic-%s-%s.png') %}
 
-        <div class="forum__topics__info">
-            <div class="forum__topics__info__title">
-                <a href="/forum/topic.php?t={{ topic.topic_id }}">{{ topic.topic_title }}</a>
+    {% if topic_type is null %}
+        {% if topic.topic_deleted is defined and topic.topic_deleted is not null %}
+            {% set topic_type = 'deleted' %}
+        {% elseif topic.topic_type is defined and topic.topic_type != 0 %}
+            {% if topic.topic_type == 2 %}
+                {% set topic_type = 'announcement' %}
+            {% elseif topic.topic_type == 1 %}
+                {% set topic_type = 'pinned' %}
+            {% endif %}
+        {% elseif topic.topic_status is defined and topic.topic_status == 1 %}
+            {% set topic_type = 'locked' %}
+        {% else %}
+            {% set topic_type = 'default' %}
+        {% endif %}
+    {% endif %}
+
+    <div class="forum__topics__entry forum__topics__entry--{{ topic_type }}">
+        <img src="{{ topic_icon|format(topic_type, topic_read) }}" alt="read" class="forum__topics__entry__icon">
+
+        <div class="forum__topics__entry__info">
+            <div class="forum__topics__entry__info__title forum__topics__entry__info__title--{{ topic_read }}">
+                <a href="/forum/topic.php?t={{ topic.topic_id }}" class="forum__topics__entry__info__title__link">{{ topic.topic_title }}</a>
             </div>
             {% if topic.author_id is not null %}
-                <div class="forum__topics__info__author">
-                    by <a href="/profile.php?u={{ topic.author_id }}" style="color:{{ topic.author_colour|colour_get_css }}">{{ topic.author_name }}</a>
+                <div class="forum__topics__entry__info__author">
+                    by <a href="/profile.php?u={{ topic.author_id }}" class="forum__topics__entry__info__author__username" style="color:{{ topic.author_colour|colour_get_css }}">
+                        {{ topic.author_name }}
+                    </a>
                 </div>
             {% endif %}
         </div>
 
-        <div class="forum__topics__stats">
-            <div class="forum__topics__stat forum__topics__stat--posts">{{ topic.topic_post_count }}</div>
-            <div class="forum__topics__stat forum__topics__stat--views">{{ topic.topic_view_count }}</div>
+        <div class="forum__topics__entry__stats">
+            <div class="forum__topics__entry__stat forum__topics__entry__stat--posts">
+                {{ topic.topic_post_count }}
+            </div>
+            <div class="forum__topics__entry__stat forum__topics__entry__stat--views">
+                {{ topic.topic_view_count }}
+            </div>
         </div>
 
-        <div class="forum__topics__last-reply">
-            last post data required here, display "no replies" when only one post is present
+        <div class="forum__topics__entry__last-post">
+            <div class="forum__topics__entry__last-post__author">
+                by <a href="/profile.php?u={{ topic.author_id }}" class="forum__topics__entry__last-post__author" style="color:{{ topic.author_colour|colour_get_css }}">
+                    {{ topic.author_name }}
+                </a>
+            </div>
+            <div class="forum__topics__entry__last-post__date">
+                5 years ago
+            </div>
         </div>
     </div>
 {% endmacro %}
