@@ -46,10 +46,14 @@
         <img src="{{ forum_icon|format(forum_type, forum_read) }}" alt="read" class="forum__listing__entry__icon">
 
         <div class="forum__listing__entry__info">
-            <a href="/forum/forum.php?f={{ forum.forum_id }}" class="forum__listing__entry__title">{{ forum.forum_name }}</a>
+            <div class="forum__listing__entry__title">
+                <a href="/forum/forum.php?f={{ forum.forum_id }}" class="forum__listing__entry__title__link">{{ forum.forum_name }}</a>
+            </div>
+
             <div class="forum__listing__entry__description">
                 {{ forum.forum_description|nl2br }}
             </div>
+
             {% if forum.forum_subforums is defined and forum.forum_subforums|length > 0 %}
                 <div class="forum__listing__entry__subforums">
                     {% for subforum in forum.forum_subforums %}
@@ -65,9 +69,37 @@
         </div>
 
         <div class="forum__listing__entry__activity">
-            <div class="forum__listing__entry__activity__none">
-                There are no posts in this forum yet.
-            </div>
+            {% if forum.recent_topic_id is null %}
+                <div class="forum__listing__entry__activity__none">
+                    There are no posts in this forum yet.
+                </div>
+            {% else %}
+                <div class="forum__listing__entry__activity__details">
+                    <div class="forum__listing__entry__activity__title">
+                        <a  class="forum__listing__entry__activity__title__link"
+                            href="/forum/topic.php?p={{ forum.recent_post_id }}#p{{ forum.recent_post_id }}">
+                            {{ forum.recent_topic_title|slice(0, 30) ~ (forum.recent_topic_title|length > 30 ? '...' : '') }}
+                        </a>
+                    </div>
+                    <div class="forum__listing__entry__activity__info">
+                        {% if forum.recent_post_user_id is not null %}
+                            by <a
+                                href="/profile.php?u={{ forum.recent_post_user_id }}"
+                                style="color:{{ forum.recent_post_user_colour|colour_get_css }}"
+                                class="forum__listing__entry__activity__user">{{ forum.recent_post_username }}</a>,
+                        {% endif %}
+                        {{ forum.recent_post_created }}
+                    </div>
+                </div>
+
+                {% if forum.recent_post_user_id is not null %}
+                    <a
+                        href="/profile.php?u={{ forum.recent_post_user_id }}"
+                        class="avatar forum__listing__entry__activity__avatar"
+                        style="background-image:url('/profile.php?u={{ forum.recent_post_user_id }}&amp;m=avatar')">
+                    </a>
+                {% endif %}
+            {% endif %}
         </div>
     </div>
 {% endmacro %}

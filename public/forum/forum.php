@@ -92,7 +92,13 @@ if ($forum['forum_type'] == 0) {
 
 $getSubforums = $db->prepare('
     SELECT
-        `forum_id`, `forum_name`, `forum_description`, `forum_type`, `forum_link`,
+        f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`, f.`forum_link`,
+        t.`topic_id` as `recent_topic_id`, p.`post_id` as `recent_post_id`,
+        t.`topic_title` as `recent_topic_title`,
+        p.`post_created` as `recent_post_created`,
+        u.`user_id` as `recent_post_user_id`,
+        u.`username` as `recent_post_username`,
+        COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `recent_post_user_colour`,
         (
             SELECT COUNT(t.`topic_id`)
             FROM `msz_forum_topics` as t
@@ -104,6 +110,27 @@ $getSubforums = $db->prepare('
             WHERE p.`forum_id` = f.`forum_id`
         ) as `forum_post_count`
     FROM `msz_forum_categories` as f
+    LEFT JOIN `msz_forum_topics` as t
+    ON t.`topic_id` = (
+        SELECT `topic_id`
+        FROM `msz_forum_topics`
+        WHERE `forum_id` = f.`forum_id`
+        AND `topic_deleted` IS NULL
+        ORDER BY `topic_bumped` DESC
+        LIMIT 1
+    )
+    LEFT JOIN `msz_forum_posts` as p
+    ON p.`post_id` = (
+        SELECT `post_id`
+        FROM `msz_forum_posts`
+        WHERE `topic_id` = t.`topic_id`
+        ORDER BY `post_id` DESC
+        LIMIT 1
+    )
+    LEFT JOIN `msz_users` as u
+    ON u.`user_id` = p.`user_id`
+    LEFT JOIN `msz_roles` as r
+    ON r.`role_id` = u.`display_role`
     WHERE `forum_parent` = :forum_id
     AND `forum_hidden` = false
 ');
