@@ -60,8 +60,8 @@
         </div>
 
         <div class="forum__listing__entry__stats">
-            <div class="forum__listing__entry__topics">{{ forum.forum_topic_count|number_format }}</div>
-            <div class="forum__listing__entry__posts">{{ forum.forum_post_count|number_format }}</div>
+            <div class="forum__listing__entry__topics" title="Topics">{{ forum.forum_topic_count|number_format }}</div>
+            <div class="forum__listing__entry__posts" title="Posts">{{ forum.forum_post_count|number_format }}</div>
         </div>
 
         <div class="forum__listing__entry__activity">
@@ -129,11 +129,11 @@
         </div>
 
         <div class="forum__topics__entry__stats">
-            <div class="forum__topics__entry__stat forum__topics__entry__stat--posts">
-                {{ topic.topic_post_count }}
+            <div class="forum__topics__entry__stat forum__topics__entry__stat--posts" title="Posts">
+                {{ topic.topic_post_count|number_format }}
             </div>
-            <div class="forum__topics__entry__stat forum__topics__entry__stat--views">
-                {{ topic.topic_view_count }}
+            <div class="forum__topics__entry__stat forum__topics__entry__stat--views" title="Views">
+                {{ topic.topic_view_count|number_format }}
             </div>
         </div>
 
@@ -174,9 +174,32 @@
 {% macro forum_post_entry(post, is_opening_post) %}
     {% set is_opening_post = is_opening_post|default(false) %}
 
-    <div class="container" id="p{{ post.post_id }}">
-        <div class="container__content">
-            {{ post.post_text }}
+    <div class="forum__post" id="p{{ post.post_id }}">
+        <div class="forum__post__author">
+            <a class="forum__post__author__link" href="/profile.php?u=1">
+                <div
+                    class="avatar forum__post__author__avatar"
+                    style="background-image:url('/profile.php?u=1&amp;m=avatar');">
+                </div>
+                <div class="forum__post__author__username">me</div>
+            </a>
+            <div class="forum__post__author__joined">
+                joined ages ago
+            </div>
+        </div>
+
+        <div class="forum__post__content">
+            <div class="forum__post__content__info">
+                <a class="forum__post__content__info__link" href="/forum/topic.php?t={{ post.topic_id }}#p{{ post.post_id }}">
+                    {{ post.post_created }}
+                </a>
+                <a class="forum__post__content__info__link" href="/forum/topic.php?p={{ post.post_id }}#p{{ post.post_id }}">
+                    #{{ post.post_id }}
+                </a>
+            </div>
+            <div class="forum__post__content__text">
+                {{ post.post_text }}
+            </div>
         </div>
     </div>
 {% endmacro %}

@@ -45,7 +45,8 @@ if (!$topic) {
 
 $getPosts = $db->prepare('
     SELECT
-        `post_id`, `post_text`, `post_created`
+        `post_id`, `post_text`, `post_created`,
+        `topic_id`
     FROM `msz_forum_posts`
     WHERE `topic_id` = :topic_id
     AND `post_deleted` IS NULL
