@@ -89,18 +89,33 @@
             text-align: center;
             padding-left: 1px;
             min-width: 70px;
+            flex-direction: column;
+            justify-content: center;
         }
 
         &__activity {
             min-width: 200px;
             padding-left: 3px;
+            align-items: center;
+
+            &__info {
+                flex-grow: 1;
+                flex-shrink: 1;
+                margin-left: 3px;
+            }
+
+            &__avatar {
+                width: 36px;
+                height: 36px;
+                flex-grow: 0;
+                flex-shrink: 0;
+                margin-right: 2px;
+            }
         }
 
         &__stats,
         &__activity {
-            display: inline-flex;
-            flex-direction: column;
-            justify-content: center;
+            display: flex;
             flex-shrink: 0;
             flex-grow: 0;
             border-left: 1px solid #9475b2;

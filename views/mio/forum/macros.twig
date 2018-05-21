@@ -173,17 +173,27 @@
         </div>
 
         <div class="forum__topics__entry__activity">
-            <div class="forum__topics__entry__activity__datetime">
-                <a href="/forum/topic.php?p={{ topic.response_id }}#p{{ topic.response_id }}" class="forum__topics__entry__activity__datetime__link">
-                    {{ topic.response_created }}
-                </a>
-            </div>
-            {% if topic.respondent_id is not null %}
-                <div class="forum__topics__entry__activity__author">
-                    by <a href="/profile.php?u={{ topic.respondent_id }}" class="forum__topics__entry__activity__author__name" style="color:{{ topic.respondent_colour|colour_get_css }}">
-                        {{ topic.respondent_name }}
+            <div class="forum__topics__entry__activity__info">
+                <div class="forum__topics__entry__activity__datetime">
+                    <a href="/forum/topic.php?p={{ topic.response_id }}#p{{ topic.response_id }}" class="forum__topics__entry__activity__datetime__link">
+                        {{ topic.response_created }}
                     </a>
                 </div>
+                {% if topic.respondent_id is not null %}
+                    <div class="forum__topics__entry__activity__author">
+                        by <a href="/profile.php?u={{ topic.respondent_id }}" class="forum__topics__entry__activity__author__name" style="color:{{ topic.respondent_colour|colour_get_css }}">
+                            {{ topic.respondent_name }}
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if topic.respondent_id is not null %}
+                <a
+                    href="/profile.php?u={{ topic.respondent_id }}"
+                    class="avatar forum__topics__entry__activity__avatar"
+                    style="background-image:url('/profile.php?u={{ topic.respondent_id }}&amp;m=avatar')">
+                </a>
             {% endif %}
         </div>
     </div>
