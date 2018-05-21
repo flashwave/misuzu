@@ -119,13 +119,16 @@
             <div class="forum__topics__entry__info__title forum__topics__entry__info__title--{{ topic_read }}">
                 <a href="/forum/topic.php?t={{ topic.topic_id }}" class="forum__topics__entry__info__title__link">{{ topic.topic_title }}</a>
             </div>
-            {% if topic.author_id is not null %}
-                <div class="forum__topics__entry__info__author">
-                    by <a href="/profile.php?u={{ topic.author_id }}" class="forum__topics__entry__info__author__name" style="color:{{ topic.author_colour|colour_get_css }}">
-                        {{ topic.author_name }}
-                    </a>
-                </div>
-            {% endif %}
+            <div class="forum__topics__entry__info__author">
+                {% if topic.author_id is not null %}
+                    by <a
+                        href="/profile.php?u={{ topic.author_id }}"
+                        class="forum__topics__entry__info__author__name"
+                        style="color:{{ topic.author_colour|colour_get_css }}">{{ topic.author_name }}</a>,
+
+                {% endif %}
+                {{ topic.topic_created }}
+            </div>
         </div>
 
         <div class="forum__topics__entry__stats">
@@ -139,14 +142,14 @@
 
         <div class="forum__topics__entry__activity">
             <div class="forum__topics__entry__activity__datetime">
-                <a href="/forum/topic.php?p={{ topic.topic_last_post_id }}#p{{ topic.topic_last_post_id }}" class="forum__topics__entry__activity__datetime__link">
-                    {{ topic.topic_first_post_created }}
+                <a href="/forum/topic.php?p={{ topic.response_id }}#p{{ topic.response_id }}" class="forum__topics__entry__activity__datetime__link">
+                    {{ topic.response_created }}
                 </a>
             </div>
-            {% if topic.topic_last_user_id is not null %}
+            {% if topic.respondent_id is not null %}
                 <div class="forum__topics__entry__activity__author">
-                    by <a href="/profile.php?u={{ topic.topic_last_user_id }}" class="forum__topics__entry__activity__author__name" style="color:{{ topic.author_colour|colour_get_css }}">
-                        {{ topic.author_name }}
+                    by <a href="/profile.php?u={{ topic.respondent_id }}" class="forum__topics__entry__activity__author__name" style="color:{{ topic.respondent_colour|colour_get_css }}">
+                        {{ topic.respondent_name }}
                     </a>
                 </div>
             {% endif %}

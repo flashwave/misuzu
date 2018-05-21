@@ -4,6 +4,8 @@ use Misuzu\Database;
 require_once __DIR__ . '/../../misuzu.php';
 
 $forumId = (int)($_GET['f'] ?? 0);
+$topicsOffset = max((int)($_GET['o'] ?? 0), 0);
+$topicsRange = max(min((int)($_GET['r'] ?? 20), 50), 10);
 
 if ($forumId === 0) {
     header('Location: /forum/');
@@ -16,8 +18,13 @@ $templating = $app->getTemplating();
 if ($forumId > 0) {
     $getForum = $db->prepare('
         SELECT
-            `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_parent`
-        FROM `msz_forum_categories`
+            `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_parent`,
+            (
+                SELECT COUNT(`topic_id`)
+                FROM `msz_forum_topics`
+                WHERE `forum_id` = f.`forum_id`
+            ) as `forum_topic_count`
+        FROM `msz_forum_categories` as f
         WHERE `forum_id` = :forum_id
     ');
     $getForum->bindValue('forum_id', $forumId);
@@ -42,28 +49,44 @@ $topics = [];
 if ($forum['forum_type'] == 0) {
     $getTopics = $db->prepare('
         SELECT
-            t.`topic_id`, t.`topic_title`, t.`topic_view_count`, t.`topic_status`, t.`topic_type`,
+            t.`topic_id`, t.`topic_title`, t.`topic_view_count`, t.`topic_status`, t.`topic_type`, t.`topic_created`,
             au.`user_id` as `author_id`, au.`username` as `author_name`,
-            COUNT(p.`post_id`) as `topic_post_count`,
-            MIN(p.`post_id`) as `topic_first_post_id`,
-            MIN(p.`post_created`) as `topic_first_post_created`,
-            MAX(p.`post_id`) as `topic_last_post_id`,
-            MAX(p.`post_created`) as `topic_last_post_created`,
-            MAX(p.`user_id`) as `topic_last_user_id`,
-            COALESCE(ar.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `author_colour`
+            COALESCE(ar.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `author_colour`,
+            lp.`post_id` as `response_id`,
+            lp.`post_created` as `response_created`,
+            lu.`user_id` as `respondent_id`,
+            lu.`username` as `respondent_name`,
+            COALESCE(lr.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `respondent_colour`,
+            (
+                SELECT COUNT(`post_id`)
+                FROM `msz_forum_posts`
+                WHERE `topic_id` = t.`topic_id`
+            ) as `topic_post_count`
         FROM `msz_forum_topics` as t
         LEFT JOIN `msz_users` as au
         ON t.`user_id` = au.`user_id`
         LEFT JOIN `msz_roles` as ar
         ON ar.`role_id` = au.`display_role`
-        LEFT JOIN `msz_forum_posts` as p
-        ON t.`topic_id` = p.`topic_id`
+        LEFT JOIN `msz_forum_posts` as lp
+        ON lp.`post_id` = (
+            SELECT `post_id`
+            FROM `msz_forum_posts`
+            WHERE `topic_id` = t.`topic_id`
+            ORDER BY `post_id` DESC
+            LIMIT 1
+        )
+        LEFT JOIN `msz_users` as lu
+        ON lu.`user_id` = lp.`user_id`
+        LEFT JOIN `msz_roles` as lr
+        ON lr.`role_id` = lu.`display_role`
         WHERE t.`forum_id` = :forum_id
         AND t.`topic_deleted` IS NULL
-        GROUP BY t.`topic_id`
         ORDER BY t.`topic_type` DESC, t.`topic_bumped` DESC
+        LIMIT :offset, :take
     ');
     $getTopics->bindValue('forum_id', $forum['forum_id']);
+    $getTopics->bindValue('offset', $topicsOffset);
+    $getTopics->bindValue('take', $topicsRange);
     $topics = $getTopics->execute() ? $getTopics->fetchAll() : $topics;
 }
 
@@ -129,4 +152,6 @@ echo $app->getTemplating()->render('forum.forum', [
     'forum_info' => $forum,
     'forum_breadcrumbs' => $breadcrumbs,
     'forum_topics' => $topics,
+    'forum_offset' => $topicsOffset,
+    'forum_range' => $topicsRange,
 ]);

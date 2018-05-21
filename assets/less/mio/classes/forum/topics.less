@@ -1,6 +1,6 @@
 .forum__topics {
     &__listing {
-        margin: 2px;
+        margin: 1px;
     }
 
     &__none {
@@ -10,6 +10,7 @@
     &__entry {
         display: flex;
         align-items: stretch;
+        min-height: 40px;
 
         &:not(:first-child) {
             margin-top: 1px;
@@ -20,7 +21,7 @@
         &__icon {
             flex-shrink: 0;
             flex-grow: 0;
-            align-self: flex-start;
+            align-self: center;
         }
 
         &__info {
@@ -30,12 +31,17 @@
             flex-grow: 1;
             flex-shrink: 1;
             padding: 0 2px;
+            word-wrap: break-word;
+            overflow: hidden;
         }
 
         &__info,
         &__activity {
             &__datetime,
             &__title {
+                line-height: 1.4em;
+                margin-bottom: 2px;
+
                 &__link {
                     text-decoration: none;
                     color: inherit;
@@ -52,7 +58,7 @@
 
             &__author {
                 font-size: .9em;
-                line-height: 1em;
+                line-height: 1.2em;
 
                 &__name {
                     color: inherit;
