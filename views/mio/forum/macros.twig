@@ -19,7 +19,7 @@
 
 {% macro forum_category_buttons(forum) %}
     <div class="forum__actions forum__actions__content">
-        <a class="input__button forum__actions__button">New Topic</a>
+        <a href="/forum/posting.php?f={{ forum.forum_id }}" class="input__button forum__actions__button">New Topic</a>
     </div>
 {% endmacro %}
 
@@ -101,6 +101,12 @@
                 {% endif %}
             {% endif %}
         </div>
+    </div>
+{% endmacro %}
+
+{% macro forum_topic_buttons(topic) %}
+    <div class="forum__actions forum__actions__content">
+        <a href="/forum/posting.php?t={{ topic.topic_id }}" class="input__button forum__actions__button">Reply</a>
     </div>
 {% endmacro %}
 
@@ -202,35 +208,35 @@
 {% macro forum_post_listing(posts, opening_post_id) %}
     {% from _self import forum_post_entry %}
 
-    {% if posts|length > 0 %}
-        {% for post in posts %}
-            {{ forum_post_entry(post, post.post_id == opening_post_id) }}
-        {% endfor %}
-    {% else %}
-        <div class="container">
-            <div class="container__title">Information</div>
-            <div class="container__content">
-                This topic has no associated posts.
-            </div>
-        </div>
-    {% endif %}
+    {% for post in posts %}
+        {{ forum_post_entry(post, post.post_id == opening_post_id) }}
+    {% endfor %}
 {% endmacro %}
 
-{% macro forum_post_entry(post, is_opening_post) %}
-    {% set is_opening_post = is_opening_post|default(false) %}
+{% macro forum_post_entry(post, is_original_post, is_original_poster) %}
+    {% set is_original_post = is_original_post|default(false) %}
+    {% set is_original_poster = is_original_poster|default(false) %}
 
     <div class="forum__post" id="p{{ post.post_id }}">
         <div class="forum__post__author">
-            <a class="forum__post__author__link" href="/profile.php?u=1">
-                <div
-                    class="avatar forum__post__author__avatar"
-                    style="background-image:url('/profile.php?u=1&amp;m=avatar');">
+            {% if post.poster_id is not null %}
+                <a class="forum__post__author__link" href="/profile.php?u={{ post.poster_id }}">
+                    <div
+                        class="avatar forum__post__author__avatar"
+                        style="background-image:url('/profile.php?u={{ post.poster_id }}&amp;m=avatar');">
+                    </div>
+                    <div
+                        class="forum__post__author__username"
+                        style="color:{{ post.poster_colour|colour_get_css }}">{{ post.poster_name }}</div>
+                </a>
+                <div class="forum__post__author__joined">
+                    joined 5 years ago {# post.poster_joined #}
                 </div>
-                <div class="forum__post__author__username">me</div>
-            </a>
-            <div class="forum__post__author__joined">
-                joined ages ago
-            </div>
+            {% else %}
+                <div class="forum__post__author__joined">
+                    deleted user
+                </div>
+            {% endif %}
         </div>
 
         <div class="forum__post__content">
