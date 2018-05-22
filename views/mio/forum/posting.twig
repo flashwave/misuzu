@@ -1,0 +1,44 @@
+{% extends '@mio/forum/master.twig' %}
+{% from '@mio/macros.twig' import navigation %}
+
+{% set title = 'Posting' %}
+
+{% block content %}
+    {{ navigation(posting_breadcrumbs, posting_breadcrumbs|last, true, null, 'left') }}
+
+    <form
+        class="container forum__posting"
+        method="post"
+        action="/forum/posting.php">
+        <div class="container__title">
+            {% if posting_quote is defined %}
+                Quoting &raquo; {{ posting_topic.topic_title }}
+            {% elseif posting_topic is defined %}
+                Replying &raquo; {{ posting_topic.topic_title }}
+            {% else %}
+                Creating Topic &raquo; {{ posting_forum.forum_name }}
+            {% endif %}
+        </div>
+        <div class="container__content forum__posting__content">
+            {% if posting_topic is defined %}
+                <input type="hidden" name="post[topic]" value="{{ posting_topic.topic_id }}">
+            {% else %}
+                <input type="hidden" name="post[forum]" value="{{ posting_forum.forum_id }}">
+
+                <div class="forum__posting__title">
+                    <input class="input__text forum__posting__title__input" type="text" name="post[title]" placeholder="Topic title">
+                </div>
+            {% endif %}
+
+            <div class="forum__posting__text">
+                <textarea class="input__textarea forum__posting__text__input" name="post[text]">{% if posting_quote is defined %}[quote={{ posting_quote.post_id }}]{{ posting_quote.post_text }}[/quote]{% endif %}</textarea>
+            </div>
+
+            <div class="forum__posting__buttons">
+                <button class="input__button">Submit</button>
+            </div>
+        </div>
+    </form>
+
+    {{ navigation(mio_navigation, '/forum/') }}
+{% endblock %}

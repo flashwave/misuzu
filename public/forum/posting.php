@@ -12,6 +12,7 @@ if (!$app->hasActiveSession()) {
 $postRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
 
 $db = Database::connection();
+$templating = $app->getTemplating();
 
 // ORDER OF CHECKING
 //  - $postId non-zero: enter quote mode
@@ -43,7 +44,7 @@ if (!empty($postId)) {
 
 if (!empty($topicId)) {
     $getTopic = $db->prepare('
-        SELECT `topic_id`, `forum_id`
+        SELECT `topic_id`, `forum_id`, `topic_title`
         FROM `msz_forum_topics`
         WHERE `topic_id` = :topic_id
     ');
@@ -57,7 +58,7 @@ if (!empty($topicId)) {
 
 if (!empty($forumId)) {
     $getForum = $db->prepare('
-        SELECT `forum_id`
+        SELECT `forum_id`, `forum_name`
         FROM `msz_forum_categories`
         WHERE `forum_id` = :forum_id
     ');
@@ -107,21 +108,38 @@ if ($postRequest) {
     return;
 }
 
-echo '<form method="post" action="/forum/posting.php">';
+$lastParent = $forumId;
+$breadcrumbs = [];
+$getBreadcrumb = $db->prepare('
+    SELECT `forum_id`, `forum_name`, `forum_parent`
+    FROM `msz_forum_categories`
+    WHERE `forum_id` = :forum_id
+');
 
-if (isset($topic)) {
-    echo "<input type='hidden' name='post[topic]' value='{$topic['topic_id']}'>";
-} else {
-    echo "<input type='hidden' name='post[forum]' value='{$forum['forum_id']}'>";
-    echo '<input type="text" name="post[title]"><br>';
+while ($lastParent > 0) {
+    $getBreadcrumb->bindValue('forum_id', $lastParent);
+    $breadcrumb = $getBreadcrumb->execute() ? $getBreadcrumb->fetch() : [];
+
+    if (!$breadcrumb) {
+        break;
+    }
+
+    $breadcrumbs[$breadcrumb['forum_name']] = '/forum/forum.php?f=' . $breadcrumb['forum_id'];
+    $lastParent = $breadcrumb['forum_parent'];
 }
 
-echo '<textarea name="post[text]">';
+$breadcrumbs['Forums'] = '/forum/';
+$breadcrumbs = array_reverse($breadcrumbs);
 
-if (isset($post)) {
-    echo '[quote=' . $post['user_id'] . ']' . $post['post_text'] . '[/quote]';
+if (!empty($topic)) {
+    $templating->var('posting_topic', $topic);
 }
 
-echo '</textarea><br>
-        <button>Submit</button>
-    </form>';
+if (!empty($post)) {
+    $templating->var('posting_quote', $post);
+}
+
+echo $templating->render('forum.posting', [
+    'posting_breadcrumbs' => $breadcrumbs,
+    'posting_forum' => $forum,
+]);
