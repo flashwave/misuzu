@@ -14,6 +14,7 @@ function migrate_up(PDO $conn): void
             `forum_type`        TINYINT(4)          NOT NULL    DEFAULT '0',
             `forum_description` TEXT                NULL,
             `forum_link`        VARCHAR(255)        NULL        DEFAULT NULL,
+            `forum_link_clicks` INT(10) UNSIGNED    NULL        DEFAULT NULL,
             `forum_created`     TIMESTAMP           NOT NULL    DEFAULT CURRENT_TIMESTAMP,
             `forum_archived`    TINYINT(1)          NOT NULL    DEFAULT '0',
             `forum_hidden`      TINYINT(1)          NOT NULL    DEFAULT '0',
