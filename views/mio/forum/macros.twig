@@ -63,50 +63,62 @@
             {% endif %}
         </div>
 
-        <div class="forum__listing__entry__stats">
-            <div class="forum__listing__entry__topics" title="Topics">{{ forum.forum_topic_count|number_format }}</div>
-            <div class="forum__listing__entry__posts" title="Posts">{{ forum.forum_post_count|number_format }}</div>
-        </div>
-
-        <div class="forum__listing__entry__activity">
-            {% if forum.recent_topic_id is null %}
-                <div class="forum__listing__entry__activity__none">
-                    There are no posts in this forum yet.
+        {% if forum.forum_type == 2 %}
+            {% if forum.forum_link_clicks is not null %}
+                <div class="forum__listing__entry__stats">
+                    <div class="forum__listing__entry__topics" title="Clicks">{{ forum.forum_link_clicks|number_format }}</div>
                 </div>
-            {% else %}
-                <div class="forum__listing__entry__activity__details">
-                    <div class="forum__listing__entry__activity__title">
-                        <a  class="forum__listing__entry__activity__title__link"
-                            href="/forum/topic.php?p={{ forum.recent_post_id }}#p{{ forum.recent_post_id }}">
-                            {{ forum.recent_topic_title|slice(0, 30) ~ (forum.recent_topic_title|length > 30 ? '...' : '') }}
-                        </a>
-                    </div>
-                    <div class="forum__listing__entry__activity__info">
-                        {% if forum.recent_post_user_id is not null %}
-                            by <a
-                                href="/profile.php?u={{ forum.recent_post_user_id }}"
-                                style="color:{{ forum.recent_post_user_colour|colour_get_css }}"
-                                class="forum__listing__entry__activity__user">{{ forum.recent_post_username }}</a>,
-                        {% endif %}
-                        {{ forum.recent_post_created }}
-                    </div>
-                </div>
-
-                {% if forum.recent_post_user_id is not null %}
-                    <a
-                        href="/profile.php?u={{ forum.recent_post_user_id }}"
-                        class="avatar forum__listing__entry__activity__avatar"
-                        style="background-image:url('/profile.php?u={{ forum.recent_post_user_id }}&amp;m=avatar')">
-                    </a>
-                {% endif %}
             {% endif %}
-        </div>
+        {% else %}
+            <div class="forum__listing__entry__stats">
+                <div class="forum__listing__entry__topics" title="Topics">{{ forum.forum_topic_count|number_format }}</div>
+                <div class="forum__listing__entry__posts" title="Posts">{{ forum.forum_post_count|number_format }}</div>
+            </div>
+        {% endif %}
+
+        {% if forum.forum_type != 2 or forum.forum_link_clicks is not null %}
+            <div class="forum__listing__entry__activity">
+                {% if forum.forum_type != 2 %}
+                    {% if forum.recent_topic_id is null %}
+                        <div class="forum__listing__entry__activity__none">
+                            There are no posts in this forum yet.
+                        </div>
+                    {% else %}
+                        <div class="forum__listing__entry__activity__details">
+                            <div class="forum__listing__entry__activity__title">
+                                <a  class="forum__listing__entry__activity__title__link"
+                                    href="/forum/topic.php?p={{ forum.recent_post_id }}#p{{ forum.recent_post_id }}">
+                                    {{ forum.recent_topic_title|slice(0, 30) ~ (forum.recent_topic_title|length > 30 ? '...' : '') }}
+                                </a>
+                            </div>
+                            <div class="forum__listing__entry__activity__info">
+                                {% if forum.recent_post_user_id is not null %}
+                                    by <a
+                                        href="/profile.php?u={{ forum.recent_post_user_id }}"
+                                        style="color:{{ forum.recent_post_user_colour|colour_get_css }}"
+                                        class="forum__listing__entry__activity__user">{{ forum.recent_post_username }}</a>,
+                                {% endif %}
+                                {{ forum.recent_post_created }}
+                            </div>
+                        </div>
+
+                        {% if forum.recent_post_user_id is not null %}
+                            <a
+                                href="/profile.php?u={{ forum.recent_post_user_id }}"
+                                class="avatar forum__listing__entry__activity__avatar"
+                                style="background-image:url('/profile.php?u={{ forum.recent_post_user_id }}&amp;m=avatar')">
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 {% endmacro %}
 
 {% macro forum_topic_buttons(topic) %}
     <div class="forum__actions forum__actions__content">
-        <a href="#reply" class="input__button forum__actions__button">Reply</a>
+        <a href="#reply" class="input__button forum__actions__button" onclick="openContainer('reply')">Reply</a>
     </div>
 {% endmacro %}
 
@@ -258,7 +270,7 @@
 {% macro forum_posting_form(title, target_id, is_reply, element_id) %}
     {% set is_reply = is_reply ? true : false %}
 
-    <form
+    <form{% if element_id is defined %} id="{{ element_id }}"{% endif %}
         class="container forum__posting"
         method="post"
         action="/forum/posting.php">
@@ -266,7 +278,7 @@
             {{ title }}
         </div>
 
-        <div class="container__content forum__posting__content"{% if element_id is defined %} id="{{ element_id }}"{% endif %}>
+        <div class="container__content forum__posting__content">
             <input type="hidden" name="post[{{ is_reply ? 'topic' : 'forum' }}]" value="{{ target_id }}">
 
             {% if not is_reply %}

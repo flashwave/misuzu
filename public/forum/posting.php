@@ -4,21 +4,17 @@ use Misuzu\Net\IPAddress;
 
 require_once __DIR__ . '/../../misuzu.php';
 
+$db = Database::connection();
+$templating = $app->getTemplating();
+
 if (!$app->hasActiveSession()) {
-    header('Location: /');
+    http_response_code(403);
+    echo $templating->render('errors.403');
     return;
 }
 
 $postRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
 
-$db = Database::connection();
-$templating = $app->getTemplating();
-
-// ORDER OF CHECKING
-//  - $postId non-zero: enter quote mode
-//  - $topicId non-zero: enter reply mode
-//  - $forumId non-zero: enter create mode
-//  - all zero: enter explode mode
 if ($postRequest) {
     $topicId = max(0, (int)($_POST['post']['topic'] ?? 0));
     $forumId = max(0, (int)($_POST['post']['forum'] ?? 0));
@@ -26,6 +22,12 @@ if ($postRequest) {
     $postId = max(0, (int)($_GET['p'] ?? 0));
     $topicId = max(0, (int)($_GET['t'] ?? 0));
     $forumId = max(0, (int)($_GET['f'] ?? 0));
+}
+
+if (empty($postId) && empty($topicId) && empty($forumId)) {
+    http_response_code(404);
+    echo $templating->render('errors.404');
+    return;
 }
 
 if (!empty($postId)) {
@@ -58,12 +60,24 @@ if (!empty($topicId)) {
 
 if (!empty($forumId)) {
     $getForum = $db->prepare('
-        SELECT `forum_id`, `forum_name`
+        SELECT `forum_id`, `forum_name`, `forum_type`
         FROM `msz_forum_categories`
         WHERE `forum_id` = :forum_id
     ');
     $getForum->bindValue('forum_id', $forumId);
     $forum = $getForum->execute() ? $getForum->fetch() : false;
+}
+
+if (empty($forum)) {
+    http_response_code(404);
+    echo $templating->render('errors.404');
+    return;
+}
+
+if ($forum['forum_type'] != 0) {
+    http_response_code(400);
+    echo $templating->render('errors.400');
+    return;
 }
 
 if ($postRequest) {

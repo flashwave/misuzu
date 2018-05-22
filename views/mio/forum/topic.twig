@@ -6,7 +6,7 @@
 {% set base_url = '/forum/topic.php?t=' ~ topic_info.topic_id %}
 {% set canonical_url = base_url %}
 
-{% set ftbuttons = forum_topic_buttons(topic_info) %}
+{% set ftbuttons = app.hasActiveSession ? forum_topic_buttons(topic_info) : '' %}
 {% set ftpagination = pagination(topic_info.topic_post_count, topic_range, topic_offset, base_url) %}
 
 {% block content %}
@@ -23,7 +23,16 @@
     {{ forum_post_listing(topic_posts, topic_info.topic_first_post_id) }}
     {{ ftpagination }}
 
-    {{ forum_posting_form('Reply', topic_info.topic_id, true, 'reply') }}
+    {% if app.hasActiveSession %}
+        {{ forum_posting_form('Reply', topic_info.topic_id, true, 'reply', true) }}
+
+        <script>
+            window.addEventListener('load', () => {
+                closeContainer('reply');
+                document.getElementById('reply').children[0].addEventListener('mouseover', () => openContainer('reply'));
+            });
+        </script>
+    {% endif %}
 
     {{ navigation(mio_navigation, '/forum/') }}
 {% endblock %}

@@ -18,7 +18,7 @@ $templating = $app->getTemplating();
 if ($forumId > 0) {
     $getForum = $db->prepare('
         SELECT
-            `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_parent`,
+            `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_link_clicks`, `forum_parent`,
             (
                 SELECT COUNT(`topic_id`)
                 FROM `msz_forum_topics`
@@ -38,6 +38,16 @@ if (empty($forum) || ($forum['forum_type'] == 2 && empty($forum['forum_link'])))
 }
 
 if ($forum['forum_type'] == 2) {
+    if ($forum['forum_link_clicks'] !== null) {
+        $incrementLinkClicks = $db->prepare('
+            UPDATE `msz_forum_categories`
+            SET `forum_link_clicks` = `forum_link_clicks` + 1
+            WHERE `forum_id` = :forum_id
+        ');
+        $incrementLinkClicks->bindValue('forum_id', $forum['forum_id']);
+        $incrementLinkClicks->execute();
+    }
+
     header('Location: ' . $forum['forum_link']);
     return;
 }
