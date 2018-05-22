@@ -1,6 +1,6 @@
 {% extends '@mio/forum/master.twig' %}
 {% from '@mio/macros.twig' import navigation, pagination %}
-{% from '@mio/forum/macros.twig' import forum_post_listing, forum_topic_buttons %}
+{% from '@mio/forum/macros.twig' import forum_post_listing, forum_topic_buttons, forum_posting_form %}
 
 {% set title = topic_info.topic_title %}
 {% set base_url = '/forum/topic.php?t=' ~ topic_info.topic_id %}
@@ -22,7 +22,8 @@
     {{ ftpagination }}
     {{ forum_post_listing(topic_posts, topic_info.topic_first_post_id) }}
     {{ ftpagination }}
-    {{ ftbuttons }}
+
+    {{ forum_posting_form('Reply', topic_info.topic_id, true, 'reply') }}
 
     {{ navigation(mio_navigation, '/forum/') }}
 {% endblock %}

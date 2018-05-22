@@ -30,7 +30,7 @@ if ($postRequest) {
 
 if (!empty($postId)) {
     $getPost = $db->prepare('
-        SELECT `post_id`, `topic_id`, `user_id`, `post_text`
+        SELECT `post_id`, `topic_id`
         FROM `msz_forum_posts`
         WHERE `post_id` = :post_id
     ');
@@ -133,10 +133,6 @@ $breadcrumbs = array_reverse($breadcrumbs);
 
 if (!empty($topic)) {
     $templating->var('posting_topic', $topic);
-}
-
-if (!empty($post)) {
-    $templating->var('posting_quote', $post);
 }
 
 echo $templating->render('forum.posting', [
