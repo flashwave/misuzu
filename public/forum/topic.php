@@ -13,24 +13,7 @@ $postsRange = max(min((int)($_GET['r'] ?? 10), 25), 5);
 
 // find topic id
 if ($topicId < 1 && $postId > 0) {
-    $getPostInfo = $db->prepare('
-        SELECT
-        :post_id as `target_post_id`,
-        (
-            SELECT `topic_id`
-            FROM `msz_forum_posts`
-            WHERE `post_id` = `target_post_id`
-        ) as `target_topic_id`,
-        (
-            SELECT COUNT(`post_id`)
-            FROM `msz_forum_posts`
-            WHERE `topic_id` = `target_topic_id`
-            AND `post_id` < `target_post_id`
-            ORDER BY `post_id`
-        ) as `preceeding_post_count`
-    ');
-    $getPostInfo->bindValue('post_id', $postId);
-    $postInfo = $getPostInfo->execute() ? $getPostInfo->fetch() : false;
+    $postInfo = forum_post_find($postId);
 
     if ($postInfo) {
         $topicId = (int)$postInfo['target_topic_id'];
@@ -40,7 +23,8 @@ if ($topicId < 1 && $postId > 0) {
 
 $getTopic = $db->prepare('
     SELECT
-        t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_status`,
+        t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`,
+        f.`forum_archived` as `topic_archived`,
         (
             SELECT MIN(`post_id`)
             FROM `msz_forum_posts`
@@ -52,6 +36,8 @@ $getTopic = $db->prepare('
             WHERE `topic_id` = t.`topic_id`
         ) as `topic_post_count`
     FROM `msz_forum_topics` as t
+    LEFT JOIN `msz_forum_categories` as f
+    ON f.`forum_id` = t.`forum_id`
     WHERE t.`topic_id` = :topic_id
     AND t.`topic_deleted` IS NULL
 ');
@@ -93,31 +79,8 @@ if (!$posts) {
     return;
 }
 
-$lastParent = $topic['forum_id'];
-$breadcrumbs = [];
-$getBreadcrumb = $db->prepare('
-    SELECT `forum_id`, `forum_name`, `forum_parent`
-    FROM `msz_forum_categories`
-    WHERE `forum_id` = :forum_id
-');
-
-while ($lastParent > 0) {
-    $getBreadcrumb->bindValue('forum_id', $lastParent);
-    $breadcrumb = $getBreadcrumb->execute() ? $getBreadcrumb->fetch() : [];
-
-    if (!$breadcrumb) {
-        break;
-    }
-
-    $breadcrumbs[$breadcrumb['forum_name']] = '/forum/forum.php?f=' . $breadcrumb['forum_id'];
-    $lastParent = $breadcrumb['forum_parent'];
-}
-
-$breadcrumbs['Forums'] = '/forum/';
-$breadcrumbs = array_reverse($breadcrumbs);
-
 echo $templating->render('forum.topic', [
-    'topic_breadcrumbs' => $breadcrumbs,
+    'topic_breadcrumbs' => forum_get_breadcrumbs($topic['forum_id']),
     'topic_info' => $topic,
     'topic_posts' => $posts,
     'topic_offset' => $postsOffset,

@@ -31,7 +31,8 @@ $categories = array_merge([
 
 $getSubCategories = $db->prepare('
     SELECT
-        f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`, f.`forum_link`, f.`forum_link_clicks`,
+        f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`,
+        f.`forum_link`, f.`forum_link_clicks`, f.`forum_archived`,
         t.`topic_id` as `recent_topic_id`, p.`post_id` as `recent_post_id`,
         t.`topic_title` as `recent_topic_title`,
         p.`post_created` as `recent_post_created`,

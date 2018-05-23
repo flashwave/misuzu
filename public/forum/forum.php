@@ -3,7 +3,7 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../../misuzu.php';
 
-$forumId = (int)($_GET['f'] ?? 0);
+$forumId = max((int)($_GET['f'] ?? 0), 0);
 $topicsOffset = max((int)($_GET['o'] ?? 0), 0);
 $topicsRange = max(min((int)($_GET['r'] ?? 20), 50), 10);
 
@@ -15,39 +15,28 @@ if ($forumId === 0) {
 $db = Database::connection();
 $templating = $app->getTemplating();
 
-if ($forumId > 0) {
-    $getForum = $db->prepare('
-        SELECT
-            `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_link_clicks`, `forum_parent`,
-            (
-                SELECT COUNT(`topic_id`)
-                FROM `msz_forum_topics`
-                WHERE `forum_id` = f.`forum_id`
-            ) as `forum_topic_count`
-        FROM `msz_forum_categories` as f
-        WHERE `forum_id` = :forum_id
-    ');
-    $getForum->bindValue('forum_id', $forumId);
-    $forum = $getForum->execute() ? $getForum->fetch() : [];
-}
+$getForum = $db->prepare('
+    SELECT
+        `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_link_clicks`, `forum_parent`,
+        (
+            SELECT COUNT(`topic_id`)
+            FROM `msz_forum_topics`
+            WHERE `forum_id` = f.`forum_id`
+        ) as `forum_topic_count`
+    FROM `msz_forum_categories` as f
+    WHERE `forum_id` = :forum_id
+');
+$getForum->bindValue('forum_id', $forumId);
+$forum = $getForum->execute() ? $getForum->fetch() : [];
 
-if (empty($forum) || ($forum['forum_type'] == 2 && empty($forum['forum_link']))) {
+if (empty($forum) || ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK && empty($forum['forum_link']))) {
     http_response_code(404);
     echo $templating->render('errors.404');
     return;
 }
 
-if ($forum['forum_type'] == 2) {
-    if ($forum['forum_link_clicks'] !== null) {
-        $incrementLinkClicks = $db->prepare('
-            UPDATE `msz_forum_categories`
-            SET `forum_link_clicks` = `forum_link_clicks` + 1
-            WHERE `forum_id` = :forum_id
-        ');
-        $incrementLinkClicks->bindValue('forum_id', $forum['forum_id']);
-        $incrementLinkClicks->execute();
-    }
-
+if ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK) {
+    forum_increment_clicks($forum['forum_id']);
     header('Location: ' . $forum['forum_link']);
     return;
 }
@@ -56,10 +45,10 @@ if ($forum['forum_type'] == 2) {
 $topics = [];
 
 // no need to fetch topics for categories (or links but we're already done with those at this point)
-if ($forum['forum_type'] == 0) {
+if ($forum['forum_type'] == MSZ_FORUM_TYPE_DISCUSSION) {
     $getTopics = $db->prepare('
         SELECT
-            t.`topic_id`, t.`topic_title`, t.`topic_view_count`, t.`topic_status`, t.`topic_type`, t.`topic_created`,
+            t.`topic_id`, t.`topic_title`, t.`topic_view_count`, t.`topic_locked`, t.`topic_type`, t.`topic_created`,
             au.`user_id` as `author_id`, au.`username` as `author_name`,
             COALESCE(ar.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `author_colour`,
             lp.`post_id` as `response_id`,
@@ -102,7 +91,7 @@ if ($forum['forum_type'] == 0) {
 
 $getSubforums = $db->prepare('
     SELECT
-        f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`, f.`forum_link`,
+        f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`, f.`forum_link`, f.`forum_archived`,
         t.`topic_id` as `recent_topic_id`, p.`post_id` as `recent_post_id`,
         t.`topic_title` as `recent_topic_title`,
         p.`post_created` as `recent_post_created`,
@@ -162,32 +151,9 @@ if (count($forum['forum_subforums']) > 0) {
     }
 }
 
-$lastParent = $forum['forum_parent'];
-$breadcrumbs = [$forum['forum_name'] => '/forum/forum.php?f=' . $forum['forum_id']];
-$getBreadcrumb = $db->prepare('
-    SELECT `forum_id`, `forum_name`, `forum_parent`
-    FROM `msz_forum_categories`
-    WHERE `forum_id` = :forum_id
-');
-
-while ($lastParent > 0) {
-    $getBreadcrumb->bindValue('forum_id', $lastParent);
-    $breadcrumb = $getBreadcrumb->execute() ? $getBreadcrumb->fetch() : [];
-
-    if (!$breadcrumb) {
-        break;
-    }
-
-    $breadcrumbs[$breadcrumb['forum_name']] = '/forum/forum.php?f=' . $breadcrumb['forum_id'];
-    $lastParent = $breadcrumb['forum_parent'];
-}
-
-$breadcrumbs['Forums'] = '/forum/';
-$breadcrumbs = array_reverse($breadcrumbs);
-
 echo $app->getTemplating()->render('forum.forum', [
+    'forum_breadcrumbs' => forum_get_breadcrumbs($forum['forum_id']),
     'forum_info' => $forum,
-    'forum_breadcrumbs' => $breadcrumbs,
     'forum_topics' => $topics,
     'forum_offset' => $topicsOffset,
     'forum_range' => $topicsRange,

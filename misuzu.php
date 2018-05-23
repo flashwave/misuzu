@@ -4,6 +4,10 @@ namespace Misuzu;
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/src/colour.php';
 require_once __DIR__ . '/src/zalgo.php';
+require_once __DIR__ . '/src/Forum/forum.php';
+require_once __DIR__ . '/src/Forum/post.php';
+require_once __DIR__ . '/src/Forum/topic.php';
+require_once __DIR__ . '/src/Forum/validate.php';
 require_once __DIR__ . '/src/Users/login_attempt.php';
 require_once __DIR__ . '/src/Users/validation.php';
 

@@ -14,7 +14,7 @@
 
     {% if forum_info.forum_type == 0 %}
         {% set fcbuttons = app.hasActiveSession ? forum_category_buttons(forum_info) : '' %}
-        {% set fcpagination = pagination(forum_info.forum_topic_count, forum_range, forum_offset, canonical_url) %}
+        {% set fcpagination = pagination(forum_info.forum_topic_count, forum_range, forum_offset, canonical_url, 'forum__') %}
 
         {{ fcbuttons }}
         {{ fcpagination }}

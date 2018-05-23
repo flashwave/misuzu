@@ -46,7 +46,7 @@ if (!empty($postId)) {
 
 if (!empty($topicId)) {
     $getTopic = $db->prepare('
-        SELECT `topic_id`, `forum_id`, `topic_title`
+        SELECT `topic_id`, `forum_id`, `topic_title`, `topic_locked`
         FROM `msz_forum_topics`
         WHERE `topic_id` = :topic_id
     ');
@@ -60,7 +60,7 @@ if (!empty($topicId)) {
 
 if (!empty($forumId)) {
     $getForum = $db->prepare('
-        SELECT `forum_id`, `forum_name`, `forum_type`
+        SELECT `forum_id`, `forum_name`, `forum_type`, `forum_archived`
         FROM `msz_forum_categories`
         WHERE `forum_id` = :forum_id
     ');
@@ -74,82 +74,67 @@ if (empty($forum)) {
     return;
 }
 
-if ($forum['forum_type'] != 0) {
+if ($forum['forum_type'] != MSZ_FORUM_TYPE_DISCUSSION) {
     http_response_code(400);
     echo $templating->render('errors.400');
     return;
 }
 
-if ($postRequest) {
-    $createPost = $db->prepare('
-        INSERT INTO `msz_forum_posts`
-            (`topic_id`, `forum_id`, `user_id`, `post_ip`, `post_text`)
-        VALUES
-            (:topic_id, :forum_id, :user_id, INET6_ATON(:post_ip), :post_text)
-    ');
+if ($forum['forum_archived'] || !empty($topic['topic_locked'])) {
+    http_response_code(403);
+    echo $templating->render('errors.403');
+    return;
+}
 
-    if (isset($topic)) {
-        $bumpTopic = $db->prepare('
-            UPDATE `msz_forum_topics`
-            SET `topic_bumped` = NOW()
-            WHERE `topic_id` = :topic_id
-        ');
-        $bumpTopic->bindValue('topic_id', $topic['topic_id']);
-        $bumpTopic->execute();
-    } else {
-        $createTopic = $db->prepare('
-            INSERT INTO `msz_forum_topics`
-                (`forum_id`, `user_id`, `topic_title`)
-            VALUES
-                (:forum_id, :user_id, :topic_title)
-        ');
-        $createTopic->bindValue('forum_id', $forum['forum_id']);
-        $createTopic->bindValue('user_id', $app->getUserId());
-        $createTopic->bindValue('topic_title', $_POST['post']['title']);
-        $createTopic->execute();
-        $topicId = (int)$db->lastInsertId();
+if ($postRequest) {
+    $topicTitle = $_POST['post']['title'] ?? '';
+    $topicTitleValidate = forum_validate_title($topicTitle);
+    $postText = $_POST['post']['text'] ?? '';
+    $postTextValidate = forum_validate_post($postText);
+
+    switch ($postTextValidate) {
+        case 'too-short':
+            echo 'Post content was too short.';
+            return;
+
+        case 'too-long':
+            echo 'Post content was too long.';
+            return;
     }
 
-    $createPost->bindValue('topic_id', $topicId);
-    $createPost->bindValue('forum_id', $forum['forum_id']);
-    $createPost->bindValue('user_id', $app->getUserId());
-    $createPost->bindValue('post_ip', IPAddress::remote()->getString());
-    $createPost->bindValue('post_text', $_POST['post']['text']);
-    $createPost->execute();
-    $postId = $db->lastInsertId();
+    if (isset($topic)) {
+        forum_topic_bump($topic['topic_id']);
+    } else {
+        switch ($topicTitleValidate) {
+            case 'too-short':
+                echo 'Topic title was too short.';
+                return;
+
+            case 'too-long':
+                echo 'Topic title was too long.';
+                return;
+        }
+
+        $topicId = forum_topic_create($forum['forum_id'], $app->getUserId(), $topicTitle);
+    }
+
+    $postId = forum_post_create(
+        $topicId,
+        $forum['forum_id'],
+        $app->getUserId(),
+        IPAddress::remote()->getString(),
+        $postText
+    );
 
     header("Location: /forum/topic.php?p={$postId}#p{$postId}");
     return;
 }
-
-$lastParent = $forumId;
-$breadcrumbs = [];
-$getBreadcrumb = $db->prepare('
-    SELECT `forum_id`, `forum_name`, `forum_parent`
-    FROM `msz_forum_categories`
-    WHERE `forum_id` = :forum_id
-');
-
-while ($lastParent > 0) {
-    $getBreadcrumb->bindValue('forum_id', $lastParent);
-    $breadcrumb = $getBreadcrumb->execute() ? $getBreadcrumb->fetch() : [];
-
-    if (!$breadcrumb) {
-        break;
-    }
-
-    $breadcrumbs[$breadcrumb['forum_name']] = '/forum/forum.php?f=' . $breadcrumb['forum_id'];
-    $lastParent = $breadcrumb['forum_parent'];
-}
-
-$breadcrumbs['Forums'] = '/forum/';
-$breadcrumbs = array_reverse($breadcrumbs);
 
 if (!empty($topic)) {
     $templating->var('posting_topic', $topic);
 }
 
 echo $templating->render('forum.posting', [
-    'posting_breadcrumbs' => $breadcrumbs,
+    'posting_breadcrumbs' => forum_get_breadcrumbs($forumId),
     'posting_forum' => $forum,
 ]);

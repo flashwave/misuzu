@@ -6,9 +6,9 @@
 
 ## Requirements
  - PHP 7.2
- - MySQL
+ - MySQL 8.0
  - Redis
  - [Composer](https://getcomposer.org/)
  - [node.js](https://nodejs.org/) (for the typescript and less compilers)
  - [Yarn](https://yarnpkg.com/)
- 
+
