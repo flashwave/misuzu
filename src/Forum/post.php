@@ -1,26 +1,42 @@
 <?php
 use Misuzu\Database;
 
+define('MSZ_FORUM_POST_PARSER_PLAIN', 0);
+define('MSZ_FORUM_POST_PARSER_BBCODE', 1);
+define('MSZ_FORUM_POST_PARSER_MARKDOWN', 2);
+define('MSZ_FORUM_POST_PARSERS', [
+    MSZ_FORUM_POST_PARSER_PLAIN,
+    MSZ_FORUM_POST_PARSER_BBCODE,
+    MSZ_FORUM_POST_PARSER_MARKDOWN,
+]);
+
+function forum_post_is_valid_parser(int $parser): bool
+{
+    return in_array($parser, MSZ_FORUM_POST_PARSERS);
+}
+
 function forum_post_create(
     int $topicId,
     int $forumId,
     int $userId,
     string $ipAddress,
-    string $text
+    string $text,
+    int $parser = MSZ_FORUM_POST_PARSER_PLAIN
 ): int {
     $dbc = Database::connection();
 
     $createPost = $dbc->prepare('
         INSERT INTO `msz_forum_posts`
-            (`topic_id`, `forum_id`, `user_id`, `post_ip`, `post_text`)
+            (`topic_id`, `forum_id`, `user_id`, `post_ip`, `post_text`, `post_parse`)
         VALUES
-            (:topic_id, :forum_id, :user_id, INET6_ATON(:post_ip), :post_text)
+            (:topic_id, :forum_id, :user_id, INET6_ATON(:post_ip), :post_text, :post_parse)
     ');
     $createPost->bindValue('topic_id', $topicId);
     $createPost->bindValue('forum_id', $forumId);
     $createPost->bindValue('user_id', $userId);
     $createPost->bindValue('post_ip', $ipAddress);
     $createPost->bindValue('post_text', $text);
+    $createPost->bindValue('post_parse', $parser);
 
     return $createPost->execute() ? $dbc->lastInsertId() : 0;
 }
@@ -50,7 +66,7 @@ function forum_post_find(int $postId): array
 
 define('MSZ_FORUM_POST_LISTING_QUERY_STANDARD', '
     SELECT
-        p.`post_id`, p.`post_text`, p.`post_created`,
+        p.`post_id`, p.`post_text`, p.`post_created`, p.`post_parse`,
         p.`topic_id`,
         u.`user_id` as `poster_id`,
         u.`username` as `poster_name`,

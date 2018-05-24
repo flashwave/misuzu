@@ -59,6 +59,7 @@ function migrate_up(PDO $conn): void
             `user_id`       INT(10) UNSIGNED    NULL        DEFAULT NULL,
             `post_ip`       BLOB                NOT NULL,
             `post_text`     TEXT                NOT NULL,
+            `post_parse`    TINYINT(4) UNSIGNED NOT NULL    DEFAULT '0',
             `post_created`  TIMESTAMP           NOT NULL    DEFAULT CURRENT_TIMESTAMP,
             `post_edited`   TIMESTAMP           NULL        DEFAULT NULL,
             `post_deleted`  TIMESTAMP           NULL        DEFAULT NULL,

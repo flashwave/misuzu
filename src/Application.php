@@ -246,6 +246,8 @@ class Application extends ApplicationBase
         $this->templatingInstance->addFilter('colour_get_red');
         $this->templatingInstance->addFilter('colour_get_green');
         $this->templatingInstance->addFilter('colour_get_blue');
+        $this->templatingInstance->addFilter('md', 'parse_markdown');
+        $this->templatingInstance->addFilter('bbcode', 'parse_bbcode');
 
         $this->templatingInstance->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $this->templatingInstance->addFunction('git_branch', [Application::class, 'gitBranch']);

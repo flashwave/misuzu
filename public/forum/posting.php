@@ -123,7 +123,8 @@ if ($postRequest) {
         $forum['forum_id'],
         $app->getUserId(),
         IPAddress::remote()->getString(),
-        $postText
+        $postText,
+        MSZ_FORUM_POST_PARSER_BBCODE
     );
     forum_topic_mark_read($app->getUserId(), $topicId, $forum['forum_id']);
 

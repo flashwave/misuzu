@@ -12,7 +12,7 @@
 
         <div class="container__content news__post__content">
             <div class="news__post__text">
-                {{ post.post_text|raw }}
+                {{ post.post_text|md|raw }}
             </div>
 
             <div class="news__sidebar news__post__details">
