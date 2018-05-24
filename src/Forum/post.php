@@ -47,3 +47,40 @@ function forum_post_find(int $postId): array
 
     return $getPostInfo->execute() ? $getPostInfo->fetch() : false;
 }
+
+define('MSZ_FORUM_POST_LISTING_QUERY_STANDARD', '
+    SELECT
+        p.`post_id`, p.`post_text`, p.`post_created`,
+        p.`topic_id`,
+        u.`user_id` as `poster_id`,
+        u.`username` as `poster_name`,
+        u.`created_at` as `poster_joined`,
+        COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `poster_colour`
+    FROM `msz_forum_posts` as p
+    LEFT JOIN `msz_users` as u
+    ON u.`user_id` = p.`user_id`
+    LEFT JOIN `msz_roles` as r
+    ON r.`role_id` = u.`display_role`
+    WHERE `topic_id` = :topic_id
+    AND `post_deleted` IS NULL
+    ORDER BY `post_id`
+');
+define('MSZ_FORUM_POST_LISTING_QUERY_PAGINATED', MSZ_FORUM_POST_LISTING_QUERY_STANDARD . ' LIMIT :offset, :take');
+
+function forum_post_listing(int $topicId, int $offset = 0, int $take = 0): array
+{
+    $hasPagination = $offset >= 0 && $take > 0;
+    $getPosts = Database::connection()->prepare(
+        $hasPagination
+        ? MSZ_FORUM_POST_LISTING_QUERY_PAGINATED
+        : MSZ_FORUM_POST_LISTING_QUERY_STANDARD
+    );
+    $getPosts->bindValue('topic_id', $topicId);
+
+    if ($hasPagination) {
+        $getPosts->bindValue('offset', $offset);
+        $getPosts->bindValue('take', $take);
+    }
+
+    return $getPosts->execute() ? $getPosts->fetchAll() : [];
+}

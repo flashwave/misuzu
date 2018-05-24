@@ -125,6 +125,7 @@ if ($postRequest) {
         IPAddress::remote()->getString(),
         $postText
     );
+    forum_topic_mark_read($app->getUserId(), $topicId, $forum['forum_id']);
 
     header("Location: /forum/topic.php?p={$postId}#p{$postId}");
     return;

@@ -63,6 +63,10 @@
             &:hover {
                 text-decoration: underline;
             }
+
+            &--unread {
+                font-weight: 700;
+            }
         }
 
         &__stats {
@@ -88,6 +92,7 @@
 
         &__activity {
             min-width: 270px;
+            min-height: 50px;
             align-items: center;
 
             @media (max-width: @mio-forum-listing-mobile) {

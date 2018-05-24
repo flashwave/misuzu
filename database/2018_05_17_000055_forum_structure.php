@@ -34,7 +34,6 @@ function migrate_up(PDO $conn): void
             `topic_bumped`      TIMESTAMP           NOT NULL    DEFAULT CURRENT_TIMESTAMP,
             `topic_deleted`     TIMESTAMP           NULL        DEFAULT NULL,
             `topic_locked`      TIMESTAMP           NULL        DEFAULT NULL,
-            `topic_view_count`  INT(10)             NOT NULL    DEFAULT '0',
             PRIMARY KEY (`topic_id`),
             INDEX `topics_forum_id_foreign` (`forum_id`),
             INDEX `topics_user_id_foreign`  (`user_id`),
@@ -87,32 +86,15 @@ function migrate_up(PDO $conn): void
     ");
 
     $conn->exec("
-        CREATE TABLE `msz_forum_categories_track` (
-            `user_id`           INT(10) UNSIGNED    NOT NULL,
-            `forum_id`          INT(10) UNSIGNED    NOT NULL,
-            `track_last_read`   TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            INDEX `categories_track_forum_id_foreign`   (`forum_id`),
-            INDEX `categories_track_user_id_foreign`    (`user_id`),
-            CONSTRAINT `categories_track_forum_id_foreign`
-                FOREIGN KEY (`forum_id`)
-                REFERENCES `msz_forum_categories` (`forum_id`)
-                ON UPDATE CASCADE
-                ON DELETE CASCADE,
-            CONSTRAINT `categories_track_user_id_foreign`
-                FOREIGN KEY (`user_id`)
-                REFERENCES `msz_users` (`user_id`)
-                ON UPDATE CASCADE
-                ON DELETE CASCADE
-        )
-    ");
-
-    $conn->exec("
         CREATE TABLE `msz_forum_topics_track` (
             `user_id`           INT(10) UNSIGNED    NOT NULL,
             `topic_id`          INT(10) UNSIGNED    NOT NULL,
+            `forum_id`          INT(10) UNSIGNED    NOT NULL,
             `track_last_read`   TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            INDEX `topics_track_topic_id_foreign`  (`topic_id`),
-            INDEX `topics_track_user_id_foreign`   (`user_id`),
+            UNIQUE  INDEX `topics_track_unique`             (`user_id`, `topic_id`),
+                    INDEX `topics_track_topic_id_foreign`   (`topic_id`),
+                    INDEX `topics_track_user_id_foreign`    (`user_id`),
+                    INDEX `topics_track_forum_id_foreign`   (`forum_id`),
             CONSTRAINT `topics_track_topic_id_foreign`
                 FOREIGN KEY (`topic_id`)
                 REFERENCES `msz_forum_topics` (`topic_id`)
@@ -121,6 +103,11 @@ function migrate_up(PDO $conn): void
             CONSTRAINT `topics_track_user_id_foreign`
                 FOREIGN KEY (`user_id`)
                 REFERENCES `msz_users` (`user_id`)
+                ON UPDATE CASCADE
+                ON DELETE CASCADE,
+            CONSTRAINT `topics_track_forum_id_foreign`
+                FOREIGN KEY (`forum_id`)
+                REFERENCES `msz_forum_categories` (`forum_id`)
                 ON UPDATE CASCADE
                 ON DELETE CASCADE
         )

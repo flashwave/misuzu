@@ -23,9 +23,9 @@
     </div>
 {% endmacro %}
 
-{% macro forum_category_entry(forum, forum_type, forum_read, forum_icon) %}
+{% macro forum_category_entry(forum, forum_unread, forum_type, forum_icon) %}
     {% set forum_type = forum_type|default(null) %}
-    {% set forum_read = forum_read|default(true) ? 'read' : 'unread' %}
+    {% set forum_unread = forum_unread|default(forum.forum_unread|default(false)) ? 'unread' : 'read' %}
     {% set forum_icon = forum_icon|default('https://static.flash.moe/images/forum-icons/forum-%s-%s.png') %}
 
     {% if forum_type is null %}
@@ -43,7 +43,7 @@
     {% endif %}
 
     <div class="forum__listing__entry">
-        <img src="{{ forum_icon|format(forum_type, forum_read) }}" alt="read" class="forum__listing__entry__icon">
+        <img src="{{ forum_icon|format(forum_type, forum_unread) }}" alt="{{ forum_unread }}" class="forum__listing__entry__icon">
 
         <div class="forum__listing__entry__info">
             <div class="forum__listing__entry__title">
@@ -57,7 +57,10 @@
             {% if forum.forum_subforums is defined and forum.forum_subforums|length > 0 %}
                 <div class="forum__listing__entry__subforums">
                     {% for subforum in forum.forum_subforums %}
-                        <a href="/forum/forum.php?f={{ subforum.forum_id }}" class="forum__listing__entry__subforum">{{ subforum.forum_name }}</a>
+                        <a  href="/forum/forum.php?f={{ subforum.forum_id }}"
+                            class="forum__listing__entry__subforum{% if subforum.forum_unread %} forum__listing__entry__subforum--unread{% endif %}">
+                            {{ subforum.forum_name }}
+                        </a>
                     {% endfor %}
                 </div>
             {% endif %}
@@ -158,9 +161,9 @@
     </div>
 {% endmacro %}
 
-{% macro forum_topic_entry(topic, topic_type, topic_read, topic_icon) %}
+{% macro forum_topic_entry(topic, topic_type, topic_unread, topic_icon) %}
     {% set topic_type = topic_type|default(null) %}
-    {% set topic_read = topic_read|default(true) ? 'read' : 'unread' %}
+    {% set topic_unread = topic_unread|default(topic.topic_unread|default(false)) ? 'unread' : 'read' %}
     {% set topic_icon = topic_icon|default('https://static.flash.moe/images/topic-icons/topic-%s-%s.png') %}
 
     {% if topic_type is null %}
@@ -180,10 +183,10 @@
     {% endif %}
 
     <div class="forum__topics__entry forum__topics__entry--{{ topic_type }}">
-        <img src="{{ topic_icon|format(topic_type, topic_read) }}" alt="read" class="forum__topics__entry__icon">
+        <img src="{{ topic_icon|format(topic_type, topic_unread) }}" alt="{{ topic_unread }}" class="forum__topics__entry__icon">
 
         <div class="forum__topics__entry__info">
-            <div class="forum__topics__entry__info__title forum__topics__entry__info__title--{{ topic_read }}">
+            <div class="forum__topics__entry__info__title forum__topics__entry__info__title--{{ topic_unread }}">
                 <a href="/forum/topic.php?t={{ topic.topic_id }}" class="forum__topics__entry__info__title__link">{{ topic.topic_title }}</a>
             </div>
             <div class="forum__topics__entry__info__author">
