@@ -50,8 +50,10 @@ function forum_topic_fetch(int $topicId): array
         AND t.`topic_deleted` IS NULL
     ');
     $getTopic->bindValue('topic_id', $topicId);
+    $getTopic->execute();
+    $topic = $getTopic->fetch();
 
-    return $getTopic->execute() ? $getTopic->fetch() : [];
+    return $topic ? $topic : [];
 }
 
 function forum_topic_bump(int $topicId): bool

@@ -51,8 +51,10 @@ function forum_fetch(int $forumId): array
         WHERE `forum_id` = :forum_id
     ');
     $getForum->bindValue('forum_id', $forumId);
+    $getForum->execute();
+    $forums = $getForum->fetch();
 
-    return $getForum->execute() ? $getForum->fetch() : [];
+    return $forums ? $forums : [];
 }
 
 function forum_get_root_categories(): array
