@@ -1,5 +1,5 @@
 {% extends '@manage/users/master.twig' %}
-{% from '@manage/macros.twig' import paginate %}
+{% from '@manage/macros.twig' import pagination %}
 
 {% block content %}
     <div class="container listing user-listing">
@@ -16,6 +16,6 @@
     </div>
 
     <div class="container container--center">
-        {{ paginate(manage_users_count, manage_users_range, manage_users_offset, '?v=listing') }}
+        {{ pagination(manage_users_count, manage_users_range, manage_users_offset, '?v=listing') }}
     </div>
 {% endblock %}

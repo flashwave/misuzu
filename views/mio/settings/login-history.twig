@@ -1,5 +1,5 @@
 {% extends '@mio/settings/master.twig' %}
-{% from '@mio/macros.twig' import paginate %}
+{% from '@mio/macros.twig' import pagination %}
 
 {% block settings_content %}
     <div class="settings__description">
@@ -49,6 +49,6 @@
             </div>
         {% endfor %}
 
-        {{ paginate(login_attempts_count, login_attempts_take, login_attempts_offset, '?m=login-history', 'settings__') }}
+        {{ pagination(login_attempts_count, login_attempts_take, login_attempts_offset, '?m=login-history', 'settings__') }}
     </div>
 {% endblock %}

@@ -1,9 +1,9 @@
 {% extends '@manage/users/master.twig' %}
-{% from '@manage/macros.twig' import paginate %}
+{% from '@manage/macros.twig' import pagination %}
 
 {% block content %}
     <div class="container">
-        <a href="?m=create" class="button">Create new Role</a>
+        <a href="?v=role" class="button">Create new Role</a>
     </div>
 
     <div class="container listing role-listing">
@@ -18,6 +18,6 @@
     </div>
 
     <div class="container container--center">
-        {{ paginate(manage_roles_count, manage_roles_range, manage_roles_offset, '?v=roles') }}
+        {{ pagination(manage_roles_count, manage_roles_range, manage_roles_offset, '?v=roles') }}
     </div>
 {% endblock %}

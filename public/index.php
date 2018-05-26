@@ -1,6 +1,5 @@
 <?php
 use Misuzu\Database;
-use Misuzu\DatabaseMigrationManager;
 
 require_once __DIR__ . '/../misuzu.php';
 

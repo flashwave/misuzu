@@ -2,9 +2,16 @@
     border: 1px solid #9475b2;
     background-color: #fbeeff;
     margin: 2px 0;
+    box-shadow: 0 1px 2px #9475b2;
 
     .mio--dark & {
         background-color: #23172a;
+    }
+
+    &--hidden {
+        .container__content {
+            display: none;
+        }
     }
 
     &__title {
@@ -16,6 +23,8 @@
         font-weight: 700;
         padding: 3px;
         font-family: @mio-font-heading;
+        word-wrap: break-word;
+        overflow: hidden;
 
         &--link:hover {
             text-decoration: underline;

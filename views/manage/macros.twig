@@ -14,7 +14,7 @@
     {% endfor %}
 {% endmacro %}
 
-{% macro paginate(itemCount, itemRange, currentOffset, baseUrl, classPrefix, alwaysRender, useRanges, offsetParam, pageRange) %}
+{% macro pagination(itemCount, itemRange, currentOffset, baseUrl, classPrefix, alwaysRender, useRanges, offsetParam, pageRange) %}
     {% set alwaysRender = alwaysRender|default(false) %}
 
     {% if alwaysRender or itemCount > itemRange %}

@@ -1,0 +1,48 @@
+{% extends '@mio/forum/master.twig' %}
+{% from '@mio/macros.twig' import navigation, pagination %}
+{%
+    from '@mio/forum/macros.twig'
+    import
+        forum_post_listing,
+        forum_topic_buttons,
+        forum_topic_locked,
+        forum_posting_form
+%}
+
+{% set title = topic_info.topic_title %}
+{% set base_url = '/forum/topic.php?t=' ~ topic_info.topic_id %}
+{% set canonical_url = base_url %}
+
+{% set can_reply = app.hasActiveSession and topic_info.topic_locked is null and not topic_info.topic_archived %}
+{% set ftbuttons = can_reply ? forum_topic_buttons(topic_info) : '' %}
+{% set ftpagination = pagination(topic_info.topic_post_count, topic_range, topic_offset, base_url, 'forum__') %}
+
+{% block content %}
+    {{ navigation(topic_breadcrumbs, topic_breadcrumbs|last, true, null, 'left') }}
+
+    <div class="container">
+        <div class="container__title">
+            {{ topic_info.topic_title }}
+        </div>
+    </div>
+
+    {{ forum_topic_locked(topic_info.topic_locked, topic_info.topic_archived) }}
+
+    {{ ftbuttons }}
+    {{ ftpagination }}
+    {{ forum_post_listing(topic_posts, topic_info.topic_first_post_id) }}
+    {{ ftpagination }}
+
+    {% if can_reply %}
+        {{ forum_posting_form('Reply', topic_info.topic_id, true, 'reply', true) }}
+
+        <!--script>
+            window.addEventListener('load', () => {
+                closeContainer('reply');
+                document.getElementById('reply').children[0].addEventListener('mouseover', () => openContainer('reply'));
+            });
+        </script-->
+    {% endif %}
+
+    {{ navigation(mio_navigation, '/forum/') }}
+{% endblock %}

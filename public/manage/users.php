@@ -32,7 +32,6 @@ switch ($_GET['v'] ?? null) {
         $getManageUsers->bindValue('take', $usersTake);
         $manageUsers = $getManageUsers->execute() ? $getManageUsers->fetchAll() : [];
 
-        //$manage_users = UserV1::paginate(32, ['*'], 'p', $page_id);
         $templating->vars([
             'manage_users' => $manageUsers,
             'manage_users_count' => $manageUsersCount,
@@ -97,7 +96,6 @@ switch ($_GET['v'] ?? null) {
         $getManageRoles->bindValue('take', $rolesTake);
         $manageRoles = $getManageRoles->execute() ? $getManageRoles->fetchAll() : [];
 
-        //$manage_roles = Role::paginate(10, ['*'], 'p', $page_id);
         $templating->vars([
             'manage_roles' => $manageRoles,
             'manage_roles_count' => $manageRolesCount,

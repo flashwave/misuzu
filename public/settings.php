@@ -11,8 +11,7 @@ $query_offset = (int)($_GET['o'] ?? 0);
 $query_take = 15;
 
 if (!$app->hasActiveSession()) {
-    http_response_code(403);
-    echo $templating->render('errors.403');
+    echo render_error(403);
     return;
 }
 

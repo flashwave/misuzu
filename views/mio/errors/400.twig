@@ -1,0 +1,8 @@
+{% extends '@mio/errors/master.twig' %}
+
+{% set error_code = 400 %}
+{% set error_text = 'Bad Request' %}
+
+{% block error_message %}
+    <p>Whatever you tried to do, you probably shouldn't.</p>
+{% endblock %}

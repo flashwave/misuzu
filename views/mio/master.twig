@@ -3,6 +3,7 @@
 {% set mio_navigation = {
     'Home': '/',
     'News': '/news.php',
+    'Forum': '/forum/',
     'Chat': 'https://chat.flashii.net',
 } %}
 
@@ -76,5 +77,48 @@
                 </div>
             </footer>
         </div>
+        <script>
+            // move this to an external JS/TS file eventually.
+            const containerClass = 'container',
+                containerHiddenClass = 'container--hidden';
+
+            function validateContainer(elem) {
+                return elem.classList.contains(containerClass);
+            }
+
+            function containerIsClosed(elem) {
+                return elem.classList.contains(containerHiddenClass);
+            }
+
+            function toggleContainer(id) {
+                const elem = document.getElementById(id);
+
+                if (!validateContainer(elem))
+                    return;
+
+                if (containerIsClosed(elem))
+                    openContainer(id);
+                else
+                    closeContainer(id);
+            }
+
+            function openContainer(id) {
+                const elem = document.getElementById(id);
+
+                if (!validateContainer(elem) || !containerIsClosed(elem))
+                    return;
+
+                elem.classList.remove(containerHiddenClass);
+            }
+
+            function closeContainer(id) {
+                const elem = document.getElementById(id);
+
+                if (!validateContainer(elem) || containerIsClosed(elem))
+                    return;
+
+                elem.classList.add(containerHiddenClass);
+            }
+        </script>
     </body>
 </html>
