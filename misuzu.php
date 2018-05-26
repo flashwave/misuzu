@@ -75,8 +75,7 @@ if (PHP_SAPI !== 'cli') {
 
     if ($manage_mode) {
         if ($app->getUserId() !== 1) {
-            http_response_code(403);
-            echo $app->getTemplating()->render('errors.403');
+            echo render_error(403);
             exit;
         }
 

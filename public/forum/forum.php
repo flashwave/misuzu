@@ -16,8 +16,7 @@ $templating = $app->getTemplating();
 $forum = forum_fetch($forumId);
 
 if (empty($forum) || ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK && empty($forum['forum_link']))) {
-    http_response_code(404);
-    echo $templating->render('errors.404');
+    echo render_error(404);
     return;
 }
 

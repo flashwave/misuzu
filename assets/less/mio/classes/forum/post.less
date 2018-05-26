@@ -1,9 +1,15 @@
+@mio-forum-post-mobile: 700px;
+
 .forum__post {
     display: flex;
     border: 1px solid #9475b2;
     box-shadow: 0 1px 2px #9475b2;
     background-color: #fbeeff;
     margin: 2px 0;
+
+    @media (max-width: @mio-forum-post-mobile) {
+        flex-direction: column;
+    }
 
     &__content {
         display: flex;
@@ -16,6 +22,12 @@
         &__text {
             margin: 2px;
             line-height: 1.2em;
+
+            @media (max-width: @mio-forum-post-mobile) {
+                margin: 4px;
+                font-size: 1.2em;
+                line-height: 1.3em;
+            }
         }
 
         &__info {
@@ -42,15 +54,32 @@
         text-align: center;
         flex-grow: 0;
         flex-shrink: 0;
-        min-width: 150px;
+        min-width: 170px;
         display: flex;
         flex-direction: column;
         align-items: center;
+
+        @media (max-width: @mio-forum-post-mobile) {
+            border-right-width: 0;
+            border: 1px solid #9475b2;
+            flex-direction: row;
+            border-bottom-width: 2px;
+        }
 
         &__joined {
             flex-grow: 1;
             flex-shrink: 1;
             margin: 5px;
+            max-width: 170px;
+
+            // somewhat temporary?
+            // more stuff will be added eventually which this will be mixed in with
+            display: flex;
+            flex-direction: column-reverse;
+
+            @media (max-width: @mio-forum-post-mobile) {
+                display: none;
+            }
         }
 
         &__link {
@@ -59,21 +88,34 @@
             text-decoration: none;
             flex-grow: 0;
             flex-shrink: 0;
+
+            @media (max-width: @mio-forum-post-mobile) {
+                display: flex;
+                align-items: center;
+                margin: 5px;
+                flex-grow: 1;
+            }
         }
 
         &__avatar {
             width: 120px;
             height: 120px;
             box-shadow: 0 1px 2px #9475b2;
+
+            @media (max-width: @mio-forum-post-mobile) {
+                width: 40px;
+                height: 40px;
+                margin-right: 5px;
+            }
         }
 
         &__username {
             font-size: 1.5em;
             line-height: 1.7em;
+        }
 
-            &:hover {
-                text-decoration: underline;
-            }
+        &:not(&--deleted) &__username:hover {
+            text-decoration: underline;
         }
     }
 }

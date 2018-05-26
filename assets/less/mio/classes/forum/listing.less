@@ -1,4 +1,4 @@
-@mio-forum-listing-mobile: 500px;
+@mio-forum-listing-mobile: 700px;
 
 .forum__listing {
     &__forums {
@@ -69,6 +69,14 @@
             }
         }
 
+        &__stats,
+        &__activity {
+            display: flex;
+            flex-shrink: 0;
+            flex-grow: 0;
+            border-left: 1px solid #9475b2;
+        }
+
         &__stats {
             text-align: center;
             justify-content: center;
@@ -76,7 +84,10 @@
             flex-direction: column;
 
             @media (max-width: @mio-forum-listing-mobile) {
-                display: none;
+                min-width: initial;
+                border-left-width: 0;
+                align-self: flex-end;
+                align-items: flex-end;
             }
         }
 
@@ -90,18 +101,34 @@
             color: #555;
         }
 
+        @media (max-width: @mio-forum-listing-mobile) {
+            &__topics,
+            &__posts {
+                font-size: 1em;
+                margin: 0 4px;
+            }
+        }
+
         &__activity {
             min-width: 270px;
             min-height: 50px;
             align-items: center;
 
             @media (max-width: @mio-forum-listing-mobile) {
-                display: none;
+                min-width: 150px;
+
+                &--empty {
+                    display: none;
+                }
             }
 
             &__title {
                 line-height: 1.4em;
                 margin-bottom: 2px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                width: 200px;
 
                 &__link {
                     color: inherit;
@@ -148,14 +175,14 @@
                 flex-grow: 1;
                 flex-shrink: 1;
             }
-        }
 
-        &__stats,
-        &__activity {
-            display: flex;
-            flex-shrink: 0;
-            flex-grow: 0;
-            border-left: 1px solid #9475b2;
+            @media (max-width: @mio-forum-listing-mobile) {
+                &__title,
+                &__info,
+                &__none {
+                    width: 90px;
+                }
+            }
         }
     }
 }

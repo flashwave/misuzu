@@ -72,15 +72,15 @@
                     <div class="forum__listing__entry__topics" title="Clicks">{{ forum.forum_link_clicks|number_format }}</div>
                 </div>
             {% endif %}
-        {% else %}
+        {% elseif forum.forum_type != 1 %}
             <div class="forum__listing__entry__stats">
                 <div class="forum__listing__entry__topics" title="Topics">{{ forum.forum_topic_count|number_format }}</div>
                 <div class="forum__listing__entry__posts" title="Posts">{{ forum.forum_post_count|number_format }}</div>
             </div>
         {% endif %}
 
-        {% if forum.forum_type != 2 or forum.forum_link_clicks is not null %}
-            <div class="forum__listing__entry__activity">
+        {% if forum.forum_type == 0 or forum.forum_link_clicks is not null %}
+            <div class="forum__listing__entry__activity{% if forum.forum_link_clicks is not null %} forum__listing__entry__activity--empty{% endif %}">
                 {% if forum.forum_type != 2 %}
                     {% if forum.recent_topic_id is null %}
                         <div class="forum__listing__entry__activity__none">
@@ -91,7 +91,7 @@
                             <div class="forum__listing__entry__activity__title">
                                 <a  class="forum__listing__entry__activity__title__link"
                                     href="/forum/topic.php?p={{ forum.recent_post_id }}#p{{ forum.recent_post_id }}">
-                                    {{ forum.recent_topic_title|slice(0, 30) ~ (forum.recent_topic_title|length > 30 ? '...' : '') }}
+                                    {{ forum.recent_topic_title }}
                                 </a>
                             </div>
                             <div class="forum__listing__entry__activity__info">
@@ -250,8 +250,8 @@
     {% set is_original_poster = is_original_poster|default(false) %}
 
     <div class="forum__post" id="p{{ post.post_id }}">
-        <div class="forum__post__author">
-            {% if post.poster_id is not null %}
+        {% if post.poster_id is not null %}
+            <div class="forum__post__author">
                 <a class="forum__post__author__link" href="/profile.php?u={{ post.poster_id }}">
                     <div
                         class="avatar forum__post__author__avatar"
@@ -262,14 +262,16 @@
                         style="color:{{ post.poster_colour|colour_get_css }}">{{ post.poster_name }}</div>
                 </a>
                 <div class="forum__post__author__joined">
-                    joined 5 years ago {# post.poster_joined #}
+                    joined {{ post.poster_joined }}
                 </div>
-            {% else %}
-                <div class="forum__post__author__joined">
-                    deleted user
+            </div>
+        {% else %}
+            <div class="forum__post__author forum__post__author--deleted">
+                <div class="forum__post__author__link">
+                    <div class="forum__post__author__username">Deleted User</div>
                 </div>
-            {% endif %}
-        </div>
+            </div>
+        {% endif %}
 
         <div class="forum__post__content">
             <div class="forum__post__content__info">
@@ -322,7 +324,7 @@
             </div>
 
             <div class="forum__posting__buttons">
-                <button class="input__button">Submit</button>
+                <button class="input__button" name="csrf" value="{{ csrf_token() }}">Submit</button>
             </div>
         </div>
     </form>

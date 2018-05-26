@@ -33,8 +33,7 @@ if ($post_id !== null) {
     $post = $getPost->execute() ? $getPost->fetch() : false;
 
     if ($post === false) {
-        http_response_code(404);
-        echo $templating->render('errors.404');
+        echo render_error(404);
         return;
     }
 
@@ -57,8 +56,7 @@ if ($category_id !== null) {
     $category = $getCategory->execute() ? $getCategory->fetch() : false;
 
     if ($category === false || $posts_offset < 0 || $posts_offset >= $category['posts_count']) {
-        http_response_code(404);
-        echo $templating->render('errors.404');
+        echo render_error(404);
         return;
     }
 
@@ -124,8 +122,7 @@ $postsCount = (int)$db->query('
 $templating->var('posts_count', $postsCount);
 
 if ($posts_offset < 0 || $posts_offset >= $postsCount) {
-    http_response_code(404);
-    echo $templating->render('errors.404');
+    echo render_error(404);
     return;
 }
 
@@ -152,8 +149,7 @@ $getPosts->bindValue('take', $posts_take);
 $posts = $getPosts->execute() ? $getPosts->fetchAll() : [];
 
 if (!$posts) {
-    http_response_code(404);
-    echo $templating->render('errors.404');
+    echo render_error(404);
     return;
 }
 

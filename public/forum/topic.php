@@ -20,16 +20,14 @@ if ($topicId < 1 && $postId > 0) {
 $topic = forum_topic_fetch($topicId);
 
 if (!$topic) {
-    http_response_code(404);
-    echo $templating->render('errors.404');
+    echo render_error(404);
     return;
 }
 
 $posts = forum_post_listing($topic['topic_id'], $postsOffset, $postsRange);
 
 if (!$posts) {
-    http_response_code(404);
-    echo $templating->render('errors.404');
+    echo render_error(404);
     return;
 }
 

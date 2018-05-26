@@ -230,3 +230,14 @@ function parse_bbcode(string $text): string
 {
     return \Misuzu\Parsers\BBCode\BBCodeParser::getOrCreateInstance()->parseText($text);
 }
+
+function render_error(int $code, string $template = 'errors.%d'): string
+{
+    http_response_code($code);
+
+    try {
+        return \Misuzu\Application::getInstance()->getTemplating()->render(sprintf($template, $code));
+    } catch (Exception $ex) {
+        return '';
+    }
+}

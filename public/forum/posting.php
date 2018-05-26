@@ -8,8 +8,7 @@ $db = Database::connection();
 $templating = $app->getTemplating();
 
 if (!$app->hasActiveSession()) {
-    http_response_code(403);
-    echo $templating->render('errors.403');
+    echo render_error(403);
     return;
 }
 
@@ -25,8 +24,7 @@ if ($postRequest) {
 }
 
 if (empty($postId) && empty($topicId) && empty($forumId)) {
-    http_response_code(404);
-    echo $templating->render('errors.404');
+    echo render_error(404);
     return;
 }
 
@@ -69,24 +67,26 @@ if (!empty($forumId)) {
 }
 
 if (empty($forum)) {
-    http_response_code(404);
-    echo $templating->render('errors.404');
+    echo render_error(404);
     return;
 }
 
 if ($forum['forum_type'] != MSZ_FORUM_TYPE_DISCUSSION) {
-    http_response_code(400);
-    echo $templating->render('errors.400');
+    echo render_error(400);
     return;
 }
 
 if ($forum['forum_archived'] || !empty($topic['topic_locked'])) {
-    http_response_code(403);
-    echo $templating->render('errors.403');
+    echo render_error(403);
     return;
 }
 
 if ($postRequest) {
+    if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
+        echo 'Could not verify request.';
+        return;
+    }
+
     $topicTitle = $_POST['post']['title'] ?? '';
     $topicTitleValidate = forum_validate_title($topicTitle);
     $postText = $_POST['post']['text'] ?? '';

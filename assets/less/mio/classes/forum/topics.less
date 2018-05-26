@@ -1,3 +1,5 @@
+@mio-forum-topics-mobile: 700px;
+
 .forum__topics {
     &__listing {
         margin: 1px;
@@ -33,6 +35,14 @@
             padding: 0 2px;
             word-wrap: break-word;
             overflow: hidden;
+        }
+
+        &__stats,
+        &__activity {
+            display: flex;
+            flex-shrink: 0;
+            flex-grow: 0;
+            border-left: 1px solid #9475b2;
         }
 
         &__info,
@@ -83,6 +93,11 @@
                 font-size: 0.8em;
                 color: #555;
             }
+
+            @media (max-width: @mio-forum-topics-mobile) {
+                font-size: 1em;
+                margin: 0 4px;
+            }
         }
 
         &__stats {
@@ -91,12 +106,24 @@
             min-width: 70px;
             flex-direction: column;
             justify-content: center;
+
+            @media (max-width: @mio-forum-topics-mobile) {
+                min-width: initial;
+                border-left-width: 0;
+                align-self: flex-end;
+                align-items: flex-end;
+            }
         }
 
         &__activity {
             min-width: 200px;
             padding-left: 3px;
             align-items: center;
+
+            @media (max-width: @mio-forum-topics-mobile) {
+                min-width: initial;
+                width: 120px;
+            }
 
             &__info {
                 flex-grow: 1;
@@ -111,14 +138,6 @@
                 flex-shrink: 0;
                 margin-right: 2px;
             }
-        }
-
-        &__stats,
-        &__activity {
-            display: flex;
-            flex-shrink: 0;
-            flex-grow: 0;
-            border-left: 1px solid #9475b2;
         }
     }
 }
