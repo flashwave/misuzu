@@ -7,6 +7,7 @@
  * NPM module files to be imported into /js/libraries.js
  */
 define('NODE_IMPORT_JS', [
+    'highlightjs/highlight.pack.min.js',
     'timeago.js/dist/timeago.min.js',
     'timeago.js/dist/timeago.locales.min.js',
 ]);
@@ -15,8 +16,9 @@ define('NODE_IMPORT_JS', [
  * NPM module files to be imported into /css/libraries.css
  */
 define('NODE_IMPORT_CSS', [
+    'highlightjs/styles/default.css',
+    'highlightjs/styles/tomorrow-night.css',
 ]);
-
 
 /**
  * BEYOND THIS POINT YOU WON'T HAVE TO EDIT THE CONFIG PRETTY MUCH EVER

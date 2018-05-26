@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "highlightjs": "^9.10.0",
     "timeago.js": "^3.0.2"
   }
 }

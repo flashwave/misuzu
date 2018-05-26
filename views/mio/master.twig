@@ -15,6 +15,7 @@
         {% include '@mio/_layout/meta.twig' %}
         <link href="https://static.flash.moe/fonts/visitor/visitor1.css" rel="stylesheet">
         <link href="/css/mio.css" rel="stylesheet">
+        <link href="/css/libraries.css" rel="stylesheet">
     </head>
     <body class="mio">
         <div class="mio__wrapper">
@@ -81,6 +82,7 @@
         <script>
             window.addEventListener('load', () => {
                 timeago().render(document.querySelectorAll('time'));
+                hljs.initHighlighting();
             });
 
             // move this to an external JS/TS file eventually.
