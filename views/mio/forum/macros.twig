@@ -101,7 +101,9 @@
                                         style="color:{{ forum.recent_post_user_colour|colour_get_css }}"
                                         class="forum__listing__entry__activity__user">{{ forum.recent_post_username }}</a>,
                                 {% endif %}
-                                {{ forum.recent_post_created }}
+                                <time
+                                    datetime="{{ forum.recent_post_created|date('c') }}"
+                                    title="{{ forum.recent_post_created|date('r') }}">{{ forum.recent_post_created|time_diff }}</time>
                             </div>
                         </div>
 
@@ -135,7 +137,10 @@
                 {% if archived %}
                     This topic has been <span class="forum__topic__locked__time">archived</span>.
                 {% else %}
-                    This topic was locked on <time class="forum__topic__locked__time">{{ locked }}</time>.
+                    This topic was locked <time
+                        class="forum__topic__locked__time"
+                        datetime="{{ locked|date('c') }}"
+                        title="{{ locked|date('r') }}">{{ locked|time_diff }}</time>.
                 {% endif %}
             </div>
         </div>
@@ -197,7 +202,7 @@
                         style="color:{{ topic.author_colour|colour_get_css }}">{{ topic.author_name }}</a>,
 
                 {% endif %}
-                {{ topic.topic_created }}
+                <time datetime="{{ topic.topic_created|date('c') }}" title="{{ topic.topic_created|date('r') }}">{{ topic.topic_created|time_diff }}</time>
             </div>
         </div>
 
@@ -214,7 +219,9 @@
             <div class="forum__topics__entry__activity__info">
                 <div class="forum__topics__entry__activity__datetime">
                     <a href="/forum/topic.php?p={{ topic.response_id }}#p{{ topic.response_id }}" class="forum__topics__entry__activity__datetime__link">
-                        {{ topic.response_created }}
+                        <time
+                            datetime="{{ topic.response_created|date('c') }}"
+                            title="{{ topic.response_created|date('r') }}">{{ topic.response_created|time_diff }}</time>
                     </a>
                 </div>
                 {% if topic.respondent_id is not null %}
@@ -262,7 +269,7 @@
                         style="color:{{ post.poster_colour|colour_get_css }}">{{ post.poster_name }}</div>
                 </a>
                 <div class="forum__post__author__joined">
-                    joined {{ post.poster_joined }}
+                    joined <time datetime="{{ post.poster_joined|date('c') }}" title="{{ post.poster_joined|date('r') }}">{{ post.poster_joined|time_diff }}</time>
                 </div>
             </div>
         {% else %}
@@ -276,7 +283,7 @@
         <div class="forum__post__content">
             <div class="forum__post__content__info">
                 <a class="forum__post__content__info__link" href="/forum/topic.php?t={{ post.topic_id }}#p{{ post.post_id }}">
-                    {{ post.post_created }}
+                    <time datetime="{{ post.post_created|date('c') }}" title="{{ post.post_created|date('r') }}">{{ post.post_created|time_diff }}</time>
                 </a>
                 <a class="forum__post__content__info__link" href="/forum/topic.php?p={{ post.post_id }}#p{{ post.post_id }}">
                     #{{ post.post_id }}

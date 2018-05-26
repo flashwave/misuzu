@@ -12,19 +12,23 @@ PUBLIC_JS="$PUBLIC_DIR/js"
 
 NODE_PATH='./node_modules'
 
-NODE_DEST_JS="$PUBLIC_JS/libs.js"
+NODE_DEST_JS="$PUBLIC_JS/libraries.js"
 NODE_IMPORT_JS=(
     #'turbolinks/dist/turbolinks.js'
     #'highlightjs/highlight.pack.min.js'
+    'timeago.js/dist/timeago.min.js'
+    'timeago.js/dist/timeago.locales.min.js'
 )
 
-NODE_DEST_CSS="$PUBLIC_CSS/libs.css"
+NODE_DEST_CSS="$PUBLIC_CSS/libraries.css"
 NODE_IMPORT_CSS=(
     #'highlightjs/styles/default.css'
 )
 
 # delete old files, using find to avoid errors
 echo "=> Cleanup"
+mkdir -p $PUBLIC_CSS
+mkdir -p $PUBLIC_JS
 find $ASSETS_TS -type f -name "*.d.ts" -delete -print
 find $PUBLIC_CSS -type f -name "*.css" -delete -print
 find $PUBLIC_JS -type f -name "*.js" -delete -print

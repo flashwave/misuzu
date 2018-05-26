@@ -21,22 +21,22 @@
                     </div>
                 </div>
 
-                <div class="settings__sessions__column settings__sessions__column--created" onmouseenter="this.children[1].textContent = '{{ session.created_at }}';" onmouseleave="this.children[1].textContent = '{{ session.created_at }}';"> {# .diffForHumans #}
+                <div class="settings__sessions__column settings__sessions__column--created" title="{{ session.created_at|date('r') }}">
                     <div class="settings__sessions__column__name">
                         Created
                     </div>
-                    <div class="settings__sessions__column__value">
-                        {{ session.created_at }} {# .diffForHumans #}
-                    </div>
+                    <time class="settings__sessions__column__value" datetime="{{ session.created_at|date('c') }}">
+                        {{ session.created_at|time_diff }}
+                    </time>
                 </div>
 
-                <div class="settings__sessions__column settings__sessions__column--expires" onmouseenter="this.children[1].textContent = '{{ session.expires_on }}';" onmouseleave="this.children[1].textContent = '{{ session.expires_on }}';"> {# .diffForHumans #}
+                <div class="settings__sessions__column settings__sessions__column--expires" title="{{ session.expires_on|date('r') }}">
                     <div class="settings__sessions__column__name">
                         Expires
                     </div>
-                    <div class="settings__sessions__column__value">
-                        {{ session.expires_on }} {# .diffForHumans #}
-                    </div>
+                    <time class="settings__sessions__column__value" datetime="{{ session.expires_on|date('c') }}">
+                        {{ session.expires_on|time_diff }}
+                    </time>
                 </div>
 
                 {% if session.user_agent|length > 0 %}

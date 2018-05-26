@@ -91,28 +91,27 @@
                         </div>
 
                         <div class="profile__info__block">
-                            <div class="profile__info__row" title="{{ profile.created_at }}">{# .format('r') #}
+                            <div class="profile__info__row" title="{{ profile.created_at|date('r') }}">
                                 <div class="profile__info__column profile__info__column--heading">
                                     Joined
                                 </div>
-                                <div class="profile__info__column">
-                                    {{ profile.created_at }}{# .diffForHumans #}
-                                </div>
+                                <time class="profile__info__column" datetime="{{ profile.created_at|date('c') }}">
+                                    {{ profile.created_at|time_diff }}
+                                </time>
                             </div>
 
                             {% if profile.last_seen is not null %}
-                                <div class="profile__info__row" title="{{ profile.last_seen }}">
+                                <div class="profile__info__row" title="{{ profile.last_seen|date('r') }}">
                                     <div class="profile__info__column profile__info__column--heading">
                                         Last Seen
                                     </div>
-                                    <div class="profile__info__column">
-                                        {#{% if profile.last_seen.addMinute.timestamp >= ''|date('U') %}
-                                            Online now
+                                    <time class="profile__info__column" datetime="{{ profile.last_seen|date('c') }}">
+                                        {% if profile.last_seen|date('U') + 10 >= ''|date('U') %}
+                                            just now
                                         {% else %}
-                                            {{ profile.last_seen }}{# .diffForHumans #\}
-                                        {% endif %}#}
-                                        {{ profile.last_seen }}
-                                    </div>
+                                            {{ profile.last_seen|time_diff }}
+                                        {% endif %}
+                                    </time>
                                 </div>
                             {% endif %}
                         </div>

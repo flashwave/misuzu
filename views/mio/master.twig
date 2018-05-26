@@ -77,7 +77,12 @@
                 </div>
             </footer>
         </div>
+        <script src="/js/libraries.js" charset="utf-8"></script>
         <script>
+            window.addEventListener('load', () => {
+                timeago().render(document.querySelectorAll('time'));
+            });
+
             // move this to an external JS/TS file eventually.
             const containerClass = 'container',
                 containerHiddenClass = 'container--hidden';

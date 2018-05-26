@@ -45,7 +45,7 @@
             <div class="profile__username">{{ profile.username }}</div>
         </div>
         <div class="profile__header-sub profile__dates">
-            <div class="profile__date--joined">Joined {{ profile.created_at.format('r') }}</div>
+            <div class="profile__date--joined">Joined {{ profile.created_at|date('r') }}</div>
         </div>
     </div>
     {% endspaceless %}

@@ -20,6 +20,7 @@
                         {% endif %}
                     </div>
                 </div>
+
                 <div class="settings__login-history__column settings__login-history__column--success">
                     <div class="settings__login-history__column__name">
                         Was Successful?
@@ -28,14 +29,16 @@
                         {{ attempt.was_successful ? 'Yes' : 'No' }}
                     </div>
                 </div>
-                <div class="settings__login-history__column settings__login-history__column--created" onmouseenter="this.children[1].textContent = '{{ attempt.created_at }}';" onmouseleave="this.children[1].textContent = '{{ attempt.created_at }}';"> {#.diffForHumans #}
+
+                <div class="settings__login-history__column settings__login-history__column--created" title="{{ attempt.created_at|date('r') }}">
                     <div class="settings__login-history__column__name">
                         Attempted
                     </div>
-                    <div class="settings__login-history__column__value">
-                        {{ attempt.created_at }} {#.diffForHumans #}
-                    </div>
+                    <time class="settings__login-history__column__value" datetime="{{ attempt.created_at|date('c') }}">
+                        {{ attempt.created_at|time_diff }}
+                    </time>
                 </div>
+
                 {% if attempt.user_agent|length > 0 %}
                     <div class="settings__login-history__column settings__login-history__column--user_agent">
                         <div class="settings__login-history__column__name">

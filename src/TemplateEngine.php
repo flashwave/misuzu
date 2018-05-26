@@ -2,6 +2,7 @@
 namespace Misuzu;
 
 use Twig_Environment;
+use Twig_Extensions_Extension_Date;
 use Twig_Loader_Filesystem;
 use Twig_SimpleFilter;
 use Twig_SimpleFunction;
@@ -56,6 +57,7 @@ class TemplateEngine
             'auto_reload' => $autoReload,
             'debug' => $debug,
         ]);
+        $this->twig->addExtension(new Twig_Extensions_Extension_Date);
     }
 
     /**
