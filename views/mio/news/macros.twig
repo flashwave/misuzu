@@ -9,9 +9,9 @@
                 <p><b><i><a href="/news.php?p={{ post.post_id }}">View full post</a></i></b></p>
             </div>
             <div class="news__preview__info">
-                <div class="news__preview__date">
-                    {{ post.created_at }}
-                </div>
+                <time class="news__preview__date" datetime="{{ post.created_at|date('c') }}" title="{{ post.created_at|date('r') }}">
+                    {{ post.created_at|time_diff }}
+                </time>
                 <a class="news__preview__user" href="/profile.php?u={{ post.user_id }}">
                     <div class="news__preview__user__name" style="color:{{ post.display_colour|colour_get_css }}">
                         {{ post.username }}

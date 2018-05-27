@@ -1,7 +1,7 @@
 @mio-navigation-mobile: 1000px;
 
 .navigation {
-    margin: 5px 0;
+    margin: 2px 0;
     width: 100%;
     display: flex;
     border-width: 0;
@@ -15,6 +15,18 @@
         border: none;
         align-items: center;
         flex-direction: column;
+    }
+
+    @media (min-width: @mio-navigation-mobile) {
+        &--left {
+            justify-content: left;
+            padding-left: 25px;
+        }
+
+        &--right {
+            justify-content: right;
+            padding-right: 25px;
+        }
     }
 
     &--top {

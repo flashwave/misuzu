@@ -12,7 +12,7 @@
 
         <div class="container__content news__post__content">
             <div class="news__post__text">
-                {{ post.post_text|raw }}
+                {{ post.post_text|md|raw }}
             </div>
 
             <div class="news__sidebar news__post__details">
@@ -34,9 +34,9 @@
                     <div class="news__post__info__name">
                         Posted
                     </div>
-                    <div class="news__post__info__value">
-                        {{ post.created_at }}
-                    </div>
+                    <time class="news__post__info__value" datetime="{{ post.created_at|date('c') }}" title="{{ post.created_at|date('r') }}">
+                        {{ post.created_at|time_diff }}
+                    </time>
                 </div>
 
                 {# TODO: make this work

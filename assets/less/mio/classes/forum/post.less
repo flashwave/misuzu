@@ -1,0 +1,116 @@
+@mio-forum-post-mobile: 700px;
+
+.forum__post {
+    display: flex;
+    border: 1px solid #9475b2;
+    box-shadow: 0 1px 2px #9475b2;
+    background-color: #fbeeff;
+    margin: 2px 0;
+
+    @media (max-width: @mio-forum-post-mobile) {
+        flex-direction: column;
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        flex-shrink: 1;
+        word-wrap: break-word;
+        overflow: hidden;
+
+        &__text {
+            margin: 2px;
+            line-height: 1.2em;
+
+            @media (max-width: @mio-forum-post-mobile) {
+                margin: 4px;
+                font-size: 1.2em;
+                line-height: 1.3em;
+            }
+        }
+
+        &__info {
+            font-size: .9em;
+            line-height: 1.7em;
+            padding: 0 2px;
+            border-bottom: 1px solid #9475b2;
+            display: flex;
+            justify-content: space-between;
+
+            &__link {
+                color: inherit;
+                text-decoration: none;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+
+    &__author {
+        border-right: 1px solid #9475b2;
+        text-align: center;
+        flex-grow: 0;
+        flex-shrink: 0;
+        min-width: 170px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        @media (max-width: @mio-forum-post-mobile) {
+            border-right-width: 0;
+            border: 1px solid #9475b2;
+            flex-direction: row;
+            border-bottom-width: 2px;
+        }
+
+        &__joined {
+            flex-grow: 1;
+            flex-shrink: 1;
+            margin: 5px;
+            max-width: 170px;
+
+            @media (max-width: @mio-forum-post-mobile) {
+                display: none;
+            }
+        }
+
+        &__link {
+            margin: 15px;
+            color: inherit;
+            text-decoration: none;
+            flex-grow: 0;
+            flex-shrink: 0;
+
+            @media (max-width: @mio-forum-post-mobile) {
+                display: flex;
+                align-items: center;
+                margin: 5px;
+                flex-grow: 1;
+            }
+        }
+
+        &__avatar {
+            width: 120px;
+            height: 120px;
+            box-shadow: 0 1px 2px #9475b2;
+
+            @media (max-width: @mio-forum-post-mobile) {
+                width: 40px;
+                height: 40px;
+                margin-right: 5px;
+            }
+        }
+
+        &__username {
+            font-size: 1.5em;
+            line-height: 1.7em;
+        }
+
+        &:not(&--deleted) &__username:hover {
+            text-decoration: underline;
+        }
+    }
+}

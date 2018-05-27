@@ -4,7 +4,15 @@ namespace Misuzu;
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/src/colour.php';
 require_once __DIR__ . '/src/zalgo.php';
+require_once __DIR__ . '/src/Forum/forum.php';
+require_once __DIR__ . '/src/Forum/post.php';
+require_once __DIR__ . '/src/Forum/topic.php';
+require_once __DIR__ . '/src/Forum/validate.php';
 require_once __DIR__ . '/src/Users/login_attempt.php';
+require_once __DIR__ . '/src/Users/profile.php';
+require_once __DIR__ . '/src/Users/role.php';
+require_once __DIR__ . '/src/Users/session.php';
+require_once __DIR__ . '/src/Users/user.php';
 require_once __DIR__ . '/src/Users/validation.php';
 
 $app = new Application(
@@ -71,8 +79,7 @@ if (PHP_SAPI !== 'cli') {
 
     if ($manage_mode) {
         if ($app->getUserId() !== 1) {
-            http_response_code(403);
-            echo $app->getTemplating()->render('errors.403');
+            echo render_error(403);
             exit;
         }
 

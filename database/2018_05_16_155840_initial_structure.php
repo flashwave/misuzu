@@ -2,7 +2,6 @@
 namespace Misuzu\DatabaseMigrations\InitialStructure;
 
 use PDO;
-use Misuzu\Database;
 
 function migrate_up(PDO $conn): void
 {
@@ -27,8 +26,8 @@ function migrate_up(PDO $conn): void
             `username`      VARCHAR(255)        NOT NULL,
             `password`      VARCHAR(255)        NULL        DEFAULT NULL,
             `email`         VARCHAR(255)        NOT NULL,
-            `register_ip`   BLOB                NOT NULL,
-            `last_ip`       BLOB                NOT NULL,
+            `register_ip`   VARBINARY(16)       NOT NULL,
+            `last_ip`       VARBINARY(16)       NOT NULL,
             `user_country`  CHAR(2)             NOT NULL    DEFAULT 'XX',
             `user_chat_key` VARCHAR(32)         NULL        DEFAULT NULL,
             `created_at`    TIMESTAMP           NULL        DEFAULT NULL,
@@ -83,7 +82,7 @@ function migrate_up(PDO $conn): void
             `session_id`        INT(10) UNSIGNED    NOT NULL    AUTO_INCREMENT,
             `user_id`           INT(10) UNSIGNED    NOT NULL,
             `session_key`       VARCHAR(255)        NOT NULL,
-            `session_ip`        BLOB                NOT NULL,
+            `session_ip`        VARBINARY(16)       NOT NULL,
             `user_agent`        VARCHAR(255)        NULL        DEFAULT NULL,
             `expires_on`        TIMESTAMP           NULL        DEFAULT NULL,
             `created_at`        TIMESTAMP           NULL        DEFAULT NULL,
@@ -103,7 +102,7 @@ function migrate_up(PDO $conn): void
         CREATE TABLE `msz_login_attempts` (
             `attempt_id`        INT(10) UNSIGNED    NOT NULL    AUTO_INCREMENT,
             `was_successful`    TINYINT(1)          NOT NULL,
-            `attempt_ip`        BLOB                NOT NULL,
+            `attempt_ip`        VARBINARY(16)       NOT NULL,
             `attempt_country`   CHAR(2)             NOT NULL    DEFAULT 'XX',
             `user_id`           INT(10) UNSIGNED    NULL        DEFAULT NULL,
             `created_at`        TIMESTAMP           NULL        DEFAULT NULL,

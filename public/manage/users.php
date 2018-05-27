@@ -6,9 +6,8 @@ require_once __DIR__ . '/../../misuzu.php';
 $db = Database::connection();
 $templating = $app->getTemplating();
 
-$is_post_request = $_SERVER['REQUEST_METHOD'] === 'POST';
+$isPostRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
 $queryQffset = (int)($_GET['o'] ?? 0);
-$page_id = (int)($_GET['p'] ?? 1);
 
 switch ($_GET['v'] ?? null) {
     case 'listing':
@@ -32,7 +31,6 @@ switch ($_GET['v'] ?? null) {
         $getManageUsers->bindValue('take', $usersTake);
         $manageUsers = $getManageUsers->execute() ? $getManageUsers->fetchAll() : [];
 
-        //$manage_users = UserV1::paginate(32, ['*'], 'p', $page_id);
         $templating->vars([
             'manage_users' => $manageUsers,
             'manage_users_count' => $manageUsersCount,
@@ -43,13 +41,12 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'view':
-        $user_id = $_GET['u'] ?? null;
+        $userId = $_GET['u'] ?? null;
 
-        if ($user_id === null || ($user_id = (int)$user_id) < 1) {
+        if ($userId === null || ($userId = (int)$userId) < 1) {
             echo 'no';
             break;
         }
-
         $getUser = $db->prepare('
             SELECT
                 u.*,
@@ -61,7 +58,7 @@ switch ($_GET['v'] ?? null) {
             ON u.`display_role` = r.`role_id`
             WHERE `user_id` = :user_id
         ');
-        $getUser->bindValue('user_id', $user_id);
+        $getUser->bindValue('user_id', $userId);
         $getUser->execute();
         $manageUser = $getUser->execute() ? $getUser->fetch() : [];
 
@@ -70,7 +67,75 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $templating->var('view_user', $manageUser);
+        $getHasRoles = $db->prepare('
+            SELECT `role_id`, `role_name`
+            FROM `msz_roles`
+            WHERE `role_id` IN (
+                SELECT `role_id`
+                FROM `msz_user_roles`
+                WHERE `user_id` = :user_id
+            )
+        ');
+        $getHasRoles->bindValue('user_id', $manageUser['user_id']);
+        $hasRoles = $getHasRoles->execute() ? $getHasRoles->fetchAll() : [];
+
+        $getAvailableRoles = $db->prepare('
+            SELECT `role_id`, `role_name`
+            FROM `msz_roles`
+            WHERE `role_id` NOT IN (
+                SELECT `role_id`
+                FROM `msz_user_roles`
+                WHERE `user_id` = :user_id
+            )
+        ');
+        $getAvailableRoles->bindValue('user_id', $manageUser['user_id']);
+        $availableRoles = $getAvailableRoles->execute() ? $getAvailableRoles->fetchAll() : [];
+
+        if ($isPostRequest) {
+            if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
+                echo 'csrf err';
+                break;
+            }
+
+            if (isset($_POST['avatar'])) {
+                switch ($_POST['avatar']['mode'] ?? '') {
+                    case 'delete':
+                        user_avatar_delete($manageUser['user_id']);
+                        break;
+
+                    case 'upload':
+                        user_avatar_set_from_path($manageUser['user_id'], $_FILES['avatar']['tmp_name']['file']);
+                        break;
+                }
+            }
+
+            if (isset($_POST['add_role'])) {
+                user_role_add($manageUser['user_id'], $_POST['add_role']['role']);
+            }
+
+            if (isset($_POST['manage_roles'])) {
+                switch ($_POST['manage_roles']['mode'] ?? '') {
+                    case 'display':
+                        user_role_set_display($manageUser['user_id'], $_POST['manage_roles']['role']);
+                        break;
+
+                    case 'remove':
+                        if ((int)$_POST['manage_roles']['role'] !== MSZ_ROLE_MAIN) {
+                            user_role_remove($manageUser['user_id'], $_POST['manage_roles']['role']);
+                        }
+                        break;
+                }
+            }
+
+            header("Location: ?v=view&u={$manageUser['user_id']}");
+            break;
+        }
+
+        $templating->vars([
+            'available_roles' => $availableRoles,
+            'has_roles' => $hasRoles,
+            'view_user' => $manageUser,
+        ]);
         echo $templating->render('@manage.users.view');
         break;
 
@@ -97,7 +162,6 @@ switch ($_GET['v'] ?? null) {
         $getManageRoles->bindValue('take', $rolesTake);
         $manageRoles = $getManageRoles->execute() ? $getManageRoles->fetchAll() : [];
 
-        //$manage_roles = Role::paginate(10, ['*'], 'p', $page_id);
         $templating->vars([
             'manage_roles' => $manageRoles,
             'manage_roles_count' => $manageRolesCount,
@@ -108,9 +172,9 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'role':
-        $role_id = $_GET['r'] ?? null;
+        $roleId = $_GET['r'] ?? null;
 
-        if ($is_post_request) {
+        if ($isPostRequest) {
             if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
                 echo 'csrf err';
                 break;
@@ -121,27 +185,27 @@ switch ($_GET['v'] ?? null) {
                 break;
             }
 
-            $role_name = $_POST['role']['name'] ?? '';
-            $role_name_length = strlen($role_name);
+            $roleName = $_POST['role']['name'] ?? '';
+            $roleNameLength = strlen($roleName);
 
-            if ($role_name_length < 1 || $role_name_length > 255) {
+            if ($roleNameLength < 1 || $roleNameLength > 255) {
                 echo 'invalid name length';
                 break;
             }
 
-            $role_secret = !empty($_POST['role']['secret']);
+            $roleSecret = !empty($_POST['role']['secret']);
 
-            $role_hierarchy = (int)($_POST['role']['hierarchy'] ?? -1);
+            $roleHierarchy = (int)($_POST['role']['hierarchy'] ?? -1);
 
-            if ($role_hierarchy < 1 || $role_hierarchy > 100) {
+            if ($roleHierarchy < 1 || $roleHierarchy > 100) {
                 echo 'Invalid hierarchy value.';
                 break;
             }
 
-            $role_colour = colour_create();
+            $roleColour = colour_create();
 
             if (!empty($_POST['role']['colour']['inherit'])) {
-                colour_set_inherit($role_colour);
+                colour_set_inherit($roleColour);
             } else {
                 foreach (['red', 'green', 'blue'] as $key) {
                     $value = (int)($_POST['role']['colour'][$key] ?? -1);
@@ -152,18 +216,18 @@ switch ($_GET['v'] ?? null) {
                         break 2;
                     }
 
-                    $func($role_colour, $value);
+                    $func($roleColour, $value);
                 }
             }
 
-            $role_description = $_POST['role']['description'] ?? '';
+            $roleDescription = $_POST['role']['description'] ?? '';
 
-            if (strlen($role_description) > 1000) {
+            if (strlen($roleDescription) > 1000) {
                 echo 'description is too long';
                 break;
             }
 
-            if ($role_id < 1) {
+            if ($roleId < 1) {
                 $updateRole = $db->prepare('
                     INSERT INTO `msz_roles`
                         (`role_name`, `role_hierarchy`, `role_secret`, `role_colour`, `role_description`, `created_at`)
@@ -180,26 +244,26 @@ switch ($_GET['v'] ?? null) {
                     `role_description` = :role_description
                     WHERE `role_id` = :role_id
                 ');
-                $updateRole->bindValue('role_id', $role_id);
+                $updateRole->bindValue('role_id', $roleId);
             }
 
-            $updateRole->bindValue('role_name', $role_name);
-            $updateRole->bindValue('role_hierarchy', $role_hierarchy);
-            $updateRole->bindValue('role_secret', $role_secret ? 1 : 0);
-            $updateRole->bindValue('role_colour', $role_colour);
-            $updateRole->bindValue('role_description', $role_description);
+            $updateRole->bindValue('role_name', $roleName);
+            $updateRole->bindValue('role_hierarchy', $roleHierarchy);
+            $updateRole->bindValue('role_secret', $roleSecret ? 1 : 0);
+            $updateRole->bindValue('role_colour', $roleColour);
+            $updateRole->bindValue('role_description', $roleDescription);
             $updateRole->execute();
 
-            if ($role_id < 1) {
-                $role_id = (int)$db->lastInsertId();
+            if ($roleId < 1) {
+                $roleId = (int)$db->lastInsertId();
             }
 
-            header("Location: ?v=role&r={$role_id}");
+            header("Location: ?v=role&r={$roleId}");
             break;
         }
 
-        if ($role_id !== null) {
-            if ($role_id < 1) {
+        if ($roleId !== null) {
+            if ($roleId < 1) {
                 echo 'no';
                 break;
             }
@@ -209,15 +273,15 @@ switch ($_GET['v'] ?? null) {
                 FROM `msz_roles`
                 WHERE `role_id` = :role_id
             ');
-            $getEditRole->bindValue('role_id', $role_id);
-            $edit_role = $getEditRole->execute() ? $getEditRole->fetch() : [];
+            $getEditRole->bindValue('role_id', $roleId);
+            $editRole = $getEditRole->execute() ? $getEditRole->fetch() : [];
 
-            if (!$edit_role) {
+            if (!$editRole) {
                 echo 'invalid role';
                 break;
             }
 
-            $templating->vars(compact('edit_role'));
+            $templating->vars(['edit_role' => $editRole]);
         }
 
         echo $templating->render('@manage.users.roles_create');

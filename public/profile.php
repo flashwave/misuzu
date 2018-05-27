@@ -46,7 +46,17 @@ switch ($mode) {
             SELECT
                 u.*,
                 r.`role_title` as `user_title`,
-                COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `display_colour`
+                COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `display_colour`,
+                (
+                    SELECT COUNT(`topic_id`)
+                    FROM `msz_forum_topics` as t
+                    WHERE t.`user_id` = u.`user_id`
+                ) as `forum_topic_count`,
+                (
+                    SELECT COUNT(`post_id`)
+                    FROM `msz_forum_posts` as p
+                    WHERE p.`user_id` = u.`user_id`
+                ) as `forum_post_count`
             FROM `msz_users` as u
             LEFT JOIN `msz_roles` as r
             ON r.`role_id` = u.`display_role`
