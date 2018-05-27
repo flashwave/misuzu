@@ -106,11 +106,7 @@
                                         Last Seen
                                     </div>
                                     <time class="profile__info__column" datetime="{{ profile.last_seen|date('c') }}">
-                                        {% if profile.last_seen|date('U') + 10 >= ''|date('U') %}
-                                            just now
-                                        {% else %}
-                                            {{ profile.last_seen|time_diff }}
-                                        {% endif %}
+                                        {{ profile.last_seen|date('U') + 10 >= ''|date('U') ? 'just now' : profile.last_seen|time_diff }}
                                     </time>
                                 </div>
                             {% endif %}

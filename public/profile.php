@@ -45,7 +45,7 @@ switch ($mode) {
         $getProfile = Database::connection()->prepare('
             SELECT
                 u.*,
-                r.`role_title` as `user_title`,
+                COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
                 COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `display_colour`,
                 (
                     SELECT COUNT(`topic_id`)

@@ -1,12 +1,16 @@
 {% extends '@mio/settings/master.twig' %}
 {% from '@mio/macros.twig' import pagination %}
 
+{% set lhpagination = pagination(login_attempts_count, login_attempts_take, login_attempts_offset, '?m=login-history', 'settings__') %}
+
 {% block settings_content %}
     <div class="settings__description">
         <p>These are all the login attempts to your account. If any attempt that you don't recognise is marked as successful your account may be compromised, ask a staff member for advice in this case.</p>
     </div>
 
     <div class="settings__login-history">
+        {{ lhpagination }}
+
         {% for attempt in user_login_attempts %}
             <div class="settings__login-history__entry" id="attempt-{{ attempt.attempt_id }}">
                 <div class="settings__login-history__column settings__login-history__column--ip">
@@ -52,6 +56,6 @@
             </div>
         {% endfor %}
 
-        {{ pagination(login_attempts_count, login_attempts_take, login_attempts_offset, '?m=login-history', 'settings__') }}
+        {{ lhpagination }}
     </div>
 {% endblock %}
