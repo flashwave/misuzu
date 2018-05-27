@@ -46,23 +46,25 @@
         </div>
     </div>
 
-    <div class="container">
+    <form class="container" method="post" enctype="multipart/form-data" action="">
         <h1 class="container__title">
             Avatar
         </h1>
 
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+
         <label class="form__label">
             <div class="form__label__text">New Avatar</div>
             <div class="form__label__input">
-                <input class="input input--text" type="file" name="user[avatar]">
+                <input class="input input--text" type="file" name="avatar[file]">
             </div>
         </label>
 
         <div>
-            <button class="button" name="csrf" value="{{ csrf_token() }}">Upload</button>
-            <button class="button" name="csrf" value="{{ csrf_token() }}">Delete</button>
+            <button class="button" name="avatar[mode]" value="upload">Upload</button>
+            <button class="button" name="avatar[mode]" value="delete">Delete</button>
         </div>
-    </div>
+    </form>
 
     <div class="container">
         <h1 class="container__title">
@@ -168,9 +170,54 @@
         </div>
     </div>
 
-    <div class="container">
-        <h1 class="container__title">Roles</h1>
-    </div>
+    {% if available_roles|length > 0 %}
+        <form class="container" method="post" action="">
+            <h1 class="container__title">Add Role</h1>
+
+            <label class="form__label">
+                <div class="form__label__text">Available Roles</div>
+                <div class="form__label__input">
+                    <select name="add_role[role]" class="input input--select">
+                        {% for role in available_roles %}
+                            <option value="{{ role.role_id }}">
+                                {{ role.role_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </label>
+
+            <div>
+                <button class="button" name="csrf" value="{{ csrf_token() }}">Add</button>
+            </div>
+        </form>
+    {% endif %}
+
+    {% if has_roles|length > 0 %}
+        <form class="container" method="post" action="">
+            <h1 class="container__title">Manage Roles</h1>
+
+            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+
+            <label class="form__label">
+                <div class="form__label__text">Has Roles</div>
+                <div class="form__label__input">
+                    <select name="manage_roles[role]" class="input input--select">
+                        {% for role in has_roles %}
+                            <option value="{{ role.role_id }}"{% if role.role_id == view_user.display_role %} selected{% endif %}>
+                                {{ role.role_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </label>
+
+            <div>
+                <button class="button" name="manage_roles[mode]" value="display">Set Display</button>
+                <button class="button" name="manage_roles[mode]" value="remove">Remove</button>
+            </div>
+        </form>
+    {% endif %}
 
     <div class="container">
         <h1 class="container__title">Permissions</h1>

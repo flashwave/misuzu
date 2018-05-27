@@ -47,7 +47,6 @@ switch ($_GET['v'] ?? null) {
             echo 'no';
             break;
         }
-
         $getUser = $db->prepare('
             SELECT
                 u.*,
@@ -68,7 +67,75 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $templating->var('view_user', $manageUser);
+        $getHasRoles = $db->prepare('
+            SELECT `role_id`, `role_name`
+            FROM `msz_roles`
+            WHERE `role_id` IN (
+                SELECT `role_id`
+                FROM `msz_user_roles`
+                WHERE `user_id` = :user_id
+            )
+        ');
+        $getHasRoles->bindValue('user_id', $manageUser['user_id']);
+        $hasRoles = $getHasRoles->execute() ? $getHasRoles->fetchAll() : [];
+
+        $getAvailableRoles = $db->prepare('
+            SELECT `role_id`, `role_name`
+            FROM `msz_roles`
+            WHERE `role_id` NOT IN (
+                SELECT `role_id`
+                FROM `msz_user_roles`
+                WHERE `user_id` = :user_id
+            )
+        ');
+        $getAvailableRoles->bindValue('user_id', $manageUser['user_id']);
+        $availableRoles = $getAvailableRoles->execute() ? $getAvailableRoles->fetchAll() : [];
+
+        if ($isPostRequest) {
+            if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
+                echo 'csrf err';
+                break;
+            }
+
+            if (isset($_POST['avatar'])) {
+                switch ($_POST['avatar']['mode'] ?? '') {
+                    case 'delete':
+                        user_avatar_delete($manageUser['user_id']);
+                        break;
+
+                    case 'upload':
+                        user_avatar_set_from_path($manageUser['user_id'], $_FILES['avatar']['tmp_name']['file']);
+                        break;
+                }
+            }
+
+            if (isset($_POST['add_role'])) {
+                user_role_add($manageUser['user_id'], $_POST['add_role']['role']);
+            }
+
+            if (isset($_POST['manage_roles'])) {
+                switch ($_POST['manage_roles']['mode'] ?? '') {
+                    case 'display':
+                        user_role_set_display($manageUser['user_id'], $_POST['manage_roles']['role']);
+                        break;
+
+                    case 'remove':
+                        if ((int)$_POST['manage_roles']['role'] !== MSZ_ROLE_MAIN) {
+                            user_role_remove($manageUser['user_id'], $_POST['manage_roles']['role']);
+                        }
+                        break;
+                }
+            }
+
+            header("Location: ?v=view&u={$manageUser['user_id']}");
+            break;
+        }
+
+        $templating->vars([
+            'available_roles' => $availableRoles,
+            'has_roles' => $hasRoles,
+            'view_user' => $manageUser,
+        ]);
         echo $templating->render('@manage.users.view');
         break;
 

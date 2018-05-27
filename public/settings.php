@@ -17,6 +17,30 @@ if (!$app->hasActiveSession()) {
 
 $csrfErrorString = "Couldn't verify you, please refresh the page and retry.";
 
+$avatarErrorStrings = [
+    'upload' => [
+        'default' => 'Something happened? (UP:%1$d)',
+        UPLOAD_ERR_OK => '',
+        UPLOAD_ERR_NO_FILE => 'Select a file before hitting upload!',
+        UPLOAD_ERR_PARTIAL => 'The upload was interrupted, please try again!',
+        UPLOAD_ERR_INI_SIZE => 'Your avatar is not allowed to be larger in file size than %2$s!',
+        UPLOAD_ERR_FORM_SIZE => 'Your avatar is not allowed to be larger in file size than %2$s!',
+        UPLOAD_ERR_NO_TMP_DIR => 'Unable to save your avatar, contact an administator!',
+        UPLOAD_ERR_CANT_WRITE => 'Unable to save your avatar, contact an administator!',
+    ],
+    'set' => [
+        'default' => 'Something happened? (SET:%1$d)',
+        MSZ_USER_AVATAR_NO_ERRORS => '',
+        MSZ_USER_AVATAR_ERROR_INVALID_IMAGE => 'The file you uploaded was not an image!',
+        MSZ_USER_AVATAR_ERROR_PROHIBITED_TYPE => 'This type of image is not supported, keep to PNG, JPG or GIF!',
+        MSZ_USER_AVATAR_ERROR_DIMENSIONS_TOO_LARGE => 'Your avatar can\'t be larger than %3$dx%4$d!',
+        MSZ_USER_AVATAR_ERROR_DATA_TOO_LARGE => 'Your avatar is not allowed to be larger in file size than %2$s!',
+        MSZ_USER_AVATAR_ERROR_TMP_FAILED => 'Unable to save your avatar, contact an administator!',
+        MSZ_USER_AVATAR_ERROR_STORE_FAILED => 'Unable to save your avatar, contact an administator!',
+        MSZ_USER_AVATAR_ERROR_FILE_NOT_FOUND => 'Unable to save your avatar, contact an administator!',
+    ],
+];
+
 $settingsModes = [
     'account' => 'Account',
     'avatar' => 'Avatar',
@@ -193,16 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
                 }
 
-                $delete_this = [
-                    $app->getStore('avatars/original')->filename($avatarFileName),
-                    $app->getStore('avatars/200x200')->filename($avatarFileName),
-                ];
-
-                foreach ($delete_this as $delete_avatar) {
-                    if (File::exists($delete_avatar)) {
-                        File::delete($delete_avatar);
-                    }
-                }
+                user_avatar_delete($app->getUserId());
                 break;
             }
 
@@ -212,78 +227,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
                 }
 
-                switch ($_FILES['avatar']['error']) {
-                    case UPLOAD_ERR_OK:
-                        break;
-
-                    case UPLOAD_ERR_NO_FILE:
-                        $settingsErrors[] = 'Select a file before hitting upload!';
-                        break;
-
-                    case UPLOAD_ERR_PARTIAL:
-                        $settingsErrors[] = 'The upload was interrupted, please try again!';
-                        break;
-
-                    case UPLOAD_ERR_INI_SIZE:
-                    case UPLOAD_ERR_FORM_SIZE:
-                        $settingsErrors[] = sprintf(
-                            'Your avatar is not allowed to be larger in filesize than %s',
-                            byte_symbol($avatarFileSizeMax, true)
-                        );
-                        break;
-
-                    case UPLOAD_ERR_NO_TMP_DIR:
-                    case UPLOAD_ERR_CANT_WRITE:
-                        $settingsErrors[] = 'Unable to save your avatar, contact an administator!';
-                        break;
-
-                    case UPLOAD_ERR_EXTENSION:
-                    default:
-                        $settingsErrors[] = 'Something happened?';
-                        break;
-                }
-
-                if (count($settingsErrors) > 0) {
-                    break;
-                }
-
-                $upload_path = $_FILES['avatar']['tmp_name'];
-                $upload_meta = getimagesize($upload_path);
-
-                if (!$upload_meta
-                    || !in_array($upload_meta[2], [IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG], true)
-                    || $upload_meta[0] < 1
-                    || $upload_meta[1] < 1) {
-                    $settingsErrors[] = 'Please provide a valid image.';
-                    break;
-                }
-
-                if ($upload_meta[0] > $avatarWidthMax || $upload_meta[1] > $avatarHeightMax) {
+                if ($_FILES['avatar']['error'] !== UPLOAD_ERR_OK) {
                     $settingsErrors[] = sprintf(
-                        "Your avatar can't be larger than %dx%d, yours was %dx%d",
+                        $avatarErrorStrings['upload'][$_FILES['avatar']['error']]
+                            ?? $avatarErrorStrings['upload']['default'],
+                        $_FILES['avatar']['error'],
+                        byte_symbol($avatarFileSizeMax, true),
                         $avatarWidthMax,
-                        $avatarHeightMax,
-                        $upload_meta[0],
-                        $upload_meta[1]
+                        $avatarHeightMax
                     );
                     break;
                 }
 
-                if (filesize($upload_path) > $avatarFileSizeMax) {
+                $setAvatar = user_avatar_set_from_path($app->getUserId(), $_FILES['avatar']['tmp_name']);
+
+                if ($setAvatar !== MSZ_USER_AVATAR_NO_ERRORS) {
                     $settingsErrors[] = sprintf(
-                        'Your avatar is not allowed to be larger in filesize than %s!',
-                        byte_symbol($avatarFileSizeMax, true)
+                        $avatarErrorStrings['set'][$setAvatar]
+                            ?? $avatarErrorStrings['set']['default'],
+                        $setAvatar,
+                        byte_symbol($avatarFileSizeMax, true),
+                        $avatarWidthMax,
+                        $avatarHeightMax
                     );
-                    break;
-                }
-
-                $avatar_path = $app->getStore('avatars/original')->filename($avatarFileName);
-                move_uploaded_file($upload_path, $avatar_path);
-
-                $crop_path = $app->getStore('avatars/200x200')->filename($avatarFileName);
-
-                if (File::exists($crop_path)) {
-                    File::delete($crop_path);
                 }
                 break;
             }

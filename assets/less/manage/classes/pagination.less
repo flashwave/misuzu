@@ -16,8 +16,8 @@
             box-shadow: 0 1px 5px 0 fade(#555, 80%);
         }
 
-        &--active,
-        &:active {
+        &:not(&--disabled)&--active,
+        &:not(&--disabled)&:active {
             background-color: #444;
         }
 
@@ -47,5 +47,9 @@
         &--next {
             font-size: 2em;
         }
+    }
+
+    &__option--disabled &__link {
+        cursor: default;
     }
 }
