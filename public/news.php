@@ -6,14 +6,17 @@ require_once __DIR__ . '/../misuzu.php';
 $db = Database::connection();
 $templating = $app->getTemplating();
 
-$category_id = isset($_GET['c']) ? (int)$_GET['c'] : null;
-$post_id = isset($_GET['p']) ? (int)$_GET['p'] : (isset($_GET['n']) ? (int)$_GET['n'] : null);
-$posts_offset = (int)($_GET['o'] ?? 0);
-$posts_take = 5;
+$categoryId = isset($_GET['c']) ? (int)$_GET['c'] : null;
+$postId = isset($_GET['p']) ? (int)$_GET['p'] : (isset($_GET['n']) ? (int)$_GET['n'] : null);
+$postsOffset = (int)($_GET['o'] ?? 0);
+$postsTake = 5;
 
-$templating->vars(compact('posts_offset', 'posts_take'));
+$templating->vars([
+    'posts_offset' => $postsOffset,
+    'posts_take' => $postsTake,
+]);
 
-if ($post_id !== null) {
+if ($postId !== null) {
     $getPost = $db->prepare('
         SELECT
             p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
@@ -29,7 +32,7 @@ if ($post_id !== null) {
         ON u.`display_role` = r.`role_id`
         WHERE `post_id` = :post_id
     ');
-    $getPost->bindValue(':post_id', $post_id, PDO::PARAM_INT);
+    $getPost->bindValue(':post_id', $postId, PDO::PARAM_INT);
     $post = $getPost->execute() ? $getPost->fetch() : false;
 
     if ($post === false) {
@@ -41,7 +44,7 @@ if ($post_id !== null) {
     return;
 }
 
-if ($category_id !== null) {
+if ($categoryId !== null) {
     $getCategory = $db->prepare('
         SELECT
             c.`category_id`, c.`category_name`, c.`category_description`,
@@ -52,10 +55,10 @@ if ($category_id !== null) {
         WHERE c.`category_id` = :category_id
         GROUP BY c.`category_id`
     ');
-    $getCategory->bindValue(':category_id', $category_id, PDO::PARAM_INT);
+    $getCategory->bindValue(':category_id', $categoryId, PDO::PARAM_INT);
     $category = $getCategory->execute() ? $getCategory->fetch() : false;
 
-    if ($category === false || $posts_offset < 0 || $posts_offset >= $category['posts_count']) {
+    if ($category === false || $postsOffset < 0 || $postsOffset >= $category['posts_count']) {
         echo render_error(404);
         return;
     }
@@ -77,8 +80,8 @@ if ($category_id !== null) {
         ORDER BY `created_at` DESC
         LIMIT :offset, :take
     ');
-    $getPosts->bindValue('offset', $posts_offset);
-    $getPosts->bindValue('take', $posts_take);
+    $getPosts->bindValue('offset', $postsOffset);
+    $getPosts->bindValue('take', $postsTake);
     $getPosts->bindValue('category_id', $category['category_id'], PDO::PARAM_INT);
     $posts = $getPosts->execute() ? $getPosts->fetchAll() : false;
 
@@ -121,7 +124,7 @@ $postsCount = (int)$db->query('
 
 $templating->var('posts_count', $postsCount);
 
-if ($posts_offset < 0 || $posts_offset >= $postsCount) {
+if ($postsOffset < 0 || $postsOffset >= $postsCount) {
     echo render_error(404);
     return;
 }
@@ -144,8 +147,8 @@ $getPosts = $db->prepare('
     ORDER BY p.`created_at` DESC
     LIMIT :offset, :take
 ');
-$getPosts->bindValue('offset', $posts_offset);
-$getPosts->bindValue('take', $posts_take);
+$getPosts->bindValue('offset', $postsOffset);
+$getPosts->bindValue('take', $postsTake);
 $posts = $getPosts->execute() ? $getPosts->fetchAll() : [];
 
 if (!$posts) {

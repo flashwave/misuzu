@@ -9,6 +9,10 @@ require_once __DIR__ . '/src/Forum/post.php';
 require_once __DIR__ . '/src/Forum/topic.php';
 require_once __DIR__ . '/src/Forum/validate.php';
 require_once __DIR__ . '/src/Users/login_attempt.php';
+require_once __DIR__ . '/src/Users/profile.php';
+require_once __DIR__ . '/src/Users/role.php';
+require_once __DIR__ . '/src/Users/session.php';
+require_once __DIR__ . '/src/Users/user.php';
 require_once __DIR__ . '/src/Users/validation.php';
 
 $app = new Application(

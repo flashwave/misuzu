@@ -10,31 +10,28 @@ $db = Database::connection();
 $config = $app->getConfig();
 $templating = $app->getTemplating();
 
-$username_validation_errors = [
+$usernameValidationErrors = [
     'trim' => 'Your username may not start or end with spaces!',
-    'short' => "Your username is too short, it has to be at least " . MSZ_USERNAME_MIN_LENGTH . " characters!",
-    'long' => "Your username is too long, it can't be longer than " . MSZ_USERNAME_MAX_LENGTH . " characters!",
+    'short' => sprintf('Your username is too short, it has to be at least %d characters!', MSZ_USERNAME_MIN_LENGTH),
+    'long' => sprintf("Your username is too long, it can't be longer than %d characters!", MSZ_USERNAME_MAX_LENGTH),
     'double-spaces' => "Your username can't contain double spaces.",
     'invalid' => 'Your username contains invalid characters.',
     'spacing' => 'Please use either underscores or spaces, not both!',
     'in-use' => 'This username is already taken!',
 ];
 
-$mode = $_GET['m'] ?? 'login';
-$prevent_registration = $config->get('Auth', 'prevent_registration', 'bool', false);
-$templating->var('auth_mode', $mode);
+$authMode = $_GET['m'] ?? 'login';
+$preventRegistration = $config->get('Auth', 'prevent_registration', 'bool', false);
 $templating->addPath('auth', __DIR__ . '/../views/auth');
-$templating->var('prevent_registration', $prevent_registration);
 
-if (!empty($_REQUEST['username'])) {
-    $templating->var('auth_username', $_REQUEST['username']);
-}
+$templating->vars([
+    'prevent_registration' => $preventRegistration,
+    'auth_mode' => $authMode,
+    'auth_username' => $_REQUEST['username'] ?? '',
+    'auth_email' => $_REQUEST['email'] ?? '',
+]);
 
-if (!empty($_REQUEST['email'])) {
-    $templating->var('auth_email', $_REQUEST['email']);
-}
-
-switch ($mode) {
+switch ($authMode) {
     case 'logout':
         if (!$app->hasActiveSession()) {
             header('Location: /');
@@ -44,12 +41,7 @@ switch ($mode) {
         if (isset($_GET['s']) && tmp_csrf_verify($_GET['s'])) {
             set_cookie_m('uid', '', -3600);
             set_cookie_m('sid', '', -3600);
-            $deleteSession = $db->prepare('
-                DELETE FROM `msz_sessions`
-                WHERE `session_id` = :session_id
-            ');
-            $deleteSession->bindValue('session_id', $app->getSessionId());
-            $deleteSession->execute();
+            user_session_delete($app->getSessionId());
             header('Location: /');
             return;
         }
@@ -63,35 +55,24 @@ switch ($mode) {
             break;
         }
 
-        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-        $auth_login_error = '';
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        $authLoginError = '';
 
         while ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ipAddress = IPAddress::remote()->getString();
 
             if (!isset($_POST['username'], $_POST['password'])) {
-                $auth_login_error = "You didn't fill all the forms!";
+                $authLoginError = "You didn't fill all the forms!";
                 break;
             }
 
-            $fetchRemainingAttempts = $db->prepare('
-                SELECT 5 - COUNT(`attempt_id`)
-                FROM `msz_login_attempts`
-                WHERE `was_successful` = false
-                AND `created_at` > NOW() - INTERVAL 1 HOUR
-                AND `attempt_ip` = INET6_ATON(:remote_ip)
-            ');
-            $fetchRemainingAttempts->bindValue('remote_ip', $ipAddress);
-            $remainingAttempts = $fetchRemainingAttempts->execute()
-                ? (int)$fetchRemainingAttempts->fetchColumn()
-                : 0;
+            $remainingAttempts = user_login_attempts_remaining($ipAddress);
 
             if ($remainingAttempts < 1) {
-                $auth_login_error = 'Too many failed login attempts, try again later.';
+                $authLoginError = 'Too many failed login attempts, try again later.';
                 break;
             }
 
-            $remainingAttempts -= 1;
             $username = $_POST['username'] ?? '';
             $password = $_POST['password'] ?? '';
 
@@ -106,44 +87,29 @@ switch ($mode) {
             $userData = $getUser->execute() ? $getUser->fetch() : [];
             $userId = (int)($userData['user_id'] ?? 0);
 
-            $auth_error_str = "Invalid username or password, {$remainingAttempts} attempt(s) remaining.";
+            $loginFailedError = sprintf(
+                "Invalid username or password, %d attempt%s remaining.",
+                $remainingAttempts - 1,
+                $remainingAttempts === 2 ? '' : 's'
+            );
 
             if ($userId < 1) {
-                user_login_attempt_record(false, null, $ipAddress, $user_agent);
-                $auth_login_error = $auth_error_str;
+                user_login_attempt_record(false, null, $ipAddress, $userAgent);
+                $authLoginError = $loginFailedError;
                 break;
             }
 
             if (!password_verify($password, $userData['password'])) {
-                user_login_attempt_record(false, $userId, $ipAddress, $user_agent);
-                $auth_login_error = $auth_error_str;
+                user_login_attempt_record(false, $userId, $ipAddress, $userAgent);
+                $authLoginError = $loginFailedError;
                 break;
             }
 
-            user_login_attempt_record(true, $userId, $ipAddress, $user_agent);
+            user_login_attempt_record(true, $userId, $ipAddress, $userAgent);
+            $sessionKey = user_session_create($userId, $ipAddress, $userAgent);
 
-            $sessionKey = bin2hex(random_bytes(32));
-
-            $createSession = $db->prepare('
-                INSERT INTO `msz_sessions`
-                    (
-                        `user_id`, `session_ip`, `session_country`,
-                        `user_agent`, `session_key`, `created_at`, `expires_on`
-                    )
-                VALUES
-                    (
-                        :user_id, INET6_ATON(:session_ip), :session_country,
-                        :user_agent, :session_key, NOW(), NOW() + INTERVAL 1 MONTH
-                    )
-            ');
-            $createSession->bindValue('user_id', $userId);
-            $createSession->bindValue('session_ip', $ipAddress);
-            $createSession->bindValue('session_country', get_country_code($ipAddress));
-            $createSession->bindValue('user_agent', $user_agent);
-            $createSession->bindValue('session_key', $sessionKey);
-
-            if (!$createSession->execute()) {
-                $auth_login_error = 'Unable to create new session, contact an administrator.';
+            if ($sessionKey === '') {
+                $authLoginError = 'Unable to create new session, contact an administrator ASAP.';
                 break;
             }
 
@@ -152,30 +118,21 @@ switch ($mode) {
             set_cookie_m('uid', $userId, $cookieLife);
             set_cookie_m('sid', $sessionKey, $cookieLife);
 
-            // Temporary key generation for chat login.
-            // Should eventually be replaced with a callback login system.
-            // Also uses different cookies since $httponly is required to be false for these.
-            $chatKey = bin2hex(random_bytes(16));
+            if (strpos($_SERVER['HTTP_HOST'], 'flashii.net') !== false) {
+                $chatKey = user_generate_chat_key($userId);
 
-            $setChatKey = $db->prepare('
-                UPDATE `msz_users`
-                SET `user_chat_key` = :user_chat_key
-                WHERE `user_id` = :user_id
-            ');
-            $setChatKey->bindValue('user_chat_key', $chatKey);
-            $setChatKey->bindValue('user_id', $userId);
-
-            if ($setChatKey->execute()) {
-                setcookie('msz_tmp_id', $userId, $cookieLife, '/', '.flashii.net');
-                setcookie('msz_tmp_key', $chatKey, $cookieLife, '/', '.flashii.net');
+                if ($chatKey !== '') {
+                    setcookie('msz_tmp_id', $userId, $cookieLife, '/', '.flashii.net');
+                    setcookie('msz_tmp_key', $chatKey, $cookieLife, '/', '.flashii.net');
+                }
             }
 
             header('Location: /');
             return;
         }
 
-        if (!empty($auth_login_error)) {
-            $templating->var('auth_login_error', $auth_login_error);
+        if (!empty($authLoginError)) {
+            $templating->var('auth_login_error', $authLoginError);
         }
 
         echo $templating->render('auth');
@@ -186,16 +143,16 @@ switch ($mode) {
             header('Location: /');
         }
 
-        $auth_register_error = '';
+        $authRegistrationError = '';
 
         while ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if ($prevent_registration) {
-                $auth_register_error = 'Registration is not allowed on this instance.';
+            if ($preventRegistration) {
+                $authRegistrationError = 'Registration is not allowed on this instance.';
                 break;
             }
 
             if (!isset($_POST['username'], $_POST['password'], $_POST['email'])) {
-                $auth_register_error = "You didn't fill all the forms!";
+                $authRegistrationError = "You didn't fill all the forms!";
                 break;
             }
 
@@ -203,65 +160,45 @@ switch ($mode) {
             $password = $_POST['password'] ?? '';
             $email = $_POST['email'] ?? '';
 
-            $username_validate = user_validate_username($username, true);
-            if ($username_validate !== '') {
-                $auth_register_error = $username_validation_errors[$username_validate];
+            $usernameValidation = user_validate_username($username, true);
+            if ($usernameValidation !== '') {
+                $authRegistrationError = $usernameValidationErrors[$usernameValidation];
                 break;
             }
 
-            $email_validate = user_validate_email($email, true);
-            if ($email_validate !== '') {
-                $auth_register_error = $email_validate === 'in-use'
+            $emailValidation = user_validate_email($email, true);
+            if ($emailValidation !== '') {
+                $authRegistrationError = $emailValidation === 'in-use'
                     ? 'This e-mail address has already been used!'
                     : 'The e-mail address you entered is invalid!';
                 break;
             }
 
             if (user_validate_password($password) !== '') {
-                $auth_register_error = 'Your password is too weak!';
+                $authRegistrationError = 'Your password is too weak!';
                 break;
             }
 
-            $ipAddress = IPAddress::remote()->getString();
-            $createUser = $db->prepare('
-                INSERT INTO `msz_users`
-                    (
-                        `username`, `password`, `email`, `register_ip`,
-                        `last_ip`, `user_country`, `created_at`, `display_role`
-                    )
-                VALUES
-                    (
-                        :username, :password, :email, INET6_ATON(:register_ip),
-                        INET6_ATON(:last_ip), :user_country, NOW(), 1
-                    )
-            ');
-            $createUser->bindValue('username', $username);
-            $createUser->bindValue('password', password_hash($password, PASSWORD_ARGON2I));
-            $createUser->bindValue('email', $email);
-            $createUser->bindValue('register_ip', $ipAddress);
-            $createUser->bindValue('last_ip', $ipAddress);
-            $createUser->bindValue('user_country', get_country_code($ipAddress));
+            $createUser = user_create(
+                $username,
+                $password,
+                $email,
+                IPAddress::remote()->getString()
+            );
 
-            if (!$createUser->execute()) {
-                $auth_register_error = 'Something happened?';
+            if ($createUser < 1) {
+                $authRegistrationError = 'Something happened?';
                 break;
             }
 
-            $addRole = $db->prepare('
-                INSERT INTO `msz_user_roles`
-                    (`user_id`, `role_id`)
-                VALUES
-                    (:user_id, 1)
-            ');
-            $addRole->bindValue('user_id', $db->lastInsertId());
-            $addRole->execute();
+            user_role_add($createUser, MSZ_ROLE_MAIN);
 
             $templating->var('auth_register_message', 'Welcome to Flashii! You may now log in.');
             break;
         }
 
-        if (!empty($auth_register_error)) {
-            $templating->var('auth_register_error', $auth_register_error);
+        if (!empty($authRegistrationError)) {
+            $templating->var('auth_register_error', $authRegistrationError);
         }
 
         echo $templating->render('@auth.auth');

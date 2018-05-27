@@ -7,138 +7,90 @@ require_once __DIR__ . '/../misuzu.php';
 $db = Database::connection();
 $templating = $app->getTemplating();
 
-$query_offset = (int)($_GET['o'] ?? 0);
-$query_take = 15;
+$queryOffset = (int)($_GET['o'] ?? 0);
+$queryTake = 15;
 
 if (!$app->hasActiveSession()) {
     echo render_error(403);
     return;
 }
 
-$csrf_error_str = "Couldn't verify you, please refresh the page and retry.";
+$csrfErrorString = "Couldn't verify you, please refresh the page and retry.";
 
-$settings_profile_fields = [
-    'twitter' => [
-        'name' => 'Twitter',
-        'regex' => '#^(?:https?://(?:www\.)?twitter.com/(?:\#!\/)?)?@?([A-Za-z0-9_]{1,20})/?$#u',
-        'no-match' => 'Twitter field was invalid.',
-    ],
-    'osu' => [
-        'name' => 'osu!',
-        'regex' => '#^(?:https?://osu.ppy.sh/u(?:sers)?/)?([a-zA-Z0-9-\[\]_ ]{1,20})/?$#u',
-        'no-match' => 'osu! field was invalid.',
-    ],
-    'website' => [
-        'name' => 'Website',
-        'type' => 'url',
-        'regex' => '#^((?:https?)://.{1,240})$#u',
-        'no-match' => 'Website field was invalid.',
-    ],
-    'youtube' => [
-        'name' => 'Youtube',
-        'regex' => '#^(?:https?://(?:www.)?youtube.com/(?:(?:user|c|channel)/)?)?(UC[a-zA-Z0-9-_]{1,22}|[a-zA-Z0-9-_%]{1,100})/?$#u',
-        'no-match' => 'Youtube field was invalid.',
-    ],
-    'steam' => [
-        'name' => 'Steam',
-        'regex' => '#^(?:https?://(?:www.)?steamcommunity.com/(?:id|profiles)/)?([a-zA-Z0-9_-]{2,100})/?$#u',
-        'no-match' => 'Steam field was invalid.',
-    ],
-    'twitchtv' => [
-        'name' => 'Twitch.tv',
-        'regex' => '#^(?:https?://(?:www.)?twitch.tv/)?([0-9A-Za-z_]{3,25})/?$#u',
-        'no-match' => 'Twitch.tv field was invalid.',
-    ],
-    'lastfm' => [
-        'name' => 'Last.fm',
-        'regex' => '#^(?:https?://(?:www.)?last.fm/user/)?([a-zA-Z]{1}[a-zA-Z0-9_-]{1,14})/?$#u',
-        'no-match' => 'Last.fm field was invalid.',
-    ],
-    'github' => [
-        'name' => 'Github',
-        'regex' => '#^(?:https?://(?:www.)?github.com/?)?([a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38})/?$#u',
-        'no-match' => 'Github field was invalid.',
-    ],
-    'skype' => [
-        'name' => 'Skype',
-        'regex' => '#^((?:live:)?[a-zA-Z][\w\.,\-_@]{1,100})$#u',
-        'no-match' => 'Skype field was invalid.',
-    ],
-    'discord' => [
-        'name' => 'Discord',
-        'regex' => '#^(.{1,32}\#[0-9]{4})$#u',
-        'no-match' => 'Discord field was invalid.',
-    ],
-];
-
-$settings_modes = [
+$settingsModes = [
     'account' => 'Account',
     'avatar' => 'Avatar',
     'sessions' => 'Sessions',
     'login-history' => 'Login History',
 ];
-$settings_mode = $_GET['m'] ?? key($settings_modes);
+$settingsMode = $_GET['m'] ?? key($settingsModes);
 
-$templating->vars(compact('settings_mode', 'settings_modes'));
+$templating->vars([
+    'settings_mode' => $settingsMode,
+    'settings_modes' => $settingsModes,
+]);
 
-if (!array_key_exists($settings_mode, $settings_modes)) {
+if (!array_key_exists($settingsMode, $settingsModes)) {
     http_response_code(404);
     $templating->var('settings_title', 'Not Found');
     echo $templating->render('settings.notfound');
     return;
 }
 
-$settings_errors = [];
+$settingsErrors = [];
 
-$prevent_registration = $app->getConfig()->get('Auth', 'prevent_registration', 'bool', false);
-$avatar_filename = "{$app->getUserId()}.msz";
-$avatar_max_width = $app->getConfig()->get('Avatar', 'max_width', 'int', 4000);
-$avatar_max_height = $app->getConfig()->get('Avatar', 'max_height', 'int', 4000);
-$avatar_max_filesize = $app->getConfig()->get('Avatar', 'max_filesize', 'int', 1000000);
-$avatar_max_filesize_human = byte_symbol($avatar_max_filesize, true);
+$disableAccountOptions = $app->getConfig()->get('Auth', 'prevent_registration', 'bool', false);
+$avatarFileName = "{$app->getUserId()}.msz";
+$avatarWidthMax = $app->getConfig()->get('Avatar', 'max_width', 'int', 4000);
+$avatarHeightMax = $app->getConfig()->get('Avatar', 'max_height', 'int', 4000);
+$avatarFileSizeMax = $app->getConfig()->get('Avatar', 'max_filesize', 'int', 1000000);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    switch ($settings_mode) {
+    switch ($settingsMode) {
         case 'account':
             if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
-                $settings_errors[] = $csrf_error_str;
+                $settingsErrors[] = $csrfErrorString;
                 break;
             }
 
-            $updatedUserFields = [];
-
             if (isset($_POST['profile']) && is_array($_POST['profile'])) {
-                foreach ($settings_profile_fields as $name => $props) {
-                    if (isset($_POST['profile'][$name])) {
-                        $field_value = '';
+                $setUserFieldErrors = user_profile_fields_set($app->getUserId(), $_POST['profile']);
 
-                        if (!empty($_POST['profile'][$name])) {
-                            $field_regex = preg_match(
-                                $props['regex'],
-                                $_POST['profile'][$name],
-                                $field_matches
-                            );
-
-                            if ($field_regex !== 1) {
-                                $settings_errors[] = $props['no-match'];
+                if (count($setUserFieldErrors) > 0) {
+                    foreach ($setUserFieldErrors as $name => $error) {
+                        switch ($error) {
+                            case MSZ_USER_PROFILE_INVALID_FIELD:
+                                $settingsErrors[] = sprintf("Field '%s' does not exist!", $name);
                                 break;
-                            }
 
-                            $field_value = $field_matches[1];
+                            case MSZ_USER_PROFILE_FILTER_FAILED:
+                                $settingsErrors[] = sprintf(
+                                    '%s field was invalid!',
+                                    user_profile_field_get_display_name($name)
+                                );
+                                break;
+
+                            case MSZ_USER_PROFILE_UPDATE_FAILED:
+                                $settingsErrors[] = 'Failed to update values, contact an administator.';
+                                break;
+
+                            default:
+                                $settingsErrors[] = 'An unexpected error occurred, contact an administator.';
+                                break;
                         }
-
-                        $updatedUserFields["user_{$name}"] = $field_value;
                     }
                 }
             }
 
-            if (!$prevent_registration) {
+            if (!$disableAccountOptions) {
                 if (!empty($_POST['current_password'])
                 || (
-                    (isset($_POST['password']) || isset($_OST['email']))
+                    (isset($_POST['password']) || isset($_POST['email']))
                     && (!empty($_POST['password']['new']) || !empty($_POST['email']['new']))
                 )
                 ) {
+                    $updateAccountFields = [];
+
                     $fetchPassword = $db->prepare('
                         SELECT `password`
                         FROM `msz_users`
@@ -148,19 +100,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $currentPassword = $fetchPassword->execute() ? $fetchPassword->fetchColumn() : null;
 
                     if (empty($currentPassword)) {
-                        $settings_errors[] = 'Something went horribly wrong.';
+                        $settingsErrors[] = 'Something went horribly wrong.';
                         break;
                     }
 
                     if (!password_verify($_POST['current_password'], $currentPassword)) {
-                        $settings_errors[] = 'Your current password was incorrect.';
+                        $settingsErrors[] = 'Your current password was incorrect.';
                         break;
                     }
 
                     if (!empty($_POST['email']['new'])) {
                         if (empty($_POST['email']['confirm'])
                             || $_POST['email']['new'] !== $_POST['email']['confirm']) {
-                            $settings_errors[] = 'The given e-mail addresses did not match.';
+                            $settingsErrors[] = 'The given e-mail addresses did not match.';
                             break;
                         }
 
@@ -175,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             : false;
 
                         if ($isAlreadySet) {
-                            $settings_errors[] = 'This is your e-mail address already!';
+                            $settingsErrors[] = 'This is your e-mail address already!';
                             break;
                         }
 
@@ -184,66 +136,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if ($email_validate !== '') {
                             switch ($email_validate) {
                                 case 'dns':
-                                    $settings_errors[] = 'No valid MX record exists for this domain.';
+                                    $settingsErrors[] = 'No valid MX record exists for this domain.';
                                     break;
 
                                 case 'format':
-                                    $settings_errors[] = 'The given e-mail address was incorrectly formatted.';
+                                    $settingsErrors[] = 'The given e-mail address was incorrectly formatted.';
                                     break;
 
                                 case 'in-use':
-                                    $settings_errors[] = 'This e-mail address has already been used by another user.';
+                                    $settingsErrors[] = 'This e-mail address has already been used by another user.';
                                     break;
 
                                 default:
-                                    $settings_errors[] = 'Unknown e-mail validation error.';
+                                    $settingsErrors[] = 'Unknown e-mail validation error.';
                             }
                             break;
                         }
 
-                        $updatedUserFields['email'] = strtolower($_POST['email']['new']);
+                        $updateAccountFields['email'] = strtolower($_POST['email']['new']);
                     }
 
                     if (!empty($_POST['password']['new'])) {
                         if (empty($_POST['password']['confirm'])
                         || $_POST['password']['new'] !== $_POST['password']['confirm']) {
-                            $settings_errors[] = "The given passwords did not match.";
+                            $settingsErrors[] = "The given passwords did not match.";
                             break;
                         }
 
                         $password_validate = user_validate_password($_POST['password']['new']);
 
                         if ($password_validate !== '') {
-                            $settings_errors[] = "The given passwords was too weak.";
+                            $settingsErrors[] = "The given passwords was too weak.";
                             break;
                         }
 
-                        $updatedUserFields['password'] = password_hash($_POST['password']['new'], PASSWORD_ARGON2I);
+                        $updateAccountFields['password'] = user_password_hash($_POST['password']['new']);
+                    }
+
+                    if (count($updateAccountFields) > 0) {
+                        $updateUser = $db->prepare('
+                            UPDATE `msz_users`
+                            SET ' . pdo_prepare_array_update($updateAccountFields, true) . '
+                            WHERE `user_id` = :user_id
+                        ');
+                        $updateAccountFields['user_id'] = $app->getUserId();
+                        $updateUser->execute($updateAccountFields);
                     }
                 }
-            }
-
-            if (count($settings_errors) < 1 && count($updatedUserFields) > 0) {
-                $updateUser = $db->prepare('
-                    UPDATE `msz_users`
-                    SET ' . pdo_prepare_array_update($updatedUserFields, true) . '
-                    WHERE `user_id` = :user_id
-                ');
-                $updatedUserFields['user_id'] = $app->getUserId();
-                $updateUser->execute($updatedUserFields);
             }
             break;
 
         case 'avatar':
             if (isset($_POST['delete'])) {
                 if (!tmp_csrf_verify($_POST['delete'])) {
-                    $settings_errors[] = $csrf_error_str;
+                    $settingsErrors[] = $csrfErrorString;
                     break;
                 }
 
                 $delete_this = [
-                    $app->getStore('avatars/original')->filename($avatar_filename),
-                    $app->getStore('avatars/200x200')->filename($avatar_filename),
+                    $app->getStore('avatars/original')->filename($avatarFileName),
+                    $app->getStore('avatars/200x200')->filename($avatarFileName),
                 ];
 
                 foreach ($delete_this as $delete_avatar) {
@@ -256,7 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (isset($_POST['upload'])) {
                 if (!tmp_csrf_verify($_POST['upload'])) {
-                    $settings_errors[] = $csrf_error_str;
+                    $settingsErrors[] = $csrfErrorString;
                     break;
                 }
 
@@ -265,30 +217,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         break;
 
                     case UPLOAD_ERR_NO_FILE:
-                        $settings_errors[] = 'Select a file before hitting upload!';
+                        $settingsErrors[] = 'Select a file before hitting upload!';
                         break;
 
                     case UPLOAD_ERR_PARTIAL:
-                        $settings_errors[] = 'The upload was interrupted, please try again!';
+                        $settingsErrors[] = 'The upload was interrupted, please try again!';
                         break;
 
                     case UPLOAD_ERR_INI_SIZE:
                     case UPLOAD_ERR_FORM_SIZE:
-                        $settings_errors[] = "Your avatar is not allowed to be larger in filesize than {$avatar_max_filesize_human}!";
+                        $settingsErrors[] = sprintf(
+                            'Your avatar is not allowed to be larger in filesize than %s',
+                            byte_symbol($avatarFileSizeMax, true)
+                        );
                         break;
 
                     case UPLOAD_ERR_NO_TMP_DIR:
                     case UPLOAD_ERR_CANT_WRITE:
-                        $settings_errors[] = 'Unable to save your avatar, contact an administator!';
+                        $settingsErrors[] = 'Unable to save your avatar, contact an administator!';
                         break;
 
                     case UPLOAD_ERR_EXTENSION:
                     default:
-                        $settings_errors[] = 'Something happened?';
+                        $settingsErrors[] = 'Something happened?';
                         break;
                 }
 
-                if (count($settings_errors) > 0) {
+                if (count($settingsErrors) > 0) {
                     break;
                 }
 
@@ -299,24 +254,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     || !in_array($upload_meta[2], [IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG], true)
                     || $upload_meta[0] < 1
                     || $upload_meta[1] < 1) {
-                    $settings_errors[] = 'Please provide a valid image.';
+                    $settingsErrors[] = 'Please provide a valid image.';
                     break;
                 }
 
-                if ($upload_meta[0] > $avatar_max_width || $upload_meta[1] > $avatar_max_height) {
-                    $settings_errors[] = "Your avatar can't be larger than {$avatar_max_width}x{$avatar_max_height}, yours was {$upload_meta[0]}x{$upload_meta[1]}";
+                if ($upload_meta[0] > $avatarWidthMax || $upload_meta[1] > $avatarHeightMax) {
+                    $settingsErrors[] = sprintf(
+                        "Your avatar can't be larger than %dx%d, yours was %dx%d",
+                        $avatarWidthMax,
+                        $avatarHeightMax,
+                        $upload_meta[0],
+                        $upload_meta[1]
+                    );
                     break;
                 }
 
-                if (filesize($upload_path) > $avatar_max_filesize) {
-                    $settings_errors[] = "Your avatar is not allowed to be larger in filesize than {$avatar_max_filesize_human}!";
+                if (filesize($upload_path) > $avatarFileSizeMax) {
+                    $settingsErrors[] = sprintf(
+                        'Your avatar is not allowed to be larger in filesize than %s!',
+                        byte_symbol($avatarFileSizeMax, true)
+                    );
                     break;
                 }
 
-                $avatar_path = $app->getStore('avatars/original')->filename($avatar_filename);
+                $avatar_path = $app->getStore('avatars/original')->filename($avatarFileName);
                 move_uploaded_file($upload_path, $avatar_path);
 
-                $crop_path = $app->getStore('avatars/200x200')->filename($avatar_filename);
+                $crop_path = $app->getStore('avatars/200x200')->filename($avatarFileName);
 
                 if (File::exists($crop_path)) {
                     File::delete($crop_path);
@@ -324,19 +288,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
             }
 
-            $settings_errors[] = "You shouldn't have done that.";
+            $settingsErrors[] = "You shouldn't have done that.";
             break;
 
         case 'sessions':
             if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
-                $settings_errors[] = $csrf_error_str;
+                $settingsErrors[] = $csrfErrorString;
                 break;
             }
 
             $session_id = (int)($_POST['session'] ?? 0);
 
             if ($session_id < 1) {
-                $settings_errors[] = 'Invalid session.';
+                $settingsErrors[] = 'Invalid session.';
                 break;
             }
 
@@ -349,7 +313,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $session = $findSession->execute() ? $findSession->fetch() : null;
 
             if (!$session || (int)$session['user_id'] !== $app->getUserId()) {
-                $settings_errors[] = 'You may only end your own sessions.';
+                $settingsErrors[] = 'You may only end your own sessions.';
                 break;
             }
 
@@ -358,42 +322,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 return;
             }
 
-            $deleteSession = $db->prepare('
-                DELETE FROM `msz_sessions`
-                WHERE `session_id` = :session_id
-            ');
-            $deleteSession->bindValue('session_id', $session['session_id']);
-            $deleteSession->execute();
+            user_session_delete($session['session_id']);
             break;
     }
 }
 
-$templating->vars(compact('settings_errors'));
-$templating->var('settings_title', $settings_modes[$settings_mode]);
+$templating->var('settings_title', $settingsModes[$settingsMode]);
+$templating->var('settings_errors', $settingsErrors);
 
-switch ($settings_mode) {
+switch ($settingsMode) {
     case 'account':
+        $profileFields = user_profile_fields_get();
         $getUserFields = $db->prepare('
-            SELECT ' . pdo_prepare_array($settings_profile_fields, true, '`user_%s`') . '
+            SELECT ' . pdo_prepare_array($profileFields, true, '`user_%s`') . '
             FROM `msz_users`
             WHERE `user_id` = :user_id
         ');
         $getUserFields->bindValue('user_id', $app->getUserId());
         $userFields = $getUserFields->execute() ? $getUserFields->fetch() : [];
 
-        $templating->var('settings_profile_values', $userFields);
-        $templating->vars(compact('settings_profile_fields', 'prevent_registration'));
+        $templating->vars([
+            'settings_profile_fields' => $profileFields,
+            'settings_profile_values' => $userFields,
+            'settings_disable_account_options' => $disableAccountOptions,
+        ]);
         break;
 
     case 'avatar':
-        $user_has_avatar = File::exists($app->getStore('avatars/original')->filename($avatar_filename));
-        $templating->var('avatar_user_id', $app->getUserId());
-        $templating->vars(compact(
-            'avatar_max_width',
-            'avatar_max_height',
-            'avatar_max_filesize',
-            'user_has_avatar'
-        ));
+        $userHasAvatar = File::exists($app->getStore('avatars/original')->filename($avatarFileName));
+        $templating->vars([
+            'avatar_user_id' => $app->getUserId(),
+            'avatar_max_width' => $avatarWidthMax,
+            'avatar_max_height' => $avatarHeightMax,
+            'avatar_max_filesize' => $avatarFileSizeMax,
+            'user_has_avatar' => $userHasAvatar,
+        ]);
         break;
 
     case 'sessions':
@@ -414,16 +377,16 @@ switch ($settings_mode) {
             ORDER BY `session_id` DESC
             LIMIT :offset, :take
         ');
-        $getSessions->bindValue('offset', $query_offset);
-        $getSessions->bindValue('take', $query_take);
+        $getSessions->bindValue('offset', $queryOffset);
+        $getSessions->bindValue('take', $queryTake);
         $getSessions->bindValue('user_id', $app->getUserId());
         $sessions = $getSessions->execute() ? $getSessions->fetchAll() : [];
 
         $templating->vars([
             'active_session_id' => $app->getSessionId(),
             'user_sessions' => $sessions,
-            'sessions_offset' => $query_offset,
-            'sessions_take' => $query_take,
+            'sessions_offset' => $queryOffset,
+            'sessions_take' => $queryTake,
             'sessions_count' => $sessionCount,
         ]);
         break;
@@ -446,18 +409,18 @@ switch ($settings_mode) {
             ORDER BY `attempt_id` DESC
             LIMIT :offset, :take
         ');
-        $getLoginAttempts->bindValue('offset', $query_offset);
-        $getLoginAttempts->bindValue('take', $query_take);
+        $getLoginAttempts->bindValue('offset', $queryOffset);
+        $getLoginAttempts->bindValue('take', $queryTake);
         $getLoginAttempts->bindValue('user_id', $app->getUserId());
         $loginAttempts = $getLoginAttempts->execute() ? $getLoginAttempts->fetchAll() : [];
 
         $templating->vars([
             'user_login_attempts' => $loginAttempts,
-            'login_attempts_offset' => $query_offset,
-            'login_attempts_take' => $query_take,
+            'login_attempts_offset' => $queryOffset,
+            'login_attempts_take' => $queryTake,
             'login_attempts_count' => $loginAttemptsCount,
         ]);
         break;
 }
 
-echo $templating->render("settings.{$settings_mode}");
+echo $templating->render("settings.{$settingsMode}");

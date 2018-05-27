@@ -17,3 +17,19 @@ function user_login_attempt_record(bool $success, ?int $userId, string $ipAddres
     $storeAttempt->bindValue('user_id', $userId, $userId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
     $storeAttempt->execute();
 }
+
+function user_login_attempts_remaining(string $ipAddress): int
+{
+    $getRemaining = Database::connection()->prepare('
+        SELECT 5 - COUNT(`attempt_id`)
+        FROM `msz_login_attempts`
+        WHERE `was_successful` = false
+        AND `created_at` > NOW() - INTERVAL 1 HOUR
+        AND `attempt_ip` = INET6_ATON(:remote_ip)
+    ');
+    $getRemaining->bindValue('remote_ip', $ipAddress);
+
+    return $getRemaining->execute()
+        ? (int)$getRemaining->fetchColumn()
+        : 0;
+}
