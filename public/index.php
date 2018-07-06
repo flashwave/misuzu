@@ -3,12 +3,25 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../misuzu.php';
 
+$config = $app->getConfig();
+$tpl = $app->getTemplating();
+
+if ($config->get('Site', 'embed_linked_data', 'bool', false)) {
+    $tpl->vars([
+        'embed_linked_data' => true,
+        'embed_name' => $config->get('Site', 'name'),
+        'embed_url' => $config->get('Site', 'url'),
+        'embed_logo' => $config->get('Site', 'external_logo'),
+        'embed_same_as' => explode(',', $config->get('Site', 'social_media')),
+    ]);
+}
+
 $featuredNews = Database::connection()
     ->query('
         SELECT
             p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
             u.`user_id`, u.`username`,
-            COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `display_colour`
+            COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`
         FROM `msz_news_posts` as p
         LEFT JOIN `msz_users` as u
         ON p.`user_id` = u.`user_id`
@@ -21,6 +34,6 @@ $featuredNews = Database::connection()
 
 //var_dump(Database::connection()->query('SHOW SESSION STATUS LIKE "Questions"')->fetch()['Value']);
 
-echo $app->getTemplating()->render('home.landing', [
+echo $tpl->render('home.landing', [
     'featured_news' => $featuredNews,
 ]);

@@ -5,7 +5,7 @@
         <div class="container">
             <h1 class="container__title">
                 {% if edit_role is defined %}
-                    Editing <span style="color:{{ edit_role.role_colour|colour_get_css }}">{{ edit_role.role_name }}</span> ({{ edit_role.role_id }})
+                    Editing <span style="{{ edit_role.role_colour|html_colour }}">{{ edit_role.role_name }}</span> ({{ edit_role.role_id }})
                 {% else %}
                     Creating a new Role
                 {% endif %}

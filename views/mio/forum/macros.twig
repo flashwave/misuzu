@@ -98,7 +98,7 @@
                                 {% if forum.recent_post_user_id is not null %}
                                     by <a
                                         href="/profile.php?u={{ forum.recent_post_user_id }}"
-                                        style="color:{{ forum.recent_post_user_colour|colour_get_css }}"
+                                        style="{{ forum.recent_post_user_colour|html_colour }}"
                                         class="forum__listing__entry__activity__user">{{ forum.recent_post_username }}</a>,
                                 {% endif %}
                                 <time
@@ -199,7 +199,7 @@
                     by <a
                         href="/profile.php?u={{ topic.author_id }}"
                         class="forum__topics__entry__info__author__name"
-                        style="color:{{ topic.author_colour|colour_get_css }}">{{ topic.author_name }}</a>,
+                        style="{{ topic.author_colour|html_colour }}">{{ topic.author_name }}</a>,
 
                 {% endif %}
                 <time datetime="{{ topic.topic_created|date('c') }}" title="{{ topic.topic_created|date('r') }}">{{ topic.topic_created|time_diff }}</time>
@@ -226,7 +226,7 @@
                 </div>
                 {% if topic.respondent_id is not null %}
                     <div class="forum__topics__entry__activity__author">
-                        by <a href="/profile.php?u={{ topic.respondent_id }}" class="forum__topics__entry__activity__author__name" style="color:{{ topic.respondent_colour|colour_get_css }}">
+                        by <a href="/profile.php?u={{ topic.respondent_id }}" class="forum__topics__entry__activity__author__name" style="{{ topic.respondent_colour|html_colour }}">
                             {{ topic.respondent_name }}
                         </a>
                     </div>
@@ -266,7 +266,7 @@
                     </div>
                     <div
                         class="forum__post__author__username"
-                        style="color:{{ post.poster_colour|colour_get_css }}">{{ post.poster_name }}</div>
+                        style="{{ post.poster_colour|html_colour }}">{{ post.poster_name }}</div>
                 </a>
                 <div class="forum__post__author__joined">
                     joined <time datetime="{{ post.poster_joined|date('c') }}" title="{{ post.poster_joined|date('r') }}">{{ post.poster_joined|time_diff }}</time>

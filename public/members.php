@@ -92,7 +92,7 @@ $getUsers = $db->prepare("
         u.`user_id`, u.`username`, u.`user_country`,
         u.`created_at` as `user_joined`, u.`last_seen` as `user_last_seen`,
         COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
-        COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `display_colour`,
+        COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`,
         (
             SELECT COUNT(`topic_id`)
             FROM `msz_forum_topics`

@@ -1,15 +1,15 @@
 @flag-width: 16px;
 @flag-height: 11px;
 
-.flag-position(@x, @y, @offsetX: 0px, @offsetY: 0px) {
-    background-position: top -(@flag-height * @x) + @offsetX left -(@flag-width * @y) + @offsetY;
+.flag-position(@x, @y) {
+    background-position: top -((@flag-height + 1) * @x) left -(@flag-width * @y);
 }
 
 .flag {
     display: inline-block;
     width: @flag-width;
     height: @flag-height;
-    background-image: url('https://static.flash.moe/images/flag-sprite-24.png');
+    background-image: url('https://static.flash.moe/images/flag-sprite.png');
     background-repeat: no-repeat;
     font-size: 0;
     .flag-position(23, 23); // xx
@@ -118,8 +118,6 @@
     &--gw {.flag-position(6, 22);}
     &--gy {.flag-position(6, 24);}
 
-    &--hd {.flag-position(7, 3);}
-    &--he {.flag-position(7, 4);}
     &--hk {.flag-position(7, 10);}
     &--hm {.flag-position(7, 12);}
     &--hn {.flag-position(7, 13);}
@@ -127,6 +125,8 @@
     &--ht {.flag-position(7, 19);}
     &--hu {.flag-position(7, 20);}
 
+    &--id {.flag-position(8, 3);}
+    &--ie {.flag-position(8, 4);}
     &--il {.flag-position(8, 11);}
     &--in {.flag-position(8, 13);}
     &--io {.flag-position(8, 14);}
@@ -166,7 +166,7 @@
     &--ma {.flag-position(12, 0);}
     &--mc {.flag-position(12, 2);}
     &--md {.flag-position(12, 3);}
-    &--me {.flag-position(12, 4, 1); height: 12px;}
+    &--me {.flag-position(12, 4); height: 12px;}
     &--mg {.flag-position(12, 6);}
     &--mh {.flag-position(12, 7);}
     &--mk {.flag-position(12, 10);}

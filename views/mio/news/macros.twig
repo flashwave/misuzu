@@ -13,7 +13,7 @@
                     {{ post.created_at|time_diff }}
                 </time>
                 <a class="news__preview__user" href="/profile.php?u={{ post.user_id }}">
-                    <div class="news__preview__user__name" style="color:{{ post.display_colour|colour_get_css }}">
+                    <div class="news__preview__user__name" style="{{ post.user_colour|html_colour }}">
                         {{ post.username }}
                     </div>
                     <div class="avatar news__preview__user__avatar" style="background-image:url('/profile.php?u={{ post.user_id }}&amp;m=avatar')"></div>

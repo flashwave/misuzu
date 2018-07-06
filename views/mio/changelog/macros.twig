@@ -1,0 +1,49 @@
+{% macro changelog_listing(changes, hide_dates) %}
+    {% set hide_dates = hide_dates ? true : false %}
+    {% set last_date = '' %}
+
+    {% from _self import changelog_entry %}
+
+    {% if changes|length > 0 %}
+        {% for change in changes %}
+            {% if not hide_dates and last_date != change.change_date %}
+                {% set last_date = change.change_date %}
+
+                <a class="changelog__date" href="?d={{ last_date }}">
+                    {{ last_date }}
+                </a>
+            {% endif %}
+
+            {{ changelog_entry(change) }}
+        {% endfor %}
+    {% else %}
+        <div class="changelog__none">
+            There are no changes to display here.
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro changelog_entry(change) %}
+    {% set has_text = change.change_has_text|default(false)
+        or (change.change_text is defined and change.change_text|length > 0)
+    %}
+
+    <div class="changelog" id="cl{{ change.change_id }}">
+        <a class="changelog__action{{ change.action_class is defined and change.action_class is not null ? ' changelog__action--' ~ change.action_class : '' }} changelog__action--{{ change.action_colour|colour_get_css_contrast }}"
+            href="?c={{ change.change_id }}"
+            {% if change.action_colour is defined %}style="{{ change.action_colour|html_colour({'background-color':'%s'}) }}"{% endif %}>
+            {{ change.action_name|default('Unknown') }}
+        </a>
+
+        <a  class="changelog__user"
+            href="/profile.php?u={{ change.user_id }}"
+            style="{{ change.user_colour|html_colour }}">
+            {{ change.username }}
+        </a>
+
+        <a class="changelog__log{% if has_text %} changelog__log--link{% endif %}"
+            {% if has_text %}href="?c={{ change.change_id }}"{% endif %}>
+            {{ change.change_log }}
+        </a>
+    </div>
+{% endmacro %}

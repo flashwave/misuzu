@@ -1,5 +1,5 @@
 {% extends '@mio/home/master.twig' %}
-{% from '@mio/macros.twig' import navigation, link %}
+{% from '@mio/macros.twig' import navigation %}
 {% from '@mio/news/macros.twig' import news_preview %}
 
 {% set canonical_url = '/' %}
@@ -26,5 +26,20 @@
     </div>
 
     {{ navigation(mio_navigation, '/') }}
+
+    {% if embed_linked_data is defined and embed_linked_data %}
+        <script type="application/ld+json">
+        {
+            "@context": "http://schema.org",
+            "@type": "Organization",
+            "name": "{{ embed_name }}",
+            "url": "{{ embed_url }}",
+            "logo": "{{ embed_logo }}",
+            "sameAs": [
+                "{{ embed_same_as|join('", "')|raw }}"
+            ]
+        }
+        </script>
+    {% endif %}
 {% endblock %}
 

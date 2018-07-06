@@ -241,3 +241,44 @@ function render_error(int $code, string $template = 'errors.%d'): string
         return '';
     }
 }
+
+function html_link(string $url, ?string $content = null, $attributes = []): string
+{
+    $content = $content ?? $url;
+    $attributes = array_merge(
+        is_string($attributes) ? ['class' => $attributes] : $attributes,
+        ['href' => $url]
+    );
+
+    if (strpos($url, '://') !== false) {
+        $attributes['target'] = '_blank';
+        $attributes['rel'] = 'noreferrer noopener';
+    }
+
+    $html = '<a';
+
+    foreach ($attributes as $name => $value) {
+        $value = str_replace('"', '\"', $value);
+        $html .= " {$name}=\"{$value}\"";
+    }
+
+    $html .= ">{$content}</a>";
+
+    return $html;
+}
+
+function html_colour(int $colour, array $attribs = []): string
+{
+    if (!$attribs) {
+        $attribs['color'] = '%s';
+    }
+
+    $css = '';
+    $value = colour_get_css($colour);
+
+    foreach ($attribs as $name => $format) {
+        $css .= $name . ':' . sprintf($format, $value) . ';';
+    }
+
+    return $css;
+}

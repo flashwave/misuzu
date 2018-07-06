@@ -9,11 +9,11 @@
 {% block content %}
     <form onchange="this.submit()">
         <select class="input__select" name="r"
-            style="color:{{ role.role_colour|colour_get_css }}">
+            style="{{ role.role_colour|html_colour }}">
             {% for r in roles %}
                 <option
                     value="{{ r.role_id }}"
-                    style="color:{{ r.role_colour|colour_get_css }}"
+                    style="{{ r.role_colour|html_colour }}"
                     {% if r.role_id == role.role_id %} selected{% endif %}>
                     {{ r.role_name }}
                 </option>
@@ -58,7 +58,7 @@
                     <div class="members__user__info">
                         <div
                             class="members__user__name"
-                            style="color:{{ user.display_colour|colour_get_css }}">
+                            style="{{ user.user_colour|html_colour }}">
                             {{ user.username }}
                         </div>
 
