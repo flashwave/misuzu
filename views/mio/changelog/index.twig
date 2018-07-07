@@ -2,17 +2,38 @@
 {% from '@mio/macros.twig' import navigation, pagination %}
 {% from '@mio/changelog/macros.twig' import changelog_listing %}
 
+{% set is_valid = changes|length > 0 %}
+{% set is_date = changelog_date|length > 0 %}
 {% set title = 'Changelog' %}
-{% set canonical_url = '/changelog.php' %}
+
+{% if is_valid %}
+    {%
+        set canonical_url = '/changelog.php'|url_construct({
+            'd': changelog_date,
+            'u': changelog_user ? changelog_user : '',
+            'o': changelog_offset
+        })
+    %}
+
+    {% if is_date or changelog_user %}
+        {% set title = title ~ ' »' ~ (changelog_date ? ' ' ~ changes[0].change_date : '') ~ (changelog_user ? ' by ' ~ changes[0].username : '') %}
+    {% endif %}
+{% endif %}
 
 {% block content %}
     <div class="container">
         <div class="container__title">
-            Changelog
+            {{ title }}
         </div>
         <div class="container__content changelog__content">
-            {{ changelog_listing(changes) }}
-            {{ pagination(changelog_count, changelog_take, changelog_offset, '/changelog.php') }}
+            {{ changelog_listing(changes, is_date) }}
+
+            {% if not is_date %}
+                {{ pagination(changelog_count, changelog_take, changelog_offset, '/changelog.php'|url_construct({
+                    'd': changelog_date,
+                    'u': changelog_user ? changelog_user : ''
+                })) }}
+            {% endif %}
         </div>
     </div>
 

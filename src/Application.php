@@ -240,6 +240,7 @@ class Application extends ApplicationBase
         $this->templatingInstance->addFilter('byte_symbol');
         $this->templatingInstance->addFilter('html_link');
         $this->templatingInstance->addFilter('html_colour');
+        $this->templatingInstance->addFilter('url_construct');
         $this->templatingInstance->addFilter('country_name', 'get_country_name');
         $this->templatingInstance->addFilter('flip', 'array_flip');
         $this->templatingInstance->addFilter('first_paragraph');

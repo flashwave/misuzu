@@ -12,6 +12,7 @@ $changelogRange = 30;
 $changelogChange = (int)($_GET['c'] ?? 0);
 $changelogDate = $_GET['d'] ?? '';
 $changelogUser = (int)($_GET['u'] ?? 0);
+$changelogTags = $_GET['t'] ?? '';
 
 $tpl->vars([
     'changelog_offset' => $changelogOffset,
@@ -66,69 +67,18 @@ if (!empty($changelogDate)) {
         echo render_error(404);
         return;
     }
-
-    $getChanges = $db->prepare('
-        SELECT
-            c.`change_id`, c.`change_log`,
-            a.`action_name`, a.`action_colour`, a.`action_class`,
-            u.`user_id`, u.`username`,
-            DATE(`change_created`) as `change_date`,
-            !ISNULL(c.`change_text`) as `change_has_text`,
-            COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`
-        FROM `msz_changelog_changes` as c
-        LEFT JOIN `msz_users` as u
-        ON u.`user_id` = c.`user_id`
-        LEFT JOIN `msz_roles` as r
-        ON r.`role_id` = u.`display_role`
-        LEFT JOIN `msz_changelog_actions` as a
-        ON a.`action_id` = c.`action_id`
-        WHERE DATE(c.`change_created`) = :date
-        GROUP BY `change_created`, `change_id`
-        ORDER BY `change_created` DESC, `change_id` DESC
-    ');
-    $getChanges->bindValue('date', $changelogDate);
-    $changes = $getChanges->execute() ? $getChanges->fetchAll() : [];
-
-    // settings the response code to 404, but rendering our own page anyway.
-    if (count($changes) < 1) {
-        http_response_code(404);
-    }
-
-    echo $tpl->render('changelog.date', [
-        'changes' => $changes,
-    ]);
-    return;
 }
 
-$changesCount = (int)$db->query('
-    SELECT COUNT(`change_id`)
-    FROM `msz_changelog_changes`
-')->fetchColumn();
+$changesCount = !empty($changelogDate) ? -1 : changelog_count_changes($changelogDate, $changelogUser);
+$changes = changelog_get_changes($changelogDate, $changelogUser, $changelogOffset, $changelogRange);
 
-$getChanges = $db->prepare('
-    SELECT
-        c.`change_id`, c.`change_log`,
-        a.`action_name`, a.`action_colour`, a.`action_class`,
-        u.`user_id`, u.`username`,
-        DATE(`change_created`) as `change_date`,
-        !ISNULL(c.`change_text`) as `change_has_text`,
-        COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`
-    FROM `msz_changelog_changes` as c
-    LEFT JOIN `msz_users` as u
-    ON u.`user_id` = c.`user_id`
-    LEFT JOIN `msz_roles` as r
-    ON r.`role_id` = u.`display_role`
-    LEFT JOIN `msz_changelog_actions` as a
-    ON a.`action_id` = c.`action_id`
-    GROUP BY `change_created`, `change_id`
-    ORDER BY `change_created` DESC, `change_id` DESC
-    LIMIT :offset, :take
-');
-$getChanges->bindValue('offset', $changelogOffset);
-$getChanges->bindValue('take', $changelogRange);
-$changes = $getChanges->execute() ? $getChanges->fetchAll() : [];
+if (!$changes) {
+    http_response_code(404);
+}
 
 echo $tpl->render('changelog.index', [
     'changes' => $changes,
     'changelog_count' => $changesCount,
+    'changelog_date' => $changelogDate,
+    'changelog_user' => $changelogUser,
 ]);
