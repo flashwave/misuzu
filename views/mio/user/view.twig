@@ -135,14 +135,14 @@
 
                         {% if profile.changelog_count > 0 %}
                             <div class="profile__info__block">
-                                <div class="profile__info__row">
+                                <a class="profile__info__row profile__info__row--link" href="/changelog.php?u={{ profile.user_id }}">
                                     <div class="profile__info__column profile__info__column--heading">
                                         Changes
                                     </div>
                                     <div class="profile__info__column profile__info__column--numeric">
                                         {{ profile.changelog_count|number_format }}
                                     </div>
-                                </div>
+                                </a>
                             </div>
                         {% endif %}
                     </div>
