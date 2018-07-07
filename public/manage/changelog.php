@@ -156,12 +156,12 @@ switch ($_GET['v'] ?? null) {
                 $availableTags = $db->prepare('
                     SELECT `tag_id`, `tag_name`
                     FROM `msz_changelog_tags`
-                    WHERE `tag_id` NOT IN (
+                    WHERE `tag_archived` IS NULL
+                    AND `tag_id` NOT IN (
                         SELECT `tag_id`
                         FROM `msz_changelog_change_tags`
                         WHERE `change_id` = :change_id
                     )
-                    AND `tag_archived` IS NULL
                 ');
                 $availableTags->bindValue('change_id', $change['change_id']);
                 $availableTags = $availableTags->execute() ? $availableTags->fetchAll(PDO::FETCH_ASSOC) : [];
@@ -236,7 +236,8 @@ switch ($_GET['v'] ?? null) {
 
                 $updateTag->bindValue('name', $_POST['tag']['name']);
                 $updateTag->bindValue('description', $_POST['tag']['description']);
-                $updateTag->bindValue('archived', empty($_POST['tag']['description']) ? null : date('Y-m-d H:i:s'));
+                // this is fine, after being archived there shouldn't be any other changes being made
+                $updateTag->bindValue('archived', empty($_POST['tag']['archived']) ? null : date('Y-m-d H:i:s'));
                 $updateTag->execute();
 
                 if ($tagId < 1) {
