@@ -1,0 +1,25 @@
+{% extends '@manage/changelog/master.twig' %}
+{% from '@manage/macros.twig' import pagination %}
+
+{% block content %}
+    <div class="container">
+        <a href="?v=action" class="button">Create new action</a>
+    </div>
+
+    <div class="container listing changelog-tags">
+        {% for action in changelog_actions %}
+            <a href="?v=action&amp;a={{ action.action_id }}" class="listing__entry changelog-tags__entry"
+                style="{{ action.action_colour|html_colour({'border-color':'%s'}) }}">
+                <div class="listing__entry__content changelog-tags__content">
+                    <div class="changelog-tags__text">
+                        {{ action.action_name }} ({{ action.action_count }})
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="container container--center">
+        {{ pagination(changelog_actions_count, changelog_take, changelog_offset, '?v=actions') }}
+    </div>
+{% endblock %}

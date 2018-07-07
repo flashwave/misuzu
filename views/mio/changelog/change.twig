@@ -6,6 +6,8 @@
 
 {% if is_valid %}
     {% set canonical_url = '/changelog.php?c=' ~ change.change_id %}
+    {% set manage_link = '/manage/changelog.php?v=change&c=' ~ change.change_id %}
+    {% set description = change.change_log %}
 {% endif %}
 
 {% block content %}
@@ -36,7 +38,7 @@
                                 </div>
 
                                 <div class="changelog__change__user__info">
-                                    <div class="changelog__change__user__name">
+                                    <div class="changelog__change__user__name" style="{{ change.user_colour|html_colour }}">
                                         {{ change.username }}
                                     </div>
 

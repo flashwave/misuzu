@@ -1,5 +1,3 @@
-{% from '@manage/macros.twig' import link %}
-
 {% set menus = [
     {
         'name': 'general',
@@ -96,6 +94,29 @@
             ],
         ],
     },
+    {
+        'name': 'changelog',
+        'title': 'Changelog',
+        'sections': [
+            [
+                {
+                    'name': 'changes',
+                    'title': 'Changes',
+                    'url': '/manage/changelog.php?v=changes',
+                },
+                {
+                    'name': 'tags',
+                    'title': 'Tags',
+                    'url': '/manage/changelog.php?v=tags',
+                },
+                {
+                    'name': 'actions',
+                    'title': 'Actions',
+                    'url': '/manage/changelog.php?v=actions',
+                },
+            ],
+        ],
+    },
 ] %}
 
 <!DOCTYPE html>
@@ -160,11 +181,20 @@
             {% endblock %}
 
             <footer class="footer">
-                {{ link('https://flash.moe', 'flash.moe', 'footer__link') }} 2013-{{
+                {{ 'https://flash.moe'|html_link('Flashwave', 'footer__link')|raw }} 2013-{{
                 ''|date('Y') }} /
-                {{ link('https://github.com/flashwave/misuzu/tree/' ~ git_branch(), git_branch(), 'footer__link') }} # {{ link('https://github.com/flashwave/misuzu/commit/' ~ git_hash(true), git_hash(), 'footer__link') }}
+                <span title="{{ git_hash(true) }}">
+                    {{ git_branch() }} # {{ git_hash() }}
+                </span>
+                {# link('https://github.com/flashwave/misuzu/tree/' ~ git_branch(), git_branch(), 'footer__link') }} # {{ link('https://github.com/flashwave/misuzu/commit/' ~ git_hash(true), git_hash(), 'footer__link') #}
             </footer>
         </div>
         <script src="/js/libraries.js" charset="utf-8"></script>
+        <script>
+            window.addEventListener('load', () => {
+                timeago().render(document.querySelectorAll('time'));
+                hljs.initHighlighting();
+            });
+        </script>
     </body>
 </html>

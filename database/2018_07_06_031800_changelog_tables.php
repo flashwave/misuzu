@@ -47,8 +47,10 @@ function migrate_up(PDO $conn): void
             `tag_name`          VARCHAR(255)        NOT NULL,
             `tag_description`   TEXT                NULL,
             `tag_created`       TIMESTAMP           NOT NULL    DEFAULT CURRENT_TIMESTAMP,
+            `tag_archived`      TIMESTAMP           NULL        DEFAULT NULL,
             PRIMARY KEY (`tag_id`),
-            UNIQUE INDEX `tag_name` (`tag_name`)
+            UNIQUE INDEX    `tag_name`      (`tag_name`),
+            INDEX           `tag_archived`  (`tag_archived`)
         )
     ");
 
@@ -56,8 +58,8 @@ function migrate_up(PDO $conn): void
         CREATE TABLE `msz_changelog_change_tags` (
             `change_id` INT(10) UNSIGNED NOT NULL,
             `tag_id`    INT(10) UNSIGNED NOT NULL,
-            INDEX `tag_id_foreign_key` (`tag_id`),
-            INDEX `change_tag_constraint` (`change_id`, `tag_id`),
+            INDEX           `tag_id_foreign_key`    (`tag_id`),
+            UNIQUE INDEX    `change_tag_unique`     (`change_id`, `tag_id`),
             CONSTRAINT `change_id_foreign_key`
                 FOREIGN KEY (`change_id`)
                 REFERENCES `msz_changelog_changes` (`change_id`)

@@ -1,0 +1,28 @@
+{% extends '@manage/changelog/master.twig' %}
+{% from '@manage/macros.twig' import pagination %}
+
+{% block content %}
+    <div class="container">
+        <a href="?v=tag" class="button">Create new tag</a>
+    </div>
+
+    <div class="container listing changelog-tags">
+        {% for tag in changelog_tags %}
+            <a href="?v=tag&amp;t={{ tag.tag_id }}" class="listing__entry changelog-tags__entry">
+                <div class="listing__entry__content changelog-tags__content">
+                    <div class="changelog-tags__text">
+                        {{ tag.tag_name }} ({{ tag.tag_count }})
+                    </div>
+
+                    <div class="changelog-tags__description">
+                        {{ tag.tag_description }}
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="container container--center">
+        {{ pagination(changelog_tags_count, changelog_take, changelog_offset, '?v=tags') }}
+    </div>
+{% endblock %}
