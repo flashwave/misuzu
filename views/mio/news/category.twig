@@ -3,7 +3,10 @@
 {% from '@mio/news/macros.twig' import news_preview %}
 
 {% set title = category.category_name ~ ' :: News' %}
-{% set canonical_url = '/news.php?c=' ~ category.category_id ~ (posts_offset > 0 ? '&o=' ~ posts_offset : '') %}
+{% set canonical_url = '/news.php'|url_construct({
+    'c': category.category_id,
+    'o': posts_offset,
+}) %}
 
 {% block news_content %}
     <div class="container news__container">
