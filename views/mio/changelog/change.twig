@@ -89,5 +89,12 @@
         </div>
     </div>
 
+    <script>
+        window.addEventListener('load', () => {
+            if (!CSS.supports('writing-mode', 'sideways-lr'))
+                document.getElementsByClassName('changelog__change__action')[0].title = 'This is supposed to be sideways, but your browser doesn\'t support that.';
+        });
+    </script>
+
     {{ navigation(mio_navigation) }}
 {% endblock %}
