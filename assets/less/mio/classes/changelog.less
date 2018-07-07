@@ -102,7 +102,7 @@
         &__line {
             border: 1px solid #9475b2;
             display: flex;
-            align-items: center;
+            align-items: stretch;
             flex: 1 0 auto;
         }
 
@@ -121,6 +121,7 @@
 
             &--change-info {
                 flex: 1 1 auto;
+                overflow: hidden;
             }
         }
 
@@ -131,6 +132,8 @@
             writing-mode: sideways-lr;
             text-orientation: sideways;
             letter-spacing: 1px;
+            text-align: center;
+            flex: 0 0 auto;
 
             &--light {
                 color: #fff;
@@ -140,6 +143,13 @@
         &__log {
             padding: 4px 12px;
             font-size: 1.4em;
+            align-self: center;
+            flex: 1 1 auto;
+            overflow: hidden;
+
+            &__text {
+                word-wrap: break-word;
+            }
         }
 
         &__date {
@@ -194,6 +204,7 @@
             font-size: 1.2em;
             line-height: 1.5em;
             flex: 1 1 auto;
+            word-wrap: break-word;
         }
 
         &__tags {
