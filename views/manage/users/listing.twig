@@ -4,7 +4,7 @@
 {% block content %}
     <div class="container listing user-listing">
         {% for user in manage_users %}
-            <a href="?v=view&amp;u={{ user.user_id }}" class="listing__entry user-listing__entry"{% if not user.colour|colour_get_inherit %} style="border-color: {{ user.colour|colour_get_css }}"{% endif %}>
+            <a href="?v=view&amp;u={{ user.user_id }}" class="listing__entry user-listing__entry"{% if not user.colour|colour_get_inherit %} style="{{ user.colour|html_colour({'border-color':'%s'}) }}"{% endif %}>
                 <div class="listing__entry__content user-listing__entry__content">
                     <div class="user-listing__info">
                         <div class="user-listing__username">

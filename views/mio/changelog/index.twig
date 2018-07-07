@@ -1,0 +1,20 @@
+{% extends '@mio/changelog/master.twig' %}
+{% from '@mio/macros.twig' import navigation, pagination %}
+{% from '@mio/changelog/macros.twig' import changelog_listing %}
+
+{% set title = 'Changelog' %}
+{% set canonical_url = '/changelog.php' %}
+
+{% block content %}
+    <div class="container">
+        <div class="container__title">
+            Changelog
+        </div>
+        <div class="container__content changelog__content">
+            {{ changelog_listing(changes) }}
+            {{ pagination(changelog_count, changelog_take, changelog_offset, '/changelog.php') }}
+        </div>
+    </div>
+
+    {{ navigation(mio_navigation) }}
+{% endblock %}

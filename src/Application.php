@@ -238,10 +238,13 @@ class Application extends ApplicationBase
 
         $this->templatingInstance->addFilter('json_decode');
         $this->templatingInstance->addFilter('byte_symbol');
+        $this->templatingInstance->addFilter('html_link');
+        $this->templatingInstance->addFilter('html_colour');
         $this->templatingInstance->addFilter('country_name', 'get_country_name');
         $this->templatingInstance->addFilter('flip', 'array_flip');
         $this->templatingInstance->addFilter('first_paragraph');
         $this->templatingInstance->addFilter('colour_get_css');
+        $this->templatingInstance->addFilter('colour_get_css_contrast');
         $this->templatingInstance->addFilter('colour_get_inherit');
         $this->templatingInstance->addFilter('colour_get_red');
         $this->templatingInstance->addFilter('colour_get_green');

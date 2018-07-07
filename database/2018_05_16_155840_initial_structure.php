@@ -44,7 +44,7 @@ function migrate_up(PDO $conn): void
             `user_twitchtv` VARCHAR(30)         NOT NULL    DEFAULT '',
             `user_osu`      VARCHAR(20)         NOT NULL    DEFAULT '',
             `user_lastfm`   VARCHAR(20)         NOT NULL    DEFAULT '',
-            `user_title`    VARCHAR(64)         NOT NULL    DEFAULT '',
+            `user_title`    VARCHAR(64)         NULL        DEFAULT NULL,
             `last_seen`     TIMESTAMP           NULL        DEFAULT NULL,
             PRIMARY KEY (`user_id`),
             UNIQUE  INDEX   `users_username_unique`         (`username`),

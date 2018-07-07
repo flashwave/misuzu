@@ -20,7 +20,7 @@ switch ($_GET['v'] ?? null) {
         echo 'somewhat soon i guess';
         break;
 
-    case null:
+    default:
         header('Location: ?v=overview');
         break;
 }

@@ -1,0 +1,5 @@
+{% extends '@mio/master.twig' %}
+
+{% if manage_link is not defined %}
+    {% set manage_link = '/manage/changelog.php' %}
+{% endif %}

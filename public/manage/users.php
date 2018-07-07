@@ -57,6 +57,7 @@ switch ($_GET['v'] ?? null) {
             LEFT JOIN `msz_roles` as r
             ON u.`display_role` = r.`role_id`
             WHERE `user_id` = :user_id
+            ORDER BY `user_id`
         ');
         $getUser->bindValue('user_id', $userId);
         $getUser->execute();

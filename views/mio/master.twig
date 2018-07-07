@@ -1,10 +1,11 @@
-{% from '@mio/macros.twig' import link, navigation %}
+{% from '@mio/macros.twig' import navigation %}
 
 {% set mio_navigation = {
     'Home': '/',
     'News': '/news.php',
     'Forum': '/forum/',
     'Chat': 'https://chat.flashii.net',
+    'Members': '/members.php',
 } %}
 
 <!doctype html>
@@ -64,17 +65,22 @@
 
             <footer class="footer">
                 <div class="footer__copyright">
-                    {{ link('https://flash.moe', 'flash.moe', 'footer__copyright__link') }} 2013-{{
+                    {{ 'https://flash.moe'|html_link('Flashwave', 'footer__copyright__link')|raw }} 2013-{{
                     ''|date('Y') }} /
-                    {{ link('https://github.com/flashwave/misuzu/tree/' ~ git_branch(), git_branch(), 'footer__copyright__link') }} # {{ link('https://github.com/flashwave/misuzu/commit/' ~ git_hash(true), git_hash(), 'footer__copyright__link') }}
+                    <span title="{{ git_hash(true) }}">
+                        {{ git_branch() }} # {{ git_hash() }}
+                    </span>
+                    {# link('https://github.com/flashwave/misuzu/tree/' ~ git_branch(), git_branch(), 'footer__copyright__link') }} # {{ link('https://github.com/flashwave/misuzu/commit/' ~ git_hash(true), git_hash(), 'footer__copyright__link') #}
                 </div>
 
                 <div class="footer__links">
-                    {{ link('#', 'Terms of Service', 'footer__links__link') }} |
-                    {{ link('#', 'Rules', 'footer__links__link') }} |
-                    {{ link('#', 'Contact', 'footer__links__link') }} |
-                    {{ link('#', 'Status', 'footer__links__link') }} |
-                    {{ link('https://twitter.com/flashiinet', 'Twitter', 'footer__links__link') }}
+                    {% autoescape false %}
+                    {{ '#'|html_link('Rules', 'footer__links__link') }} |
+                    {{ '#'|html_link('Contact', 'footer__links__link') }} |
+                    {{ '#'|html_link('Status', 'footer__links__link') }} |
+                    {{ '/changelog.php'|html_link('Changelog', 'footer__links__link') }} |
+                    {{ 'https://twitter.com/flashiinet'|html_link('Twitter', 'footer__links__link') }}
+                    {% endautoescape %}
                 </div>
             </footer>
         </div>

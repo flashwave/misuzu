@@ -3,7 +3,7 @@
 {% block content %}
     <div class="container">
         <h1 class="container__title">
-            Viewing <span style="color:{{ view_user.colour|colour_get_css }}">{{ view_user.username }}</span> ({{ view_user.user_id }})
+            Viewing <span style="{{ view_user.colour|html_colour }}">{{ view_user.username }}</span> ({{ view_user.user_id }})
         </h1>
 
         <label class="form__label">

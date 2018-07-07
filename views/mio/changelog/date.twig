@@ -1,0 +1,23 @@
+{% extends '@mio/changelog/master.twig' %}
+{% from '@mio/macros.twig' import navigation, pagination %}
+{% from '@mio/changelog/macros.twig' import changelog_listing %}
+
+{% set is_valid = changes|length > 0 %}
+{% set title = 'Changelog » ' ~ (is_valid ? changes[0].change_date : 'Unknown date') %}
+
+{% if is_valid %}
+    {% set canonical_url = '/changelog.php?d=' ~ changes[0].change_date %}
+{% endif %}
+
+{% block content %}
+    <div class="container">
+        <div class="container__title">
+            {{ title }}
+        </div>
+        <div class="container__content changelog__content">
+            {{ changelog_listing(changes, true) }}
+        </div>
+    </div>
+
+    {{ navigation(mio_navigation) }}
+{% endblock %}

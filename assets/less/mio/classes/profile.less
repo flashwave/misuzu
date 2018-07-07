@@ -91,6 +91,10 @@
 
         &__column {
             min-width: 80px;
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
 
             @media (max-width: @mio-profile-mobile) {
                 min-width: auto;
