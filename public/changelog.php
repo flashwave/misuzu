@@ -11,6 +11,7 @@ $changelogRange = 30;
 
 $changelogChange = (int)($_GET['c'] ?? 0);
 $changelogDate = $_GET['d'] ?? '';
+$changelogUser = (int)($_GET['u'] ?? 0);
 
 $tpl->vars([
     'changelog_offset' => $changelogOffset,

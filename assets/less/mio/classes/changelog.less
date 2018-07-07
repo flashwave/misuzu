@@ -40,22 +40,24 @@
 
     &__user,
     &__action {
-        display: inline-flex;
         color: inherit;
         flex: 0 0 auto;
         margin-right: 1px;
-        justify-content: center;
-        align-items: center;
         text-decoration: none;
+        display: flex;
+        align-items: center;
 
         &:hover {
             text-decoration: underline;
+        }
+
+        &__text {
+            width: 100%;
         }
     }
 
     &__user {
         min-width: 100px;
-        justify-content: left;
         padding-left: 4px;
 
         @media (max-width: @mio-changelog-mobile) {
@@ -65,8 +67,11 @@
 
     &__action {
         min-width: 80px;
-        justify-content: right;
         padding-right: 4px;
+
+        &__text {
+            text-align: right;
+        }
 
         @media (max-width: @mio-changelog-mobile) {
             margin-right: 0;
