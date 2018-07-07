@@ -4,7 +4,7 @@
 {% set title = 'Settings » ' ~ settings_title %}
 
 {% block content %}
-    {{ navigation(settings_modes|flip, settings_mode, true, '?m=%s') }}
+    {{ navigation(settings_navigation, settings_mode, true, '?m=%s') }}
 
     {% block settings_container %}
         {% if settings_errors is defined and settings_errors|length > 0 %}

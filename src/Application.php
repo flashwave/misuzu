@@ -73,7 +73,9 @@ class Application extends ApplicationBase
     public function getConfig(): ConfigManager
     {
         if (is_null($this->configInstance)) {
-            throw new UnexpectedValueException('Internal ConfigManager instance is null, how did you even manage to do this?');
+            throw new UnexpectedValueException(
+                'Internal ConfigManager instance is null, how did you even manage to do this?'
+            );
         }
 
         return $this->configInstance;
@@ -242,7 +244,6 @@ class Application extends ApplicationBase
         $this->templatingInstance->addFilter('html_colour');
         $this->templatingInstance->addFilter('url_construct');
         $this->templatingInstance->addFilter('country_name', 'get_country_name');
-        $this->templatingInstance->addFilter('flip', 'array_flip');
         $this->templatingInstance->addFilter('first_paragraph');
         $this->templatingInstance->addFilter('colour_get_css');
         $this->templatingInstance->addFilter('colour_get_css_contrast');
@@ -256,6 +257,7 @@ class Application extends ApplicationBase
         $this->templatingInstance->addFunction('git_hash', [Application::class, 'gitCommitHash']);
         $this->templatingInstance->addFunction('git_branch', [Application::class, 'gitBranch']);
         $this->templatingInstance->addFunction('csrf_token', 'tmp_csrf_token');
+        $this->templatingInstance->addFunction('perms_check');
 
         $this->templatingInstance->var('app', $this);
     }

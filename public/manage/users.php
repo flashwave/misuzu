@@ -6,13 +6,19 @@ require_once __DIR__ . '/../../misuzu.php';
 $db = Database::connection();
 $templating = $app->getTemplating();
 
+$userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
+
 $isPostRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
 $queryQffset = (int)($_GET['o'] ?? 0);
 
 switch ($_GET['v'] ?? null) {
     case 'listing':
-        $usersTake = 32;
+        if (!perms_check($userPerms, MSZ_PERM_MANAGE_USERS)) {
+            echo render_error(403);
+            break;
+        }
 
+        $usersTake = 32;
         $manageUsersCount = $db->query('
             SELECT COUNT(`user_id`)
             FROM `msz_users`
@@ -25,6 +31,7 @@ switch ($_GET['v'] ?? null) {
             FROM `msz_users` as u
             LEFT JOIN `msz_roles` as r
             ON u.`display_role` = r.`role_id`
+            ORDER BY `user_id`
             LIMIT :offset, :take
         ');
         $getManageUsers->bindValue('offset', $queryQffset);
@@ -41,6 +48,11 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'view':
+        if (!perms_check($userPerms, MSZ_PERM_MANAGE_USERS)) {
+            echo render_error(403);
+            break;
+        }
+
         $userId = $_GET['u'] ?? null;
 
         if ($userId === null || ($userId = (int)$userId) < 1) {
@@ -141,6 +153,11 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'roles':
+        if (!perms_check($userPerms, MSZ_PERM_MANAGE_ROLES)) {
+            echo render_error(403);
+            break;
+        }
+
         $rolesTake = 10;
 
         $manageRolesCount = $db->query('
@@ -173,6 +190,11 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'role':
+        if (!perms_check($userPerms, MSZ_PERM_MANAGE_ROLES)) {
+            echo render_error(403);
+            break;
+        }
+
         $roleId = $_GET['r'] ?? null;
 
         if ($isPostRequest) {

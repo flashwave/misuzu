@@ -1,6 +1,10 @@
 <?php
 use Misuzu\Database;
 
+define('MSZ_CHANGELOG_MANAGE_CHANGES', 1);
+define('MSZ_CHANGELOG_MANAGE_TAGS', 1 << 1);
+define('MSZ_CHANGELOG_MANAGE_ACTIONS', 1 << 2);
+
 function changelog_action_add(string $name, ?int $colour = null, ?string $class = null): int
 {
     $dbc = Database::connection();
@@ -42,7 +46,7 @@ function changelog_entry_create(int $userId, int $actionId, string $log, string 
     return $createChange->execute() ? (int)$dbc->lastInsertId() : 0;
 }
 
-define('CHANGELOG_GET_QUERY', '
+define('MSZ_CHANGELOG_GET_QUERY', '
     SELECT
         c.`change_id`, c.`change_log`,
         a.`action_name`, a.`action_colour`, a.`action_class`,
@@ -70,7 +74,7 @@ function changelog_get_changes(string $date, int $user, int $offset, int $take):
     $hasUser = $user > 0;
 
     $query = sprintf(
-        CHANGELOG_GET_QUERY,
+        MSZ_CHANGELOG_GET_QUERY,
         $hasDate ? 'DATE(c.`change_created`) = :date' : '1',
         $hasUser ? 'c.`user_id` = :user' : '1',
         !$hasDate ? 'LIMIT :offset, :take' : ''

@@ -6,6 +6,8 @@ date_default_timezone_set('UTC');
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/src/changelog.php';
 require_once __DIR__ . '/src/colour.php';
+require_once __DIR__ . '/src/manage.php';
+require_once __DIR__ . '/src/perms.php';
 require_once __DIR__ . '/src/zalgo.php';
 require_once __DIR__ . '/src/Forum/forum.php';
 require_once __DIR__ . '/src/Forum/post.php';
@@ -36,16 +38,17 @@ if (PHP_SAPI !== 'cli') {
         ob_start('ob_gzhandler');
     }
 
+    $app->startTemplating();
+    $tpl = $app->getTemplating();
+
     if ($app->getConfig()->get('Auth', 'lockdown', 'bool', false)) {
         http_response_code(503);
-        $app->startTemplating();
-        $app->getTemplating()->addPath('auth', __DIR__ . '/views/auth');
-        echo $app->getTemplating()->render('lockdown');
+        $tpl->addPath('auth', __DIR__ . '/views/auth');
+        echo $tpl->render('lockdown');
         exit;
     }
 
-    $app->startTemplating();
-    $app->getTemplating()->addPath('mio', __DIR__ . '/views/mio');
+    $tpl->addPath('mio', __DIR__ . '/views/mio');
 
     if (isset($_COOKIE['msz_uid'], $_COOKIE['msz_sid'])) {
         $app->startSession((int)$_COOKIE['msz_uid'], $_COOKIE['msz_sid']);
@@ -74,18 +77,22 @@ if (PHP_SAPI !== 'cli') {
             ');
             $getUserDisplayInfo->bindValue('user_id', $app->getUserId());
             $userDisplayInfo = $getUserDisplayInfo->execute() ? $getUserDisplayInfo->fetch() : [];
-            $app->getTemplating()->var('current_user', $userDisplayInfo);
+            $tpl->var('current_user', $userDisplayInfo);
         }
     }
 
-    $manage_mode = starts_with($_SERVER['REQUEST_URI'], '/manage');
+    $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
+    $hasManageAccess = perms_check(perms_get_user(MSZ_PERMS_USER, $app->getUserId()), MSZ_PERM_MANAGE);
+    $tpl->var('has_manage_access', $hasManageAccess);
 
-    if ($manage_mode) {
-        if ($app->getUserId() !== 1) {
+    if ($inManageMode) {
+        if (!$hasManageAccess) {
             echo render_error(403);
             exit;
         }
 
-        $app->getTemplating()->addPath('manage', __DIR__ . '/views/manage');
+        $tpl = $app->getTemplating();
+        $tpl->var('manage_menu', manage_get_menu($app->getUserId()));
+        $tpl->addPath('manage', __DIR__ . '/views/manage');
     }
 }

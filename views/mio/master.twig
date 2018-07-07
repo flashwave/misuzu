@@ -38,7 +38,7 @@
                                     <ul class="header__user__links">
                                         <li class="header__user__option"><a class="header__user__link" href="/profile.php?u={{ current_user.user_id }}">Profile</a></li>
                                         <li class="header__user__option"><a class="header__user__link" href="/settings.php">Settings</a></li>
-                                        {% if current_user.user_id == 1 %}
+                                        {% if has_manage_access %}
                                             <li class="header__user__option"><a class="header__user__link" href="{{ manage_link|default('/manage/index.php') }}">Manage</a></li>
                                         {% endif %}
                                         <li class="header__user__option"><a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Logout</a></li>
