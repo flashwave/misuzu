@@ -7,6 +7,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/src/changelog.php';
 require_once __DIR__ . '/src/colour.php';
 require_once __DIR__ . '/src/manage.php';
+require_once __DIR__ . '/src/news.php';
 require_once __DIR__ . '/src/perms.php';
 require_once __DIR__ . '/src/zalgo.php';
 require_once __DIR__ . '/src/Forum/forum.php';
@@ -82,7 +83,7 @@ if (PHP_SAPI !== 'cli') {
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
-    $hasManageAccess = perms_check(perms_get_user(MSZ_PERMS_USER, $app->getUserId()), MSZ_PERM_MANAGE);
+    $hasManageAccess = perms_check(perms_get_user(MSZ_PERMS_USER, $app->getUserId()), MSZ_USER_PERM_CAN_MANAGE);
     $tpl->var('has_manage_access', $hasManageAccess);
 
     if ($inManageMode) {

@@ -12,7 +12,7 @@ $queryOffset = (int)($_GET['o'] ?? 0);
 
 switch ($_GET['v'] ?? null) {
     case 'changes':
-        if (!perms_check($changelogPerms, MSZ_CHANGELOG_MANAGE_CHANGES)) {
+        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_CHANGES)) {
             echo render_error(403);
             break;
         }
@@ -67,7 +67,7 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'change':
-        if (!perms_check($changelogPerms, MSZ_CHANGELOG_MANAGE_CHANGES)) {
+        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_CHANGES)) {
             echo render_error(403);
             break;
         }
@@ -191,7 +191,7 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'tags':
-        if (!perms_check($changelogPerms, MSZ_CHANGELOG_MANAGE_TAGS)) {
+        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_TAGS)) {
             echo render_error(403);
             break;
         }
@@ -228,7 +228,7 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'tag':
-        if (!perms_check($changelogPerms, MSZ_CHANGELOG_MANAGE_TAGS)) {
+        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_TAGS)) {
             echo render_error(403);
             break;
         }
@@ -289,7 +289,7 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'actions':
-        if (!perms_check($changelogPerms, MSZ_CHANGELOG_MANAGE_ACTIONS)) {
+        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_ACTIONS)) {
             echo render_error(403);
             break;
         }
@@ -326,7 +326,7 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'action':
-        if (!perms_check($changelogPerms, MSZ_CHANGELOG_MANAGE_ACTIONS)) {
+        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_ACTIONS)) {
             echo render_error(403);
             break;
         }

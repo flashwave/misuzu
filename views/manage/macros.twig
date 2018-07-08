@@ -91,3 +91,53 @@
         </ul>
     {% endif %}
 {% endmacro %}
+
+{% macro permissions_table(permissions) %}
+    <div class="permissions">
+        {% for perms in permissions %}
+            <div class="permissions__line permissions__line--header">
+                <div class="permissions__title">
+                    {{ perms.title }}
+                </div>
+                <div class="permissions__choice">
+                    Yes
+                </div>
+                <div class="permissions__choice">
+                    No
+                </div>
+                <div class="permissions__choice">
+                    Never
+                </div>
+            </div>
+
+            {% for perm in perms.perms %}
+                <div class="permissions__line">
+                    <div class="permissions__title">
+                        {{ perm.title }}
+                    </div>
+                    <label class="permissions__choice permissions__choice--radio permissions__choice--yes">
+                        <input {% if perm.value == 'yes' %}checked{% endif %}
+                            class="permissions__input"
+                            type="radio"
+                            name="perms[{{ perms.section }}][{{ perm.section }}]"
+                            value="yes">
+                    </label>
+                    <label class="permissions__choice permissions__choice--radio permissions__choice--no">
+                        <input {% if perm.value == 'no' %}checked{% endif %}
+                            class="permissions__input"
+                            type="radio"
+                            name="perms[{{ perms.section }}][{{ perm.section }}]"
+                            value="no">
+                    </label>
+                    <label class="permissions__choice permissions__choice--radio permissions__choice--never">
+                        <input {% if perm.value == 'never' %}checked{% endif %}
+                            class="permissions__input"
+                            type="radio"
+                            name="perms[{{ perms.section }}][{{ perm.section }}]"
+                            value="never">
+                    </label>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endmacro %}

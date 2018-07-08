@@ -15,11 +15,11 @@ $userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
 $settingsModes = [
     'account' => [
         'title' => 'Account',
-        'allow' => perms_check($userPerms, MSZ_PERM_EDIT_PROFILE),
+        'allow' => perms_check($userPerms, MSZ_USER_PERM_EDIT_PROFILE),
     ],
     'avatar' => [
         'title' => 'Avatar',
-        'allow' => perms_check($userPerms, MSZ_PERM_CHANGE_AVATAR),
+        'allow' => perms_check($userPerms, MSZ_USER_PERM_CHANGE_AVATAR),
     ],
     'sessions' => [
         'title' => 'Sessions',

@@ -3,16 +3,16 @@ use Misuzu\Application;
 use Misuzu\Database;
 use Misuzu\IO\File;
 
-define('MSZ_PERM_EDIT_PROFILE', 1);
-define('MSZ_PERM_CHANGE_AVATAR', 1 << 1);
+define('MSZ_USER_PERM_EDIT_PROFILE', 1);
+define('MSZ_USER_PERM_CHANGE_AVATAR', 1 << 1);
 
-define('MSZ_PERM_MANAGE', 1 << 20);
-define('MSZ_PERM_MANAGE_USERS', 1 << 21);
-define('MSZ_PERM_MANAGE_ROLES', 1 << 22);
-define('MSZ_PERM_MANAGE_PERMS', 1 << 23);
-define('MSZ_PERM_MANAGE_REPORTS', 1 << 24);
-define('MSZ_PERM_MANAGE_RESTRICTIONS', 1 << 25);
-define('MSZ_PERM_MANAGE_BLACKLISTS', 1 << 26);
+define('MSZ_USER_PERM_CAN_MANAGE', 1 << 19);
+define('MSZ_USER_PERM_MANAGE_USERS', 1 << 20);
+define('MSZ_USER_PERM_MANAGE_ROLES', 1 << 21);
+define('MSZ_USER_PERM_MANAGE_PERMS', 1 << 22);
+define('MSZ_USER_PERM_MANAGE_REPORTS', 1 << 23);
+define('MSZ_USER_PERM_MANAGE_RESTRICTIONS', 1 << 24);
+define('MSZ_USER_PERM_MANAGE_BLACKLISTS', 1 << 25);
 
 define('MSZ_USERS_PASSWORD_HASH_ALGO', PASSWORD_ARGON2I);
 
