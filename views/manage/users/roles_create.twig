@@ -1,4 +1,5 @@
 {% extends '@manage/users/master.twig' %}
+{% from '@manage/macros.twig' import permissions_table %}
 
 {% block content %}
     <form action="?v=role{{ edit_role is defined ? '&r=' ~ edit_role.role_id : '' }}" method="post">
@@ -29,6 +30,13 @@
                 <div class="form__label__text">Hierarchy</div>
                 <div class="form__label__input">
                     <input class="input input--number" type="number" value="{{ edit_role is defined ? edit_role.role_hierarchy : '1' }}" min="1" max="100" name="role[hierarchy]">
+                </div>
+            </label>
+
+            <label class="form__label">
+                <div class="form__label__text">Title</div>
+                <div class="form__label__input">
+                    <input class="input input--text" type="text" value="{{ edit_role is defined ? edit_role.role_title : '' }}" name="role[title]" maxlength="64">
                 </div>
             </label>
 
@@ -70,10 +78,17 @@
                     <textarea class="input input--textarea" name="role[description]" maxlength="1000">{{ edit_role is defined ? edit_role.role_description : '' }}</textarea>
                 </div>
             </label>
+        </div>
 
-            <div>
-                <button class="button" name="csrf" value="{{ csrf_token() }}">{{ edit_role is defined ? 'Update role' : 'Create role' }}</button>
+        {% if can_manage_perms %}
+            <div class="container">
+                <h2 class="container__subtitle">Permissions</h2>
+                {{ permissions_table(permissions) }}
             </div>
+        {% endif %}
+
+        <div class="container">
+            <button class="button" name="csrf" value="{{ csrf_token() }}">{{ edit_role is defined ? 'Update role' : 'Create role' }}</button>
         </div>
     </form>
 {% endblock %}

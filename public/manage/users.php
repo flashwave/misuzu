@@ -4,15 +4,27 @@ use Misuzu\Database;
 require_once __DIR__ . '/../../misuzu.php';
 
 $db = Database::connection();
-$templating = $app->getTemplating();
+$tpl = $app->getTemplating();
+
+$userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
 
 $isPostRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
 $queryQffset = (int)($_GET['o'] ?? 0);
 
+$tpl->vars([
+    'can_manage_users' => $canManageUsers = perms_check($userPerms, MSZ_USER_PERM_MANAGE_USERS),
+    'can_manage_roles' => $canManageRoles = perms_check($userPerms, MSZ_USER_PERM_MANAGE_ROLES),
+    'can_manage_perms' => $canManagePerms = perms_check($userPerms, MSZ_USER_PERM_MANAGE_PERMS),
+]);
+
 switch ($_GET['v'] ?? null) {
     case 'listing':
-        $usersTake = 32;
+        if (!$canManageUsers && !$canManagePerms) {
+            echo render_error(403);
+            break;
+        }
 
+        $usersTake = 32;
         $manageUsersCount = $db->query('
             SELECT COUNT(`user_id`)
             FROM `msz_users`
@@ -25,22 +37,28 @@ switch ($_GET['v'] ?? null) {
             FROM `msz_users` as u
             LEFT JOIN `msz_roles` as r
             ON u.`display_role` = r.`role_id`
+            ORDER BY `user_id`
             LIMIT :offset, :take
         ');
         $getManageUsers->bindValue('offset', $queryQffset);
         $getManageUsers->bindValue('take', $usersTake);
         $manageUsers = $getManageUsers->execute() ? $getManageUsers->fetchAll() : [];
 
-        $templating->vars([
+        $tpl->vars([
             'manage_users' => $manageUsers,
             'manage_users_count' => $manageUsersCount,
             'manage_users_range' => $usersTake,
             'manage_users_offset' => $queryQffset,
         ]);
-        echo $templating->render('@manage.users.listing');
+        echo $tpl->render('@manage.users.listing');
         break;
 
     case 'view':
+        if (!$canManageUsers && !$canManagePerms) {
+            echo render_error(403);
+            break;
+        }
+
         $userId = $_GET['u'] ?? null;
 
         if ($userId === null || ($userId = (int)$userId) < 1) {
@@ -92,22 +110,62 @@ switch ($_GET['v'] ?? null) {
         $getAvailableRoles->bindValue('user_id', $manageUser['user_id']);
         $availableRoles = $getAvailableRoles->execute() ? $getAvailableRoles->fetchAll() : [];
 
+        if ($canManagePerms) {
+            $tpl->var('permissions', $permissions = manage_perms_list(perms_get_user_raw($userId)));
+        }
+
         if ($isPostRequest) {
             if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
                 echo 'csrf err';
                 break;
             }
 
-            if (isset($_POST['avatar'])) {
-                switch ($_POST['avatar']['mode'] ?? '') {
-                    case 'delete':
-                        user_avatar_delete($manageUser['user_id']);
-                        break;
+            if (!empty($_POST['user']) && is_array($_POST['user'])
+                && user_validate_username($_POST['user']['username']) === ''
+                && user_validate_email($_POST['user']['email']) === '') {
+                $updateUserDetails = $db->prepare('
+                    UPDATE `msz_users`
+                    SET `username` = :username,
+                        `email` = LOWER(:email),
+                        `user_title` = :title
+                    WHERE `user_id` = :user_id
+                ');
+                $updateUserDetails->bindValue('username', $_POST['user']['username']);
+                $updateUserDetails->bindValue('email', $_POST['user']['email']);
+                $updateUserDetails->bindValue(
+                    'title',
+                    strlen($_POST['user']['title'])
+                    ? $_POST['user']['title']
+                    : null
+                );
+                $updateUserDetails->bindValue('user_id', $userId);
+                $updateUserDetails->execute();
+            }
 
-                    case 'upload':
-                        user_avatar_set_from_path($manageUser['user_id'], $_FILES['avatar']['tmp_name']['file']);
-                        break;
-                }
+            if (!empty($_POST['avatar']) && !empty($_POST['avatar']['delete'])) {
+                user_avatar_delete($manageUser['user_id']);
+            } elseif (!empty($_FILES['avatar'])) {
+                user_avatar_set_from_path($manageUser['user_id'], $_FILES['avatar']['tmp_name']['file']);
+            }
+
+            if (!empty($_POST['password'])
+                && is_array($_POST['password'])
+                && !empty($_POST['password']['new'])
+                && !empty($_POST['password']['confirm'])
+                && user_validate_password($_POST['password']['new']) === ''
+                && $_POST['password']['new'] === $_POST['password']['confirm']) {
+                $updatePassword = $db->prepare('
+                    UPDATE `msz_users`
+                    SET `password` = :password
+                    WHERE `user_id` = :user_id
+                ');
+                $updatePassword->bindValue('password', user_password_hash($_POST['password']['new']));
+                $updatePassword->bindValue('user_id', $userId);
+                $updatePassword->execute();
+            }
+
+            if (!empty($_POST['profile']) && is_array($_POST['profile'])) {
+                user_profile_fields_set($userId, $_POST['profile']);
             }
 
             if (isset($_POST['add_role'])) {
@@ -128,21 +186,55 @@ switch ($_GET['v'] ?? null) {
                 }
             }
 
+            if (!empty($permissions) && !empty($_POST['perms']) && is_array($_POST['perms'])) {
+                $perms = manage_perms_apply($permissions, $_POST['perms']);
+
+                if ($perms !== null) {
+                    $permKeys = array_keys($perms);
+                    $setPermissions = $db->prepare('
+                        REPLACE INTO `msz_permissions`
+                            (`role_id`, `user_id`, `' . implode('`, `', $permKeys) . '`)
+                        VALUES
+                            (NULL, :user_id, :' . implode(', :', $permKeys) . ')
+                    ');
+                    $setPermissions->bindValue('user_id', $userId);
+
+                    foreach ($perms as $key => $value) {
+                        $setPermissions->bindValue($key, $value);
+                    }
+
+                    $setPermissions->execute();
+                } else {
+                    $deletePermissions = $db->prepare('
+                        DELETE FROM `msz_permissions`
+                        WHERE `role_id` IS NULL
+                        AND `user_id` = :user_id
+                    ');
+                    $deletePermissions->bindValue('user_id', $userId);
+                    $deletePermissions->execute();
+                }
+            }
+
             header("Location: ?v=view&u={$manageUser['user_id']}");
             break;
         }
 
-        $templating->vars([
+        $tpl->vars([
             'available_roles' => $availableRoles,
             'has_roles' => $hasRoles,
             'view_user' => $manageUser,
+            'profile_fields' => user_profile_fields_get(),
         ]);
-        echo $templating->render('@manage.users.view');
+        echo $tpl->render('@manage.users.view');
         break;
 
     case 'roles':
-        $rolesTake = 10;
+        if (!$canManageRoles && !$canManagePerms) {
+            echo render_error(403);
+            break;
+        }
 
+        $rolesTake = 10;
         $manageRolesCount = $db->query('
             SELECT COUNT(`role_id`)
             FROM `msz_roles`
@@ -163,17 +255,26 @@ switch ($_GET['v'] ?? null) {
         $getManageRoles->bindValue('take', $rolesTake);
         $manageRoles = $getManageRoles->execute() ? $getManageRoles->fetchAll() : [];
 
-        $templating->vars([
+        $tpl->vars([
             'manage_roles' => $manageRoles,
             'manage_roles_count' => $manageRolesCount,
             'manage_roles_range' => $rolesTake,
             'manage_roles_offset' => $queryQffset,
         ]);
-        echo $templating->render('@manage.users.roles');
+        echo $tpl->render('@manage.users.roles');
         break;
 
     case 'role':
+        if (!$canManageRoles && !$canManagePerms) {
+            echo render_error(403);
+            break;
+        }
+
         $roleId = $_GET['r'] ?? null;
+
+        if ($canManagePerms) {
+            $tpl->var('permissions', $permissions = manage_perms_list(perms_get_role_raw($roleId)));
+        }
 
         if ($isPostRequest) {
             if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
@@ -221,28 +322,53 @@ switch ($_GET['v'] ?? null) {
                 }
             }
 
-            $roleDescription = $_POST['role']['description'] ?? '';
+            $roleDescription = $_POST['role']['description'] ?? null;
+            $roleTitle = $_POST['role']['title'] ?? null;
 
-            if (strlen($roleDescription) > 1000) {
-                echo 'description is too long';
-                break;
+            if ($roleDescription !== null) {
+                $rdLength = strlen($roleDescription);
+
+                if ($rdLength < 1) {
+                    $roleDescription = null;
+                } elseif ($rdLength > 1000) {
+                    echo 'description is too long';
+                    break;
+                }
+            }
+
+            if ($roleTitle !== null) {
+                $rtLength = strlen($roleTitle);
+
+                if ($rtLength < 1) {
+                    $roleTitle = null;
+                } elseif ($rtLength > 64) {
+                    echo 'title is too long';
+                    break;
+                }
             }
 
             if ($roleId < 1) {
                 $updateRole = $db->prepare('
                     INSERT INTO `msz_roles`
-                        (`role_name`, `role_hierarchy`, `role_secret`, `role_colour`, `role_description`, `created_at`)
+                        (
+                            `role_name`, `role_hierarchy`, `role_secret`, `role_colour`,
+                            `role_description`, `created_at`, `role_title`
+                        )
                     VALUES
-                        (:role_name, :role_hierarchy, :role_secret, :role_colour, :role_description, NOW())
+                        (
+                            :role_name, :role_hierarchy, :role_secret, :role_colour,
+                            :role_description, NOW(), :role_title
+                        )
                 ');
             } else {
                 $updateRole = $db->prepare('
-                    UPDATE `msz_roles` SET
-                    `role_name` = :role_name,
-                    `role_hierarchy` = :role_hierarchy,
-                    `role_secret` = :role_secret,
-                    `role_colour` = :role_colour,
-                    `role_description` = :role_description
+                    UPDATE `msz_roles`
+                    SET `role_name` = :role_name,
+                        `role_hierarchy` = :role_hierarchy,
+                        `role_secret` = :role_secret,
+                        `role_colour` = :role_colour,
+                        `role_description` = :role_description,
+                        `role_title` = :role_title
                     WHERE `role_id` = :role_id
                 ');
                 $updateRole->bindValue('role_id', $roleId);
@@ -253,10 +379,40 @@ switch ($_GET['v'] ?? null) {
             $updateRole->bindValue('role_secret', $roleSecret ? 1 : 0);
             $updateRole->bindValue('role_colour', $roleColour);
             $updateRole->bindValue('role_description', $roleDescription);
+            $updateRole->bindValue('role_title', $roleTitle);
             $updateRole->execute();
 
             if ($roleId < 1) {
                 $roleId = (int)$db->lastInsertId();
+            }
+
+            if (!empty($permissions) && !empty($_POST['perms']) && is_array($_POST['perms'])) {
+                $perms = manage_perms_apply($permissions, $_POST['perms']);
+
+                if ($perms !== null) {
+                    $permKeys = array_keys($perms);
+                    $setPermissions = $db->prepare('
+                        REPLACE INTO `msz_permissions`
+                            (`role_id`, `user_id`, `' . implode('`, `', $permKeys) . '`)
+                        VALUES
+                            (:role_id, NULL, :' . implode(', :', $permKeys) . ')
+                    ');
+                    $setPermissions->bindValue('role_id', $roleId);
+
+                    foreach ($perms as $key => $value) {
+                        $setPermissions->bindValue($key, $value);
+                    }
+
+                    $setPermissions->execute();
+                } else {
+                    $deletePermissions = $db->prepare('
+                        DELETE FROM `msz_permissions`
+                        WHERE `role_id` = :role_id
+                        AND `user_id` IS NULL
+                    ');
+                    $deletePermissions->bindValue('role_id', $roleId);
+                    $deletePermissions->execute();
+                }
             }
 
             header("Location: ?v=role&r={$roleId}");
@@ -282,9 +438,9 @@ switch ($_GET['v'] ?? null) {
                 break;
             }
 
-            $templating->vars(['edit_role' => $editRole]);
+            $tpl->vars(['edit_role' => $editRole]);
         }
 
-        echo $templating->render('@manage.users.roles_create');
+        echo $tpl->render('@manage.users.roles_create');
         break;
 }

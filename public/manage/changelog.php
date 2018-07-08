@@ -6,12 +6,18 @@ require_once __DIR__ . '/../../misuzu.php';
 $db = Database::connection();
 $tpl = $app->getTemplating();
 
+$changelogPerms = perms_get_user(MSZ_PERMS_CHANGELOG, $app->getUserId());
+
 $queryOffset = (int)($_GET['o'] ?? 0);
 
 switch ($_GET['v'] ?? null) {
     case 'changes':
-        $changesTake = 20;
+        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_CHANGES)) {
+            echo render_error(403);
+            break;
+        }
 
+        $changesTake = 20;
         $changesCount = (int)$db->query('
             SELECT COUNT(`change_id`)
             FROM `msz_changelog_changes`
@@ -61,6 +67,11 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'change':
+        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_CHANGES)) {
+            echo render_error(403);
+            break;
+        }
+
         $changeId = (int)($_GET['c'] ?? 0);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && tmp_csrf_verify($_POST['csrf'] ?? '')) {
@@ -156,12 +167,12 @@ switch ($_GET['v'] ?? null) {
                 $availableTags = $db->prepare('
                     SELECT `tag_id`, `tag_name`
                     FROM `msz_changelog_tags`
-                    WHERE `tag_id` NOT IN (
+                    WHERE `tag_archived` IS NULL
+                    AND `tag_id` NOT IN (
                         SELECT `tag_id`
                         FROM `msz_changelog_change_tags`
                         WHERE `change_id` = :change_id
                     )
-                    AND `tag_archived` IS NULL
                 ');
                 $availableTags->bindValue('change_id', $change['change_id']);
                 $availableTags = $availableTags->execute() ? $availableTags->fetchAll(PDO::FETCH_ASSOC) : [];
@@ -180,6 +191,11 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'tags':
+        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_TAGS)) {
+            echo render_error(403);
+            break;
+        }
+
         $tagsTake = 32;
 
         $tagsCount = (int)$db->query('
@@ -212,6 +228,11 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'tag':
+        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_TAGS)) {
+            echo render_error(403);
+            break;
+        }
+
         $tagId = (int)($_GET['t'] ?? 0);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && tmp_csrf_verify($_POST['csrf'] ?? '')) {
@@ -236,7 +257,8 @@ switch ($_GET['v'] ?? null) {
 
                 $updateTag->bindValue('name', $_POST['tag']['name']);
                 $updateTag->bindValue('description', $_POST['tag']['description']);
-                $updateTag->bindValue('archived', empty($_POST['tag']['description']) ? null : date('Y-m-d H:i:s'));
+                // this is fine, after being archived there shouldn't be any other changes being made
+                $updateTag->bindValue('archived', empty($_POST['tag']['archived']) ? null : date('Y-m-d H:i:s'));
                 $updateTag->execute();
 
                 if ($tagId < 1) {
@@ -267,6 +289,11 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'actions':
+        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_ACTIONS)) {
+            echo render_error(403);
+            break;
+        }
+
         $actionTake = 32;
 
         $actionCount = (int)$db->query('
@@ -299,6 +326,11 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'action':
+        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_ACTIONS)) {
+            echo render_error(403);
+            break;
+        }
+
         $actionId = (int)($_GET['a'] ?? 0);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && tmp_csrf_verify($_POST['csrf'] ?? '')) {
@@ -361,9 +393,5 @@ switch ($_GET['v'] ?? null) {
         }
 
         echo $tpl->render('@manage.changelog.action_edit');
-        break;
-
-    default:
-        header('Location: ?v=changes');
         break;
 }

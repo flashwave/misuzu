@@ -2,9 +2,11 @@
 {% from '@manage/macros.twig' import pagination %}
 
 {% block content %}
-    <div class="container">
-        <a href="?v=role" class="button">Create new Role</a>
-    </div>
+    {% if can_manage_roles %}
+        <div class="container">
+            <a href="?v=role" class="button">Create new Role</a>
+        </div>
+    {% endif %}
 
     <div class="container listing role-listing">
         {% for role in manage_roles %}

@@ -282,3 +282,20 @@ function html_colour(int $colour, array $attribs = []): string
 
     return $css;
 }
+
+function url_construct(string $path, array $query = [], string $host = ''): string
+{
+    $url = $host . $path;
+
+    if (count($query)) {
+        $url .= '?';
+
+        foreach ($query as $key => $value) {
+            if ($value) {
+                $url .= urlencode($key) . '=' . urlencode($value) . '&';
+            }
+        }
+    }
+
+    return substr($url, 0, -1);
+}

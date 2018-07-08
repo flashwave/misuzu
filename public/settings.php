@@ -5,15 +5,51 @@ use Misuzu\IO\File;
 require_once __DIR__ . '/../misuzu.php';
 
 $db = Database::connection();
-$templating = $app->getTemplating();
+$tpl = $app->getTemplating();
 
 $queryOffset = (int)($_GET['o'] ?? 0);
 $queryTake = 15;
 
-if (!$app->hasActiveSession()) {
+$userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
+
+$settingsModes = [
+    'account' => [
+        'title' => 'Account',
+        'allow' => perms_check($userPerms, MSZ_USER_PERM_EDIT_PROFILE),
+    ],
+    'avatar' => [
+        'title' => 'Avatar',
+        'allow' => perms_check($userPerms, MSZ_USER_PERM_CHANGE_AVATAR),
+    ],
+    'sessions' => [
+        'title' => 'Sessions',
+        'allow' => true,
+    ],
+    'login-history' => [
+        'title' => 'Login History',
+        'allow' => true,
+    ],
+];
+$settingsMode = $_GET['m'] ?? null;
+
+$settingsNavigation = [];
+
+foreach ($settingsModes as $key => $value) {
+    if ($value['allow']) {
+        $settingsNavigation[$value['title']] = $key;
+
+        if ($settingsMode === null) {
+            $settingsMode = $key;
+        }
+    }
+}
+
+if (!$app->hasActiveSession() || !$settingsModes[$settingsMode]['allow']) {
     echo render_error(403);
     return;
 }
+
+$tpl->var('settings_navigation', $settingsNavigation);
 
 $csrfErrorString = "Couldn't verify you, please refresh the page and retry.";
 
@@ -41,23 +77,15 @@ $avatarErrorStrings = [
     ],
 ];
 
-$settingsModes = [
-    'account' => 'Account',
-    'avatar' => 'Avatar',
-    'sessions' => 'Sessions',
-    'login-history' => 'Login History',
-];
-$settingsMode = $_GET['m'] ?? key($settingsModes);
-
-$templating->vars([
+$tpl->vars([
     'settings_mode' => $settingsMode,
     'settings_modes' => $settingsModes,
 ]);
 
 if (!array_key_exists($settingsMode, $settingsModes)) {
     http_response_code(404);
-    $templating->var('settings_title', 'Not Found');
-    echo $templating->render('settings.notfound');
+    $tpl->var('settings_title', 'Not Found');
+    echo $tpl->render('settings.notfound');
     return;
 }
 
@@ -140,21 +168,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             break;
                         }
 
-                        $checkIfAlreadySet = $db->prepare('
-                            SELECT COUNT(`user_id`)
-                            FROM `msz_users`
-                            WHERE LOWER(:email) = LOWER(:email)
-                        ');
-                        $checkIfAlreadySet->bindValue('email', $_POST['email']['new']);
-                        $isAlreadySet = $checkIfAlreadySet->execute()
-                            ? $checkIfAlreadySet->fetchColumn() > 0
-                            : false;
-
-                        if ($isAlreadySet) {
-                            $settingsErrors[] = 'This is your e-mail address already!';
-                            break;
-                        }
-
                         $email_validate = user_validate_email($_POST['email']['new'], true);
 
                         if ($email_validate !== '') {
@@ -168,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     break;
 
                                 case 'in-use':
-                                    $settingsErrors[] = 'This e-mail address has already been used by another user.';
+                                    $settingsErrors[] = 'This e-mail address is already in use.';
                                     break;
 
                                 default:
@@ -293,8 +306,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$templating->var('settings_title', $settingsModes[$settingsMode]);
-$templating->var('settings_errors', $settingsErrors);
+$tpl->var('settings_title', $settingsModes[$settingsMode]['title']);
+$tpl->var('settings_errors', $settingsErrors);
 
 switch ($settingsMode) {
     case 'account':
@@ -307,7 +320,7 @@ switch ($settingsMode) {
         $getUserFields->bindValue('user_id', $app->getUserId());
         $userFields = $getUserFields->execute() ? $getUserFields->fetch() : [];
 
-        $templating->vars([
+        $tpl->vars([
             'settings_profile_fields' => $profileFields,
             'settings_profile_values' => $userFields,
             'settings_disable_account_options' => $disableAccountOptions,
@@ -316,7 +329,7 @@ switch ($settingsMode) {
 
     case 'avatar':
         $userHasAvatar = File::exists($app->getStore('avatars/original')->filename($avatarFileName));
-        $templating->vars([
+        $tpl->vars([
             'avatar_user_id' => $app->getUserId(),
             'avatar_max_width' => $avatarWidthMax,
             'avatar_max_height' => $avatarHeightMax,
@@ -348,7 +361,7 @@ switch ($settingsMode) {
         $getSessions->bindValue('user_id', $app->getUserId());
         $sessions = $getSessions->execute() ? $getSessions->fetchAll() : [];
 
-        $templating->vars([
+        $tpl->vars([
             'active_session_id' => $app->getSessionId(),
             'user_sessions' => $sessions,
             'sessions_offset' => $queryOffset,
@@ -380,7 +393,7 @@ switch ($settingsMode) {
         $getLoginAttempts->bindValue('user_id', $app->getUserId());
         $loginAttempts = $getLoginAttempts->execute() ? $getLoginAttempts->fetchAll() : [];
 
-        $templating->vars([
+        $tpl->vars([
             'user_login_attempts' => $loginAttempts,
             'login_attempts_offset' => $queryOffset,
             'login_attempts_take' => $queryTake,
@@ -389,4 +402,4 @@ switch ($settingsMode) {
         break;
 }
 
-echo $templating->render("settings.{$settingsMode}");
+echo $tpl->render("settings.{$settingsMode}");

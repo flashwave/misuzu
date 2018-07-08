@@ -3,7 +3,10 @@
 {% from '@mio/forum/macros.twig' import forum_category_listing, forum_topic_listing, forum_category_buttons %}
 
 {% set title = forum_info.forum_name %}
-{% set canonical_url = '/forum/forum.php?f=' ~ forum_info.forum_id %}
+{% set canonical_url = '/forum/forum.php'|url_construct({
+    'f': forum_info.forum_id,
+    'o': forum_offset,
+}) %}
 
 {% block content %}
     {{ navigation(forum_breadcrumbs, forum_breadcrumbs|last, true, null, 'left') }}
@@ -14,7 +17,12 @@
 
     {% if forum_info.forum_type == 0 %}
         {% set fcbuttons = app.hasActiveSession ? forum_category_buttons(forum_info) : '' %}
-        {% set fcpagination = pagination(forum_info.forum_topic_count, forum_range, forum_offset, canonical_url, 'forum__') %}
+        {% set fcpagination = pagination(
+            forum_info.forum_topic_count,
+            forum_range,
+            forum_offset,
+            '/forum/forum.php'|url_construct({'f': forum_info.forum_id}), 'forum__'
+        ) %}
 
         {{ fcbuttons }}
         {{ fcpagination }}

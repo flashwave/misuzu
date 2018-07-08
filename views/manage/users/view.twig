@@ -1,229 +1,183 @@
 {% extends '@manage/users/master.twig' %}
+{% from '@manage/macros.twig' import permissions_table %}
 
 {% block content %}
-    <div class="container">
-        <h1 class="container__title">
-            Viewing <span style="{{ view_user.colour|html_colour }}">{{ view_user.username }}</span> ({{ view_user.user_id }})
-        </h1>
+    {% if can_manage_users %}
+        <form method="post" enctype="multipart/form-data" action="">
+            <div class="container">
+                <h1 class="container__title">
+                    Viewing <span style="{{ view_user.colour|html_colour }}">{{ view_user.username }}</span> ({{ view_user.user_id }})
+                </h1>
 
-        <label class="form__label">
-            <div class="form__label__text">Username</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="text" value="{{ view_user.username }}" name="user[username]" maxlength="16">
+                <label class="form__label">
+                    <div class="form__label__text">Username</div>
+                    <div class="form__label__input">
+                        <input class="input input--text" type="text" value="{{ view_user.username }}" name="user[username]" maxlength="16">
+                    </div>
+                </label>
+
+                <label class="form__label">
+                    <div class="form__label__text">E-mail address</div>
+                    <div class="form__label__input">
+                        <input class="input input--text" type="text" value="{{ view_user.email }}" name="user[email]" maxlength="255">
+                    </div>
+                </label>
+
+                <label class="form__label">
+                    <div class="form__label__text">Title</div>
+                    <div class="form__label__input">
+                        <input class="input input--text" type="text" value="{{ view_user.user_title }}" name="user[title]" maxlength="64">
+                    </div>
+                </label>
+
+                <label class="form__label">
+                    <div class="form__label__text">Joined</div>
+                    <div class="form__label__input">
+                        <input class="input input--text" readonly type="text" value="{{ view_user.created_at }}">
+                    </div>
+                </label>
+
+                <label class="form__label">
+                    <div class="form__label__text">Last online</div>
+                    <div class="form__label__input">
+                        <input class="input input--text" readonly type="text" value="{{ view_user.last_seen }}">
+                    </div>
+                </label>
+
+                <label class="form__label">
+                    <div class="form__label__text">Register IP</div>
+                    <div class="form__label__input">
+                        <input class="input input--text" readonly type="text" value="{{ view_user.register_ip_decoded }}">
+                    </div>
+                </label>
+
+                <label class="form__label">
+                    <div class="form__label__text">Last IP</div>
+                    <div class="form__label__input">
+                        <input class="input input--text" readonly type="text" value="{{ view_user.last_ip_decoded }}">
+                    </div>
+                </label>
+
+                <label class="form__label">
+                    <div class="form__label__text">Country</div>
+                    <div class="form__label__input">
+                        <input class="input input--text" readonly type="text" value="{{ view_user.user_country }}">
+                    </div>
+                </label>
             </div>
-        </label>
 
-        <label class="form__label">
-            <div class="form__label__text">E-mail address</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="text" value="{{ view_user.email }}" name="user[email]" maxlength="255">
+            <div class="container">
+                <h2 class="container__subtitle">Avatar</h2>
+
+                <label class="form__label">
+                    <div class="form__label__text">New Avatar</div>
+                    <div class="form__label__input">
+                        <input class="input input--text" type="file" name="avatar[file]">
+                    </div>
+                </label>
+
+                <label class="form__label">
+                    <div class="form__label__text">Delete Avatar</div>
+                    <div class="form__label__input">
+                        <input class="input" type="checkbox" name="avatar[delete]">
+                    </div>
+                </label>
             </div>
-        </label>
 
-        <label class="form__label">
-            <div class="form__label__text">Register IP</div>
-            <div class="form__label__input">
-                <input class="input input--text" readonly type="text" value="{{ view_user.register_ip_decoded }}">
+            <div class="container">
+                <h2 class="container__subtitle">Password</h2>
+
+                <label class="form__label">
+                    <div class="form__label__text">New Password</div>
+                    <div class="form__label__input">
+                        <input class="input input--text" type="password" name="password[new]">
+                    </div>
+                </label>
+
+                <label class="form__label">
+                    <div class="form__label__text">Confirm Password</div>
+                    <div class="form__label__input">
+                        <input class="input input--text" type="password" name="password[confirm]">
+                    </div>
+                </label>
             </div>
-        </label>
 
-        <label class="form__label">
-            <div class="form__label__text">Last IP</div>
-            <div class="form__label__input">
-                <input class="input input--text" readonly type="text" value="{{ view_user.last_ip_decoded }}">
+            <div class="container">
+                <h2 class="container__subtitle">Profile fields</h2>
+
+                {% for name, props in profile_fields %}
+                    <label class="form__label">
+                        <div class="form__label__text">{{ props.name }}</div>
+                        <div class="form__label__input">
+                            <input class="input input--text" type="{{ props.type|default('text') }}" value="{{ view_user['user_' ~ name] }}" name="profile[{{ name }}]">
+                        </div>
+                    </label>
+                {% endfor %}
             </div>
-        </label>
 
-        <label class="form__label">
-            <div class="form__label__text">Country</div>
-            <div class="form__label__input">
-                <input class="input input--text" readonly type="text" value="{{ view_user.user_country }}">
-            </div>
-        </label>
-
-        <div>
-            <button class="button" name="csrf" value="{{ csrf_token() }}">Update</button>
-        </div>
-    </div>
-
-    <form class="container" method="post" enctype="multipart/form-data" action="">
-        <h1 class="container__title">
-            Avatar
-        </h1>
-
-        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
-
-        <label class="form__label">
-            <div class="form__label__text">New Avatar</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="file" name="avatar[file]">
-            </div>
-        </label>
-
-        <div>
-            <button class="button" name="avatar[mode]" value="upload">Upload</button>
-            <button class="button" name="avatar[mode]" value="delete">Delete</button>
-        </div>
-    </form>
-
-    <div class="container">
-        <h1 class="container__title">
-            Password
-        </h1>
-
-        <label class="form__label">
-            <div class="form__label__text">New Password</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="password" name="user[password]">
-            </div>
-        </label>
-
-        <label class="form__label">
-            <div class="form__label__text">Confirm Password</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="password" name="user[password_confirm]">
-            </div>
-        </label>
-
-        <div>
-            <button class="button" name="csrf" value="{{ csrf_token() }}">Update</button>
-        </div>
-    </div>
-
-    <div class="container">
-        <h1 class="container__title">
-            Profile fields
-        </h1>
-
-        <label class="form__label">
-            <div class="form__label__text">Twitter</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="text" value="{{ view_user.user_twitter }}" name="user[twitter]">
-            </div>
-        </label>
-
-        <label class="form__label">
-            <div class="form__label__text">osu!</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="text" value="{{ view_user.user_osu }}" name="user[osu]">
-            </div>
-        </label>
-
-        <label class="form__label">
-            <div class="form__label__text">Website</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="url" value="{{ view_user.user_website }}" name="user[website]">
-            </div>
-        </label>
-
-        <label class="form__label">
-            <div class="form__label__text">Youtube</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="text" value="{{ view_user.user_youtube }}" name="user[youtube]">
-            </div>
-        </label>
-
-        <label class="form__label">
-            <div class="form__label__text">Steam</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="text" value="{{ view_user.user_steam }}" name="user[steam]">
-            </div>
-        </label>
-
-        <label class="form__label">
-            <div class="form__label__text">Twitch.tv</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="text" value="{{ view_user.user_twitchtv }}" name="user[twitchtv]">
-            </div>
-        </label>
-
-        <label class="form__label">
-            <div class="form__label__text">Last.fm</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="text" value="{{ view_user.user_twitchtv }}" name="user[twitchtv]">
-            </div>
-        </label>
-
-        <label class="form__label">
-            <div class="form__label__text">Github</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="text" value="{{ view_user.user_github }}" name="user[github]">
-            </div>
-        </label>
-
-        <label class="form__label">
-            <div class="form__label__text">Skype</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="text" value="{{ view_user.user_skype }}" name="user[skype]">
-            </div>
-        </label>
-
-        <label class="form__label">
-            <div class="form__label__text">Discord</div>
-            <div class="form__label__input">
-                <input class="input input--text" type="text" value="{{ view_user.user_discord }}" name="user[discord]">
-            </div>
-        </label>
-
-        <div>
-            <button class="button" name="csrf" value="{{ csrf_token() }}">Update</button>
-        </div>
-    </div>
-
-    {% if available_roles|length > 0 %}
-        <form class="container" method="post" action="">
-            <h1 class="container__title">Add Role</h1>
-
-            <label class="form__label">
-                <div class="form__label__text">Available Roles</div>
-                <div class="form__label__input">
-                    <select name="add_role[role]" class="input input--select">
-                        {% for role in available_roles %}
-                            <option value="{{ role.role_id }}">
-                                {{ role.role_name }}
-                            </option>
-                        {% endfor %}
-                    </select>
+            {% if can_manage_perms %}
+                <div class="container">
+                    <h2 class="container__subtitle">Permissions</h2>
+                    {{ permissions_table(permissions) }}
                 </div>
-            </label>
+            {% endif %}
 
-            <div>
-                <button class="button" name="csrf" value="{{ csrf_token() }}">Add</button>
+            <div class="container">
+                <button class="button" name="csrf" value="{{ csrf_token() }}">Update</button>
             </div>
         </form>
     {% endif %}
 
-    {% if has_roles|length > 0 %}
-        <form class="container" method="post" action="">
-            <h1 class="container__title">Manage Roles</h1>
+    {% if can_manage_users %}
+        <div class="container">
+            {% if has_roles|length > 0 %}
+                <form method="post" action="" style="display:inline-block">
+                    <h2 class="container__subtitle">Manage Roles</h2>
 
-            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+                    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
 
-            <label class="form__label">
-                <div class="form__label__text">Has Roles</div>
-                <div class="form__label__input">
-                    <select name="manage_roles[role]" class="input input--select">
-                        {% for role in has_roles %}
-                            <option value="{{ role.role_id }}"{% if role.role_id == view_user.display_role %} selected{% endif %}>
-                                {{ role.role_name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </label>
+                    <label class="form__label">
+                        <div class="form__label__text">Has Roles</div>
+                        <div class="form__label__input">
+                            <select name="manage_roles[role]" class="input input--select">
+                                {% for role in has_roles %}
+                                    <option value="{{ role.role_id }}"{% if role.role_id == view_user.display_role %} selected{% endif %}>
+                                        {{ role.role_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </label>
 
-            <div>
-                <button class="button" name="manage_roles[mode]" value="display">Set Display</button>
-                <button class="button" name="manage_roles[mode]" value="remove">Remove</button>
-            </div>
-        </form>
+                    <div>
+                        <button class="button" name="manage_roles[mode]" value="display">Set Display</button>
+                        <button class="button" name="manage_roles[mode]" value="remove">Remove</button>
+                    </div>
+                </form>
+            {% endif %}
+
+            {% if available_roles|length > 0 %}
+                <form method="post" action="" style="display:inline-block">
+                    <h2 class="container__subtitle">Add Role</h2>
+
+                    <label class="form__label">
+                        <div class="form__label__text">Available Roles</div>
+                        <div class="form__label__input">
+                            <select name="add_role[role]" class="input input--select">
+                                {% for role in available_roles %}
+                                    <option value="{{ role.role_id }}">
+                                        {{ role.role_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </label>
+
+                    <div>
+                        <button class="button" name="csrf" value="{{ csrf_token() }}">Add</button>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
     {% endif %}
-
-    <div class="container">
-        <h1 class="container__title">Permissions</h1>
-    </div>
-
-    <div class="container">
-        <h1 class="container__title">Sessions</h1>
-    </div>
 {% endblock %}
