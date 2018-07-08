@@ -168,13 +168,13 @@ function perms_get_role_raw(int $role): array
         return $emptyPerms;
     }
 
-    $getPerms = Database::connection()->prepare("
+    $getPerms = Database::connection()->prepare('
         SELECT
             `' . implode('`, `', perms_get_keys()) . '`
         FROM `msz_permissions`
         WHERE `user_id` IS NULL
         AND `role_id` = :role_id
-    ");
+    ');
     $getPerms->bindValue('role_id', $role);
 
     if (!$getPerms->execute()) {
