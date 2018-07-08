@@ -168,21 +168,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             break;
                         }
 
-                        $checkIfAlreadySet = $db->prepare('
-                            SELECT COUNT(`user_id`)
-                            FROM `msz_users`
-                            WHERE LOWER(:email) = LOWER(:email)
-                        ');
-                        $checkIfAlreadySet->bindValue('email', $_POST['email']['new']);
-                        $isAlreadySet = $checkIfAlreadySet->execute()
-                            ? $checkIfAlreadySet->fetchColumn() > 0
-                            : false;
-
-                        if ($isAlreadySet) {
-                            $settingsErrors[] = 'This is your e-mail address already!';
-                            break;
-                        }
-
                         $email_validate = user_validate_email($_POST['email']['new'], true);
 
                         if ($email_validate !== '') {
@@ -196,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     break;
 
                                 case 'in-use':
-                                    $settingsErrors[] = 'This e-mail address has already been used by another user.';
+                                    $settingsErrors[] = 'This e-mail address is already in use.';
                                     break;
 
                                 default:
