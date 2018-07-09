@@ -1,0 +1,34 @@
+@mio-settings-images-mobile: 700px;
+
+.settings__images {
+    display: flex;
+    min-height: 200px;
+    justify-content: space-between;
+
+    @media (max-width: @mio-settings-images-mobile) {
+        flex-direction: column-reverse;
+
+        &__sections {
+            text-align: center;
+        }
+    }
+
+    &__requirements {
+        text-align: left;
+        display: inline-block;
+        border: 3px double #9475b2;
+        padding: .5em 2em;
+
+        &__list {
+            list-style: square;
+        }
+    }
+
+    &__requirement {
+        &--header {
+            font-weight: 700;
+            list-style: none;
+            margin-left: -1em;
+        }
+    }
+}

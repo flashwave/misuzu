@@ -1,0 +1,77 @@
+{% extends '@mio/settings/master.twig' %}
+
+{% block settings_content %}
+    <form
+        class="settings__images"
+        method="post"
+        action="?m=avatar"
+        enctype="multipart/form-data">
+        <input type="hidden"
+            name="MAX_FILE_SIZE"
+            value="{{ avatar_max_filesize }}">
+        <input type="hidden"
+            name="csrf"
+            value="{{ csrf_token() }}">
+
+        <div class="settings__images__sections">
+            <div class="settings__images__requirements">
+                <ul class="settings__images__requirements__list">
+                    <li class="settings__images__requirement settings__images__requirement--header">Guidelines</li>
+                    <li class="settings__images__requirement">Keep things sane and suitable for all ages.</li>
+                    <li class="settings__images__requirement">Image may not exceed the <strong>{{ avatar_max_filesize|byte_symbol(true) }}</strong> filesize limit.</li>
+                    <li class="settings__images__requirement settings__images__requirement--header">Avatar</li>
+                    <li class="settings__images__requirement">May not be larger than <strong>{{ avatar_max_width }}x{{ avatar_max_height }}</strong>.</li>
+                    <li class="settings__images__requirement">Will be centre cropped to be <strong>200x200</strong>.</li>
+                    <li class="settings__images__requirement">Animated gif images are allowed.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="settings__avatar">
+            <label class="settings__avatar__label">
+                <div
+                    class="avatar settings__avatar__preview"
+                    id="avatar-preview"
+                    style="background-image:url('/profile.php?u={{ avatar_user_id }}&amp;m=avatar')"></div>
+                <input
+                    class="settings__avatar__input"
+                    accept="image/png,image/jpeg,image/gif"
+                    type="file"
+                    name="avatar[file]"
+                    id="avatar-selection">
+                <div class="settings__avatar__name" id="avatar-name">
+                    Click to select a file!
+                </div>
+            </label>
+
+            <div class="settings__avatar__buttons">
+                <button
+                    class="settings__avatar__button"
+                    name="avatar[mode]"
+                    value="upload">
+                    Upload
+                </button>
+                <button
+                    class="settings__avatar__button settings__avatar__button--delete{{ user_has_avatar ? '' : ' settings__avatar__button--disabled' }}"
+                    {{ user_has_avatar ? '' : 'disabled' }}
+                    name="avatar[mode]"
+                    value="delete">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </form>
+    <script>
+        function updateAvatarPreview(name, url, previewEl, nameEl) {
+            url = url || "/profile.php?u={{ avatar_user_id }}&m=avatar";
+            previewEl = previewEl || document.getElementById('avatar-preview');
+            nameEl = nameEl || document.getElementById('avatar-name');
+            previewEl.style.backgroundImage = 'url(\'' + url + '\')';
+            nameEl.textContent = name;
+        }
+
+        document.getElementById('avatar-selection').addEventListener('change', function (ev) {
+            updateAvatarPreview(ev.target.files[0].name, URL.createObjectURL(ev.target.files[0]));
+        });
+    </script>
+{% endblock %}

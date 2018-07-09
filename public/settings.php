@@ -17,7 +17,7 @@ $settingsModes = [
         'title' => 'Account',
         'allow' => perms_check($userPerms, MSZ_USER_PERM_EDIT_PROFILE),
     ],
-    'avatar' => [
+    'images' => [
         'title' => 'Avatar',
         'allow' => perms_check($userPerms, MSZ_USER_PERM_CHANGE_AVATAR),
     ],
@@ -31,6 +31,11 @@ $settingsModes = [
     ],
 ];
 $settingsMode = $_GET['m'] ?? null;
+
+if ($settingsMode === 'avatar') {
+    header('Location: ?m=images');
+    return;
+}
 
 $settingsNavigation = [];
 
@@ -223,51 +228,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
 
-        case 'avatar':
-            if (isset($_POST['delete'])) {
-                if (!tmp_csrf_verify($_POST['delete'])) {
-                    $settingsErrors[] = $csrfErrorString;
-                    break;
-                }
-
-                user_avatar_delete($app->getUserId());
+        case 'images':
+            if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
+                $settingsErrors[] = $csrfErrorString;
                 break;
             }
 
-            if (isset($_POST['upload'])) {
-                if (!tmp_csrf_verify($_POST['upload'])) {
-                    $settingsErrors[] = $csrfErrorString;
-                    break;
-                }
+            if (!empty($_POST['avatar']) && is_array($_POST['avatar']) && !empty($_POST['avatar']['mode'])) {
+                switch ($_POST['avatar']['mode']) {
+                    case 'delete':
+                        user_avatar_delete($app->getUserId());
+                        break;
 
-                if ($_FILES['avatar']['error'] !== UPLOAD_ERR_OK) {
-                    $settingsErrors[] = sprintf(
-                        $avatarErrorStrings['upload'][$_FILES['avatar']['error']]
-                            ?? $avatarErrorStrings['upload']['default'],
-                        $_FILES['avatar']['error'],
-                        byte_symbol($avatarFileSizeMax, true),
-                        $avatarWidthMax,
-                        $avatarHeightMax
-                    );
-                    break;
-                }
+                    case 'upload':
+                        if (empty($_FILES['avatar'])
+                            || !is_array($_FILES['avatar'])
+                            || empty($_FILES['avatar']['name']['file'])) {
+                            break;
+                        }
 
-                $setAvatar = user_avatar_set_from_path($app->getUserId(), $_FILES['avatar']['tmp_name']);
+                        if ($_FILES['avatar']['error']['file'] !== UPLOAD_ERR_OK) {
+                            $settingsErrors[] = sprintf(
+                                $avatarErrorStrings['upload'][$_FILES['avatar']['error']['file']]
+                                    ?? $avatarErrorStrings['upload']['default'],
+                                $_FILES['avatar']['error']['file'],
+                                byte_symbol($avatarFileSizeMax, true),
+                                $avatarWidthMax,
+                                $avatarHeightMax
+                            );
+                            break;
+                        }
 
-                if ($setAvatar !== MSZ_USER_AVATAR_NO_ERRORS) {
-                    $settingsErrors[] = sprintf(
-                        $avatarErrorStrings['set'][$setAvatar]
-                            ?? $avatarErrorStrings['set']['default'],
-                        $setAvatar,
-                        byte_symbol($avatarFileSizeMax, true),
-                        $avatarWidthMax,
-                        $avatarHeightMax
-                    );
+                        $setAvatar = user_avatar_set_from_path(
+                            $app->getUserId(),
+                            $_FILES['avatar']['tmp_name']['file']
+                        );
+
+                        if ($setAvatar !== MSZ_USER_AVATAR_NO_ERRORS) {
+                            $settingsErrors[] = sprintf(
+                                $avatarErrorStrings['set'][$setAvatar]
+                                    ?? $avatarErrorStrings['set']['default'],
+                                $setAvatar,
+                                byte_symbol($avatarFileSizeMax, true),
+                                $avatarWidthMax,
+                                $avatarHeightMax
+                            );
+                        }
+                        break;
                 }
-                break;
             }
-
-            $settingsErrors[] = "You shouldn't have done that.";
             break;
 
         case 'sessions':
@@ -327,7 +336,7 @@ switch ($settingsMode) {
         ]);
         break;
 
-    case 'avatar':
+    case 'images':
         $userHasAvatar = File::exists($app->getStore('avatars/original')->filename($avatarFileName));
         $tpl->vars([
             'avatar_user_id' => $app->getUserId(),
