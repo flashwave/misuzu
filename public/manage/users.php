@@ -18,6 +18,7 @@ $tpl->vars([
 ]);
 
 switch ($_GET['v'] ?? null) {
+    default:
     case 'listing':
         if (!$canManageUsers && !$canManagePerms) {
             echo render_error(403);

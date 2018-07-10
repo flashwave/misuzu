@@ -1,37 +1,15 @@
-@mio-settings-avatar-mobile: 700px;
-
 .settings__avatar {
-    display: flex;
-    min-height: 200px;
-    justify-content: space-between;
+    text-align: center;
+    display: block;
 
-    @media (max-width: @mio-settings-avatar-mobile) {
-        flex-direction: column-reverse;
-
-        &__sections {
-            text-align: center;
-        }
+    &__label {
+        cursor: pointer;
+        display: block;
+        width: 202px;
     }
 
-    &__form {
-        display: inline-block;
-        margin-bottom: 2px;
-    }
-
-    &__requirements {
-        text-align: left;
-        display: inline-block;
-        border: 3px double #9475b2;
-        padding: .5em 2em;
-
-        &__list {
-            list-style: square;
-        }
-    }
-
-    &__forms {
-        padding-top: 2px;
-        flex-grow: 1;
+    &__input {
+        display: none;
     }
 
     &__preview {
@@ -39,10 +17,56 @@
         flex-shrink: 0;
         min-width: 200px;
         min-height: 200px;
-        display: inline-block;
+    }
 
-        &__container {
-            text-align: center;
+    &__name {
+        background-color: #9475b2;
+        color: #306;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        padding: 0 4px;
+        border-bottom: 1px solid #306;
+    }
+
+    &__buttons {
+        display: flex;
+    }
+
+    &__button {
+        flex: 1 1 auto;
+        border-width: 0;
+        padding: 5px;
+        cursor: pointer;
+        font-family: inherit;
+        background-color: #9475b2;
+        color: #306;
+        font-weight: 700;
+
+        &:not(&--disabled) {
+            &:hover {
+                background-color: #a586c3;
+            }
+
+            &:active {
+                background-color: #8364a1;
+            }
+        }
+
+        &--delete:not(&--disabled) {
+            &:hover {
+                background-color: #b00;
+                color: #400;
+            }
+
+            &:active {
+                background-color: #900;
+                color: #400;
+            }
+        }
+
+        &--disabled {
+            background-color: #888;
+            color: #222;
         }
     }
 }

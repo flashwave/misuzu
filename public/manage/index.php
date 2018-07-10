@@ -4,6 +4,7 @@ require_once __DIR__ . '/../../misuzu.php';
 $templating = $app->getTemplating();
 
 switch ($_GET['v'] ?? null) {
+    default:
     case 'overview':
         echo $templating->render('@manage.general.overview');
         break;
@@ -18,9 +19,5 @@ switch ($_GET['v'] ?? null) {
 
     case 'settings':
         echo 'somewhat soon i guess';
-        break;
-
-    default:
-        header('Location: ?v=overview');
         break;
 }

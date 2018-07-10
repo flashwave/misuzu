@@ -11,6 +11,7 @@ $changelogPerms = perms_get_user(MSZ_PERMS_CHANGELOG, $app->getUserId());
 $queryOffset = (int)($_GET['o'] ?? 0);
 
 switch ($_GET['v'] ?? null) {
+    default:
     case 'changes':
         if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_CHANGES)) {
             echo render_error(403);
