@@ -1,0 +1,7 @@
+<?php
+define('MSZ_COMMENTS_PERM_CREATE', 1);
+define('MSZ_COMMENTS_PERM_EDIT_OWN', 1 << 1);
+define('MSZ_COMMENTS_PERM_EDIT_ANY', 1 << 2);
+define('MSZ_COMMENTS_PERM_DELETE_OWN', 1 << 3);
+define('MSZ_COMMENTS_PERM_DELETE_ANY', 1 << 4);
+define('MSZ_COMMENTS_PERM_PIN', 1 << 5);

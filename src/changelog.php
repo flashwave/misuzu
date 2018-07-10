@@ -4,9 +4,6 @@ use Misuzu\Database;
 define('MSZ_CHANGELOG_PERM_MANAGE_CHANGES', 1);
 define('MSZ_CHANGELOG_PERM_MANAGE_TAGS', 1 << 1);
 define('MSZ_CHANGELOG_PERM_MANAGE_ACTIONS', 1 << 2);
-define('MSZ_CHANGELOG_PERM_DELETE_COMMENTS', 1 << 3);
-define('MSZ_CHANGELOG_PERM_EDIT_COMMENTS', 1 << 4);
-define('MSZ_CHANGELOG_PERM_PIN_COMMENTS', 1 << 5);
 
 function changelog_action_add(string $name, ?int $colour = null, ?string $class = null): int
 {

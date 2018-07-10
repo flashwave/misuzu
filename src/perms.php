@@ -1,12 +1,16 @@
 <?php
 use Misuzu\Database;
 
+define('MSZ_PERMS_GENERAL', 'general');
 define('MSZ_PERMS_USER', 'user');
 define('MSZ_PERMS_CHANGELOG', 'changelog');
 define('MSZ_PERMS_NEWS', 'news');
+define('MSZ_PERMS_FORUM', 'forum');
+define('MSZ_PERMS_COMMENTS', 'comments');
 
 define('MSZ_PERM_MODES', [
-    MSZ_PERMS_USER, MSZ_PERMS_CHANGELOG, MSZ_PERMS_NEWS
+    MSZ_PERMS_GENERAL, MSZ_PERMS_USER, MSZ_PERMS_CHANGELOG,
+    MSZ_PERMS_NEWS, MSZ_PERMS_FORUM, MSZ_PERMS_COMMENTS,
 ]);
 
 define('MSZ_PERMS_ALLOW', 'allow');
