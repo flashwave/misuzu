@@ -6,7 +6,6 @@ use Misuzu\IO\File;
 define('MSZ_USER_PERM_EDIT_PROFILE', 1);
 define('MSZ_USER_PERM_CHANGE_AVATAR', 1 << 1);
 
-define('MSZ_USER_PERM_CAN_MANAGE', 1 << 19);
 define('MSZ_USER_PERM_MANAGE_USERS', 1 << 20);
 define('MSZ_USER_PERM_MANAGE_ROLES', 1 << 21);
 define('MSZ_USER_PERM_MANAGE_PERMS', 1 << 22);

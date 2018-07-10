@@ -1,6 +1,8 @@
 <?php
 use Misuzu\Database;
 
+define('MSZ_FORUM_PERM_MANAGE_FORUMS', 1);
+
 define('MSZ_FORUM_TYPE_DISCUSSION', 0);
 define('MSZ_FORUM_TYPE_CATEGORY', 1);
 define('MSZ_FORUM_TYPE_LINK', 2);

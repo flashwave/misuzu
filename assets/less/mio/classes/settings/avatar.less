@@ -1,11 +1,15 @@
 .settings__avatar {
     text-align: center;
     display: block;
+    width: 202px;
+
+    @media (max-width: @mio-settings-images-mobile) {
+        margin-bottom: 1px;
+    }
 
     &__label {
         cursor: pointer;
         display: block;
-        width: 202px;
     }
 
     &__input {
@@ -41,6 +45,7 @@
         background-color: #9475b2;
         color: #306;
         font-weight: 700;
+        border-radius: 0;
 
         &:not(&--disabled) {
             &:hover {

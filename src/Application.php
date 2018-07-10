@@ -254,8 +254,8 @@ class Application extends ApplicationBase
         $this->templatingInstance->addFilter('md', 'parse_markdown');
         $this->templatingInstance->addFilter('bbcode', 'parse_bbcode');
 
-        $this->templatingInstance->addFunction('git_hash', [Application::class, 'gitCommitHash']);
-        $this->templatingInstance->addFunction('git_branch', [Application::class, 'gitBranch']);
+        $this->templatingInstance->addFunction('git_commit_hash');
+        $this->templatingInstance->addFunction('git_branch');
         $this->templatingInstance->addFunction('csrf_token', 'tmp_csrf_token');
         $this->templatingInstance->addFunction('perms_check');
 

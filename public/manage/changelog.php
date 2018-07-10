@@ -91,7 +91,10 @@ switch ($_GET['v'] ?? null) {
                 } else {
                     $postChange = $db->prepare('
                         INSERT INTO `msz_changelog_changes`
-                            (`change_log`, `change_text`, `action_id`, `user_id`, `change_created`)
+                            (
+                                `change_log`, `change_text`, `action_id`,
+                                `user_id`, `change_created`, `change_time_filter`
+                            )
                         VALUES
                             (:log, :text, :action, :user, :created)
                     ');
@@ -143,7 +146,9 @@ switch ($_GET['v'] ?? null) {
 
         if ($changeId > 0) {
             $getChange = $db->prepare('
-                SELECT `change_id`, `change_log`, `change_text`, `user_id`, `action_id`, `change_created`
+                SELECT
+                    `change_id`, `change_log`, `change_text`, `user_id`,
+                    `action_id`, `change_created`
                 FROM `msz_changelog_changes`
                 WHERE `change_id` = :change_id
             ');

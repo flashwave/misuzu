@@ -6,6 +6,9 @@ date_default_timezone_set('UTC');
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/src/changelog.php';
 require_once __DIR__ . '/src/colour.php';
+require_once __DIR__ . '/src/comments.php';
+require_once __DIR__ . '/src/general.php';
+require_once __DIR__ . '/src/git.php';
 require_once __DIR__ . '/src/manage.php';
 require_once __DIR__ . '/src/news.php';
 require_once __DIR__ . '/src/perms.php';
@@ -83,7 +86,7 @@ if (PHP_SAPI !== 'cli') {
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
-    $hasManageAccess = perms_check(perms_get_user(MSZ_PERMS_USER, $app->getUserId()), MSZ_USER_PERM_CAN_MANAGE);
+    $hasManageAccess = perms_check(perms_get_user(MSZ_PERMS_GENERAL, $app->getUserId()), MSZ_GENERAL_PERM_CAN_MANAGE);
     $tpl->var('has_manage_access', $hasManageAccess);
 
     if ($inManageMode) {

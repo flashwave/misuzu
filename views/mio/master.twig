@@ -67,10 +67,10 @@
                 <div class="footer__copyright">
                     {{ 'https://flash.moe'|html_link('Flashwave', 'footer__copyright__link')|raw }} 2013-{{
                     ''|date('Y') }} /
-                    <span title="{{ git_hash(true) }}">
-                        {{ git_branch() }} # {{ git_hash() }}
+                    <span title="{{ git_commit_hash(true) }}">
+                        {{ git_branch() }} # {{ git_commit_hash() }}
                     </span>
-                    {# link('https://github.com/flashwave/misuzu/tree/' ~ git_branch(), git_branch(), 'footer__copyright__link') }} # {{ link('https://github.com/flashwave/misuzu/commit/' ~ git_hash(true), git_hash(), 'footer__copyright__link') #}
+                    {# link('https://github.com/flashwave/misuzu/tree/' ~ git_branch(), git_branch(), 'footer__copyright__link') }} # {{ link('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true), git_commit_hash(), 'footer__copyright__link') #}
                 </div>
 
                 <div class="footer__links">

@@ -1,57 +1,97 @@
 <?php
 function manage_get_menu(int $userId): array
 {
-    $userPerms = perms_get_user(MSZ_PERMS_USER, $userId);
+    $perms = [];
 
-    if (!perms_check($userPerms, MSZ_USER_PERM_CAN_MANAGE)) {
-        return [];
+    foreach (MSZ_PERM_MODES as $mode) {
+        $perms[$mode] = perms_get_user($mode, $userId);
     }
 
-    $changelogPerms = perms_get_user(MSZ_PERMS_CHANGELOG, $userId);
+    if (!perms_check($perms['general'], MSZ_GENERAL_PERM_CAN_MANAGE)) {
+        return [];
+    }
 
     $menu = [];
 
     $menu['General'] = [
         'Overview' => '/manage/index.php?v=overview',
-        'Logs' => '/manage/index.php?v=logs',
-        '_',
-        'Emoticons' => '/manage/index.php?v=emoticons',
-        'Settings' => '/manage/index.php?v=settings',
     ];
 
-    $canUsers = perms_check($userPerms, MSZ_USER_PERM_MANAGE_USERS);
-    $canRoles = perms_check($userPerms, MSZ_USER_PERM_MANAGE_ROLES);
-    $canPerms = perms_check($userPerms, MSZ_USER_PERM_MANAGE_PERMS);
-    $canReports = perms_check($userPerms, MSZ_USER_PERM_MANAGE_REPORTS);
-    $canRestricts = perms_check($userPerms, MSZ_USER_PERM_MANAGE_RESTRICTIONS);
-    $canBlacklists = perms_check($userPerms, MSZ_USER_PERM_MANAGE_BLACKLISTS);
+    if (perms_check($perms['general'], MSZ_GENERAL_PERM_VIEW_LOGS)) {
+        $menu['General']['Logs'] = '/manage/index.php?v=logs';
+    }
 
-    if ($canUsers || $canRoles || $canPerms
-        || $canReports || $canRestricts || $canBlacklists) {
+    if (perms_check(
+        $perms['general'],
+        MSZ_GENERAL_PERM_MANAGE_EMOTICONS | MSZ_GENERAL_PERM_MANAGE_SETTINGS
+    )) {
+        $menu['General'][] = '_';
+
+        if (perms_check($perms['general'], MSZ_GENERAL_PERM_MANAGE_EMOTICONS)) {
+            $menu['General']['Emoticons'] = '/manage/users.php?v=emoticons';
+        }
+
+        if (perms_check($perms['general'], MSZ_GENERAL_PERM_MANAGE_SETTINGS)) {
+            $menu['General']['Settings'] = '/manage/users.php?v=settings';
+        }
+    }
+
+    $canUserManage = MSZ_USER_PERM_MANAGE_USERS | MSZ_USER_PERM_MANAGE_ROLES
+        | MSZ_USER_PERM_MANAGE_PERMS | MSZ_USER_PERM_MANAGE_REPORTS
+        | MSZ_USER_PERM_MANAGE_RESTRICTIONS | MSZ_USER_PERM_MANAGE_BLACKLISTS;
+
+    if (perms_check($perms['user'], $canUserManage)) {
         $menu['Users'] = [];
 
-        if ($canUsers || $canPerms) {
+        if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_USERS | MSZ_USER_PERM_MANAGE_PERMS)) {
             $menu['Users']['Listing'] = '/manage/users.php?v=listing';
         }
 
-        if ($canRoles || $canPerms) {
+        if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_ROLES | MSZ_USER_PERM_MANAGE_PERMS)) {
             $menu['Users']['Roles'] = '/manage/users.php?v=roles';
         }
 
-        if ($canReports || $canRestricts || $canBlacklists) {
+        if (perms_check(
+            $perms['user'],
+            MSZ_USER_PERM_MANAGE_REPORTS | MSZ_USER_PERM_MANAGE_RESTRICTIONS | MSZ_USER_PERM_MANAGE_BLACKLISTS
+        )) {
             $menu['Users'][] = '_';
 
-            if ($canReports) {
+            if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_REPORTS)) {
                 $menu['Users']['Reports'] = '/manage/users.php?v=reports';
             }
 
-            if ($canRestricts) {
+            if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_RESTRICTIONS)) {
                 $menu['Users']['Restrictions'] = '/manage/users.php?v=restrictions';
             }
 
-            if ($canBlacklists) {
+            if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_BLACKLISTS)) {
                 $menu['Users']['Blacklisting'] = '/manage/users.php?v=blacklisting';
             }
+        }
+    }
+
+    $canNewsManage = MSZ_NEWS_PERM_MANAGE_POSTS | MSZ_NEWS_PERM_MANAGE_CATEGORIES;
+
+    if (perms_check($perms['news'], $canNewsManage)) {
+        $menu['News'] = [];
+
+        if (perms_check($perms['news'], MSZ_NEWS_PERM_MANAGE_POSTS)) {
+            $menu['News']['Posts'] = '/manage/news.php?v=posts';
+        }
+
+        if (perms_check($perms['news'], MSZ_NEWS_PERM_MANAGE_CATEGORIES)) {
+            $menu['News']['Categories'] = '/manage/news.php?v=categories';
+        }
+    }
+
+    $canForumManage = MSZ_FORUM_PERM_MANAGE_FORUMS;
+
+    if (perms_check($perms['forum'], $canForumManage)) {
+        $menu['Forums'] = [];
+
+        if (perms_check($perms['forum'], MSZ_FORUM_PERM_MANAGE_FORUMS)) {
+            $menu['Forums']['Listing'] = '/manage/forums.php?v=listing';
         }
     }
 
@@ -61,22 +101,21 @@ function manage_get_menu(int $userId): array
         'Settings' => '/manage/forums.php?v=settings',
     ];*/
 
-    $canChanges = perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_CHANGES);
-    $canChangeTags = perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_TAGS);
-    $canChangeActions = perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_ACTIONS);
+    $canChangelogManage = MSZ_CHANGELOG_PERM_MANAGE_CHANGES | MSZ_CHANGELOG_PERM_MANAGE_TAGS
+        | MSZ_CHANGELOG_PERM_MANAGE_ACTIONS;
 
-    if ($canChanges || $canChangeTags || $canChangeActions) {
+    if (perms_check($perms['changelog'], $canChangelogManage)) {
         $menu['Changelog'] = [];
 
-        if ($canChanges) {
+        if (perms_check($perms['changelog'], MSZ_CHANGELOG_PERM_MANAGE_CHANGES)) {
             $menu['Changelog']['Changes'] = '/manage/changelog.php?v=changes';
         }
 
-        if ($canChangeTags) {
+        if (perms_check($perms['changelog'], MSZ_CHANGELOG_PERM_MANAGE_TAGS)) {
             $menu['Changelog']['Tags'] = '/manage/changelog.php?v=tags';
         }
 
-        if ($canChangeActions) {
+        if (perms_check($perms['changelog'], MSZ_CHANGELOG_PERM_MANAGE_ACTIONS)) {
             $menu['Changelog']['Actions'] = '/manage/changelog.php?v=actions';
         }
     }
@@ -152,6 +191,52 @@ function manage_perms_list(array $rawPerms): array
 {
     return [
         [
+            'section' => 'general',
+            'title' => 'General',
+            'perms' => [
+                [
+                    'section' => 'can-manage',
+                    'title' => 'Can access the management panel.',
+                    'perm' => MSZ_GENERAL_PERM_CAN_MANAGE,
+                    'value' => manage_perms_value(
+                        MSZ_GENERAL_PERM_CAN_MANAGE,
+                        $rawPerms['general_perms_allow'],
+                        $rawPerms['general_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'view-logs',
+                    'title' => 'Can view audit logs.',
+                    'perm' => MSZ_GENERAL_PERM_VIEW_LOGS,
+                    'value' => manage_perms_value(
+                        MSZ_GENERAL_PERM_VIEW_LOGS,
+                        $rawPerms['general_perms_allow'],
+                        $rawPerms['general_perms_deny']
+                    )
+                ],
+                [
+                    'section' => 'manage-emotes',
+                    'title' => 'Can manage emoticons.',
+                    'perm' => MSZ_GENERAL_PERM_MANAGE_EMOTICONS,
+                    'value' => manage_perms_value(
+                        MSZ_GENERAL_PERM_MANAGE_EMOTICONS,
+                        $rawPerms['general_perms_allow'],
+                        $rawPerms['general_perms_deny']
+                    )
+                ],
+                [
+                    'section' => 'manage-settings',
+                    'title' => 'Can manage general Misuzu settings.',
+                    'perm' => MSZ_GENERAL_PERM_MANAGE_SETTINGS,
+                    'value' => manage_perms_value(
+                        MSZ_GENERAL_PERM_MANAGE_SETTINGS,
+                        $rawPerms['general_perms_allow'],
+                        $rawPerms['general_perms_deny']
+                    )
+                ],
+            ],
+        ],
+        [
             'section' => 'user',
             'title' => 'User',
             'perms' => [
@@ -171,16 +256,6 @@ function manage_perms_list(array $rawPerms): array
                     'perm' => MSZ_USER_PERM_CHANGE_AVATAR,
                     'value' => manage_perms_value(
                         MSZ_USER_PERM_CHANGE_AVATAR,
-                        $rawPerms['user_perms_allow'],
-                        $rawPerms['user_perms_deny']
-                    ),
-                ],
-                [
-                    'section' => 'can-manage',
-                    'title' => 'Can access the management panel.',
-                    'perm' => MSZ_USER_PERM_CAN_MANAGE,
-                    'value' => manage_perms_value(
-                        MSZ_USER_PERM_CAN_MANAGE,
                         $rawPerms['user_perms_allow'],
                         $rawPerms['user_perms_deny']
                     ),
@@ -271,34 +346,86 @@ function manage_perms_list(array $rawPerms): array
                         $rawPerms['news_perms_deny']
                     ),
                 ],
+            ],
+        ],
+        [
+            'section' => 'forum',
+            'title' => 'Forum',
+            'perms' => [
                 [
-                    'section' => 'comments-delete',
-                    'title' => 'Can delete comments from others.',
-                    'perm' => MSZ_NEWS_PERM_DELETE_COMMENTS,
+                    'section' => 'manage-forums',
+                    'title' => 'Can manage forum sections.',
+                    'perm' => MSZ_FORUM_PERM_MANAGE_FORUMS,
                     'value' => manage_perms_value(
-                        MSZ_NEWS_PERM_DELETE_COMMENTS,
-                        $rawPerms['news_perms_allow'],
-                        $rawPerms['news_perms_deny']
+                        MSZ_FORUM_PERM_MANAGE_FORUMS,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    )
+                ],
+            ],
+        ],
+        [
+            'section' => 'comments',
+            'title' => 'Comments',
+            'perms' => [
+                [
+                    'section' => 'create',
+                    'title' => 'Can post comments.',
+                    'perm' => MSZ_COMMENTS_PERM_CREATE,
+                    'value' => manage_perms_value(
+                        MSZ_COMMENTS_PERM_CREATE,
+                        $rawPerms['comments_perms_allow'],
+                        $rawPerms['comments_perms_deny']
                     ),
                 ],
                 [
-                    'section' => 'comments-edit',
-                    'title' => 'Can edit comments from others.',
-                    'perm' => MSZ_NEWS_PERM_EDIT_COMMENTS,
+                    'section' => 'edit-own',
+                    'title' => 'Can edit own comments.',
+                    'perm' => MSZ_COMMENTS_PERM_EDIT_OWN,
                     'value' => manage_perms_value(
-                        MSZ_NEWS_PERM_EDIT_COMMENTS,
-                        $rawPerms['news_perms_allow'],
-                        $rawPerms['news_perms_deny']
+                        MSZ_COMMENTS_PERM_EDIT_OWN,
+                        $rawPerms['comments_perms_allow'],
+                        $rawPerms['comments_perms_deny']
                     ),
                 ],
                 [
-                    'section' => 'comments-pin',
+                    'section' => 'edit-any',
+                    'title' => 'Can edit anyone\'s comments.',
+                    'perm' => MSZ_COMMENTS_PERM_EDIT_ANY,
+                    'value' => manage_perms_value(
+                        MSZ_COMMENTS_PERM_EDIT_ANY,
+                        $rawPerms['comments_perms_allow'],
+                        $rawPerms['comments_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'delete-own',
+                    'title' => 'Can delete own comments.',
+                    'perm' => MSZ_COMMENTS_PERM_DELETE_OWN,
+                    'value' => manage_perms_value(
+                        MSZ_COMMENTS_PERM_DELETE_OWN,
+                        $rawPerms['comments_perms_allow'],
+                        $rawPerms['comments_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'delete-any',
+                    'title' => 'Can delete anyone\'s comments.',
+                    'perm' => MSZ_COMMENTS_PERM_DELETE_ANY,
+                    'value' => manage_perms_value(
+                        MSZ_COMMENTS_PERM_DELETE_ANY,
+                        $rawPerms['comments_perms_allow'],
+                        $rawPerms['comments_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'pin',
                     'title' => 'Can pin comments.',
-                    'perm' => MSZ_NEWS_PERM_PIN_COMMENTS,
+                    'perm' => MSZ_COMMENTS_PERM_PIN,
                     'value' => manage_perms_value(
-                        MSZ_NEWS_PERM_PIN_COMMENTS,
-                        $rawPerms['news_perms_allow'],
-                        $rawPerms['news_perms_deny']
+                        MSZ_COMMENTS_PERM_PIN,
+                        $rawPerms['comments_perms_allow'],
+                        $rawPerms['comments_perms_deny']
                     ),
                 ],
             ],
@@ -333,36 +460,6 @@ function manage_perms_list(array $rawPerms): array
                     'perm' => MSZ_CHANGELOG_PERM_MANAGE_ACTIONS,
                     'value' => manage_perms_value(
                         MSZ_CHANGELOG_PERM_MANAGE_ACTIONS,
-                        $rawPerms['changelog_perms_allow'],
-                        $rawPerms['changelog_perms_deny']
-                    ),
-                ],
-                [
-                    'section' => 'comments-delete',
-                    'title' => 'Can delete comments from others.',
-                    'perm' => MSZ_CHANGELOG_PERM_DELETE_COMMENTS,
-                    'value' => manage_perms_value(
-                        MSZ_CHANGELOG_PERM_DELETE_COMMENTS,
-                        $rawPerms['changelog_perms_allow'],
-                        $rawPerms['changelog_perms_deny']
-                    ),
-                ],
-                [
-                    'section' => 'comments-edit',
-                    'title' => 'Can edit comments from others.',
-                    'perm' => MSZ_CHANGELOG_PERM_EDIT_COMMENTS,
-                    'value' => manage_perms_value(
-                        MSZ_CHANGELOG_PERM_EDIT_COMMENTS,
-                        $rawPerms['changelog_perms_allow'],
-                        $rawPerms['changelog_perms_deny']
-                    ),
-                ],
-                [
-                    'section' => 'comments-pin',
-                    'title' => 'Can pin comments.',
-                    'perm' => MSZ_CHANGELOG_PERM_PIN_COMMENTS,
-                    'value' => manage_perms_value(
-                        MSZ_CHANGELOG_PERM_PIN_COMMENTS,
                         $rawPerms['changelog_perms_allow'],
                         $rawPerms['changelog_perms_deny']
                     ),
