@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../misuzu.php';
 
 switch ($_GET['v'] ?? null) {
+    default:
     case 'listing':
         echo 'forum listing here';
         break;
