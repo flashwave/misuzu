@@ -6,6 +6,7 @@ date_default_timezone_set('UTC');
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/src/changelog.php';
 require_once __DIR__ . '/src/colour.php';
+require_once __DIR__ . '/src/git.php';
 require_once __DIR__ . '/src/manage.php';
 require_once __DIR__ . '/src/news.php';
 require_once __DIR__ . '/src/perms.php';
