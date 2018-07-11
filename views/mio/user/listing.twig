@@ -1,8 +1,18 @@
 {% extends '@mio/user/master.twig' %}
 {% from '@mio/macros.twig' import navigation, pagination %}
 
-{% set canonical_url = '/members.php' ~ (role.role_id != 1 ? '?r=' ~ role.role_id : '') %}
-{% set full_url = '/members.php?r=' ~ role.role_id ~ '&ss=' ~ order_field ~ '&sd=' ~ order_direction %}
+{% set canonical_url = '/members.php'|url_construct({
+    'r': role.role_id != 1 ? role.role_id : 0,
+    'ss': order_field == order_default ? '' : order_field,
+    'sd': order_fields[order_field]['default-dir'] == order_direction ? '' : order_direction,
+    'o': users_offset,
+    't': users_take == 15 ? 0 : users_take,
+}) %}
+{% set full_url = '/members.php'|url_construct({
+    'r': role.role_id != 1 ? role.role_id : 0,
+    'ss': order_field == order_default ? '' : order_field,
+    'sd': order_fields[order_field]['default-dir'] == order_direction ? '' : order_direction,
+}) %}
 {% set title = role.role_id == 1 ? 'Members' : 'Role » ' ~ role.role_name  %}
 {% set manage_link = '/manage/users.php?v=listing' %}
 
@@ -32,8 +42,7 @@
 
         <select class="input__select" name="sd">
             {% for name, title in order_directions %}
-                <option
-                    value="{{ name|lower }}"
+                <option value="{{ name }}"
                     {% if name == order_direction %} selected{% endif %}>
                     {{ title }}
                 </option>

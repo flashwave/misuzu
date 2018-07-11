@@ -30,7 +30,102 @@ $app = new Application(
 );
 $app->startDatabase();
 
-if (PHP_SAPI !== 'cli') {
+if (PHP_SAPI === 'cli') {
+    if ($argv[0] === basename(__FILE__)) {
+        switch ($argv[1] ?? null) {
+            case 'cron':
+                $db = Database::connection();
+
+                // Ensure main role exists.
+                $db->query("
+                    INSERT IGNORE INTO `msz_roles`
+                        (`role_id`, `role_name`, `role_hierarchy`, `role_colour`, `role_description`, `created_at`)
+                    VALUES
+                        (1, 'Member', 1, 1073741824, NULL, NOW())
+                ");
+
+                // Ensures all users are in the main role.
+                $db->query('
+                    INSERT INTO `msz_user_roles`
+                        (`user_id`, `role_id`)
+                    SELECT `user_id`, 1 FROM `msz_users` as u
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM `msz_user_roles` as ur
+                        WHERE `role_id` = 1
+                        AND u.`user_id` = ur.`user_id`
+                    )
+                ');
+
+                // Ensures all display_role values are correct with `msz_user_roles`
+                $db->query('
+                    UPDATE `msz_users` as u
+                    SET `display_role` = (
+                         SELECT ur.`role_id`
+                         FROM `msz_user_roles` as ur
+                         LEFT JOIN `msz_roles` as r
+                         ON r.`role_id` = ur.`role_id`
+                         WHERE ur.`user_id` = u.`user_id`
+                         ORDER BY `role_hierarchy` DESC
+                         LIMIT 1
+                    )
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM `msz_user_roles` as ur
+                        WHERE ur.`role_id` = u.`display_role`
+                        AND `ur`.`user_id` = u.`user_id`
+                    )
+                ');
+                break;
+
+            case 'migrate':
+                $migrationTargets = [
+                'mysql-main' => __DIR__ . '/database',
+                ];
+                $doRollback = !empty($argv[2]) && $argv[2] === 'rollback';
+                $targetDb = isset($argv[$doRollback ? 3 : 2]) ? $argv[$doRollback ? 3 : 2] : null;
+
+                if ($targetDb !== null && !array_key_exists($targetDb, $migrationTargets)) {
+                    echo 'Invalid target database connection.' . PHP_EOL;
+                    break;
+                }
+
+                foreach ($migrationTargets as $db => $path) {
+                    echo "Creating migration manager for '{$db}'..." . PHP_EOL;
+                    $migrationManager = new DatabaseMigrationManager(Database::connection($db), $path);
+                    $migrationManager->setLogger(function ($log) {
+                        echo $log . PHP_EOL;
+                    });
+
+                    if ($doRollback) {
+                        echo "Rolling back last migrations for '{$db}'..." . PHP_EOL;
+                        $migrationManager->rollback();
+                    } else {
+                        echo "Running migrations for '{$db}'..." . PHP_EOL;
+                        $migrationManager->migrate();
+                    }
+
+                    $errors = $migrationManager->getErrors();
+                    $errorCount = count($errors);
+
+                    if ($errorCount < 1) {
+                        echo 'Completed with no errors!' . PHP_EOL;
+                    } else {
+                        echo PHP_EOL . "There were {$errorCount} errors during the migrations..." . PHP_EOL;
+
+                        foreach ($errors as $error) {
+                            echo $error . PHP_EOL;
+                        }
+                    }
+                }
+                break;
+
+            default:
+                echo 'Unknown command.' . PHP_EOL;
+                break;
+        }
+    }
+} else {
     $storage_dir = $app->getStoragePath();
     if (!$storage_dir->isReadable()
         || !$storage_dir->isWritable()) {

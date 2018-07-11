@@ -30,7 +30,7 @@ function user_create(
             )
         VALUES
             (
-                :username, :password, :email, INET6_ATON(:register_ip),
+                :username, :password, LOWER(:email), INET6_ATON(:register_ip),
                 INET6_ATON(:last_ip), :user_country, NOW(), 1
             )
     ');
