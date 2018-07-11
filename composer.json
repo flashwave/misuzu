@@ -33,8 +33,8 @@
     },
     "scripts": {
         "post-install-cmd": [
-            "php misuzu_migrate.php",
-            "php misuzu_setup.php"
+            "php misuzu.php migrate",
+            "php misuzu.php cron"
         ]
     },
     "config": {
