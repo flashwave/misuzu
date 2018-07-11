@@ -93,7 +93,7 @@ switch ($_GET['v'] ?? null) {
                         INSERT INTO `msz_changelog_changes`
                             (
                                 `change_log`, `change_text`, `action_id`,
-                                `user_id`, `change_created`, `change_time_filter`
+                                `user_id`, `change_created`
                             )
                         VALUES
                             (:log, :text, :action, :user, :created)

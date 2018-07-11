@@ -8,43 +8,44 @@ $usersTake = max(min((int)($_GET['t'] ?? 15), 30), 6);
 
 $roleId = (int)($_GET['r'] ?? MSZ_ROLE_MAIN);
 $orderBy = strtolower($_GET['ss'] ?? '');
-$orderDir = strtoupper($_GET['sd'] ?? '');
+$orderDir = strtolower($_GET['sd'] ?? '');
 
 $orderDirs = [
-    'ASC' => 'Ascending',
-    'DESC' => 'Descending',
+    'asc' => 'Ascending',
+    'desc' => 'Descending',
 ];
 
+$defaultOrder = 'last-online';
 $orderFields = [
     'id' => [
         'column' => 'user_id',
-        'default-dir' => 'ASC',
+        'default-dir' => 'asc',
         'title' => 'User ID',
     ],
     'name' => [
         'column' => 'username',
-        'default-dir' => 'ASC',
+        'default-dir' => 'asc',
         'title' => 'Username',
     ],
     'country' => [
         'column' => 'user_country',
-        'default-dir' => 'ASC',
+        'default-dir' => 'asc',
         'title' => 'Country',
     ],
     'registered' => [
         'column' => 'created_at',
-        'default-dir' => 'DESC',
+        'default-dir' => 'desc',
         'title' => 'Registration Date',
     ],
     'last-online' => [
         'column' => 'last_seen',
-        'default-dir' => 'DESC',
+        'default-dir' => 'desc',
         'title' => 'Last Online',
     ],
 ];
 
 if (empty($orderBy)) {
-    $orderBy = 'last-online';
+    $orderBy = $defaultOrder;
 } elseif (!array_key_exists($orderBy, $orderFields)) {
     echo render_error(400);
     return;
@@ -127,6 +128,7 @@ echo $tpl->render('user.listing', [
     'order_directions' => $orderDirs,
     'order_field' => $orderBy,
     'order_direction' => $orderDir,
+    'order_default' => $defaultOrder,
     'users_offset' => $usersOffset,
     'users_take' => $usersTake,
 ]);

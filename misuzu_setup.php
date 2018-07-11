@@ -29,32 +29,37 @@ if ($mainRoleId !== 1) {
         VALUES
             (1, 'Member', 1, 1073741824, NULL, NOW())
     ");
-
-    $mainRoleId = 1;
 }
 
-$notInMainRole = $db->query('
-    SELECT `user_id`
-    FROM `msz_users` as u
+// Ensures all users are in the main role.
+$db->query('
+    INSERT INTO `msz_user_roles`
+        (`user_id`, `role_id`)
+    SELECT `user_id`, 1 FROM `msz_users` as u
     WHERE NOT EXISTS (
         SELECT 1
         FROM `msz_user_roles` as ur
         WHERE `role_id` = 1
         AND u.`user_id` = ur.`user_id`
     )
-')->fetchAll();
-
-if (count($notInMainRole) < 1) {
-    exit;
-}
-
-$addToMainRole = $db->prepare('
-    INSERT INTO `msz_user_roles`
-        (`user_id`, `role_id`)
-    VALUES
-        (:user_id, 1)
 ');
 
-foreach ($notInMainRole as $user) {
-    $addToMainRole->execute($user);
-}
+// Ensures all display_role values are correct with `msz_user_roles`
+$db->query('
+    UPDATE `msz_users` as u
+    SET `display_role` = (
+         SELECT ur.`role_id`
+         FROM `msz_user_roles` as ur
+         LEFT JOIN `msz_roles` as r
+         ON r.`role_id` = ur.`role_id`
+         WHERE ur.`user_id` = u.`user_id`
+         ORDER BY `role_hierarchy` DESC
+         LIMIT 1
+    )
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM `msz_user_roles` as ur
+        WHERE ur.`role_id` = u.`display_role`
+        AND `ur`.`user_id` = u.`user_id`
+    )
+');

@@ -93,13 +93,15 @@ function manage_get_menu(int $userId): array
         if (perms_check($perms['forum'], MSZ_FORUM_PERM_MANAGE_FORUMS)) {
             $menu['Forums']['Listing'] = '/manage/forums.php?v=listing';
         }
-    }
 
-    /*$menu['Forum'] = [
-        'Listing' => '/manage/forums.php?v=listing',
-        'Permisisons' => '/manage/forums.php?v=permissions',
-        'Settings' => '/manage/forums.php?v=settings',
-    ];*/
+        if (perms_check($perms['forum'], 0)) {
+            $menu['Forums']['Permissions'] = '/manage/forums.php?v=permissions';
+        }
+
+        if (perms_check($perms['forum'], 0)) {
+            $menu['Forums']['Settings'] = '/manage/forums.php?v=settings';
+        }
+    }
 
     $canChangelogManage = MSZ_CHANGELOG_PERM_MANAGE_CHANGES | MSZ_CHANGELOG_PERM_MANAGE_TAGS
         | MSZ_CHANGELOG_PERM_MANAGE_ACTIONS;

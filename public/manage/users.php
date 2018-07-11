@@ -123,16 +123,19 @@ switch ($_GET['v'] ?? null) {
 
             if (!empty($_POST['user']) && is_array($_POST['user'])
                 && user_validate_username($_POST['user']['username']) === ''
-                && user_validate_email($_POST['user']['email']) === '') {
+                && user_validate_email($_POST['user']['email']) === ''
+                && strlen($_POST['user']['country']) === 2) {
                 $updateUserDetails = $db->prepare('
                     UPDATE `msz_users`
                     SET `username` = :username,
                         `email` = LOWER(:email),
-                        `user_title` = :title
+                        `user_title` = :title,
+                        `user_country` = :country
                     WHERE `user_id` = :user_id
                 ');
                 $updateUserDetails->bindValue('username', $_POST['user']['username']);
                 $updateUserDetails->bindValue('email', $_POST['user']['email']);
+                $updateUserDetails->bindValue('country', $_POST['user']['country']);
                 $updateUserDetails->bindValue(
                     'title',
                     strlen($_POST['user']['title'])
