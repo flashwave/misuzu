@@ -60,6 +60,7 @@ $featuredChangelog = $db->query('
     WHERE DATE(c.`change_created`) >= (
          SELECT DATE(`change_created`)
          FROM `msz_changelog_changes`
+         GROUP BY DATE(`change_created`)
          ORDER BY `change_created` DESC
          LIMIT 2, 1
     )
