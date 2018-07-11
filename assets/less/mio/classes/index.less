@@ -1,0 +1,28 @@
+.index {
+    display: flex;
+    flex-direction: row-reverse;
+
+    &__sidebar {
+        width: 300px;
+        margin-left: 2px;
+    }
+
+    &__main {
+        flex: 1 1 auto;
+    }
+
+    &__stats {
+        &__emphasis {
+            font-weight: 700;
+        }
+
+        &__link {
+            color: inherit;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}

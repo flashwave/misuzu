@@ -9,7 +9,7 @@
             {% if not hide_dates and last_date != change.change_date %}
                 {% set last_date = change.change_date %}
 
-                <a class="changelog__date" href="?d={{ last_date }}">
+                <a class="changelog__date" href="/changelog.php?d={{ last_date }}">
                     {{ last_date }}
                 </a>
             {% endif %}
@@ -30,23 +30,25 @@
 
     <div class="changelog" id="cl{{ change.change_id }}">
         <a class="changelog__action{{ change.action_class is defined and change.action_class is not null ? ' changelog__action--' ~ change.action_class : '' }} changelog__action--{{ change.action_colour|colour_get_css_contrast }}"
-            href="?c={{ change.change_id }}"
+            href="/changelog.php?c={{ change.change_id }}"
             {% if change.action_colour is defined %}style="{{ change.action_colour|html_colour({'background-color':'%s'}) }}"{% endif %}>
             <div class="changelog__action__text">
                 {{ change.action_name|default('Unknown') }}
             </div>
         </a>
 
-        <a  class="changelog__user"
-            href="/profile.php?u={{ change.user_id }}"
-            style="{{ change.user_colour|html_colour }}">
-            <div class="changelog__user__text">
-                {{ change.username }}
-            </div>
-        </a>
+        {% if change.user_id is defined %}
+            <a  class="changelog__user"
+                href="/profile.php?u={{ change.user_id }}"
+                style="{{ change.user_colour|html_colour }}">
+                <div class="changelog__user__text">
+                    {{ change.username }}
+                </div>
+            </a>
+        {% endif %}
 
         <a class="changelog__log{% if has_text %} changelog__log--link{% endif %}"
-            {% if has_text %}href="?c={{ change.change_id }}"{% endif %}>
+            {% if has_text %}href="/changelog.php?c={{ change.change_id }}"{% endif %}>
             {{ change.change_log }}
         </a>
     </div>
