@@ -61,9 +61,13 @@ class Application extends ApplicationBase
     {
         parent::__construct();
         $this->debugMode = $debug;
-        ExceptionHandler::register();
-        ExceptionHandler::debug($this->debugMode);
         $this->configInstance = new ConfigManager($configFile);
+
+        ExceptionHandler::register(
+            $debug,
+            $this->configInstance->get('Exceptions', 'report_url', 'string', null),
+            $this->configInstance->get('Exceptions', 'hash_key', 'string', null)
+        );
     }
 
     /**
