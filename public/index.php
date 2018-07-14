@@ -44,7 +44,7 @@ $lastUser = $db->query('
     FROM `msz_users` as u
     LEFT JOIN `msz_roles` as r
     ON r.`role_id` = u.`display_role`
-    ORDER BY u.`created_at` DESC
+    ORDER BY u.`user_id` DESC
     LIMIT 1
 ')->fetch(PDO::FETCH_ASSOC);
 
