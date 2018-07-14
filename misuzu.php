@@ -126,15 +126,13 @@ if (PHP_SAPI === 'cli') {
         }
     }
 } else {
+    ob_start($app->inDebugMode() ? null : 'ob_gzhandler');
+
     $storage_dir = $app->getStoragePath();
     if (!$storage_dir->isReadable()
         || !$storage_dir->isWritable()) {
         echo 'Cannot access storage directory.';
         exit;
-    }
-
-    if (!$app->inDebugMode()) {
-        ob_start('ob_gzhandler');
     }
 
     $app->startTemplating();
