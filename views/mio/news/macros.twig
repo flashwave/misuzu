@@ -6,8 +6,7 @@
 
         <div class="container__content news__preview__content">
             <div class="news__preview__text">
-                {{ post.post_text|first_paragraph|raw }}
-                <p><b><i><a href="/news.php?p={{ post.post_id }}">View full post</a></i></b></p>
+                {{ post.post_text|first_paragraph|md|raw }}
             </div>
 
             <div class="news__preview__info">
@@ -15,12 +14,14 @@
                     {{ post.created_at|time_diff }}
                 </time>
 
-                <a class="news__preview__user" href="/profile.php?u={{ post.user_id }}">
-                    <div class="news__preview__user__name" style="{{ post.user_colour|html_colour }}">
-                        {{ post.username }}
-                    </div>
-                    <div class="avatar news__preview__user__avatar" style="background-image:url('/profile.php?u={{ post.user_id }}&amp;m=avatar')"></div>
-                </a>
+                {% if post.user_id is not null %}
+                    <a class="news__preview__user" href="/profile.php?u={{ post.user_id }}">
+                        <div class="news__preview__user__name" style="{{ post.user_colour|html_colour }}">
+                            {{ post.username }}
+                        </div>
+                        <div class="avatar news__preview__user__avatar" style="background-image:url('/profile.php?u={{ post.user_id }}&amp;m=avatar')"></div>
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>

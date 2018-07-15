@@ -1,16 +1,24 @@
 <?php
 namespace Misuzu\Parsers\BBCode;
 
-use Misuzu\Parsers\Parser;
+use Misuzu\Parsers\ParserInterface;
 
-final class BBCodeParser extends Parser
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
+class BBCodeParser implements ParserInterface
 {
+    private static $instance;
+
+    public static function instance(): BBCodeParser
+    {
+        return is_null(static::$instance) ? (static::$instance = new BBCodeParser()) : static::$instance;
+    }
+
     private $tags = [];
 
     public function __construct(array $tags = [])
     {
-        parent::__construct();
-
         if (empty($tags)) {
             $tags = [
                 // Advanced markup
@@ -47,5 +55,10 @@ final class BBCodeParser extends Parser
         }
 
         return $text;
+    }
+
+    public function parseLine(string $line): string
+    {
+        return $this->parseText($line);
     }
 }

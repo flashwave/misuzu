@@ -80,9 +80,9 @@ function zalgo_run(
         return $text;
     }
 
-    $going_up   = has_flag($direction, MSZ_ZALGO_DIR_UP);
-    $going_mid  = has_flag($direction, MSZ_ZALGO_DIR_MID);
-    $going_down = has_flag($direction, MSZ_ZALGO_DIR_DOWN);
+    $going_up   = ($direction & MSZ_ZALGO_DIR_UP) > 0;
+    $going_mid  = ($direction & MSZ_ZALGO_DIR_MID) > 0;
+    $going_down = ($direction & MSZ_ZALGO_DIR_DOWN) > 0;
 
     $str = '';
 

@@ -3,18 +3,15 @@ namespace Misuzu\Parsers;
 
 use Parsedown;
 
-final class MarkdownParser extends Parser
+class MarkdownParser extends Parsedown implements ParserInterface
 {
-    private $parsedown;
-
-    public function __construct()
-    {
-        parent::__construct();
-        $this->parsedown = new Parsedown;
-    }
-
     public function parseText(string $text): string
     {
-        return $this->parsedown->text($text);
+        return $this->text($text);
+    }
+
+    public function parseLine(string $line): string
+    {
+        return $this->line($line);
     }
 }
