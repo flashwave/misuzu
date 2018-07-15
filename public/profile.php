@@ -42,7 +42,7 @@ switch ($mode) {
     default:
         $templating = $app->getTemplating();
 
-        $getProfile = Database::connection()->prepare('
+        $getProfile = Database::prepare('
             SELECT
                 u.*,
                 COALESCE(u.`user_title`, r.`role_title`) as `user_title`,

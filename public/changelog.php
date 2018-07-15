@@ -3,7 +3,6 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$db = Database::connection();
 $tpl = $app->getTemplating();
 
 $changelogOffset = max((int)($_GET['o'] ?? 0), 0);
@@ -20,7 +19,7 @@ $tpl->vars([
 ]);
 
 if ($changelogChange > 0) {
-    $getChange = $db->prepare('
+    $getChange = Database::prepare('
         SELECT
             c.`change_id`, c.`change_created`, c.`change_log`, c.`change_text`,
             a.`action_name`, a.`action_colour`, a.`action_class`,
@@ -43,7 +42,7 @@ if ($changelogChange > 0) {
     if (!$change) {
         http_response_code(404);
     } else {
-        $getTags = $db->prepare('
+        $getTags = Database::prepare('
             SELECT
                 t.`tag_id`, t.`tag_name`, t.`tag_description`
             FROM `msz_changelog_tags` as t

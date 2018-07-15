@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 require_once __DIR__ . '/../../misuzu.php';
 
 $forumId = max((int)($_GET['f'] ?? 0), 0);

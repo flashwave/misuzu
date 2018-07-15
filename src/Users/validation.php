@@ -42,7 +42,7 @@ function user_validate_username(string $username, bool $checkInUse = false): str
     }
 
     if ($checkInUse) {
-        $getUser = Database::connection()->prepare('
+        $getUser = Database::prepare('
             SELECT COUNT(`user_id`)
             FROM `msz_users`
             WHERE LOWER(`username`) = LOWER(:username)
@@ -69,7 +69,7 @@ function user_validate_email(string $email, bool $checkInUse = false): string
     }
 
     if ($checkInUse) {
-        $getUser = Database::connection()->prepare('
+        $getUser = Database::prepare('
             SELECT COUNT(`user_id`)
             FROM `msz_users`
             WHERE LOWER(`email`) = LOWER(:email)

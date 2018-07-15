@@ -5,7 +5,7 @@ define('MSZ_ROLE_MAIN', 1);
 
 function user_role_add(int $userId, int $roleId): bool
 {
-    $addRole = Database::connection()->prepare('
+    $addRole = Database::prepare('
         INSERT INTO `msz_user_roles`
             (`user_id`, `role_id`)
         VALUES
@@ -18,7 +18,7 @@ function user_role_add(int $userId, int $roleId): bool
 
 function user_role_remove(int $userId, int $roleId): bool
 {
-    $removeRole = Database::connection()->prepare('
+    $removeRole = Database::prepare('
         DELETE FROM `msz_user_roles`
         WHERE `user_id` = :user_id
         AND `role_id` = :role_id
@@ -30,7 +30,7 @@ function user_role_remove(int $userId, int $roleId): bool
 
 function user_role_has(int $userId, int $roleId): bool
 {
-    $hasRole = Database::connection()->prepare('
+    $hasRole = Database::prepare('
         SELECT COUNT(`role_id`) > 0
         FROM `msz_user_roles`
         WHERE `user_id` = :user_id
@@ -47,7 +47,7 @@ function user_role_set_display(int $userId, int $roleId): bool
         return false;
     }
 
-    $setDisplay = Database::connection()->prepare('
+    $setDisplay = Database::prepare('
         UPDATE `msz_users`
         SET `display_role` = :role_id
         WHERE `user_id` = :user_id

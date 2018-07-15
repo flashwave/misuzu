@@ -7,15 +7,13 @@ define('MSZ_CHANGELOG_PERM_MANAGE_ACTIONS', 1 << 2);
 
 function changelog_action_add(string $name, ?int $colour = null, ?string $class = null): int
 {
-    $dbc = Database::connection();
-
     if ($colour === null) {
         $colour = colour_none();
     }
 
     $class = preg_replace('#[^a-z]#', '', strtolower($class ?? $name));
 
-    $addAction = $dbc->prepare('
+    $addAction = Database::prepare('
         INSERT INTO `msz_changelog_actions`
             (`action_name`, `action_colour`, `action_class`)
         VALUES
@@ -25,14 +23,12 @@ function changelog_action_add(string $name, ?int $colour = null, ?string $class 
     $addAction->bindValue('action_colour', $colour);
     $addAction->bindValue('action_class', $class);
 
-    return $addAction->execute() ? (int)$dbc->lastInsertId() : 0;
+    return $addAction->execute() ? (int)Database::lastInsertId() : 0;
 }
 
 function changelog_entry_create(int $userId, int $actionId, string $log, string $text = null): int
 {
-    $dbc = Database::connection();
-
-    $createChange = $dbc->prepare('
+    $createChange = Database::prepare('
         INSERT INTO `msz_changelog_changes`
             (`user_id`, `action_id`, `change_log`, `change_text`)
         VALUES
@@ -43,7 +39,7 @@ function changelog_entry_create(int $userId, int $actionId, string $log, string 
     $createChange->bindValue('change_log', $log);
     $createChange->bindValue('change_text', $text);
 
-    return $createChange->execute() ? (int)$dbc->lastInsertId() : 0;
+    return $createChange->execute() ? (int)Database::lastInsertId() : 0;
 }
 
 define('MSZ_CHANGELOG_GET_QUERY', '
@@ -80,8 +76,7 @@ function changelog_get_changes(string $date, int $user, int $offset, int $take):
         !$hasDate ? 'LIMIT :offset, :take' : ''
     );
 
-    $dbc = Database::connection();
-    $prep = $dbc->prepare($query);
+    $prep = Database::prepare($query);
 
     if (!$hasDate) {
         $prep->bindValue('offset', $offset);
@@ -115,8 +110,7 @@ function changelog_count_changes(string $date, int $user): int
         $hasUser ? '`user_id` = :user' : '1'
     );
 
-    $dbc = Database::connection();
-    $prep = $dbc->prepare($query);
+    $prep = Database::prepare($query);
 
     if ($hasDate) {
         $prep->bindValue('date', $date);

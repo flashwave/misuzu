@@ -10,7 +10,7 @@ function user_session_create(
 ): string {
     $sessionKey = user_session_generate_key();
 
-    $createSession = Database::connection()->prepare('
+    $createSession = Database::prepare('
         INSERT INTO `msz_sessions`
             (
                 `user_id`, `session_ip`, `session_country`,
@@ -33,7 +33,7 @@ function user_session_create(
 
 function user_session_delete(int $sessionId): bool
 {
-    $deleteSession = Database::connection()->prepare('
+    $deleteSession = Database::prepare('
         DELETE FROM `msz_sessions`
         WHERE `session_id` = :session_id
     ');

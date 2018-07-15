@@ -41,7 +41,7 @@ function forum_may_have_topics(int $forumType): bool
 
 function forum_fetch(int $forumId): array
 {
-    $getForum = Database::connection()->prepare('
+    $getForum = Database::prepare('
         SELECT
             `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_link_clicks`, `forum_parent`,
             (
@@ -61,9 +61,7 @@ function forum_fetch(int $forumId): array
 
 function forum_get_root_categories(): array
 {
-    $dbc = Database::connection();
-
-    $categories = $dbc->query('
+    $categories = Database::query('
         SELECT
             f.`forum_id`, f.`forum_name`, f.`forum_type`,
             (
@@ -80,7 +78,7 @@ function forum_get_root_categories(): array
 
     $categories = array_merge([MSZ_FORUM_ROOT_DATA], $categories);
 
-    $categories[0]['forum_children'] = (int)$dbc->query('
+    $categories[0]['forum_children'] = (int)Database::query('
         SELECT COUNT(`forum_id`)
         FROM `msz_forum_categories`
         WHERE `forum_parent` = ' . MSZ_FORUM_ROOT . '
@@ -95,7 +93,7 @@ function forum_get_breadcrumbs(
     array $indexLink = ['Forums' => '/forum/']
 ): array {
     $breadcrumbs = [];
-    $getBreadcrumb = Database::connection()->prepare('
+    $getBreadcrumb = Database::prepare('
         SELECT `forum_id`, `forum_name`, `forum_parent`
         FROM `msz_forum_categories`
         WHERE `forum_id` = :forum_id
@@ -118,7 +116,7 @@ function forum_get_breadcrumbs(
 
 function forum_increment_clicks(int $forumId): void
 {
-    $incrementLinkClicks = Database::connection()->prepare('
+    $incrementLinkClicks = Database::prepare('
         UPDATE `msz_forum_categories`
         SET `forum_link_clicks` = `forum_link_clicks` + 1
         WHERE `forum_id` = :forum_id
@@ -247,7 +245,7 @@ define('MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD', '
 
 function forum_get_children(int $parentId, int $userId, bool $small = false): array
 {
-    $getListing = Database::connection()->prepare(
+    $getListing = Database::prepare(
         $small
         ? MSZ_FORUM_GET_CHILDREN_QUERY_SMALL
         : MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD

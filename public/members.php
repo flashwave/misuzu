@@ -58,10 +58,9 @@ if (empty($orderDir)) {
     return;
 }
 
-$db = Database::connection();
 $tpl = $app->getTemplating();
 
-$getRole = $db->prepare('
+$getRole = Database::prepare('
     SELECT
         `role_id`, `role_name`, `role_colour`, `role_description`, `created_at`,
         (
@@ -73,22 +72,21 @@ $getRole = $db->prepare('
     WHERE `role_id` = :role_id
 ');
 $getRole->bindValue('role_id', $roleId);
-$role = $getRole->execute() ? $getRole->fetch() : [];
+$role = $getRole->execute() ? $getRole->fetch(PDO::FETCH_ASSOC) : [];
 
 if (!$role) {
     echo render_error(404);
     return;
 }
 
-$getRoles = $db->prepare('
+$roles = Database::query('
     SELECT `role_id`, `role_name`, `role_colour`
     FROM `msz_roles`
     WHERE `role_secret` = 0
     ORDER BY `role_id`
-');
-$roles = $getRoles->execute() ? $getRoles->fetchAll() : [];
+')->fetchAll(PDO::FETCH_ASSOC);
 
-$getUsers = $db->prepare("
+$getUsers = Database::prepare("
     SELECT
         u.`user_id`, u.`username`, u.`user_country`,
         u.`created_at` as `user_joined`, u.`last_seen` as `user_last_seen`,
@@ -118,7 +116,7 @@ $getUsers = $db->prepare("
 $getUsers->bindValue('role_id', $role['role_id']);
 $getUsers->bindValue('offset', $usersOffset);
 $getUsers->bindValue('take', $usersTake);
-$users = $getUsers->execute() ? $getUsers->fetchAll() : [];
+$users = $getUsers->execute() ? $getUsers->fetchAll(PDO::FETCH_ASSOC) : [];
 
 echo $tpl->render('user.listing', [
     'roles' => $roles,

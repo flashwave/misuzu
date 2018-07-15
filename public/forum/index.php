@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 require_once __DIR__ . '/../../misuzu.php';
 
 $categories = forum_get_root_categories();

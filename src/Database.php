@@ -94,6 +94,11 @@ final class Database
         return self::connection($connection)->exec($statement);
     }
 
+    public static function lastInsertId(?string $name = null, ?string $connection = null): string
+    {
+        return self::connection($connection)->lastInsertId($name);
+    }
+
     public static function queryCount(?string $connection = null): int
     {
         return (int)Database::query('SHOW SESSION STATUS LIKE "Questions"', $connection)->fetch()['Value'];

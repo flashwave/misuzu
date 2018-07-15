@@ -21,8 +21,7 @@ function user_create(
     string $email,
     string $ipAddress
 ): int {
-    $dbc = Database::connection();
-    $createUser = $dbc->prepare('
+    $createUser = Database::prepare('
         INSERT INTO `msz_users`
             (
                 `username`, `password`, `email`, `register_ip`,
@@ -41,7 +40,7 @@ function user_create(
     $createUser->bindValue('last_ip', $ipAddress);
     $createUser->bindValue('user_country', get_country_code($ipAddress));
 
-    return $createUser->execute() ? (int)$dbc->lastInsertId() : 0;
+    return $createUser->execute() ? (int)Database::lastInsertId() : 0;
 }
 
 function user_password_hash(string $password): string
@@ -55,7 +54,7 @@ function user_generate_chat_key(int $userId): string
 {
     $chatKey = bin2hex(random_bytes(16));
 
-    $setChatKey = Database::connection()->prepare('
+    $setChatKey = Database::prepare('
         UPDATE `msz_users`
         SET `user_chat_key` = :user_chat_key
         WHERE `user_id` = :user_id

@@ -3,7 +3,6 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$db = Database::connection();
 $templating = $app->getTemplating();
 
 $categoryId = isset($_GET['c']) ? (int)$_GET['c'] : null;
@@ -17,7 +16,7 @@ $templating->vars([
 ]);
 
 if ($postId !== null) {
-    $getPost = $db->prepare('
+    $getPost = Database::prepare('
         SELECT
             p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
             c.`category_id`, c.`category_name`,
@@ -45,7 +44,7 @@ if ($postId !== null) {
 }
 
 if ($categoryId !== null) {
-    $getCategory = $db->prepare('
+    $getCategory = Database::prepare('
         SELECT
             c.`category_id`, c.`category_name`, c.`category_description`,
             COUNT(p.`post_id`) AS `posts_count`
@@ -63,7 +62,7 @@ if ($categoryId !== null) {
         return;
     }
 
-    $getPosts = $db->prepare('
+    $getPosts = Database::prepare('
         SELECT
             p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
             c.`category_id`, c.`category_name`,
@@ -85,7 +84,7 @@ if ($categoryId !== null) {
     $getPosts->bindValue('category_id', $category['category_id'], PDO::PARAM_INT);
     $posts = $getPosts->execute() ? $getPosts->fetchAll() : false;
 
-    $getFeatured = $db->prepare('
+    $getFeatured = Database::prepare('
         SELECT `post_id`, `post_title`
         FROM `msz_news_posts`
         WHERE `category_id` = :category_id
@@ -100,7 +99,7 @@ if ($categoryId !== null) {
     return;
 }
 
-$getCategories = $db->prepare('
+$getCategories = Database::prepare('
     SELECT
         c.`category_id`, c.`category_name`,
         COUNT(p.`post_id`) AS count
@@ -113,7 +112,7 @@ $getCategories = $db->prepare('
 ');
 $categories = $getCategories->execute() ? $getCategories->fetchAll() : [];
 
-$postsCount = (int)$db->query('
+$postsCount = (int)Database::query('
     SELECT COUNT(p.`post_id`) as `posts_count`
     FROM `msz_news_posts` as p
     LEFT JOIN `msz_news_categories` as c
@@ -129,7 +128,7 @@ if ($postsOffset < 0 || $postsOffset >= $postsCount) {
     return;
 }
 
-$getPosts = $db->prepare('
+$getPosts = Database::prepare('
     SELECT
         p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
         c.`category_id`, c.`category_name`,
