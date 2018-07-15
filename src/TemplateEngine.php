@@ -167,6 +167,10 @@ class TemplateEngine
      */
     public function render(string $path, ?array $vars = null): string
     {
+        if ($this->twig->isDebug()) {
+            $this->var('query_count', Database::queryCount());
+        }
+
         $path = self::fixPath($path);
 
         if ($vars !== null) {

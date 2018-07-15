@@ -135,6 +135,7 @@ if (PHP_SAPI === 'cli') {
         exit;
     }
 
+    $app->startCache();
     $app->startTemplating();
     $tpl = $app->getTemplating();
 

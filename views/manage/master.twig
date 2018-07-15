@@ -67,6 +67,9 @@
                 ''|date('Y') }} /
                 {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_branch())|html_link(git_branch(), 'footer__link')|raw }}
                 # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__link')|raw }}
+                {% if query_count is defined %}
+                    / SQL Queries: {{ query_count|number_format }}
+                {% endif %}
             </footer>
         </div>
         <script src="/js/libraries.js" charset="utf-8"></script>
