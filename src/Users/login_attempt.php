@@ -3,7 +3,7 @@ use Misuzu\Database;
 
 function user_login_attempt_record(bool $success, ?int $userId, string $ipAddress, string $userAgent): void
 {
-    $storeAttempt = Database::connection()->prepare('
+    $storeAttempt = Database::prepare('
         INSERT INTO `msz_login_attempts`
             (`was_successful`, `attempt_ip`, `attempt_country`, `user_id`, `user_agent`, `created_at`)
         VALUES
@@ -20,7 +20,7 @@ function user_login_attempt_record(bool $success, ?int $userId, string $ipAddres
 
 function user_login_attempts_remaining(string $ipAddress): int
 {
-    $getRemaining = Database::connection()->prepare('
+    $getRemaining = Database::prepare('
         SELECT 5 - COUNT(`attempt_id`)
         FROM `msz_login_attempts`
         WHERE `was_successful` = false

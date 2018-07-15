@@ -34,10 +34,8 @@ if (PHP_SAPI === 'cli') {
     if ($argv[0] === basename(__FILE__)) {
         switch ($argv[1] ?? null) {
             case 'cron':
-                $db = Database::connection();
-
                 // Ensure main role exists.
-                $db->query("
+                Database::exec("
                     INSERT IGNORE INTO `msz_roles`
                         (`role_id`, `role_name`, `role_hierarchy`, `role_colour`, `role_description`, `created_at`)
                     VALUES
@@ -45,7 +43,7 @@ if (PHP_SAPI === 'cli') {
                 ");
 
                 // Ensures all users are in the main role.
-                $db->query('
+                Database::exec('
                     INSERT INTO `msz_user_roles`
                         (`user_id`, `role_id`)
                     SELECT `user_id`, 1 FROM `msz_users` as u
@@ -58,7 +56,7 @@ if (PHP_SAPI === 'cli') {
                 ');
 
                 // Ensures all display_role values are correct with `msz_user_roles`
-                $db->query('
+                Database::exec('
                     UPDATE `msz_users` as u
                     SET `display_role` = (
                          SELECT ur.`role_id`
@@ -135,6 +133,7 @@ if (PHP_SAPI === 'cli') {
         exit;
     }
 
+    $app->startCache();
     $app->startTemplating();
     $tpl = $app->getTemplating();
 
@@ -151,9 +150,7 @@ if (PHP_SAPI === 'cli') {
         $app->startSession((int)$_COOKIE['msz_uid'], $_COOKIE['msz_sid']);
 
         if ($app->hasActiveSession()) {
-            $db = Database::connection();
-
-            $bumpUserLast = $db->prepare('
+            $bumpUserLast = Database::prepare('
                 UPDATE `msz_users` SET
                 `last_seen` = NOW(),
                 `last_ip` = INET6_ATON(:last_ip)
@@ -163,7 +160,7 @@ if (PHP_SAPI === 'cli') {
             $bumpUserLast->bindValue('user_id', $app->getUserId());
             $bumpUserLast->execute();
 
-            $getUserDisplayInfo = $db->prepare('
+            $getUserDisplayInfo = Database::prepare('
                 SELECT
                     u.`user_id`, u.`username`,
                     COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `colour`

@@ -12,9 +12,7 @@ define('MSZ_TOPIC_TYPES', [
 
 function forum_topic_create(int $forumId, int $userId, string $title): int
 {
-    $dbc = Database::connection();
-
-    $createTopic = $dbc->prepare('
+    $createTopic = Database::prepare('
         INSERT INTO `msz_forum_topics`
             (`forum_id`, `user_id`, `topic_title`)
         VALUES
@@ -24,12 +22,12 @@ function forum_topic_create(int $forumId, int $userId, string $title): int
     $createTopic->bindValue('user_id', $userId);
     $createTopic->bindValue('topic_title', $title);
 
-    return $createTopic->execute() ? (int)$dbc->lastInsertId() : 0;
+    return $createTopic->execute() ? (int)Database::lastInsertId() : 0;
 }
 
 function forum_topic_fetch(int $topicId): array
 {
-    $getTopic = Database::connection()->prepare('
+    $getTopic = Database::prepare('
         SELECT
             t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`,
             f.`forum_archived` as `topic_archived`,
@@ -58,7 +56,7 @@ function forum_topic_fetch(int $topicId): array
 
 function forum_topic_bump(int $topicId): bool
 {
-    $bumpTopic = Database::connection()->prepare('
+    $bumpTopic = Database::prepare('
         UPDATE `msz_forum_topics`
         SET `topic_bumped` = NOW()
         WHERE `topic_id` = :topic_id
@@ -73,7 +71,7 @@ function forum_topic_mark_read(int $userId, int $topicId, int $forumId): void
         return;
     }
 
-    $markAsRead = Database::connection()->prepare('
+    $markAsRead = Database::prepare('
         REPLACE INTO `msz_forum_topics_track`
             (`user_id`, `topic_id`, `forum_id`, `track_last_read`)
         VALUES
@@ -147,7 +145,7 @@ define('MSZ_TOPIC_LISTING_QUERY_PAGINATED', MSZ_TOPIC_LISTING_QUERY_STANDARD . '
 function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $take = 0): array
 {
     $hasPagination = $offset >= 0 && $take > 0;
-    $getTopics = Database::connection()->prepare(
+    $getTopics = Database::prepare(
         $hasPagination
         ? MSZ_TOPIC_LISTING_QUERY_PAGINATED
         : MSZ_TOPIC_LISTING_QUERY_STANDARD

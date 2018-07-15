@@ -3,7 +3,9 @@ namespace Misuzu;
 
 use Misuzu\Config\ConfigManager;
 use PDO;
+use PDOStatement;
 use InvalidArgumentException;
+use UnexpectedValueException;
 
 final class Database
 {
@@ -48,7 +50,7 @@ final class Database
     public static function getInstance(): Database
     {
         if (!self::hasInstance()) {
-            throw new \UnexpectedValueException('No instance of Database exists yet.');
+            throw new UnexpectedValueException('No instance of Database exists yet.');
         }
 
         return self::$instance;
@@ -63,8 +65,8 @@ final class Database
         ConfigManager $config,
         string $default = 'default'
     ) {
-        if (self::$instance instanceof static) {
-            throw new \UnexpectedValueException('Only one instance of Database may exist.');
+        if (self::hasInstance()) {
+            throw new UnexpectedValueException('Only one instance of Database may exist.');
         }
 
         self::$instance = $this;
@@ -75,6 +77,31 @@ final class Database
     public static function connection(?string $name = null): PDO
     {
         return self::getInstance()->getConnection($name);
+    }
+
+    public static function prepare(string $statement, ?string $connection = null, $options = []): PDOStatement
+    {
+        return self::connection($connection)->prepare($statement, $options);
+    }
+
+    public static function query(string $statement, ?string $connection = null): PDOStatement
+    {
+        return self::connection($connection)->query($statement);
+    }
+
+    public static function exec(string $statement, ?string $connection = null)
+    {
+        return self::connection($connection)->exec($statement);
+    }
+
+    public static function lastInsertId(?string $name = null, ?string $connection = null): string
+    {
+        return self::connection($connection)->lastInsertId($name);
+    }
+
+    public static function queryCount(?string $connection = null): int
+    {
+        return (int)Database::query('SHOW SESSION STATUS LIKE "Questions"', $connection)->fetch()['Value'];
     }
 
     public function getConnection(?string $name = null): PDO

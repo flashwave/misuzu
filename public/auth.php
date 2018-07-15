@@ -6,7 +6,6 @@ use Misuzu\Users\Session;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$db = Database::connection();
 $config = $app->getConfig();
 $templating = $app->getTemplating();
 
@@ -76,7 +75,7 @@ switch ($authMode) {
             $username = $_POST['username'] ?? '';
             $password = $_POST['password'] ?? '';
 
-            $getUser = $db->prepare('
+            $getUser = Database::prepare('
                 SELECT `user_id`, `password`
                 FROM `msz_users`
                 WHERE LOWER(`email`) = LOWER(:email)

@@ -3,7 +3,6 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../../misuzu.php';
 
-$db = Database::connection();
 $tpl = $app->getTemplating();
 
 $userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
@@ -26,12 +25,12 @@ switch ($_GET['v'] ?? null) {
         }
 
         $usersTake = 32;
-        $manageUsersCount = $db->query('
+        $manageUsersCount = Database::query('
             SELECT COUNT(`user_id`)
             FROM `msz_users`
         ')->fetchColumn();
 
-        $getManageUsers = $db->prepare('
+        $getManageUsers = Database::prepare('
             SELECT
                 u.`user_id`, u.`username`,
                 COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `colour`
@@ -66,7 +65,7 @@ switch ($_GET['v'] ?? null) {
             echo 'no';
             break;
         }
-        $getUser = $db->prepare('
+        $getUser = Database::prepare('
             SELECT
                 u.*,
                 INET6_NTOA(u.`register_ip`) as `register_ip_decoded`,
@@ -87,7 +86,7 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $getHasRoles = $db->prepare('
+        $getHasRoles = Database::prepare('
             SELECT `role_id`, `role_name`
             FROM `msz_roles`
             WHERE `role_id` IN (
@@ -99,7 +98,7 @@ switch ($_GET['v'] ?? null) {
         $getHasRoles->bindValue('user_id', $manageUser['user_id']);
         $hasRoles = $getHasRoles->execute() ? $getHasRoles->fetchAll() : [];
 
-        $getAvailableRoles = $db->prepare('
+        $getAvailableRoles = Database::prepare('
             SELECT `role_id`, `role_name`
             FROM `msz_roles`
             WHERE `role_id` NOT IN (
@@ -125,7 +124,7 @@ switch ($_GET['v'] ?? null) {
                 && user_validate_username($_POST['user']['username']) === ''
                 && user_validate_email($_POST['user']['email']) === ''
                 && strlen($_POST['user']['country']) === 2) {
-                $updateUserDetails = $db->prepare('
+                $updateUserDetails = Database::prepare('
                     UPDATE `msz_users`
                     SET `username` = :username,
                         `email` = LOWER(:email),
@@ -158,7 +157,7 @@ switch ($_GET['v'] ?? null) {
                 && !empty($_POST['password']['confirm'])
                 && user_validate_password($_POST['password']['new']) === ''
                 && $_POST['password']['new'] === $_POST['password']['confirm']) {
-                $updatePassword = $db->prepare('
+                $updatePassword = Database::prepare('
                     UPDATE `msz_users`
                     SET `password` = :password
                     WHERE `user_id` = :user_id
@@ -195,7 +194,7 @@ switch ($_GET['v'] ?? null) {
 
                 if ($perms !== null) {
                     $permKeys = array_keys($perms);
-                    $setPermissions = $db->prepare('
+                    $setPermissions = Database::prepare('
                         REPLACE INTO `msz_permissions`
                             (`role_id`, `user_id`, `' . implode('`, `', $permKeys) . '`)
                         VALUES
@@ -209,7 +208,7 @@ switch ($_GET['v'] ?? null) {
 
                     $setPermissions->execute();
                 } else {
-                    $deletePermissions = $db->prepare('
+                    $deletePermissions = Database::prepare('
                         DELETE FROM `msz_permissions`
                         WHERE `role_id` IS NULL
                         AND `user_id` = :user_id
@@ -239,12 +238,12 @@ switch ($_GET['v'] ?? null) {
         }
 
         $rolesTake = 10;
-        $manageRolesCount = $db->query('
+        $manageRolesCount = Database::query('
             SELECT COUNT(`role_id`)
             FROM `msz_roles`
         ')->fetchColumn();
 
-        $getManageRoles = $db->prepare('
+        $getManageRoles = Database::prepare('
             SELECT
                 `role_id`, `role_colour`, `role_name`,
                 (
@@ -352,7 +351,7 @@ switch ($_GET['v'] ?? null) {
             }
 
             if ($roleId < 1) {
-                $updateRole = $db->prepare('
+                $updateRole = Database::prepare('
                     INSERT INTO `msz_roles`
                         (
                             `role_name`, `role_hierarchy`, `role_secret`, `role_colour`,
@@ -365,7 +364,7 @@ switch ($_GET['v'] ?? null) {
                         )
                 ');
             } else {
-                $updateRole = $db->prepare('
+                $updateRole = Database::prepare('
                     UPDATE `msz_roles`
                     SET `role_name` = :role_name,
                         `role_hierarchy` = :role_hierarchy,
@@ -387,7 +386,7 @@ switch ($_GET['v'] ?? null) {
             $updateRole->execute();
 
             if ($roleId < 1) {
-                $roleId = (int)$db->lastInsertId();
+                $roleId = (int)Database::lastInsertId();
             }
 
             if (!empty($permissions) && !empty($_POST['perms']) && is_array($_POST['perms'])) {
@@ -395,7 +394,7 @@ switch ($_GET['v'] ?? null) {
 
                 if ($perms !== null) {
                     $permKeys = array_keys($perms);
-                    $setPermissions = $db->prepare('
+                    $setPermissions = Database::prepare('
                         REPLACE INTO `msz_permissions`
                             (`role_id`, `user_id`, `' . implode('`, `', $permKeys) . '`)
                         VALUES
@@ -409,7 +408,7 @@ switch ($_GET['v'] ?? null) {
 
                     $setPermissions->execute();
                 } else {
-                    $deletePermissions = $db->prepare('
+                    $deletePermissions = Database::prepare('
                         DELETE FROM `msz_permissions`
                         WHERE `role_id` = :role_id
                         AND `user_id` IS NULL
@@ -429,7 +428,7 @@ switch ($_GET['v'] ?? null) {
                 break;
             }
 
-            $getEditRole = $db->prepare('
+            $getEditRole = Database::prepare('
                 SELECT *
                 FROM `msz_roles`
                 WHERE `role_id` = :role_id

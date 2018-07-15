@@ -1,28 +1,12 @@
 <?php
-// both of these are provided by illuminate/database already
-// but i feel like it makes sense to add these definitions regardless
-
-if (!function_exists('starts_with')) {
-    function starts_with(string $string, string $text): bool
-    {
-        return substr($string, 0, strlen($text)) === $text;
-    }
-}
-
-if (!function_exists('ends_with')) {
-    function ends_with(string $string, string $text): bool
-    {
-        return substr($string, 0 - strlen($text)) === $text;
-    }
-}
-
-function json_encode_m($obj): string
+function starts_with(string $string, string $text): bool
 {
-    if (!headers_sent()) {
-        header('Content-Type: application/json; charset=utf-8');
-    }
+    return substr($string, 0, strlen($text)) === $text;
+}
 
-    return json_encode($obj);
+function ends_with(string $string, string $text): bool
+{
+    return substr($string, 0 - strlen($text)) === $text;
 }
 
 function set_cookie_m(string $name, string $value, int $expires): void
@@ -54,20 +38,6 @@ function dechex_pad(int $value, int $padding = 2): string
     return str_pad(dechex($value), $padding, '0', STR_PAD_LEFT);
 }
 
-function array_rand_value(array $array, $fallback = null)
-{
-    if (!$array) {
-        return $fallback;
-    }
-
-    return $array[array_rand($array)];
-}
-
-function has_flag(int $flags, int $flag): bool
-{
-    return ($flags & $flag) > 0;
-}
-
 function byte_symbol($bytes, $decimal = false)
 {
     if ($bytes < 1) {
@@ -84,27 +54,29 @@ function byte_symbol($bytes, $decimal = false)
     return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
 }
 
-// this should be rewritten to only load the database once per Application instance.
-// for now this will do since the only time this function is called is once during registration.
-// also make sure an instance of Application with config exists before calling this!
 function get_country_code(string $ipAddr, string $fallback = 'XX'): string
 {
+    global $_msz_geoip;
+
     try {
-        $app = \Misuzu\Application::getInstance();
-        $config = $app->getConfig();
+        if (!$_msz_geoip) {
+            $app = \Misuzu\Application::getInstance();
+            $config = $app->getConfig();
 
-        if ($config === null) {
-            return $fallback;
+            if ($config === null) {
+                return $fallback;
+            }
+
+            $database_path = $config->get('GeoIP', 'database_path');
+
+            if ($database_path === null) {
+                return $fallback;
+            }
+
+            $_msz_geoip = new \GeoIp2\Database\Reader($database_path);
         }
 
-        $database_path = $config->get('GeoIP', 'database_path');
-
-        if ($database_path === null) {
-            return $fallback;
-        }
-
-        $geoip = new \GeoIp2\Database\Reader($database_path);
-        $record = $geoip->country($ipAddr);
+        $record = $_msz_geoip->country($ipAddr);
 
         return $record->country->isoCode;
     } catch (\Exception $e) {
@@ -223,12 +195,12 @@ function pdo_prepare_array(array $keys, bool $useKeys = false, string $format = 
 
 function parse_markdown(string $text): string
 {
-    return \Misuzu\Parsers\MarkdownParser::getOrCreateInstance()->parseText($text);
+    return \Misuzu\Parsers\MarkdownParser::instance()->parseText($text);
 }
 
 function parse_bbcode(string $text): string
 {
-    return \Misuzu\Parsers\BBCode\BBCodeParser::getOrCreateInstance()->parseText($text);
+    return \Misuzu\Parsers\BBCode\BBCodeParser::instance()->parseText($text);
 }
 
 function render_error(int $code, string $template = 'errors.%d'): string

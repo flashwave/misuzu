@@ -89,7 +89,7 @@ function perms_get_user(string $prefix, int $user): int
     $permsAllow = 0;
     $permsDeny = 0;
 
-    $getPerms = Database::connection()->prepare("
+    $getPerms = Database::prepare("
         SELECT `{$prefix}_perms_allow` as `allow`, `{$prefix}_perms_deny` as `deny`
         FROM `msz_permissions`
         WHERE (`user_id` = :user_id_1 AND `role_id` IS NULL)
@@ -124,7 +124,7 @@ function perms_get_role(string $prefix, int $role): int
         return perms_get_cache($prefix, 'role', $user);
     }
 
-    $getPerms = Database::connection()->prepare("
+    $getPerms = Database::prepare("
         SELECT `{$prefix}_perms_allow` &~ `{$prefix}_perms_deny`
         FROM `msz_permissions`
         WHERE `role_id` = :role_id
@@ -142,7 +142,7 @@ function perms_get_user_raw(int $user): array
         return $emptyPerms;
     }
 
-    $getPerms = Database::connection()->prepare('
+    $getPerms = Database::prepare('
         SELECT
             `' . implode('`, `', perms_get_keys()) . '`
         FROM `msz_permissions`
@@ -172,7 +172,7 @@ function perms_get_role_raw(int $role): array
         return $emptyPerms;
     }
 
-    $getPerms = Database::connection()->prepare('
+    $getPerms = Database::prepare('
         SELECT
             `' . implode('`, `', perms_get_keys()) . '`
         FROM `msz_permissions`

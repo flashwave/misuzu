@@ -125,7 +125,7 @@ function user_profile_fields_set(int $userId, array $fields): array
     }
 
     if (count($values) > 0) {
-        $updateFields = Database::connection()->prepare('
+        $updateFields = Database::prepare('
             UPDATE `msz_users`
             SET ' . pdo_prepare_array_update($values, true) . '
             WHERE `user_id` = :user_id

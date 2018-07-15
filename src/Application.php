@@ -217,10 +217,28 @@ class Application extends ApplicationBase
     public function startDatabase(): void
     {
         if (Database::hasInstance()) {
-            throw new UnexpectedValueException('Database module has already been started.');
+            throw new UnexpectedValueException('Database has already been started.');
         }
 
         new Database($this->configInstance, self::DATABASE_CONNECTIONS[0]);
+    }
+
+    /**
+     * Sets up the caching stuff.
+     */
+    public function startCache(): void
+    {
+        if (Cache::hasInstance()) {
+            throw new UnexpectedValueException('Cache has already been started.');
+        }
+
+        new Cache(
+            $this->configInstance->get('Cache', 'host', 'string', null),
+            $this->configInstance->get('Cache', 'port', 'int', null),
+            $this->configInstance->get('Cache', 'database', 'int', null),
+            $this->configInstance->get('Cache', 'password', 'string', null),
+            $this->configInstance->get('Cache', 'prefix', 'string', '')
+        );
     }
 
     /**
