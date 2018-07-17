@@ -4,6 +4,7 @@ namespace Misuzu;
 date_default_timezone_set('UTC');
 
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/src/audit_log.php';
 require_once __DIR__ . '/src/changelog.php';
 require_once __DIR__ . '/src/colour.php';
 require_once __DIR__ . '/src/comments.php';

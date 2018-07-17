@@ -196,6 +196,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
 
                         $updateAccountFields['email'] = strtolower($_POST['email']['new']);
+
+                        audit_log('PERSONAL_EMAIL_CHANGE', $app->getUserId(), [
+                            $updateAccountFields['email'],
+                        ]);
                     }
 
                     if (!empty($_POST['password']['new'])) {
@@ -213,6 +217,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
 
                         $updateAccountFields['password'] = user_password_hash($_POST['password']['new']);
+
+                        audit_log('PERSONAL_PASSWORD_CHANGE', $app->getUserId());
                     }
 
                     if (count($updateAccountFields) > 0) {
@@ -311,6 +317,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             user_session_delete($session['session_id']);
+            audit_log('PERSONAL_SESSION_DESTROY', $app->getUserId(), [
+                $session['session_id'],
+            ]);
             break;
     }
 }

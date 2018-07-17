@@ -1,16 +1,22 @@
 <?php
 require_once __DIR__ . '/../../misuzu.php';
 
-$templating = $app->getTemplating();
+$generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $app->getUserId());
+$tpl = $app->getTemplating();
 
 switch ($_GET['v'] ?? null) {
     default:
     case 'overview':
-        echo $templating->render('@manage.general.overview');
+        echo $tpl->render('@manage.general.overview');
         break;
 
     case 'logs':
-        echo 'soon';
+        if (!perms_check($generalPerms, MSZ_GENERAL_PERM_VIEW_LOGS)) {
+            echo render_error(403);
+            break;
+        }
+
+        var_dump(audit_log_list(0, 20));
         break;
 
     case 'emoticons':
