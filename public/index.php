@@ -61,14 +61,8 @@ $changelog = Cache::instance()->get('index:changelog:v1', function () {
         FROM `msz_changelog_changes` as c
         LEFT JOIN `msz_changelog_actions` as a
         ON a.`action_id` = c.`action_id`
-        WHERE DATE(c.`change_created`) >= (
-            SELECT DATE(`change_created`)
-            FROM `msz_changelog_changes`
-            GROUP BY DATE(`change_created`)
-            ORDER BY `change_created` DESC
-            LIMIT 2, 1
-        )
         ORDER BY c.`change_created` DESC
+        LIMIT 10
     ')->fetchAll(PDO::FETCH_ASSOC);
 }, 1800);
 
