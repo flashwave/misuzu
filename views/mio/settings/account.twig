@@ -37,7 +37,16 @@
 
                             <label class="settings__account__input">
                                 <div class="settings__account__input__name">
-                                    New E-mail Address
+                                    Current e-mail address
+                                </div>
+                                <div class="settings__account__input__value">
+                                    <input type="text" class="input__text input__text--readonly settings__account__input__value__text" readonly value="{{ settings_email }}">
+                                </div>
+                            </label>
+
+                            <label class="settings__account__input">
+                                <div class="settings__account__input__name">
+                                    New e-mail Address
                                 </div>
                                 <div class="settings__account__input__value">
                                     <input type="text" name="email[new]" class="input__text settings__account__input__value__text">
