@@ -1,8 +1,17 @@
 <?php
+use Misuzu\Application;
 use Misuzu\Cache;
 use Misuzu\Database;
 
 require_once __DIR__ . '/../misuzu.php';
+
+/*if ($app->getUserId() === 1) {
+    $sMessage = new Swift_Message('Test e-mail!');
+    $sMessage->setFrom(['sys@flashii.net' => 'Flashii.net']);
+    $sMessage->setTo(['julianvdg@gmail.com' => 'flash']);
+    $sMessage->setBody('Misuzu and SwiftMailer are cool and cute.');
+    var_dump(Application::mailer()->send($sMessage));
+}*/
 
 $config = $app->getConfig();
 $tpl = $app->getTemplating();
