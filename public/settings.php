@@ -4,7 +4,6 @@ use Misuzu\IO\File;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$db = Database::connection();
 $tpl = $app->getTemplating();
 
 $queryOffset = (int)($_GET['o'] ?? 0);
@@ -148,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ) {
                     $updateAccountFields = [];
 
-                    $fetchPassword = $db->prepare('
+                    $fetchPassword = Database::prepare('
                         SELECT `password`
                         FROM `msz_users`
                         WHERE `user_id` = :user_id
@@ -196,6 +195,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
 
                         $updateAccountFields['email'] = strtolower($_POST['email']['new']);
+
+                        audit_log('PERSONAL_EMAIL_CHANGE', $app->getUserId(), [
+                            $updateAccountFields['email'],
+                        ]);
                     }
 
                     if (!empty($_POST['password']['new'])) {
@@ -213,10 +216,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
 
                         $updateAccountFields['password'] = user_password_hash($_POST['password']['new']);
+
+                        audit_log('PERSONAL_PASSWORD_CHANGE', $app->getUserId());
                     }
 
                     if (count($updateAccountFields) > 0) {
-                        $updateUser = $db->prepare('
+                        $updateUser = Database::prepare('
                             UPDATE `msz_users`
                             SET ' . pdo_prepare_array_update($updateAccountFields, true) . '
                             WHERE `user_id` = :user_id
@@ -292,7 +297,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
             }
 
-            $findSession = $db->prepare('
+            $findSession = Database::prepare('
                 SELECT `session_id`, `user_id`
                 FROM `msz_sessions`
                 WHERE `session_id` = :session_id
@@ -311,6 +316,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             user_session_delete($session['session_id']);
+            audit_log('PERSONAL_SESSION_DESTROY', $app->getUserId(), [
+                $session['session_id'],
+            ]);
             break;
     }
 }
@@ -321,7 +329,7 @@ $tpl->var('settings_errors', $settingsErrors);
 switch ($settingsMode) {
     case 'account':
         $profileFields = user_profile_fields_get();
-        $getUserFields = $db->prepare('
+        $getUserFields = Database::prepare('
             SELECT ' . pdo_prepare_array($profileFields, true, '`user_%s`') . '
             FROM `msz_users`
             WHERE `user_id` = :user_id
@@ -329,10 +337,19 @@ switch ($settingsMode) {
         $getUserFields->bindValue('user_id', $app->getUserId());
         $userFields = $getUserFields->execute() ? $getUserFields->fetch() : [];
 
+        $getMail = Database::prepare('
+            SELECT `email`
+            FROM `msz_users`
+            WHERE `user_id` = :user_id
+        ');
+        $getMail->bindValue('user_id', $app->getUserId());
+        $currentEmail = $getMail->execute() ? $getMail->fetchColumn() : 'Failed to fetch e-mail address.';
+
         $tpl->vars([
             'settings_profile_fields' => $profileFields,
             'settings_profile_values' => $userFields,
             'settings_disable_account_options' => $disableAccountOptions,
+            'settings_email' => $currentEmail,
         ]);
         break;
 
@@ -348,7 +365,7 @@ switch ($settingsMode) {
         break;
 
     case 'sessions':
-        $getSessionCount = $db->prepare('
+        $getSessionCount = Database::prepare('
             SELECT COUNT(`session_id`)
             FROM `msz_sessions`
             WHERE `user_id` = :user_id
@@ -356,7 +373,7 @@ switch ($settingsMode) {
         $getSessionCount->bindValue('user_id', $app->getUserId());
         $sessionCount = $getSessionCount->execute() ? $getSessionCount->fetchColumn() : 0;
 
-        $getSessions = $db->prepare('
+        $getSessions = Database::prepare('
             SELECT
                 `session_id`, `session_country`, `user_agent`, `created_at`, `expires_on`,
                 INET6_NTOA(`session_ip`) as `session_ip_decoded`
@@ -380,7 +397,7 @@ switch ($settingsMode) {
         break;
 
     case 'login-history':
-        $getLoginAttemptsCount = $db->prepare('
+        $getLoginAttemptsCount = Database::prepare('
             SELECT COUNT(`attempt_id`)
             FROM `msz_login_attempts`
             WHERE `user_id` = :user_id
@@ -388,7 +405,7 @@ switch ($settingsMode) {
         $getLoginAttemptsCount->bindValue('user_id', $app->getUserId());
         $loginAttemptsCount = $getLoginAttemptsCount->execute() ? $getLoginAttemptsCount->fetchColumn() : 0;
 
-        $getLoginAttempts = $db->prepare('
+        $getLoginAttempts = Database::prepare('
             SELECT
                 `attempt_id`, `attempt_country`, `was_successful`, `user_agent`, `created_at`,
                 INET6_NTOA(`attempt_ip`) as `attempt_ip_decoded`

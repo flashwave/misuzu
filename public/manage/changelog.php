@@ -113,8 +113,12 @@ switch ($_GET['v'] ?? null) {
                 $postChange->execute();
 
                 if ($changeId < 1) {
-                    header('Location: ?v=change&c=' . Database::lastInsertId());
+                    $changeId = Database::lastInsertId();
+                    audit_log('CHANGELOG_ENTRY_CREATE', $app->getUserId(), [$changeId]);
+                    header('Location: ?v=change&c=' . $changeId);
                     return;
+                } else {
+                    audit_log('CHANGELOG_ENTRY_EDIT', $app->getUserId(), [$changeId]);
                 }
             }
 
@@ -122,7 +126,13 @@ switch ($_GET['v'] ?? null) {
                 $addTag = Database::prepare('REPLACE INTO `msz_changelog_change_tags` VALUES (:change_id, :tag_id)');
                 $addTag->bindValue('change_id', $changeId);
                 $addTag->bindValue('tag_id', $_POST['add_tag']);
-                $addTag->execute();
+
+                if ($addTag->execute()) {
+                    audit_log('CHANGELOG_TAG_ADD', $app->getUserId(), [
+                        $changeId,
+                        $_POST['add_tag']
+                    ]);
+                }
             }
 
             if (!empty($_POST['remove_tag']) && is_numeric($_POST['remove_tag'])) {
@@ -133,7 +143,13 @@ switch ($_GET['v'] ?? null) {
                 ');
                 $removeTag->bindValue('change_id', $changeId);
                 $removeTag->bindValue('tag_id', $_POST['remove_tag']);
-                $removeTag->execute();
+
+                if ($removeTag->execute()) {
+                    audit_log('CHANGELOG_TAG_REMOVE', $app->getUserId(), [
+                        $changeId,
+                        $_POST['remove_tag']
+                    ]);
+                }
             }
         }
 
@@ -267,8 +283,12 @@ switch ($_GET['v'] ?? null) {
                 $updateTag->execute();
 
                 if ($tagId < 1) {
-                    header('Location: ?v=tag&t=' . Database::lastInsertId());
+                    $tagId = Database::lastInsertId();
+                    audit_log('CHANGELOG_TAG_EDIT', $app->getUserId(), [$tagId]);
+                    header('Location: ?v=tag&t=' . $tagId);
                     return;
+                } else {
+                    audit_log('CHANGELOG_TAG_CREATE', $app->getUserId(), [$tagId]);
                 }
             }
         }
@@ -374,8 +394,12 @@ switch ($_GET['v'] ?? null) {
                 $updateAction->execute();
 
                 if ($actionId < 1) {
-                    header('Location: ?v=action&a=' . Database::lastInsertId());
+                    $actionId = Database::lastInsertId();
+                    audit_log('CHANGELOG_ACTION_CREATE', $app->getUserId(), [$actionId]);
+                    header('Location: ?v=action&a=' . $actionId);
                     return;
+                } else {
+                    audit_log('CHANGELOG_ACTION_EDIT', $app->getUserId(), [$actionId]);
                 }
             }
         }

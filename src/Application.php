@@ -8,6 +8,10 @@ use Misuzu\IO\DirectoryDoesNotExistException;
 use Misuzu\Users\Session;
 use UnexpectedValueException;
 use InvalidArgumentException;
+use Swift_Mailer;
+use Swift_NullTransport;
+use Swift_SmtpTransport;
+use Swift_SendmailTransport;
 
 /**
  * Handles the set up procedures.
@@ -26,6 +30,12 @@ class Application extends ApplicationBase
      */
     private const DATABASE_CONNECTIONS = [
         'mysql-main',
+    ];
+
+    private const MAIL_TRANSPORT = [
+        'null' => Swift_NullTransport::class,
+        'smtp' => Swift_SmtpTransport::class,
+        'sendmail' => Swift_SendmailTransport::class,
     ];
 
     /**
@@ -51,6 +61,8 @@ class Application extends ApplicationBase
      * @var \Misuzu\TemplateEngine
      */
     private $templatingInstance = null;
+
+    private $mailerInstance = null;
 
     /**
      * Constructor, called by ApplicationBase::start() which also passes the arguments through.
@@ -273,8 +285,8 @@ class Application extends ApplicationBase
         $this->templatingInstance->addFilter('colour_get_red');
         $this->templatingInstance->addFilter('colour_get_green');
         $this->templatingInstance->addFilter('colour_get_blue');
-        $this->templatingInstance->addFilter('md', 'parse_markdown');
-        $this->templatingInstance->addFilter('bbcode', 'parse_bbcode');
+        $this->templatingInstance->addFilter('parse_line');
+        $this->templatingInstance->addFilter('parse_text');
 
         $this->templatingInstance->addFunction('git_commit_hash');
         $this->templatingInstance->addFunction('git_branch');
@@ -295,5 +307,66 @@ class Application extends ApplicationBase
         }
 
         return $this->templatingInstance;
+    }
+
+    public function startMailer(): void
+    {
+        if (!empty($this->mailerInstance)) {
+            return;
+        }
+
+        if ($this->configInstance->contains('Mail')) {
+            $method = strtolower($this->configInstance->get('Mail', 'method'));
+        }
+
+        if (empty($method) || !array_key_exists($method, self::MAIL_TRANSPORT)) {
+            $method = 'null';
+        }
+
+        $class = self::MAIL_TRANSPORT[$method];
+        $transport = new $class;
+
+        switch ($method) {
+            case 'sendmail':
+                if ($this->configInstance->contains('Mail', 'command')) {
+                    $transport->setCommand(
+                        $this->configInstance->get('Mail', 'command')
+                    );
+                }
+                break;
+
+            case 'smtp':
+                $transport->setHost($this->configInstance->get('Mail', 'host'));
+                $transport->setPort($this->configInstance->get('Mail', 'port', 'int', 25));
+
+                if ($this->configInstance->contains('Mail', 'encryption')) {
+                    $transport->setEncryption($this->configInstance->get('Mail', 'encryption'));
+                }
+
+                if ($this->configInstance->contains('Mail', 'username')) {
+                    $transport->setUsername($this->configInstance->get('Mail', 'username'));
+                }
+
+                if ($this->configInstance->contains('Mail', 'password')) {
+                    $transport->setPassword($this->configInstance->get('Mail', 'password'));
+                }
+                break;
+        }
+
+        $this->mailerInstance = new Swift_Mailer($transport);
+    }
+
+    public function getMailer(): Swift_Mailer
+    {
+        if (empty($this->mailerInstance)) {
+            $this->startMailer();
+        }
+
+        return $this->mailerInstance;
+    }
+
+    public static function mailer(): Swift_Mailer
+    {
+        return self::getInstance()->getMailer();
     }
 }

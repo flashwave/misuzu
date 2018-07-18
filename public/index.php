@@ -1,8 +1,17 @@
 <?php
+use Misuzu\Application;
 use Misuzu\Cache;
 use Misuzu\Database;
 
 require_once __DIR__ . '/../misuzu.php';
+
+/*if ($app->getUserId() === 1) {
+    $sMessage = new Swift_Message('Test e-mail!');
+    $sMessage->setFrom(['sys@flashii.net' => 'Flashii.net']);
+    $sMessage->setTo(['julianvdg@gmail.com' => 'flash']);
+    $sMessage->setBody('Misuzu and SwiftMailer are cool and cute.');
+    var_dump(Application::mailer()->send($sMessage));
+}*/
 
 $config = $app->getConfig();
 $tpl = $app->getTemplating();
@@ -61,14 +70,8 @@ $changelog = Cache::instance()->get('index:changelog:v1', function () {
         FROM `msz_changelog_changes` as c
         LEFT JOIN `msz_changelog_actions` as a
         ON a.`action_id` = c.`action_id`
-        WHERE DATE(c.`change_created`) >= (
-            SELECT DATE(`change_created`)
-            FROM `msz_changelog_changes`
-            GROUP BY DATE(`change_created`)
-            ORDER BY `change_created` DESC
-            LIMIT 2, 1
-        )
         ORDER BY c.`change_created` DESC
+        LIMIT 10
     ')->fetchAll(PDO::FETCH_ASSOC);
 }, 1800);
 

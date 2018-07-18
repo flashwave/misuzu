@@ -291,9 +291,9 @@
             </div>
             <div class="forum__post__content__text">
                 {% if post.post_parse == 2 %}
-                    {{ post.post_text|escape|md|raw }}
+                    {{ post.post_text|escape|parse_text('md')|raw }}
                 {% elseif post.post_parse == 1 %}
-                    {{ post.post_text|escape|bbcode|raw }}
+                    {{ post.post_text|escape|parse_text('bb')|raw }}
                 {% else %}
                     {{ post.post_text|escape }}
                 {% endif %}

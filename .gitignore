@@ -8,8 +8,7 @@
 /config/config.ini
 
 # Storage
-/store/*
-!/store/.gitkeep
+/store
 
 # OS specific
 [Tt]humbs.db

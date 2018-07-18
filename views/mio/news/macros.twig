@@ -6,7 +6,7 @@
 
         <div class="container__content news__preview__content">
             <div class="news__preview__text">
-                {{ post.post_text|first_paragraph|md|raw }}
+                {{ post.post_text|first_paragraph|parse_text('md')|raw }}
             </div>
 
             <div class="news__preview__info">

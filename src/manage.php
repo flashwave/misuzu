@@ -28,11 +28,11 @@ function manage_get_menu(int $userId): array
         $menu['General'][] = '_';
 
         if (perms_check($perms['general'], MSZ_GENERAL_PERM_MANAGE_EMOTICONS)) {
-            $menu['General']['Emoticons'] = '/manage/users.php?v=emoticons';
+            $menu['General']['Emoticons'] = '/manage/index.php?v=emoticons';
         }
 
         if (perms_check($perms['general'], MSZ_GENERAL_PERM_MANAGE_SETTINGS)) {
-            $menu['General']['Settings'] = '/manage/users.php?v=settings';
+            $menu['General']['Settings'] = '/manage/index.php?v=settings';
         }
     }
 
