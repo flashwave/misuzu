@@ -21,7 +21,7 @@ if ($postId !== null) {
             p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
             c.`category_id`, c.`category_name`,
             u.`user_id`, u.`username`,
-            COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`
+            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
         FROM `msz_news_posts` as p
         LEFT JOIN `msz_news_categories` as c
         ON p.`category_id` = c.`category_id`
@@ -67,7 +67,7 @@ if ($categoryId !== null) {
             p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
             c.`category_id`, c.`category_name`,
             u.`user_id`, u.`username`,
-            COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`
+            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
         FROM `msz_news_posts` as p
         LEFT JOIN `msz_news_categories` as c
         ON p.`category_id` = c.`category_id`
@@ -133,7 +133,7 @@ $getPosts = Database::prepare('
         p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
         c.`category_id`, c.`category_name`,
         u.`user_id`, u.`username`,
-        COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`
+        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
     FROM `msz_news_posts` as p
     LEFT JOIN `msz_news_categories` as c
     ON p.`category_id` = c.`category_id`

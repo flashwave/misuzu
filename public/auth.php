@@ -117,15 +117,6 @@ switch ($authMode) {
             set_cookie_m('uid', $userId, $cookieLife);
             set_cookie_m('sid', $sessionKey, $cookieLife);
 
-            if (strpos($_SERVER['HTTP_HOST'], 'flashii.net') !== false) {
-                $chatKey = user_generate_chat_key($userId);
-
-                if ($chatKey !== '') {
-                    setcookie('msz_tmp_id', $userId, $cookieLife, '/', '.flashii.net');
-                    setcookie('msz_tmp_key', $chatKey, $cookieLife, '/', '.flashii.net');
-                }
-            }
-
             header('Location: /');
             return;
         }

@@ -49,7 +49,7 @@ define('MSZ_CHANGELOG_GET_QUERY', '
         u.`user_id`, u.`username`,
         DATE(`change_created`) as `change_date`,
         !ISNULL(c.`change_text`) as `change_has_text`,
-        COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`
+        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
     FROM `msz_changelog_changes` as c
     LEFT JOIN `msz_users` as u
     ON u.`user_id` = c.`user_id`

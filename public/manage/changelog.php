@@ -28,7 +28,7 @@ switch ($_GET['v'] ?? null) {
                 c.`change_id`, c.`change_log`, c.`change_created`,
                 a.`action_name`, a.`action_colour`, a.`action_class`,
                 u.`user_id`, u.`username`,
-                COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`
+                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
             FROM `msz_changelog_changes` as c
             LEFT JOIN `msz_changelog_actions` as a
             ON a.`action_id` = c.`action_id`

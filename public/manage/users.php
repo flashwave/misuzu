@@ -33,7 +33,7 @@ switch ($_GET['v'] ?? null) {
         $getManageUsers = Database::prepare('
             SELECT
                 u.`user_id`, u.`username`,
-                COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `colour`
+                COALESCE(u.`user_colour`, r.`role_colour`) as `colour`
             FROM `msz_users` as u
             LEFT JOIN `msz_roles` as r
             ON u.`display_role` = r.`role_id`
@@ -70,7 +70,7 @@ switch ($_GET['v'] ?? null) {
                 u.*,
                 INET6_NTOA(u.`register_ip`) as `register_ip_decoded`,
                 INET6_NTOA(u.`last_ip`) as `last_ip_decoded`,
-                COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `colour`
+                COALESCE(u.`user_colour`, r.`role_colour`) as `colour`
             FROM `msz_users` as u
             LEFT JOIN `msz_roles` as r
             ON u.`display_role` = r.`role_id`
@@ -149,6 +149,35 @@ switch ($_GET['v'] ?? null) {
                 user_avatar_delete($manageUser['user_id']);
             } elseif (!empty($_FILES['avatar'])) {
                 user_avatar_set_from_path($manageUser['user_id'], $_FILES['avatar']['tmp_name']['file']);
+            }
+
+            if (!empty($_POST['colour']) && is_array($_POST['colour'])) {
+                $userColour = null;
+
+                if (!empty($_POST['colour']['enable'])) {
+                    $userColour = colour_create();
+
+                    foreach (['red', 'green', 'blue'] as $key) {
+                        $value = (int)($_POST['colour'][$key] ?? -1);
+                        $func = 'colour_set_' . ucfirst($key);
+
+                        if ($value < 0 || $value > 0xFF) {
+                            echo 'invalid colour value';
+                            break 2;
+                        }
+
+                        $func($userColour, $value);
+                    }
+                }
+
+                $updateUserColour = Database::prepare('
+                    UPDATE `msz_users`
+                    SET `user_colour` = :colour
+                    WHERE `user_id` = :user_id
+                ');
+                $updateUserColour->bindValue('colour', $userColour);
+                $updateUserColour->bindValue('user_id', $userId);
+                $updateUserColour->execute();
             }
 
             if (!empty($_POST['password'])
@@ -276,7 +305,7 @@ switch ($_GET['v'] ?? null) {
         $roleId = $_GET['r'] ?? null;
 
         if ($canManagePerms) {
-            $tpl->var('permissions', $permissions = manage_perms_list(perms_get_role_raw($roleId)));
+            $tpl->var('permissions', $permissions = manage_perms_list(perms_get_role_raw($roleId ?? 0)));
         }
 
         if ($isPostRequest) {

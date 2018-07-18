@@ -5,14 +5,6 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../misuzu.php';
 
-/*if ($app->getUserId() === 1) {
-    $sMessage = new Swift_Message('Test e-mail!');
-    $sMessage->setFrom(['sys@flashii.net' => 'Flashii.net']);
-    $sMessage->setTo(['julianvdg@gmail.com' => 'flash']);
-    $sMessage->setBody('Misuzu and SwiftMailer are cool and cute.');
-    var_dump(Application::mailer()->send($sMessage));
-}*/
-
 $config = $app->getConfig();
 $tpl = $app->getTemplating();
 
@@ -30,7 +22,7 @@ $news = Database::query('
     SELECT
         p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
         u.`user_id`, u.`username`,
-        COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`
+        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
     FROM `msz_news_posts` as p
     LEFT JOIN `msz_users` as u
     ON p.`user_id` = u.`user_id`
@@ -50,7 +42,7 @@ $statistics = Cache::instance()->get('index:stats:v1', function () {
         'lastUser' => Database::query('
             SELECT
                 u.`user_id`, u.`username`, u.`created_at`,
-                COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`
+                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
             FROM `msz_users` as u
             LEFT JOIN `msz_roles` as r
             ON r.`role_id` = u.`display_role`
