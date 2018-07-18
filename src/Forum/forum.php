@@ -178,7 +178,7 @@ define('MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD', '
         p.`post_created` as `recent_post_created`,
         u.`user_id` as `recent_post_user_id`,
         u.`username` as `recent_post_username`,
-        COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `recent_post_user_colour`,
+        COALESCE(u.`user_colour`, r.`role_colour`) as `recent_post_user_colour`,
         (
             SELECT COUNT(`topic_id`)
             FROM `msz_forum_topics`

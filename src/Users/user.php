@@ -48,23 +48,6 @@ function user_password_hash(string $password): string
     return password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO);
 }
 
-// Temporary key generation for chat login.
-// Should eventually be replaced with a callback login system.
-function user_generate_chat_key(int $userId): string
-{
-    $chatKey = bin2hex(random_bytes(16));
-
-    $setChatKey = Database::prepare('
-        UPDATE `msz_users`
-        SET `user_chat_key` = :user_chat_key
-        WHERE `user_id` = :user_id
-    ');
-    $setChatKey->bindValue('user_chat_key', $chatKey);
-    $setChatKey->bindValue('user_id', $userId);
-
-    return $setChatKey->execute() ? $chatKey : '';
-}
-
 define('MSZ_USER_AVATAR_FORMAT', '%d.msz');
 
 function user_avatar_delete(int $userId): void

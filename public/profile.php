@@ -46,7 +46,7 @@ switch ($mode) {
             SELECT
                 u.*,
                 COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
-                COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`,
+                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
                 (
                     SELECT COUNT(`topic_id`)
                     FROM `msz_forum_topics`
