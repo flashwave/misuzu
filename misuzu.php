@@ -137,6 +137,45 @@ if (PHP_SAPI === 'cli') {
                 }
                 break;
 
+            case 'new-mig':
+                if (empty($argv[2])) {
+                    echo 'Specify a migration name.' . PHP_EOL;
+                    return;
+                }
+
+                if (!preg_match('#^([a-z_]+)$#', $argv[2])) {
+                    echo 'Migration name may only contain alpha and _ characters.' . PHP_EOL;
+                    return;
+                }
+
+                $filename = date('Y_m_d_His_') . trim($argv[2], '_') . '.php';
+                $filepath = __DIR__ . '/database/' . $filename;
+                $namespace = snake_to_camel($argv[2]);
+                $template = <<<MIG
+<?php
+namespace Misuzu\DatabaseMigrations\\$namespace;
+
+use PDO;
+
+function migrate_up(PDO \$conn): void
+{
+    \$conn->exec('
+        CREATE TABLE ...
+    ');
+}
+
+function migrate_down(PDO \$conn): void
+{
+    \$conn->exec('DROP TABLE ...');
+}
+
+MIG;
+
+                file_put_contents($filepath, $template);
+
+                echo "Template for '{$namespace}' has been created." . PHP_EOL;
+                break;
+
             default:
                 echo 'Unknown command.' . PHP_EOL;
                 break;

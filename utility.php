@@ -303,3 +303,13 @@ function url_construct(string $path, array $query = [], string $host = ''): stri
 
     return substr($url, 0, -1);
 }
+
+function camel_to_snake(string $camel): string
+{
+    return trim(strtolower(preg_replace('#([A-Z][a-z]+)#', '$1_', $camel)), '_');
+}
+
+function snake_to_camel(string $snake): string
+{
+    return str_replace('_', '', ucwords($snake, '_'));
+}
