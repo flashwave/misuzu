@@ -20,6 +20,10 @@ define('MSZ_PERM_SETS', [
     MSZ_PERMS_ALLOW, MSZ_PERMS_DENY
 ]);
 
+// phpcs:disable
+$_msz_perms_cache = [];
+// phpcs:enable
+
 function perms_construct_cache_key(string $prefix, string $mode, int $pid): string
 {
     return $prefix . '_' . $mode . '_' . $pid;
