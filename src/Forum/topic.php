@@ -88,12 +88,12 @@ define('MSZ_TOPIC_LISTING_QUERY_STANDARD', '
         :user_id as `target_user_id`,
         t.`topic_id`, t.`topic_title`, t.`topic_locked`, t.`topic_type`, t.`topic_created`,
         au.`user_id` as `author_id`, au.`username` as `author_name`,
-        COALESCE(ar.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `author_colour`,
+        COALESCE(au.`user_colour`, ar.`role_colour`) as `author_colour`,
         lp.`post_id` as `response_id`,
         lp.`post_created` as `response_created`,
         lu.`user_id` as `respondent_id`,
         lu.`username` as `respondent_name`,
-        COALESCE(lr.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `respondent_colour`,
+        COALESCE(lu.`user_colour`, lr.`role_colour`) as `respondent_colour`,
         (
             SELECT COUNT(`post_id`)
             FROM `msz_forum_posts`

@@ -39,7 +39,7 @@ function audit_log_list(int $offset, int $take, int $userId = 0): array
             l.`log_id`, l.`log_action`, l.`log_params`, l.`log_created`,
             u.`user_id`, u.`username`,
             INET6_NTOA(l.`log_ip`) as `log_ip`,
-            COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`
+            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
         FROM `msz_audit_log` as l
         LEFT JOIN `msz_users` as u
         ON u.`user_id` = l.`user_id`

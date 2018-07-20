@@ -221,7 +221,7 @@ MIG;
             $getUserDisplayInfo = Database::prepare('
                 SELECT
                     u.`user_id`, u.`username`,
-                    COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `colour`
+                    COALESCE(u.`user_colour`, r.`role_colour`) as `colour`
                 FROM `msz_users` as u
                 LEFT JOIN `msz_roles` as r
                 ON u.`display_role` = r.`role_id`

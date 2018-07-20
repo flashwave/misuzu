@@ -69,7 +69,7 @@ define('MSZ_FORUM_POST_LISTING_QUERY_STANDARD', '
         u.`user_id` as `poster_id`,
         u.`username` as `poster_name`,
         u.`created_at` as `poster_joined`,
-        COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `poster_colour`
+        COALESCE(u.`user_colour`, r.`role_colour`) as `poster_colour`
     FROM `msz_forum_posts` as p
     LEFT JOIN `msz_users` as u
     ON u.`user_id` = p.`user_id`

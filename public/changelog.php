@@ -26,7 +26,7 @@ if ($changelogChange > 0) {
             u.`user_id`, u.`username`,
             DATE(`change_created`) as `change_date`,
             COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
-            COALESCE(r.`role_colour`, CAST(0x40000000 AS UNSIGNED)) as `user_colour`
+            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
         FROM `msz_changelog_changes` as c
         LEFT JOIN `msz_users` as u
         ON u.`user_id` = c.`user_id`
