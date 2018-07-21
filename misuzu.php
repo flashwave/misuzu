@@ -182,7 +182,12 @@ MIG;
         }
     }
 } else {
-    ob_start($app->inDebugMode() ? null : 'ob_gzhandler');
+    if (!$app->inDebugMode()) {
+        ob_start('ob_gzhandler');
+    }
+
+    // we're running this again because ob_clean breaks gzip otherwise
+    ob_start();
 
     $storage_dir = $app->getStoragePath();
     if (!$storage_dir->isReadable()

@@ -15,14 +15,13 @@ function colour_none(): int
     return MSZ_COLOUR_INHERIT;
 }
 
-function colour_set_inherit(int &$colour): void
+function colour_set_inherit(int &$colour, bool $enabled = true): void
 {
-    $colour |= MSZ_COLOUR_INHERIT;
-}
-
-function colour_unset_inherit(int &$colour): void
-{
-    $colour &= ~MSZ_COLOUR_INHERIT;
+    if ($enabled) {
+        $colour |= MSZ_COLOUR_INHERIT;
+    } else {
+        $colour &= ~MSZ_COLOUR_INHERIT;
+    }
 }
 
 function colour_get_inherit(int $colour): bool

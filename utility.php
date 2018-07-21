@@ -9,6 +9,17 @@ function ends_with(string $string, string $text): bool
     return substr($string, 0 - strlen($text)) === $text;
 }
 
+function array_test(array $array, callable $func): bool
+{
+    foreach ($array as $value) {
+        if (!$func($value)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 function set_cookie_m(string $name, string $value, int $expires): void
 {
     setcookie(

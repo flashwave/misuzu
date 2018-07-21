@@ -62,7 +62,9 @@ if ($changelogChange > 0) {
 if (!empty($changelogDate)) {
     $dateParts = explode('-', $changelogDate, 3);
 
-    if (count($dateParts) !== 3 || !checkdate($dateParts[1], $dateParts[2], $dateParts[0])) {
+    if (count($dateParts) !== 3
+        || !array_test($dateParts, 'is_numeric')
+        || !checkdate($dateParts[1], $dateParts[2], $dateParts[0])) {
         echo render_error(404);
         return;
     }
