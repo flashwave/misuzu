@@ -1,11 +1,22 @@
+@mio-index-mobile: 700px;
+
 .index {
     display: flex;
     flex-direction: row-reverse;
+
+    @media (max-width: @mio-index-mobile) {
+        flex-direction: column-reverse;
+    }
 
     &__sidebar {
         width: 300px;
         margin-left: 2px;
         flex: 0 0 auto;
+
+        @media (max-width: @mio-index-mobile) {
+            width: 100%;
+            margin-left: 0;
+        }
     }
 
     &__main {
