@@ -64,6 +64,8 @@ class Application extends ApplicationBase
 
     private $mailerInstance = null;
 
+    private $startupTime = 0;
+
     /**
      * Constructor, called by ApplicationBase::start() which also passes the arguments through.
      * @param null|string $configFile
@@ -71,6 +73,7 @@ class Application extends ApplicationBase
      */
     public function __construct(?string $configFile = null, bool $debug = false)
     {
+        $this->startupTime = microtime(true);
         parent::__construct();
         $this->debugMode = $debug;
         $this->configInstance = new ConfigManager($configFile);
@@ -80,6 +83,11 @@ class Application extends ApplicationBase
             $this->configInstance->get('Exceptions', 'report_url', 'string', null),
             $this->configInstance->get('Exceptions', 'hash_key', 'string', null)
         );
+    }
+
+    public function getTimeSinceStart(): float
+    {
+        return microtime(true) - $this->startupTime;
     }
 
     /**
@@ -287,6 +295,7 @@ class Application extends ApplicationBase
         $this->templatingInstance->addFilter('colour_get_blue');
         $this->templatingInstance->addFilter('parse_line');
         $this->templatingInstance->addFilter('parse_text');
+        $this->templatingInstance->addFilter('asset_url');
 
         $this->templatingInstance->addFunction('git_commit_hash');
         $this->templatingInstance->addFunction('git_branch');

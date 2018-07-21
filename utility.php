@@ -44,6 +44,17 @@ function check_mx_record(string $email): bool
     return checkdnsrr($domain, 'MX') || checkdnsrr($domain, 'A');
 }
 
+function asset_url(string $path): string
+{
+    $realPath = realpath(__DIR__ . '/public/' . $path);
+
+    if ($realPath === false) {
+        return $path;
+    }
+
+    return $path . '?' . filemtime($realPath);
+}
+
 function dechex_pad(int $value, int $padding = 2): string
 {
     return str_pad(dechex($value), $padding, '0', STR_PAD_LEFT);

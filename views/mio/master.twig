@@ -15,8 +15,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         {% include '@mio/_layout/meta.twig' %}
         <link href="https://static.flash.moe/fonts/visitor/visitor1.css" rel="stylesheet">
-        <link href="/css/mio.css" rel="stylesheet">
-        <link href="/css/libraries.css" rel="stylesheet">
+        <link href="{{ '/css/mio.css'|asset_url }}" rel="stylesheet">
+        <link href="{{ '/css/libraries.css'|asset_url }}" rel="stylesheet">
     </head>
     <body class="mio">
         <div class="mio__wrapper">
@@ -72,6 +72,7 @@
                     # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__copyright__link') }}
                     {% if query_count is defined %}
                         / SQL Queries: {{ query_count|number_format }}
+                        / Took: {{ app.timeSinceStart|number_format(5) }} seconds
                     {% endif %}
                 </div>
 
@@ -85,7 +86,7 @@
                 {% endautoescape %}
             </footer>
         </div>
-        <script src="/js/libraries.js" charset="utf-8"></script>
+        <script src="{{ '/js/libraries.js'|asset_url }}" charset="utf-8"></script>
         <script>
             window.addEventListener('load', () => {
                 timeago().render(document.querySelectorAll('time'));
