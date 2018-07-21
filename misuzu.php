@@ -82,6 +82,12 @@ if (PHP_SAPI === 'cli') {
                     WHERE `expires_on` < NOW()
                 ');
 
+                // Remove old password reset records, left for a week for possible review
+                Database::exec('
+                    DELETE FROM `msz_users_password_resets`
+                    WHERE `reset_requested` < NOW() - INTERVAL 1 WEEK
+                ');
+
                 // Cleans up the login history table
                 Database::exec('
                     DELETE FROM `msz_login_attempts`

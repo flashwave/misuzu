@@ -10,13 +10,16 @@
                     <label class="form__row">
                         <input class="text text--username" type="text" name="username" placeholder="username" value="{{ auth_username|default('') }}" required>
                     </label>
+
                     <label class="form__row">
                         <input class="text text--password" type="password" name="password" placeholder="password" required>
                     </label>
+
                     <div class="form__row form__row--columns">
                         <div class="form__column form__column--message{% if auth_login_error is defined %} form__column--error{% endif %}">
                             {{ auth_login_message|default(auth_login_error|default('')) }}
                         </div>
+
                         <div class="form__column">
                             <button class="button button--login">Login</button>
                         </div>
@@ -38,12 +41,15 @@
                         <label class="form__row">
                             <input class="text text--username" type="text" name="username" placeholder="username" value="{{ auth_username|default('') }}" required>
                         </label>
+
                         <label class="form__row">
                             <input class="text text--password" type="password" name="password" placeholder="password" required>
                         </label>
+
                         <label class="form__row">
                             <input class="text text--email" type="text" name="email" placeholder="e-mail" value="{{ auth_email|default('') }}" required>
                         </label>
+
                         <div class="form__row form__row--columns">
                             <div class="form__column form__column--message{% if auth_register_error is defined %} form__column--error{% endif %}">
                                 {{ auth_register_message|default(auth_register_error|default('')) }}
@@ -57,24 +63,25 @@
             </div>
         </div>
 
-        {# <div class="form__wrapper">
-            <input class="form__toggle" id="_authmode_restore" type="radio" name="_authmode"{% if auth_mode == 'restore' %} checked{% endif %}>
-            <div class="form form--restore">
-                <label class="form__title" for="_authmode_restore">Forgot login details</label>
-                <form class="form__content" method="post" action="?m=restore">
+        <div class="form__wrapper">
+            <input class="form__toggle" id="_authmode_forgot" type="radio" name="_authmode"{% if auth_mode == 'forgot' %} checked{% endif %}>
+            <div class="form form--forgot">
+                <label class="form__title" for="_authmode_forgot">Forgot your password</label>
+                <form class="form__content" method="post" action="?m=forgot">
                     <label class="form__row">
                         <input class="text text--email" type="text" name="email" placeholder="e-mail" value="{{ auth_email|default('') }}" required>
                     </label>
+
                     <div class="form__row form__row--columns">
-                        <div class="form__column form__column--message{% if auth_restore_error is defined %} form__column--error{% endif %}">
-                            {{ auth_restore_message|default(auth_restore_error|default('')) }}
+                        <div class="form__column form__column--message{% if auth_forgot_error is defined %} form__column--error{% endif %}">
+                            {{ auth_forgot_message|default(auth_forgot_error|default('')) }}
                         </div>
                         <div class="form__column">
-                            <button class="button button--restore">Send reminder</button>
+                            <button class="button button--forgot">Send reminder</button>
                         </div>
                     </div>
                 </form>
             </div>
-        </div> #}
+        </div>
     </div>
 {% endblock %}
