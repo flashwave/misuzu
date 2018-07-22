@@ -4,8 +4,8 @@
         <meta charset="utf-8">
         <title>{{ globals.site_name|default('The') }} Broom Closet</title>
         <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-        <link href="/css/manage.css" rel="stylesheet">
-        <link href="/css/libraries.css" rel="stylesheet">
+        <link href="{{ '/css/manage.css'|asset_url }}" rel="stylesheet">
+        <link href="{{ '/css/libraries.css'|asset_url }}" rel="stylesheet">
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body class="manage">
@@ -72,7 +72,7 @@
                 {% endif %}
             </footer>
         </div>
-        <script src="/js/libraries.js" charset="utf-8"></script>
+        <script src="{{ '/js/libraries.js'|asset_url }}" charset="utf-8"></script>
         <script>
             window.addEventListener('load', () => {
                 timeago().render(document.querySelectorAll('time'));
