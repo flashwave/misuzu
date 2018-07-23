@@ -293,8 +293,10 @@ function html_link(string $url, ?string $content = null, $attributes = []): stri
     return $html;
 }
 
-function html_colour(int $colour, array $attribs = []): string
+function html_colour(?int $colour, array $attribs = []): string
 {
+    $colour = $colour ?? colour_none();
+
     if (!$attribs) {
         $attribs['color'] = '%s';
     }

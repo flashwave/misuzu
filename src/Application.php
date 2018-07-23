@@ -296,6 +296,7 @@ class Application extends ApplicationBase
         $this->templatingInstance->addFilter('parse_line');
         $this->templatingInstance->addFilter('parse_text');
         $this->templatingInstance->addFilter('asset_url');
+        $this->templatingInstance->addFilter('vsprintf');
 
         $this->templatingInstance->addFunction('git_commit_hash');
         $this->templatingInstance->addFunction('git_branch');

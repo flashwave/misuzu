@@ -11,22 +11,38 @@ function audit_log(
     $ipAddress = $ipAddress ?? IPAddress::remote();
 
     for ($i = 0; $i < count($params); $i++) {
-        if (preg_match('#(-?[0-9]+)#', $params[$i])) {
+        if (preg_match('#^(-?[0-9]+)$#', $params[$i])) {
             $params[$i] = (int)$params[$i];
         }
     }
 
     $addLog = Database::prepare('
         INSERT INTO `msz_audit_log`
-            (`log_action`, `user_id`, `log_params`, `log_ip`)
+            (`log_action`, `user_id`, `log_params`, `log_ip`, `log_country`)
         VALUES
-            (:action, :user, :params, :log_ip)
+            (:action, :user, :params, :ip, :country)
     ');
     $addLog->bindValue('action', $action);
     $addLog->bindValue('user', $userId < 1 ? null : $userId);
     $addLog->bindValue('params', json_encode($params));
-    $addLog->bindValue('log_ip', $ipAddress->getRaw());
+    $addLog->bindValue('ip', $ipAddress->getRaw());
+    $addLog->bindValue('country', $ipAddress->getCountryCode());
     $addLog->execute();
+}
+
+function audit_log_count($userId = 0): int
+{
+    $getCount = Database::prepare(sprintf('
+        SELECT COUNT(`log_id`)
+        FROM `msz_audit_log`
+        WHERE %s
+    ', $userId < 1 ? '1' : '`user_id` = :user_id'));
+
+    if ($userId >= 1) {
+        $getCount->bindValue('user_id', $userId);
+    }
+
+    return $getCount->execute() ? (int)$getCount->fetchColumn() : 0;
 }
 
 function audit_log_list(int $offset, int $take, int $userId = 0): array
@@ -36,7 +52,7 @@ function audit_log_list(int $offset, int $take, int $userId = 0): array
 
     $getLogs = Database::prepare(sprintf('
         SELECT
-            l.`log_id`, l.`log_action`, l.`log_params`, l.`log_created`,
+            l.`log_id`, l.`log_action`, l.`log_params`, l.`log_created`, l.`log_country`,
             u.`user_id`, u.`username`,
             INET6_NTOA(l.`log_ip`) as `log_ip`,
             COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
@@ -51,7 +67,7 @@ function audit_log_list(int $offset, int $take, int $userId = 0): array
     ', $userId < 1 ? '1' : 'l.`user_id` = :user_id'));
 
     if ($userId >= 1) {
-        $getLogs->bindValue('user_id');
+        $getLogs->bindValue('user_id', $userId);
     }
 
     $getLogs->bindValue('offset', $offset);

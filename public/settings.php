@@ -28,6 +28,10 @@ $settingsModes = [
         'title' => 'Login History',
         'allow' => true,
     ],
+    'log' => [
+        'title' => 'Account Log',
+        'allow' => true,
+    ],
 ];
 $settingsMode = $_GET['m'] ?? null;
 
@@ -424,6 +428,36 @@ switch ($settingsMode) {
             'login_attempts_offset' => $queryOffset,
             'login_attempts_take' => $queryTake,
             'login_attempts_count' => $loginAttemptsCount,
+        ]);
+        break;
+
+    case 'log':
+        $auditLogCount = audit_log_count($app->getUserId());
+        $auditLog = audit_log_list(
+            $queryOffset,
+            max(20, $queryTake),
+            $app->getUserId()
+        );
+
+        $tpl->vars([
+            'audit_logs' => $auditLog,
+            'audit_log_count' => $auditLogCount,
+            'audit_log_take' => $queryTake,
+            'audit_log_offset' => $queryOffset,
+            'log_strings' => [
+                'PERSONAL_EMAIL_CHANGE' => 'Changed e-mail address to %s.',
+                'PERSONAL_PASSWORD_CHANGE' => 'Changed account password.',
+                'PERSONAL_SESSION_DESTROY' => 'Ended session #%d.',
+                'PASSWORD_RESET' => 'Successfully used the password reset form to change password.',
+                'CHANGELOG_ENTRY_CREATE' => 'Created a new changelog entry #%d.',
+                'CHANGELOG_ENTRY_EDIT' => 'Edited changelog entry #%d.',
+                'CHANGELOG_TAG_ADD' => 'Added tag #%2$d to changelog entry #%1$d.',
+                'CHANGELOG_TAG_REMOVE' => 'Removed tag #%2$d from changelog entry #%1$d.',
+                'CHANGELOG_TAG_CREATE' => 'Created new changelog tag #%d.',
+                'CHANGELOG_TAG_EDIT' => 'Edited changelog tag #%d.',
+                'CHANGELOG_ACTION_CREATE' => 'Created new changelog action #%d.',
+                'CHANGELOG_ACTION_EDITl' => 'Edited changelog action #%d.',
+            ],
         ]);
         break;
 }
