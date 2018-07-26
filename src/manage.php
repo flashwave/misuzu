@@ -430,6 +430,16 @@ function manage_perms_list(array $rawPerms): array
                         $rawPerms['comments_perms_deny']
                     ),
                 ],
+                [
+                    'section' => 'lock',
+                    'title' => 'Can lock comment threads.',
+                    'perm' => MSZ_COMMENTS_PERM_LOCK,
+                    'value' => manage_perms_value(
+                        MSZ_COMMENTS_PERM_LOCK,
+                        $rawPerms['comments_perms_allow'],
+                        $rawPerms['comments_perms_deny']
+                    ),
+                ],
             ],
         ],
         [
