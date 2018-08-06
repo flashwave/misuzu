@@ -440,6 +440,16 @@ function manage_perms_list(array $rawPerms): array
                         $rawPerms['comments_perms_deny']
                     ),
                 ],
+                [
+                    'section' => 'vote',
+                    'title' => 'Can like or dislike comments.',
+                    'perm' => MSZ_COMMENTS_PERM_VOTE,
+                    'value' => manage_perms_value(
+                        MSZ_COMMENTS_PERM_VOTE,
+                        $rawPerms['comments_perms_allow'],
+                        $rawPerms['comments_perms_deny']
+                    ),
+                ],
             ],
         ],
         [

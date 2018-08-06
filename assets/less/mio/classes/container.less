@@ -8,8 +8,8 @@
         background-color: #23172a;
     }
 
-    &--hidden {
-        .container__content {
+    &--hidden { // __title should always be the first element of a container
+        :not(:first-child) {
             display: none;
         }
     }
@@ -40,7 +40,7 @@
         }
     }
 
-    &__content {
+    &__content { // only use this for text going forward, just throw your child container in directly after __title
         margin: 2px 5px;
     }
 }

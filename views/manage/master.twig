@@ -40,7 +40,7 @@
                     <div class="header__user">
                         <div class="header__menu">
                             <input type="checkbox" id="menu-user-state" class="header__menu__state">
-                            <label for="menu-user-state" class="header__menu__toggle header__menu__toggle--profile" style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');{{ current_user.colour|html_colour }}">{{ current_user.username }}</label>
+                            <label for="menu-user-state" class="header__menu__toggle header__menu__toggle--profile" style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');{{ current_user.user_colour|html_colour }}">{{ current_user.username }}</label>
                             <div class="header__menu__options header__menu__options--user">
                                 <div class="header__menu__section">
                                     <a class="header__menu__link" href="/profile.php?u={{ current_user.user_id }}">Profile</a>

@@ -1,5 +1,6 @@
 {% extends '@mio/changelog/master.twig' %}
 {% from '@mio/macros.twig' import navigation %}
+{% from '@mio/_layout/comments.twig' import comments_section %}
 
 {% set is_valid = change|length > 0 %}
 {% set title = 'Changelog » ' ~ (is_valid ? 'Change #' ~ change.change_id : 'Unknown Change') %}
@@ -95,6 +96,15 @@
                 document.getElementsByClassName('changelog__change__action')[0].title = 'This is supposed to be sideways, but your browser doesn\'t support that.';
         });
     </script>
+
+    {% if comments is defined %}
+        <div class="container">
+            <div class="container__title">
+                Comments for {{ change.change_date }}
+            </div>
+            {{ comments_section(comments, comments_category, current_user|default(null), comments_perms) }}
+        </div>
+    {% endif %}
 
     {{ navigation(mio_navigation) }}
 {% endblock %}

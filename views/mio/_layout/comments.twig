@@ -1,0 +1,193 @@
+{% macro comments_input(category, user, perms, reply_to) %}
+    {% set reply_mode = reply_to is not null %}
+
+    <form class="comment comment--input{% if reply_mode %} comment--hidden{% endif %}"
+        method="post" action="/comments.php"
+        id="comment-{{ reply_mode ? 'reply-' ~ reply_to.comment_id : 'create-' ~ category.category_id }}">
+        <input type="hidden" name="comment[category]" value="{{ category.category_id }}">
+        {% if reply_mode %}
+            <input type="hidden" name="comment[reply]" value="{{ reply_to.comment_id }}">
+        {% endif %}
+        <div class="comment__container">
+            <div class="avatar comment__avatar"
+                style="background-image:url('/profile.php?m=avatar&amp;u={{ user.user_id }}')">
+            </div>
+            <div class="comment__content">
+                <div class="comment__info">
+                    <div class="comment__user"
+                        style="{{ user.user_colour|html_colour }}">{{ user.username }}</div>
+                </div>
+                <textarea
+                    class="comment__text input__textarea comment__text--input"
+                    name="comment[text]" placeholder="Share your extensive insight..."></textarea>
+                <div class="comment__actions">
+                    {% if not reply_mode %}
+                        {% if perms.can_pin %}
+                            <label class="comment__action comment__action--label">
+                                <input type="checkbox" class="comment__action__checkbox" name="comment[pin]">
+                                Pin this comment
+                            </label>
+                        {% endif %}
+                        {% if perms.can_lock %}
+                            <label class="comment__action comment__action--label">
+                                <input type="checkbox" class="comment__action__checkbox" name="comment[lock]">
+                                Toggle locked status
+                            </label>
+                        {% endif %}
+                    {% endif %}
+                    <button class="comment__action comment__action--button comment__action--post">{{ reply_mode ? 'Reply' : 'Post' }}</button>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endmacro %}
+
+{% macro comments_section(comments, category, user, perms) %}
+    <div class="comments">
+        <div class="comments__input">
+            {% if user|default(null) is null %}
+                <div class="comments__notice">
+                    Please <a href="/auth.php?m=login" class="comments__notice__link">login</a> to comment.
+                </div>
+            {% elseif category|default(null) is null or perms|default(null) is null %}
+                <div class="comments__notice">
+                    Posting new comments here is disabled.
+                </div>
+            {% elseif not perms.can_comment %}
+                <div class="comments__notice">
+                    You are not allowed to post comments.
+                </div>
+            {% else %}
+                {% from _self import comments_input %}
+                {{ comments_input(category, user, perms) }}
+            {% endif %}
+        </div>
+
+        <noscript>
+            <div class="comments__javascript">
+                The comments need Javascript to be enabled to function properly, without it functionality is limited.
+            </div>
+        </noscript>
+
+        {% if comments|length > 0 %}
+            <div class="comments__listing">
+                {% from _self import comments_entry %}
+                {% for comment in comments %}
+                    {{ comments_entry(comment, 1, category, user, perms) }}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="comments__none">
+                There are no comments yet.
+            </div>
+        {% endif %}
+    </div>
+
+    {% if perms.can_comment %}
+        <script>
+            var commentPostLock = false;
+
+            function commentPost(form)
+            {
+                console.log(form);
+            }
+        </script>
+    {% endif %}
+
+    {% if perms.can_vote %}
+        <script>
+            var commentVoteLock = false;
+
+            // this is kinda temporary
+            // needs to be able to change the state of both the dislike and like buttons
+            function commentVote(elem, id, vote)
+            {
+                if (id < 1 || commentVoteLock)
+                    return;
+                commentVoteLock = true;
+
+                var originalText = elem.textContent;
+                elem.textContent = '...';
+
+                var formData = new FormData();
+                formData.append('comment_id', id);
+                formData.append('vote', vote);
+                formData.append('csrf', '{{ csrf_token() }}');
+
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    console.log(this.readyState + ' ' + this.status + ': ' + this.responseText);
+                    if (this.readyState === 4) {
+                        elem.textContent = originalText;
+                        commentVoteLock = false;
+                    }
+                };
+                xhr.open('POST', '/comments.php');
+                xhr.send(formData);
+            }
+        </script>
+    {% endif %}
+{% endmacro %}
+
+{% macro comments_entry(comment, indent, category, user, perms) %}
+    <div class="comment" id="comment-{{ comment.comment_id }}">
+        <div class="comment__container">
+            <a class="avatar comment__avatar"
+                href="/profile.php?u={{ comment.user_id }}"
+                style="background-image:url('/profile.php?m=avatar&amp;u={{ comment.user_id }}')">
+            </a>
+            <div class="comment__content">
+                <div class="comment__info">
+                    <a class="comment__user comment__user--link"
+                        href="/profile.php?u={{ comment.user_id }}"
+                        style="{{ comment.user_colour|html_colour }}">{{ comment.username }}</a>
+                    <a class="comment__link" href="#comment-{{ comment.comment_id }}">
+                        <time class="comment__date"
+                            title="{{ comment.comment_created|date('r') }}"
+                            datetime="{{ comment.comment_created|date('c') }}">
+                            {{ comment.comment_created|time_diff }}
+                        </time>
+                    </a>
+                    {% if comment.comment_pinned is not null %}
+                        <span class="comment__pin">{% spaceless %}
+                            Pinned
+                            {% if comment.comment_pinned != comment.comment_created %}
+                                <time title="{{ comment.comment_pinned|date('r') }}"
+                                    datetime="{{ comment.comment_pinned|date('c') }}">
+                                    {{ comment.comment_pinned|time_diff }}
+                                </time>
+                            {% endif %}
+                        {% endspaceless %}</span>
+                    {% endif %}
+                </div>
+                <div class="comment__text">
+                    {{ comment.comment_text|nl2br }}
+                </div>
+                <div class="comment__actions">
+                    {% if perms.can_vote %}
+                        <a class="comment__action comment__action--link" href="javascript:void(0)" onclick="commentVote(this, {{ comment.comment_id }}, 1)">Like</a>
+                        <a class="comment__action comment__action--link" href="javascript:void(0)" onclick="commentVote(this, {{ comment.comment_id }}, -1)">Dislike</a>
+                    {% endif %}
+                    {% if perms.can_comment %}
+                        <a class="comment__action comment__action--link" href="#">Reply</a>
+                    {% endif %}
+                    {% if user is not null %}
+                        <a class="comment__action comment__action--link comment__action--hide" href="#">Report</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="comment__replies comment__replies--indent-{{ indent }}" id="comment-{{ comment.comment_id }}-replies">
+            {% from _self import comments_entry, comments_input %}
+            {% if user|default(null) is not null and category|default(null) is not null and perms|default(null) is not null and perms.can_comment %}
+                {{ comments_input(category, user, perms, comment) }}
+            {% endif %}
+            {% if comment.comment_replies is defined and comment.comment_replies|length > 0 %}
+                {% for reply in comment.comment_replies %}
+                    {{ comments_entry(reply, indent + 1, category, user, perms) }}
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}

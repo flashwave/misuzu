@@ -8,17 +8,65 @@ define('MSZ_COMMENTS_PERM_DELETE_OWN', 1 << 3);
 define('MSZ_COMMENTS_PERM_DELETE_ANY', 1 << 4);
 define('MSZ_COMMENTS_PERM_PIN', 1 << 5);
 define('MSZ_COMMENTS_PERM_LOCK', 1 << 6);
+define('MSZ_COMMENTS_PERM_VOTE', 1 << 7);
 
-function comments_category_create(string $name): int
+define('MSZ_COMMENTS_VOTE_INDIFFERENT', null);
+define('MSZ_COMMENTS_VOTE_LIKE', 'Like');
+define('MSZ_COMMENTS_VOTE_DISLIKE', 'Dislike');
+define('MSZ_COMMENTS_VOTE_TYPES', [
+    0 => MSZ_COMMENTS_VOTE_INDIFFERENT,
+    1 => MSZ_COMMENTS_VOTE_LIKE,
+    -1 => MSZ_COMMENTS_VOTE_DISLIKE,
+]);
+
+// usually this is not how you're suppose to handle permission checking,
+// but in the context of comments this is fine since the same shit is used
+// for every comment section.
+function comments_get_perms(int $userId): array
+{
+    $perms = perms_get_user(MSZ_PERMS_COMMENTS, $userId);
+    return [
+        'can_comment' => perms_check($perms, MSZ_COMMENTS_PERM_CREATE),
+        'can_edit' => perms_check($perms, MSZ_COMMENTS_PERM_EDIT_OWN | MSZ_COMMENTS_PERM_EDIT_ANY),
+        'can_edit_any' => perms_check($perms, MSZ_COMMENTS_PERM_EDIT_ANY),
+        'can_delete' => perms_check($perms, MSZ_COMMENTS_PERM_DELETE_OWN | MSZ_COMMENTS_PERM_DELETE_ANY),
+        'can_delete_any' => perms_check($perms, MSZ_COMMENTS_PERM_DELETE_ANY),
+        'can_pin' => perms_check($perms, MSZ_COMMENTS_PERM_PIN),
+        'can_lock' => perms_check($perms, MSZ_COMMENTS_PERM_LOCK),
+        'can_vote' => perms_check($perms, MSZ_COMMENTS_PERM_VOTE),
+    ];
+}
+
+function comments_vote_add(int $comment, int $user, ?string $vote): bool
+{
+    if (!in_array($vote, MSZ_COMMENTS_VOTE_TYPES, true)) {
+        return false;
+    }
+
+    $setVote = Database::prepare('
+        REPLACE INTO `msz_comments_votes`
+            (`comment_id`, `user_id`, `comment_vote`)
+        VALUES
+            (:comment, :user, :vote)
+    ');
+    $setVote->bindValue('comment', $comment);
+    $setVote->bindValue('user', $user);
+    $setVote->bindValue('vote', $vote);
+    return $setVote->execute();
+}
+
+function comments_category_create(string $name): array
 {
     $create = Database::prepare('
         INSERT INTO `msz_comments_categories`
             (`category_name`)
         VALUES
-            (:name)
+            (LOWER(:name))
     ');
     $create->bindValue('name', $name);
-    return $create->execute() ? Database::lastInsertId() : 0;
+    return $create->execute()
+        ? comments_category_info((int)Database::lastInsertId(), false)
+        : [];
 }
 
 function comments_category_lock(int $category, bool $lock): void
@@ -33,22 +81,125 @@ function comments_category_lock(int $category, bool $lock): void
     $lock->execute();
 }
 
-function comments_category_exists(string $name): bool
+define('MSZ_COMMENTS_CATEGORY_INFO_QUERY', '
+    SELECT
+        `category_id`, `category_locked`
+    FROM `msz_comments_categories`
+    WHERE `%s` = %s
+');
+define('MSZ_COMMENTS_CATEGORY_INFO_ID', sprintf(
+    MSZ_COMMENTS_CATEGORY_INFO_QUERY,
+    'category_id',
+    ':category'
+));
+define('MSZ_COMMENTS_CATEGORY_INFO_NAME', sprintf(
+    MSZ_COMMENTS_CATEGORY_INFO_QUERY,
+    'category_name',
+    'LOWER(:category)'
+));
+
+function comments_category_info($category, bool $createIfNone = false): array
 {
-    $exists = Database::prepare('
-        SELECT COUNT(`category_name`) > 0
-        FROM `msz_comments_categories`
-        WHERE `category_name` = :name
-    ');
-    $exists->bindValue('name', $name);
-    return $exists->execute() ? (bool)$exists->fetchColumn() : false;
+    if (is_int($category)) {
+        $getCategory = Database::prepare(MSZ_COMMENTS_CATEGORY_INFO_ID);
+        $createIfNone = false;
+    } elseif (is_string($category)) {
+        $getCategory = Database::prepare(MSZ_COMMENTS_CATEGORY_INFO_NAME);
+    } else {
+        return [];
+    }
+
+    $getCategory->bindValue('category', $category);
+    $categoryInfo = $getCategory->execute() ? $getCategory->fetch(PDO::FETCH_ASSOC) : false;
+    return $categoryInfo
+        ? $categoryInfo
+        : (
+            $createIfNone
+                ? comments_category_create($category)
+                : []
+        );
 }
 
-function comments_category_get(int $category): array
+define('MSZ_COMMENTS_CATEGORY_QUERY', '
+    SELECT
+        p.`comment_id`, p.`comment_text`, p.`comment_reply_to`,
+        p.`comment_created`, p.`comment_pinned`,
+        u.`user_id`, u.`username`,
+        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+    FROM `msz_comments_posts` as p
+    LEFT JOIN `msz_users` as u
+    ON u.`user_id` = p.`user_id`
+    LEFT JOIN `msz_roles` as r
+    ON r.`role_id` = u.`display_role`
+    WHERE p.`category_id` = :category
+    %s
+    ORDER BY p.`comment_pinned` DESC, p.`comment_id` DESC
+');
+define('MSZ_COMMENTS_CATEGORY_QUERY_ROOT', sprintf(
+    MSZ_COMMENTS_CATEGORY_QUERY,
+    'AND p.`comment_reply_to` IS NULL'
+));
+define('MSZ_COMMENTS_CATEGORY_QUERY_REPLIES', sprintf(
+    MSZ_COMMENTS_CATEGORY_QUERY,
+    'AND p.`comment_reply_to` = :parent'
+));
+
+// heavily recursive
+function comments_category_get(int $category, ?int $parent = null): array
 {
-    $posts = Database::prepare('
+    if ($parent !== null) {
+        $getComments = Database::prepare(MSZ_COMMENTS_CATEGORY_QUERY_REPLIES);
+        $getComments->bindValue('parent', $parent);
+    } else {
+        $getComments = Database::prepare(MSZ_COMMENTS_CATEGORY_QUERY_ROOT);
+    }
+
+    $getComments->bindValue('category', $category);
+    $comments = $getComments->execute() ? $getComments->fetchAll(PDO::FETCH_ASSOC) : [];
+
+    $commentsCount = count($comments);
+    for ($i = 0; $i < $commentsCount; $i++) {
+        $comments[$i]['comment_replies'] = comments_category_get($category, $comments[$i]['comment_id']);
+    }
+
+    return $comments;
+}
+
+function comments_post_create(int $user, int $category, string $text, bool $pinned = false, ?int $reply = null): int
+{
+    $create = Database::prepare('
+        INSERT INTO `msz_comments_posts`
+            (`user_id`, `category_id`, `comment_text`, `comment_pinned`, `comment_reply_to`)
+        VALUES
+            (:user, :category, :text, IF(:pin, NOW(), NULL), :reply)
+    ');
+    $create->bindValue('user', $user);
+    $create->bindValue('category', $category);
+    $create->bindValue('text', $text);
+    $create->bindValue('pin', $pinned ? 1 : 0);
+    $create->bindValue('reply', $reply < 1 ? null : $reply);
+    return $create->execute() ? Database::lastInsertId() : 0;
+}
+
+function comments_post_delete(int $commentId, bool $delete = true): bool
+{
+    $deleteComment = Database::prepare('
+        UPDATE `msz_comments_posts`
+        SET `comment_deleted` = IF(:del, NOW(), NULL)
+        WHERE `comment_id` = :id
+    ');
+    $deleteComment->bindValue('id', $commentId);
+    $deleteComment->bindValue('del', $delete ? 1 : 0);
+    return $deleteComment->execute();
+}
+
+function comments_post_get(int $commentId): array
+{
+    $fetch = Database::prepare('
         SELECT
-            p.`comment_id`, p.`comment_text`,
+            p.`comment_id`, p.`category_id`, p.`comment_text`,
+            p.`comment_created`, p.`comment_edited`, p.`comment_deleted`,
+            p.`comment_reply_to`, p.`comment_pinned`,
             u.`user_id`, u.`username`,
             COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
         FROM `msz_comments_posts` as p
@@ -56,22 +207,52 @@ function comments_category_get(int $category): array
         ON u.`user_id` = p.`user_id`
         LEFT JOIN `msz_roles` as r
         ON r.`role_id` = u.`display_role`
-        WHERE c.`category_id` = :category
+        WHERE `comment_id` = :id
     ');
-    $posts->bindValue('category', $category);
-    return $posts->execute() ? $posts->fetchAll(PDO::FETCH_ASSOC) : [];
+    $fetch->bindValue('id', $commentId);
+    return $fetch->execute() ? $fetch->fetch(PDO::FETCH_ASSOC) : [];
 }
 
-function comments_post_create(int $user, int $category, string $text): int
+function comments_post_exists(int $commentId): bool
 {
-    $create = Database::prepare('
-        INSERT INTO `msz_comments_posts`
-            (`user_id`, `category_id`, `comment_text`)
-        VALUES
-            (:user, :category, :text)
+    $fetch = Database::prepare('
+        SELECT COUNT(`comment_id`) > 0
+        FROM `msz_comments_posts`
+        WHERE `comment_id` = :id
     ');
-    $create->bindValue('user', $user);
-    $create->bindValue('category', $category);
-    $create->bindValue('text', $text);
-    return $create->execute() ? Database::lastInsertId() : 0;
+    $fetch->bindValue('id', $commentId);
+    return $fetch->execute() ? (bool)$fetch->fetchColumn() : false;
+}
+
+function comments_post_replies(int $commentId): array
+{
+    $getComments = Database::prepare('
+        SELECT
+            p.`comment_id`, p.`category_id`, p.`comment_text`,
+            p.`comment_created`, p.`comment_edited`, p.`comment_deleted`,
+            p.`comment_reply_to`, p.`comment_pinned`,
+            u.`user_id`, u.`username`,
+            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+        FROM `msz_comments_posts` as p
+        LEFT JOIN `msz_users` as u
+        ON u.`user_id` = p.`user_id`
+        LEFT JOIN `msz_roles` as r
+        ON r.`role_id` = u.`display_role`
+        WHERE `comment_reply_to` = :id
+    ');
+    $getComments->bindValue('id', $commentId);
+    return $getComments->execute() ? $getComments->fetchAll(PDO::FETCH_ASSOC) : [];
+}
+
+function comments_post_check_ownership(int $commentId, int $userId): bool
+{
+    $checkUser = Database::prepare('
+        SELECT COUNT(`comment_id`) > 0
+        FROM `msz_comments_posts`
+        WHERE `comment_id` = :comment
+        AND `user_id` = :user
+    ');
+    $checkUser->bindValue('comment', $commentId);
+    $checkUser->bindValue('user', $userId);
+    return $checkUser->execute() ? (bool)$checkUser->fetchColumn() : false;
 }

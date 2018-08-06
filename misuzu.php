@@ -103,7 +103,7 @@ if (PHP_SAPI === 'cli') {
 
             case 'migrate':
                 $migrationTargets = [
-                'mysql-main' => __DIR__ . '/database',
+                    'mysql-main' => __DIR__ . '/database',
                 ];
                 $doRollback = !empty($argv[2]) && $argv[2] === 'rollback';
                 $targetDb = isset($argv[$doRollback ? 3 : 2]) ? $argv[$doRollback ? 3 : 2] : null;
@@ -232,7 +232,7 @@ MIG;
             $getUserDisplayInfo = Database::prepare('
                 SELECT
                     u.`user_id`, u.`username`,
-                    COALESCE(u.`user_colour`, r.`role_colour`) as `colour`
+                    COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
                 FROM `msz_users` as u
                 LEFT JOIN `msz_roles` as r
                 ON u.`display_role` = r.`role_id`
