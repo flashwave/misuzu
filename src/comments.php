@@ -133,15 +133,17 @@ define('MSZ_COMMENTS_CATEGORY_QUERY', '
     ON r.`role_id` = u.`display_role`
     WHERE p.`category_id` = :category
     %s
-    ORDER BY p.`comment_pinned` DESC, p.`comment_id` DESC
+    ORDER BY p.`comment_pinned` DESC, p.`comment_id` %s
 ');
 define('MSZ_COMMENTS_CATEGORY_QUERY_ROOT', sprintf(
     MSZ_COMMENTS_CATEGORY_QUERY,
-    'AND p.`comment_reply_to` IS NULL'
+    'AND p.`comment_reply_to` IS NULL',
+    'DESC'
 ));
 define('MSZ_COMMENTS_CATEGORY_QUERY_REPLIES', sprintf(
     MSZ_COMMENTS_CATEGORY_QUERY,
-    'AND p.`comment_reply_to` = :parent'
+    'AND p.`comment_reply_to` = :parent',
+    'ASC'
 ));
 
 // heavily recursive

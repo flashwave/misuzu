@@ -19,5 +19,12 @@
     </div>
 
     {{ navigation(mio_navigation) }}
+
+    {% if error_code|default(0) >= 500 %}
+        <audio autoplay>
+            <source src="https://static.flash.moe/sounds/wbrb.ogg" type="audio/ogg">
+            <source src="https://static.flash.moe/sounds/wbrb.mp3" type="audio/mp3">
+        </audio>
+    {% endif %}
 {% endblock %}
 

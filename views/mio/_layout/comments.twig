@@ -1,13 +1,15 @@
 {% macro comments_input(category, user, perms, reply_to) %}
     {% set reply_mode = reply_to is not null %}
 
-    <form class="comment comment--input{% if reply_mode %} comment--hidden{% endif %}"
+    <form class="comment comment--input{% if reply_mode %} comment--reply{% endif %}"
         method="post" action="/comments.php"
         id="comment-{{ reply_mode ? 'reply-' ~ reply_to.comment_id : 'create-' ~ category.category_id }}">
         <input type="hidden" name="comment[category]" value="{{ category.category_id }}">
+
         {% if reply_mode %}
             <input type="hidden" name="comment[reply]" value="{{ reply_to.comment_id }}">
         {% endif %}
+
         <div class="comment__container">
             <div class="avatar comment__avatar"
                 style="background-image:url('/profile.php?m=avatar&amp;u={{ user.user_id }}')">
@@ -169,7 +171,7 @@
                         <a class="comment__action comment__action--link" href="javascript:void(0)" onclick="commentVote(this, {{ comment.comment_id }}, -1)">Dislike</a>
                     {% endif %}
                     {% if perms.can_comment %}
-                        <a class="comment__action comment__action--link" href="#">Reply</a>
+                        <label class="comment__action comment__action--link" for="comment-reply-toggle-{{ comment.comment_id }}">Reply</label>
                     {% endif %}
                     {% if user is not null %}
                         <a class="comment__action comment__action--link comment__action--hide" href="#">Report</a>
@@ -181,6 +183,7 @@
         <div class="comment__replies comment__replies--indent-{{ indent }}" id="comment-{{ comment.comment_id }}-replies">
             {% from _self import comments_entry, comments_input %}
             {% if user|default(null) is not null and category|default(null) is not null and perms|default(null) is not null and perms.can_comment %}
+                <input type="checkbox" class="comment__reply-toggle" id="comment-reply-toggle-{{ comment.comment_id }}">
                 {{ comments_input(category, user, perms, comment) }}
             {% endif %}
             {% if comment.comment_replies is defined and comment.comment_replies|length > 0 %}
