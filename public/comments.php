@@ -15,6 +15,11 @@ if ($isXHR) {
     return;
 }
 
+if (!tmp_csrf_verify($_REQUEST['csrf'] ?? '')) {
+    echo render_info_or_json("Couldn't verify this request, please refresh the page and try again.", 403);
+    return;
+}
+
 if ($app->getUserId() < 1) {
     echo render_info_or_json($isXHR, 'You must be logged in to manage comments.', 401);
     return;
@@ -50,11 +55,13 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        echo '[]'; // we don't really need a answer for this, the client implicitly does all
+        echo json_encode(comments_votes_get($comment));
         break;
-/*
+
     case 'delete':
-        if ($commentId < 1) {
+        $comment = (int)($_GET['c'] ?? 0);
+
+        if ($comment < 1) {
             echo render_info_or_json($isXHR, 'Missing data.', 400);
             break;
         }
@@ -65,12 +72,12 @@ switch ($_GET['m'] ?? null) {
         }
 
         if (!$commentPerms['can_delete_any']
-            && !comments_post_check_ownership($commentId, $app->getUserId())) {
+            && !comments_post_check_ownership($comment, $app->getUserId())) {
             echo render_info_or_json($isXHR, "You're not allowed to delete comments made by others.", 403);
             break;
         }
 
-        if (!comments_post_delete($commentId)) {
+        if (!comments_post_delete($comment)) {
             echo render_info_or_json($isXHR, 'Failed to delete comment.', 500);
             break;
         }
@@ -80,34 +87,11 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        echo render_info_or_json($isXHR, 'Comment deleted.');
+        echo json_encode([
+            'comment_id' => (int)$comment,
+        ]);
         break;
 
-    case 'edit':
-        if ($commentId < 1) {
-            echo render_info_or_json($isXHR, 'Missing data.', 400);
-            break;
-        }
-
-        if (!$commentPerms['can_edit']) {
-            echo render_info_or_json($isXHR, "You're not allowed to edit comments.", 403);
-            break;
-        }
-
-        if (!$commentPerms['can_edit_any']
-            && !comments_post_check_ownership($commentId, $app->getUserId())) {
-            echo render_info_or_json($isXHR, "You're not allowed to delete comments made by others.", 403);
-            break;
-        }
-
-        if ($redirect) {
-            header('Location: ' . $redirect . '#comment-' . $commentId);
-            break;
-        }
-
-        var_dump($_POST);
-        break;
-*/
     case 'create':
         if (!$commentPerms['can_comment']) {
             echo render_info_or_json($isXHR, "You're not allowed to post comments.", 403);
@@ -124,10 +108,12 @@ switch ($_GET['m'] ?? null) {
 
         if (!$category) {
             echo render_info_or_json($isXHR, 'This comment category doesn\'t exist.', 404);
+            break;
         }
 
-        if (!is_null($category['category_locked']) || !$commentPerms['can_lock']) {
+        if (!is_null($category['category_locked']) && !$commentPerms['can_lock']) {
             echo render_info_or_json($isXHR, 'This comment category has been locked.', 403);
+            break;
         }
 
         $commentText = $_POST['comment']['text'] ?? '';

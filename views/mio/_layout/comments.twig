@@ -5,6 +5,7 @@
         method="post" action="/comments.php?m=create"
         id="comment-{{ reply_mode ? 'reply-' ~ reply_to.comment_id : 'create-' ~ category.category_id }}">
         <input type="hidden" name="comment[category]" value="{{ category.category_id }}">
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
 
         {% if reply_mode %}
             <input type="hidden" name="comment[reply]" value="{{ reply_to.comment_id }}">
@@ -21,7 +22,7 @@
                 </div>
                 <textarea
                     class="comment__text input__textarea comment__text--input"
-                    name="comment[text]" placeholder="Share your extensive insight..."></textarea>
+                    name="comment[text]" placeholder="Share your extensive insights..."></textarea>
                 <div class="comment__actions">
                     {% if not reply_mode %}
                         {% if perms.can_pin %}
@@ -37,11 +38,97 @@
                             </label>
                         {% endif %}
                     {% endif %}
-                    <button class="comment__action comment__action--button comment__action--post">{{ reply_mode ? 'Reply' : 'Post' }}</button>
+                    <button class="comment__action comment__action--button comment__action--post">
+                        {{ reply_mode ? 'Reply' : 'Post' }}
+                    </button>
                 </div>
             </div>
         </div>
     </form>
+{% endmacro %}
+
+{% macro comments_entry(comment, indent, category, user, perms) %}
+    {% if comment.comment_deleted is null or comment.comment_replies|length > 0 %}
+        <div class="comment" id="comment-{{ comment.comment_id }}">
+            <div class="comment__container">
+                <a class="avatar comment__avatar"
+                    href="/profile.php?u={{ comment.user_id }}"
+                    style="background-image:url('/profile.php?m=avatar&amp;u={{ comment.user_id }}')">
+                </a>
+                <div class="comment__content">
+                    <div class="comment__info">
+                        <a class="comment__user comment__user--link"
+                            href="/profile.php?u={{ comment.user_id }}"
+                            style="{{ comment.user_colour|html_colour }}">{{ comment.username }}</a>
+                        <a class="comment__link" href="#comment-{{ comment.comment_id }}">
+                            <time class="comment__date"
+                                title="{{ comment.comment_created|date('r') }}"
+                                datetime="{{ comment.comment_created|date('c') }}">
+                                {{ comment.comment_created|time_diff }}
+                            </time>
+                        </a>
+                        {% if comment.comment_pinned is not null %}
+                            <span class="comment__pin">{% spaceless %}
+                                Pinned
+                                {% if comment.comment_pinned != comment.comment_created %}
+                                    <time title="{{ comment.comment_pinned|date('r') }}"
+                                        datetime="{{ comment.comment_pinned|date('c') }}">
+                                        {{ comment.comment_pinned|time_diff }}
+                                    </time>
+                                {% endif %}
+                            {% endspaceless %}</span>
+                        {% endif %}
+                    </div>
+                    <div class="comment__text{{ comment.comment_deleted is null ? '' : ' comment__text--deleted' }}">
+                        {{ comment.comment_deleted is null ? comment.comment_text|nl2br : 'deleted' }}
+                    </div>
+                    {% if comment.comment_deleted is null %}
+                        <div class="comment__actions">
+                            {% if perms.can_vote %}
+                                <a class="comment__action comment__action--link comment__action--like{% if comment.comment_user_vote == 'Like' %} comment__action--voted{% endif %}"
+                                    href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Like' ? '0' : '1' }}&amp;csrf={{ csrf_token() }}">
+                                    Like
+                                    {% if comment.comment_likes > 0 %}
+                                        ({{ comment.comment_likes|number_format }})
+                                    {% endif %}
+                                </a>
+                                <a class="comment__action comment__action--link comment__action--dislike{% if comment.comment_user_vote == 'Dislike' %} comment__action--voted{% endif %}"
+                                    href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Dislike' ? '0' : '-1' }}&amp;csrf={{ csrf_token() }}">
+                                    Dislike
+                                    {% if comment.comment_dislikes > 0 %}
+                                        ({{ comment.comment_dislikes|number_format }})
+                                    {% endif %}
+                                </a>
+                            {% endif %}
+                            {% if perms.can_comment %}
+                                <label class="comment__action comment__action--link" for="comment-reply-toggle-{{ comment.comment_id }}">Reply</label>
+                            {% endif %}
+                            {% if perms.can_delete_any or (comment.user_id == user.user_id and perms.can_delete) %}
+                                <a class="comment__action comment__action--link comment__action--hide comment__action--delete"
+                                    href="/comments.php?m=delete&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token() }}">Delete</a>
+                            {% endif %}
+                            {# if user is not null %}
+                                <a class="comment__action comment__action--link comment__action--hide" href="#">Report</a>
+                            {% endif #}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="comment__replies comment__replies--indent-{{ indent }}" id="comment-{{ comment.comment_id }}-replies">
+                {% from _self import comments_entry, comments_input %}
+                {% if user|default(null) is not null and category|default(null) is not null and perms|default(null) is not null and perms.can_comment %}
+                    <input type="checkbox" class="comment__reply-toggle" id="comment-reply-toggle-{{ comment.comment_id }}">
+                    {{ comments_input(category, user, perms, comment) }}
+                {% endif %}
+                {% if comment.comment_replies is defined and comment.comment_replies|length > 0 %}
+                    {% for reply in comment.comment_replies %}
+                        {{ comments_entry(reply, indent + 1, category, user, perms) }}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 {% endmacro %}
 
 {% macro comments_section(comments, category, user, perms) %}
@@ -55,6 +142,10 @@
                 <div class="comments__notice">
                     Posting new comments here is disabled.
                 </div>
+            {% elseif not perms.can_lock and category.category_locked is not null %}
+                <div class="comments__notice">
+                    This comment section was locked, <time datetime="{{ category.category_locked|date('c') }}" title="{{ category.category_locked|date('r') }}">{{ category.category_locked|time_diff }}</time>.
+                </div>
             {% elseif not perms.can_comment %}
                 <div class="comments__notice">
                     You are not allowed to post comments.
@@ -65,24 +156,30 @@
             {% endif %}
         </div>
 
+        {% if perms.can_lock and category.category_locked is not null %}
+            <div class="comments__notice comments__notice--staff">
+                This comment section was locked, <time datetime="{{ category.category_locked|date('c') }}" title="{{ category.category_locked|date('r') }}">{{ category.category_locked|time_diff }}</time>.
+            </div>
+        {% endif %}
+
         <noscript>
             <div class="comments__javascript">
-                The comments need Javascript to be enabled to function properly, without it functionality is limited.
+                While the comments work fine without Javascript, it is recommended you enable it as it has a lower bandwidth overhead.
             </div>
         </noscript>
 
-        {% if comments|length > 0 %}
-            <div class="comments__listing">
+        <div class="comments__listing">
+            {% if comments|length > 0 %}
                 {% from _self import comments_entry %}
                 {% for comment in comments %}
                     {{ comments_entry(comment, 1, category, user, perms) }}
                 {% endfor %}
-            </div>
-        {% else %}
-            <div class="comments__none">
-                There are no comments yet.
-            </div>
-        {% endif %}
+            {% else %}
+                <div class="comments__none">
+                    There are no comments yet.
+                </div>
+            {% endif %}
+        </div>
     </div>
 
     <script>
@@ -99,16 +196,294 @@
                     dislikeButtons[i].onclick = commentVote;
                 }
             }
+
+            if (typeof commentPost === 'function') { // can comment
+                var commentForms = document.getElementsByClassName('comment--input');
+
+                for (var i = 0; i < commentForms.length; i++) {
+                    commentForms[i].action = 'javascript:void(0);';
+                    commentForms[i].onsubmit = commentPost;
+                }
+            }
+
+            if (typeof commentDelete === 'function') { // can delete
+                var commentDeletes = document.getElementsByClassName('comment__action--delete');
+
+                for (var i = 0; i < commentDeletes.length; i++) {
+                    commentDeletes[i].onclick = commentDelete;
+                    commentDeletes[i].dataset.href = commentDeletes[i].href;
+                    commentDeletes[i].href = 'javascript:void(0);';
+                }
+            }
         });
     </script>
+
+    {% if perms.can_delete %}
+        <script>
+            var commentDeleteLock = false;
+
+            function commentDelete(ev)
+            {
+                if (commentDeleteLock)
+                    return;
+                commentDeleteLock = true;
+
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (this.readyState !== 4)
+                        return;
+                    commentDeleteLock = false;
+
+                    var json = JSON.parse(this.responseText),
+                        message = json.error || json.message;
+
+                    if (message)
+                        alert(message);
+                    else {
+                        var elem = document.getElementById('comment-' + json.comment_id);
+
+                        if (elem)
+                            elem.parentNode.removeChild(elem);
+                    }
+                };
+                xhr.open('GET', ev.target.dataset.href);
+                xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
+                xhr.send();
+            }
+        </script>
+    {% endif %}
 
     {% if perms.can_comment %}
         <script>
             var commentPostLock = false;
 
-            function commentPost(form)
+            function commentPost(ev)
             {
-                console.log(form);
+                // the moment we find the id we engage vote lock
+                if (commentPostLock)
+                    return;
+                commentPostLock = true;
+
+                var form = ev.target,
+                    formData = new FormData;
+
+                for (var i = 0; i < form.length; i++) {
+                    var isCheckbox = form[i].type === 'checkbox';
+                    if (isCheckbox && !form[i].checked)
+                        continue;
+                    formData.append(form[i].name, form[i].value || '');
+
+                    if (isCheckbox)
+                        form[i].checked = false;
+                    else if (form[i].type !== 'hidden')
+                        form[i].value = '';
+                }
+
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (this.readyState !== 4)
+                        return;
+
+                    var json = JSON.parse(this.responseText),
+                        message = json.error || json.message;
+
+                    if (message)
+                        alert(message);
+                    else {
+                        if (form.classList.contains('comment--reply'))
+                            form.parentNode.parentNode.querySelector('label.comment__action').click();
+                        commentInsert(json, form);
+                    }
+
+                    commentPostLock = false;
+                };
+
+                xhr.open('POST', '/comments.php?m=create');
+                xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
+                xhr.send(formData);
+            }
+
+            // this is the biggest doozy of them all, this should create an element identical to comments_entry
+            function commentInsert(comment, form)
+            {
+                var isReply = form.classList.contains('comment--reply'),
+                    parent = isReply
+                        ? form.parentNode
+                        : form.parentNode.parentNode.getElementsByClassName('comments__listing')[0],
+                    repliesIndent = isReply
+                        ? (parseInt(parent.classList[1].substr(25)) + 1)
+                        : 1;
+
+                // layer 1
+                var commentElement = document.createElement('div');
+                commentElement.className = 'comment';
+                commentElement.id = 'comment-' + comment.comment_id;
+
+                // layer 2
+                var commentContainer = document.createElement('div');
+                commentContainer.className = 'comment__container';
+                commentElement.appendChild(commentContainer);
+
+                var commentReplies = document.createElement('div');
+                commentReplies.className = 'comment__replies comment__replies--indent-' + repliesIndent;
+                commentReplies.id = commentElement.id + '-replies';
+                commentElement.appendChild(commentReplies);
+
+                // container
+                var commentAvatar = document.createElement('a');
+                commentAvatar.className = 'avatar comment__avatar';
+                commentAvatar.href = '/profile.php?u=' + comment.user_id;
+                commentAvatar.style.backgroundImage = 'url(\'/profile.php?m=avatar&u={0}\')'.replace('{0}', comment.user_id);
+                commentContainer.appendChild(commentAvatar);
+
+                var commentContent = document.createElement('div');
+                commentContent.className = 'comment__content';
+                commentContainer.appendChild(commentContent);
+
+                // content
+                var commentInfo = document.createElement('div');
+                commentInfo.className = 'comment__info';
+                commentContent.appendChild(commentInfo);
+
+                var commentText = document.createElement('div');
+                commentText.className = 'comment__text';
+                commentText.textContent = comment.comment_text;
+                commentContent.appendChild(commentText);
+
+                var commentActions = document.createElement('div');
+                commentActions.className = 'comment__actions';
+                commentContent.appendChild(commentActions);
+
+                // info
+                var commentUser = document.createElement('a');
+                commentUser.className = 'comment__user comment__user--link';
+                commentUser.textContent = comment.username;
+                commentUser.href = '/profile?u=' + comment.user_id;
+                commentUser.style.color = comment.user_colour == null || (comment.user_colour & 0x40000000) > 0
+                    ? 'inherit'
+                    : '#' + (comment.user_colour & 0xFFFFFF).toString(16);
+                commentInfo.appendChild(commentUser);
+
+                var commentLink = document.createElement('a');
+                commentLink.className = 'comment__link';
+                commentLink.href = '#' + commentElement.id;
+                commentInfo.appendChild(commentLink);
+
+                var commentTime = document.createElement('time'),
+                    commentDate = new Date(comment.comment_created + 'Z');
+                commentTime.className = 'comment__date';
+                commentTime.title = commentDate.toLocaleString();
+                commentTime.dateTime = commentDate.toISOString();
+                commentTime.textContent = timeago().format(commentDate);
+                commentLink.appendChild(commentTime);
+
+                // actions
+                if (typeof commentVote === 'function') {
+                    var commentLike = document.createElement('a');
+                    commentLike.className = 'comment__action comment__action--link comment__action--like';
+                    commentLike.href = 'javascript:void(0);';
+                    commentLike.textContent = 'Like';
+                    commentLike.onclick = commentVote;
+                    commentActions.appendChild(commentLike);
+
+                    var commentDislike = document.createElement('a');
+                    commentDislike.className = 'comment__action comment__action--link comment__action--dislike';
+                    commentDislike.href = 'javascript:void(0);';
+                    commentDislike.textContent = 'Dislike';
+                    commentDislike.onclick = commentVote;
+                    commentActions.appendChild(commentDislike);
+                }
+
+                // if we're executing this it's fairly obvious that we can reply,
+                // so no need to have a permission check on it here
+                var commentReply = document.createElement('label');
+                commentReply.className = 'comment__action comment__action--link';
+                commentReply.htmlFor = 'comment-reply-toggle-' + comment.comment_id;
+                commentReply.textContent = 'Reply';
+                commentActions.appendChild(commentReply);
+
+                // reply section
+                var commentReplyState = document.createElement('input');
+                commentReplyState.id = commentReply.htmlFor;
+                commentReplyState.type = 'checkbox';
+                commentReplyState.className = 'comment__reply-toggle';
+                commentReplies.appendChild(commentReplyState);
+
+                var commentReplyInput = document.createElement('form');
+                commentReplyInput.id = 'comment-reply-' + comment.comment_id;
+                commentReplyInput.className = 'comment comment--input comment--reply';
+                commentReplyInput.method = 'post';
+                commentReplyInput.action = 'javascript:void(0);';
+                commentReplyInput.onsubmit = commentPost;
+                commentReplies.appendChild(commentReplyInput);
+
+                // reply attributes
+                var replyCategory = document.createElement('input');
+                replyCategory.name = 'comment[category]';
+                replyCategory.value = comment.category_id;
+                replyCategory.type = 'hidden';
+                commentReplyInput.appendChild(replyCategory);
+
+                var replyCsrf = document.createElement('input');
+                replyCsrf.name = 'csrf';
+                replyCsrf.value = '{{ csrf_token() }}';
+                replyCsrf.type = 'hidden';
+                commentReplyInput.appendChild(replyCsrf);
+
+                var replyId = document.createElement('input');
+                replyId.name = 'comment[reply]';
+                replyId.value = comment.comment_id;
+                replyId.type = 'hidden';
+                commentReplyInput.appendChild(replyId);
+
+                var replyContainer = document.createElement('div');
+                replyContainer.className = 'comment__container';
+                commentReplyInput.appendChild(replyContainer);
+
+                // reply container
+                var replyAvatar = document.createElement('div');
+                replyAvatar.className = 'avatar comment__avatar';
+                replyAvatar.style.backgroundImage = 'url(\'/profile.php?m=avatar&u={0}\')'.replace('{0}', comment.user_id);
+                replyContainer.appendChild(replyAvatar);
+
+                var replyContent = document.createElement('div');
+                replyContent.className = 'comment__content';
+                replyContainer.appendChild(replyContent);
+
+                // reply content
+                var replyInfo = document.createElement('div');
+                replyInfo.className = 'comment__info';
+                replyContent.appendChild(replyInfo);
+
+                var replyUser = document.createElement('div');
+                replyUser.className = 'comment__user';
+                replyUser.textContent = comment.username;
+                replyUser.style.color = comment.user_colour == null || (comment.user_colour & 0x40000000) > 0
+                    ? 'inherit'
+                    : '#' + (comment.user_colour & 0xFFFFFF).toString(16);
+                replyInfo.appendChild(replyUser);
+
+                var replyText = document.createElement('textarea');
+                replyText.className = 'comment__text input__textarea comment__text--input';
+                replyText.name = 'comment[text]';
+                replyText.placeholder = 'Share your extensive insights...';
+                replyContent.appendChild(replyText);
+
+                var replyActions = document.createElement('div');
+                replyActions.className = 'comment__actions';
+                replyContent.appendChild(replyActions);
+
+                var replyButton = document.createElement('button');
+                replyButton.className = 'comment__action comment__action--button comment__action--post';
+                replyButton.textContent = 'Reply';
+                replyActions.appendChild(replyButton);
+
+                if (isReply)
+                    parent.appendChild(commentElement);
+                else
+                    parent.insertBefore(commentElement, parent.firstElementChild);
+
+                timeago().render(commentTime);
             }
         </script>
     {% endif %}
@@ -118,7 +493,10 @@
             var commentVoteLock = false,
                 commentLikeClass = 'comment__action--like',
                 commentDislikeClass = 'comment__action--dislike',
-                commentVotedClass = 'comment__action--voted';
+                commentVotedClass = 'comment__action--voted',
+                commentLikeText = 'Like',
+                commentDislikeText = 'Dislike',
+                commentVoteCountSuffix = ' ({0})';
 
             // DEBUG THIS IF YOU MAKE MAJOR DOM CHANGES TO COMMENTS
             function commentVote(ev)
@@ -130,8 +508,6 @@
                 if (id < 1 || commentVoteLock)
                     return;
                 commentVoteLock = true;
-
-                var originalText = elem.textContent;
                 elem.textContent = '.';
 
                 var isLike = elem.classList.contains(commentLikeClass),
@@ -157,20 +533,14 @@
 
                 friend.classList.remove(commentVotedClass);
 
-                var friendText = friend.textContent;
                 friend.textContent = '';
 
                 elem.textContent += '.';
 
                 var xhr = new XMLHttpRequest();
-                xhr.onreadystatechange = function() {
-                    //console.log(this.readyState + ' ' + this.status + ': ' + this.responseText);
+                xhr.onreadystatechange = function () {
                     if (this.readyState !== 4)
                         return;
-
-                    elem.textContent = originalText;
-                    friend.textContent = friendText;
-                    commentVoteLock = false;
 
                     if (vote)
                         elem.classList.add(commentVotedClass);
@@ -183,7 +553,18 @@
                     if (message)
                         alert(message);
 
-                    console.log(json);
+                    var likes = json.likes || 0,
+                        dislikes = json.dislikes || 0;
+
+                    if (isLike) { // somewhat implicitly defined, like will always come before dislike
+                        elem.textContent = commentLikeText + (likes > 0 ? commentVoteCountSuffix.replace('{0}', likes.toLocaleString()) : '');
+                        friend.textContent = commentDislikeText + (dislikes > 0 ? commentVoteCountSuffix.replace('{0}', dislikes.toLocaleString()) : '');
+                    } else {
+                        elem.textContent = commentDislikeText + (dislikes > 0 ? commentVoteCountSuffix.replace('{0}', dislikes.toLocaleString()) : '');
+                        friend.textContent = commentLikeText + (likes > 0 ? commentVoteCountSuffix.replace('{0}', likes.toLocaleString()) : '');
+                    }
+
+                    commentVoteLock = false;
                 };
                 xhr.open('GET', '/comments.php?m=vote&c={0}&v={1}&h={{ csrf_token() }}'.replace('{0}', id).replace('{1}', vote));
                 xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
@@ -191,80 +572,4 @@
             }
         </script>
     {% endif %}
-{% endmacro %}
-
-{% macro comments_entry(comment, indent, category, user, perms) %}
-    <div class="comment" id="comment-{{ comment.comment_id }}">
-        <div class="comment__container">
-            <a class="avatar comment__avatar"
-                href="/profile.php?u={{ comment.user_id }}"
-                style="background-image:url('/profile.php?m=avatar&amp;u={{ comment.user_id }}')">
-            </a>
-            <div class="comment__content">
-                <div class="comment__info">
-                    <a class="comment__user comment__user--link"
-                        href="/profile.php?u={{ comment.user_id }}"
-                        style="{{ comment.user_colour|html_colour }}">{{ comment.username }}</a>
-                    <a class="comment__link" href="#comment-{{ comment.comment_id }}">
-                        <time class="comment__date"
-                            title="{{ comment.comment_created|date('r') }}"
-                            datetime="{{ comment.comment_created|date('c') }}">
-                            {{ comment.comment_created|time_diff }}
-                        </time>
-                    </a>
-                    {% if comment.comment_pinned is not null %}
-                        <span class="comment__pin">{% spaceless %}
-                            Pinned
-                            {% if comment.comment_pinned != comment.comment_created %}
-                                <time title="{{ comment.comment_pinned|date('r') }}"
-                                    datetime="{{ comment.comment_pinned|date('c') }}">
-                                    {{ comment.comment_pinned|time_diff }}
-                                </time>
-                            {% endif %}
-                        {% endspaceless %}</span>
-                    {% endif %}
-                </div>
-                <div class="comment__text">
-                    {{ comment.comment_text|nl2br }}
-                </div>
-                <div class="comment__actions">
-                    {% if perms.can_vote %}
-                        <a class="comment__action comment__action--link comment__action--like{% if comment.comment_user_vote == 'Like' %} comment__action--voted{% endif %}"
-                            href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote ? '0' : '1' }}">
-                            Like
-                            {% if comment.comment_likes > 0 %}
-                                ({{ comment.comment_likes|number_format }})
-                            {% endif %}
-                        </a>
-                        <a class="comment__action comment__action--link comment__action--dislike{% if comment.comment_user_vote == 'Dislike' %} comment__action--voted{% endif %}"
-                            href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote ? '0' : '-1' }}">
-                            Dislike
-                            {% if comment.comment_dislikes > 0 %}
-                                ({{ comment.comment_dislikes|number_format }})
-                            {% endif %}
-                        </a>
-                    {% endif %}
-                    {% if perms.can_comment %}
-                        <label class="comment__action comment__action--link" for="comment-reply-toggle-{{ comment.comment_id }}">Reply</label>
-                    {% endif %}
-                    {# if user is not null %}
-                        <a class="comment__action comment__action--link comment__action--hide" href="#">Report</a>
-                    {% endif #}
-                </div>
-            </div>
-        </div>
-
-        <div class="comment__replies comment__replies--indent-{{ indent }}" id="comment-{{ comment.comment_id }}-replies">
-            {% from _self import comments_entry, comments_input %}
-            {% if user|default(null) is not null and category|default(null) is not null and perms|default(null) is not null and perms.can_comment %}
-                <input type="checkbox" class="comment__reply-toggle" id="comment-reply-toggle-{{ comment.comment_id }}">
-                {{ comments_input(category, user, perms, comment) }}
-            {% endif %}
-            {% if comment.comment_replies is defined and comment.comment_replies|length > 0 %}
-                {% for reply in comment.comment_replies %}
-                    {{ comments_entry(reply, indent + 1, category, user, perms) }}
-                {% endfor %}
-            {% endif %}
-        </div>
-    </div>
 {% endmacro %}

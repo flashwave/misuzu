@@ -55,6 +55,28 @@ function comments_vote_add(int $comment, int $user, ?string $vote): bool
     return $setVote->execute();
 }
 
+function comments_votes_get(int $commentId): array
+{
+    $getVotes = Database::prepare('
+        SELECT :id as `id`,
+        (
+            SELECT COUNT(`user_id`)
+            FROM `msz_comments_votes`
+            WHERE `comment_id` = `id`
+            AND `comment_vote` = \'Like\'
+        ) as `likes`,
+        (
+            SELECT COUNT(`user_id`)
+            FROM `msz_comments_votes`
+            WHERE `comment_id` = `id`
+            AND `comment_vote` = \'Dislike\'
+        ) as `dislikes`
+    ');
+    $getVotes->bindValue('id', $commentId);
+    $votes = $getVotes->execute() ? $getVotes->fetch(PDO::FETCH_ASSOC) : false;
+    return $votes ? $votes : [];
+}
+
 function comments_category_create(string $name): array
 {
     $create = Database::prepare('
@@ -71,14 +93,14 @@ function comments_category_create(string $name): array
 
 function comments_category_lock(int $category, bool $lock): void
 {
-    $lock = Database::prepare('
+    $setLock = Database::prepare('
         UPDATE `msz_comments_categories`
         SET `category_locked` = IF(:lock, NOW(), NULL)
         WHERE `category_id` = :category
     ');
-    $lock->bindValue('category', $category);
-    $lock->bindValue('lock', $lock ? 1 : 0);
-    $lock->execute();
+    $setLock->bindValue('category', $category);
+    $setLock->bindValue('lock', $lock);
+    $setLock->execute();
 }
 
 define('MSZ_COMMENTS_CATEGORY_INFO_QUERY', '
@@ -123,7 +145,7 @@ function comments_category_info($category, bool $createIfNone = false): array
 define('MSZ_COMMENTS_CATEGORY_QUERY', '
     SELECT
         p.`comment_id`, p.`comment_text`, p.`comment_reply_to`,
-        p.`comment_created`, p.`comment_pinned`,
+        p.`comment_created`, p.`comment_pinned`, p.`comment_deleted`,
         u.`user_id`, u.`username`,
         COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
         (
