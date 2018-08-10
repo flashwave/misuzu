@@ -70,10 +70,40 @@ function migrate_up(PDO $conn): void
                 ON DELETE CASCADE
         );
     ");
+
+    $conn->exec("
+        ALTER TABLE `msz_news_posts`
+            ADD COLUMN `comment_section_id` INT UNSIGNED NULL DEFAULT NULL AFTER `deleted_at`,
+            ADD INDEX `news_posts_comment_section` (`comment_section_id`),
+            ADD CONSTRAINT `news_posts_comment_section`
+                FOREIGN KEY (`comment_section_id`)
+                REFERENCES `msz_comments_categories` (`category_id`)
+                ON UPDATE CASCADE
+                ON DELETE SET NULL;
+    ");
+
+    // create a comment section for all news posts
+    $getNews = $conn->query('SELECT `post_id` FROM `msz_news_posts` WHERE `comment_section_id` IS NULL')
+        ->fetchAll(PDO::FETCH_ASSOC);
+    $setNews = $conn->prepare('UPDATE `msz_news_posts` SET `comment_section_id` = :c WHERE `post_id` = :p');
+
+    foreach ($getNews as $post) {
+        $info = comments_category_create("news-{$post['post_id']}");
+        $setNews->execute([
+            'p' => $post['post_id'],
+            'c' => $info['category_id'],
+        ]);
+    }
 }
 
 function migrate_down(PDO $conn): void
 {
+    $conn->exec('
+        ALTER TABLE `msz_news_posts`
+            DROP COLUMN `comment_section_id`,
+            DROP INDEX `news_posts_comment_section`,
+            DROP FOREIGN KEY `news_posts_comment_section`;
+    ');
     $conn->exec('DROP TABLE `msz_comments_votes`');
     $conn->exec('DROP TABLE `msz_comments_posts`');
     $conn->exec('DROP TABLE `msz_comments_categories`');

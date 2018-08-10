@@ -18,7 +18,7 @@ $templating->vars([
 if ($postId !== null) {
     $getPost = Database::prepare('
         SELECT
-            p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
+            p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`, p.`comment_section_id`,
             c.`category_id`, c.`category_name`,
             u.`user_id`, u.`username`,
             COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
@@ -39,7 +39,30 @@ if ($postId !== null) {
         return;
     }
 
-    echo $templating->render('news.post', compact('post'));
+    if ($post['comment_section_id'] === null) {
+        $commentsInfo = comments_category_create("news-{$post['post_id']}");
+
+        if ($commentsInfo) {
+            $post['comment_section_id'] = $commentsInfo['category_id'];
+            Database::prepare('
+                UPDATE `msz_news_posts`
+                SET `comment_section_id` = :comment_section_id
+                WHERE `post_id` = :post_id
+            ')->execute([
+                'comment_section_id' => $post['comment_section_id'],
+                'post_id' => $post['post_id'],
+            ]);
+        }
+    } else {
+        $commentsInfo = comments_category_info($post['comment_section_id']);
+    }
+
+    echo $templating->render('news.post', [
+        'post' => $post,
+        'comments_perms' => comments_get_perms($app->getUserId()),
+        'comments_category' => $commentsInfo,
+        'comments' => comments_category_get($commentsInfo['category_id'], $app->getUserId()),
+    ]);
     return;
 }
 

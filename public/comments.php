@@ -3,11 +3,16 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../misuzu.php';
 
-// if false, display informational pages instead of outputting json.
-$isXHR = !empty($_SERVER['HTTP_MISUZU_XHR_REQUEST']);
+// basing whether or not this is an xhr request on whether a referrer header is present
+// this page is never directy accessed, under normal circumstances
+$redirect = !empty($_SERVER['HTTP_REFERER']) && empty($_SERVER['HTTP_X_MISUZU_XHR']) ? $_SERVER['HTTP_REFERER'] : '';
+$isXHR = !$redirect;
 
-if ($isXHR || $_SERVER['REQUEST_METHOD'] === 'GET') {
+if ($isXHR) {
     header('Content-Type: application/json; charset=utf-8');
+} elseif (!is_local_url($redirect)) {
+    echo render_info('Possible request forgery detected.', 403);
+    return;
 }
 
 if ($app->getUserId() < 1) {
@@ -15,38 +20,95 @@ if ($app->getUserId() < 1) {
     return;
 }
 
-$redirect = !$isXHR && !empty($_SERVER['HTTP_REFERER'])
-    && is_local_url($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
 $commentPerms = comments_get_perms($app->getUserId());
-$commentId = (int)($_REQUEST['comment_id'] ?? 0);
 
-if (isset($_POST['vote']) && array_key_exists((int)$_POST['vote'], MSZ_COMMENTS_VOTE_TYPES)) {
-    echo comments_vote_add(
-        $commentId,
-        $app->getUserId(),
-        MSZ_COMMENTS_VOTE_TYPES[(int)$_POST['vote']]
-    );
-    return;
-}
+switch ($_GET['m'] ?? null) {
+    case 'vote':
+        $comment = (int)($_GET['c'] ?? 0);
 
-switch ($_SERVER['REQUEST_METHOD']) {
-    case 'GET':
-        if ($commentId < 1) {
-            echo render_info_or_json(true, 'Missing data.', 400);
+        if ($comment < 1) {
+            echo render_info_or_json($isXHR, 'Missing data.', 400);
             break;
         }
 
-        switch ($_GET['fetch'] ?? '') {
-            case 'replies':
-                echo json_encode(comments_post_replies($commentId));
-                break;
+        $vote = (int)($_GET['v'] ?? 0);
 
-            default:
-                echo json_encode(comments_post_get($commentId));
+        if (!array_key_exists($vote, MSZ_COMMENTS_VOTE_TYPES)) {
+            echo render_info_or_json($isXHR, 'Invalid vote action.', 400);
+            break;
         }
+
+        $vote = MSZ_COMMENTS_VOTE_TYPES[(int)($_GET['v'] ?? 0)];
+        $voteResult = comments_vote_add(
+            $comment,
+            $app->getUserId(),
+            $vote
+        );
+
+        if (!$isXHR) {
+            header('Location: ' . $redirect . '#comment-' . $comment);
+            break;
+        }
+
+        echo '[]'; // we don't really need a answer for this, the client implicitly does all
+        break;
+/*
+    case 'delete':
+        if ($commentId < 1) {
+            echo render_info_or_json($isXHR, 'Missing data.', 400);
+            break;
+        }
+
+        if (!$commentPerms['can_delete']) {
+            echo render_info_or_json($isXHR, "You're not allowed to delete comments.", 403);
+            break;
+        }
+
+        if (!$commentPerms['can_delete_any']
+            && !comments_post_check_ownership($commentId, $app->getUserId())) {
+            echo render_info_or_json($isXHR, "You're not allowed to delete comments made by others.", 403);
+            break;
+        }
+
+        if (!comments_post_delete($commentId)) {
+            echo render_info_or_json($isXHR, 'Failed to delete comment.', 500);
+            break;
+        }
+
+        if ($redirect) {
+            header('Location: ' . $redirect);
+            break;
+        }
+
+        echo render_info_or_json($isXHR, 'Comment deleted.');
         break;
 
-    case 'POST':
+    case 'edit':
+        if ($commentId < 1) {
+            echo render_info_or_json($isXHR, 'Missing data.', 400);
+            break;
+        }
+
+        if (!$commentPerms['can_edit']) {
+            echo render_info_or_json($isXHR, "You're not allowed to edit comments.", 403);
+            break;
+        }
+
+        if (!$commentPerms['can_edit_any']
+            && !comments_post_check_ownership($commentId, $app->getUserId())) {
+            echo render_info_or_json($isXHR, "You're not allowed to delete comments made by others.", 403);
+            break;
+        }
+
+        if ($redirect) {
+            header('Location: ' . $redirect . '#comment-' . $commentId);
+            break;
+        }
+
+        var_dump($_POST);
+        break;
+*/
+    case 'create':
         if (!$commentPerms['can_comment']) {
             echo render_info_or_json($isXHR, "You're not allowed to post comments.", 403);
             break;
@@ -119,63 +181,6 @@ switch ($_SERVER['REQUEST_METHOD']) {
         echo json_encode(comments_post_get($commentId));
         break;
 
-    case 'PATCH':
-        method_patch:
-        if ($commentId < 1) {
-            echo render_info_or_json($isXHR, 'Missing data.', 400);
-            break;
-        }
-
-        if (!$commentPerms['can_edit']) {
-            echo render_info_or_json($isXHR, "You're not allowed to edit comments.", 403);
-            break;
-        }
-
-        if (!$commentPerms['can_edit_any']
-            && !comments_post_check_ownership($commentId, $app->getUserId())) {
-            echo render_info_or_json($isXHR, "You're not allowed to delete comments made by others.", 403);
-            break;
-        }
-
-        if ($redirect) {
-            header('Location: ' . $redirect . '#comment-' . $commentId);
-            break;
-        }
-
-        var_dump($_POST);
-        break;
-
-    case 'DELETE':
-        method_delete:
-        if ($commentId < 1) {
-            echo render_info_or_json($isXHR, 'Missing data.', 400);
-            break;
-        }
-
-        if (!$commentPerms['can_delete']) {
-            echo render_info_or_json($isXHR, "You're not allowed to delete comments.", 403);
-            break;
-        }
-
-        if (!$commentPerms['can_delete_any']
-            && !comments_post_check_ownership($commentId, $app->getUserId())) {
-            echo render_info_or_json($isXHR, "You're not allowed to delete comments made by others.", 403);
-            break;
-        }
-
-        if (!comments_post_delete($commentId)) {
-            echo render_info_or_json($isXHR, 'Failed to delete comment.', 500);
-            break;
-        }
-
-        if ($redirect) {
-            header('Location: ' . $redirect);
-            break;
-        }
-
-        echo render_info_or_json($isXHR, 'Comment deleted.');
-        break;
-
     default:
-        echo render_info_or_json($isXHR, 'Invalid request method.', 405);
+        echo render_info_or_json($isXHR, 'Not found.', 404);
 }

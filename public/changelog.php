@@ -64,7 +64,7 @@ if ($changelogChange > 0) {
             "changelog-date-{$change['change_date']}",
             true
         ),
-        'comments' => comments_category_get($commentsCategory['category_id']),
+        'comments' => comments_category_get($commentsCategory['category_id'], $app->getUserId()),
     ]);
     return;
 }
@@ -90,7 +90,7 @@ if (!$changes) {
 if (!empty($changelogDate)) {
     $tpl->vars([
         'comments_category' => $commentsCategory = comments_category_info("changelog-date-{$changelogDate}", true),
-        'comments' => comments_category_get($commentsCategory['category_id']),
+        'comments' => comments_category_get($commentsCategory['category_id'], $app->getUserId()),
     ]);
 }
 

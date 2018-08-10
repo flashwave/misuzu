@@ -125,7 +125,25 @@ define('MSZ_COMMENTS_CATEGORY_QUERY', '
         p.`comment_id`, p.`comment_text`, p.`comment_reply_to`,
         p.`comment_created`, p.`comment_pinned`,
         u.`user_id`, u.`username`,
-        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
+        (
+            SELECT COUNT(`comment_id`)
+            FROM `msz_comments_votes`
+            WHERE `comment_id` = p.`comment_id`
+            AND `comment_vote` = \'Like\'
+        ) as `comment_likes`,
+        (
+            SELECT COUNT(`comment_id`)
+            FROM `msz_comments_votes`
+            WHERE `comment_id` = p.`comment_id`
+            AND `comment_vote` = \'Dislike\'
+        ) as `comment_dislikes`,
+        (
+            SELECT `comment_vote`
+            FROM `msz_comments_votes`
+            WHERE `comment_id` = p.`comment_id`
+            AND `user_id` = :user
+        ) as `comment_user_vote`
     FROM `msz_comments_posts` as p
     LEFT JOIN `msz_users` as u
     ON u.`user_id` = p.`user_id`
@@ -147,7 +165,7 @@ define('MSZ_COMMENTS_CATEGORY_QUERY_REPLIES', sprintf(
 ));
 
 // heavily recursive
-function comments_category_get(int $category, ?int $parent = null): array
+function comments_category_get(int $category, int $user, ?int $parent = null): array
 {
     if ($parent !== null) {
         $getComments = Database::prepare(MSZ_COMMENTS_CATEGORY_QUERY_REPLIES);
@@ -156,12 +174,13 @@ function comments_category_get(int $category, ?int $parent = null): array
         $getComments = Database::prepare(MSZ_COMMENTS_CATEGORY_QUERY_ROOT);
     }
 
+    $getComments->bindValue('user', $user);
     $getComments->bindValue('category', $category);
     $comments = $getComments->execute() ? $getComments->fetchAll(PDO::FETCH_ASSOC) : [];
 
     $commentsCount = count($comments);
     for ($i = 0; $i < $commentsCount; $i++) {
-        $comments[$i]['comment_replies'] = comments_category_get($category, $comments[$i]['comment_id']);
+        $comments[$i]['comment_replies'] = comments_category_get($category, $user, $comments[$i]['comment_id']);
     }
 
     return $comments;
