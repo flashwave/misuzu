@@ -82,7 +82,7 @@
                     <div class="comment__text{{ comment.comment_deleted is null ? '' : ' comment__text--deleted' }}">
                         {{ comment.comment_deleted is null ? comment.comment_text|nl2br : 'deleted' }}
                     </div>
-                    {% if comment.comment_deleted is null %}
+                    {% if comment.comment_deleted is null and user is not null %}
                         <div class="comment__actions">
                             {% if perms.can_vote %}
                                 <a class="comment__action comment__action--link comment__action--like{% if comment.comment_user_vote == 'Like' %} comment__action--voted{% endif %}"
