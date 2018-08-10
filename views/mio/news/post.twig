@@ -1,4 +1,5 @@
 {% extends '@mio/news/master.twig' %}
+{% from '@mio/_layout/comments.twig' import comments_section %}
 
 {% set title = post.post_title ~ ' :: News' %}
 {% set canonical_url = '/news.php?p=' ~ post.post_id %}
@@ -54,10 +55,12 @@
         </div>
     </div>
 
-    <div class="container">
-        <div class="container__title">Comments</div>
-        <div class="container__content">
-            Eventually&trade;
+    {% if comments is defined %}
+        <div class="container">
+            <div class="container__title">
+                Comments
+            </div>
+            {{ comments_section(comments, comments_category, current_user|default(null), comments_perms) }}
         </div>
-    </div>
+    {% endif %}
 {% endblock %}

@@ -1,0 +1,39 @@
+.comments {
+    margin: 1px;
+    overflow: hidden;
+    word-wrap: break-word;
+
+    &__listing {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    &__input,
+    &__javascript,
+    &__notice--staff {
+        border-bottom: 1px solid #9475b2;
+        padding-bottom: 1px;
+        margin-bottom: 1px;
+    }
+
+    &__none,
+    &__javascript,
+    &__notice {
+        padding: 10px;
+        font-size: 1.2em;
+        text-align: center;
+    }
+
+    &__notice__link {
+        color: #22c;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+
+        &:active {
+            color: #c22;
+        }
+    }
+}

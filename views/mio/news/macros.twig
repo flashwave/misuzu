@@ -22,6 +22,16 @@
                         <div class="avatar news__preview__user__avatar" style="background-image:url('/profile.php?u={{ post.user_id }}&amp;m=avatar')"></div>
                     </a>
                 {% endif %}
+
+                <a href="/news.php?p={{ post.post_id }}#comments" style="color: inherit; text-decoration: none; display: block">
+                    {% if post.post_comments < 1 %}
+                        No comments
+                    {% elseif post.post_comments == 1 %}
+                        1 comment
+                    {% else %}
+                        {{ post.post_comments }} comments
+                    {% endif %}
+                </a>
             </div>
         </div>
     </div>

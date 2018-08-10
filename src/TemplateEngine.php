@@ -19,6 +19,8 @@ class TemplateEngine
      */
     private const FILE_EXTENSION = '.twig';
 
+    public const TWIG_DEFAULT = Twig_Loader_Filesystem::MAIN_NAMESPACE;
+
     /**
      * Instance of the Twig Environment.
      * @var Twig_Environment

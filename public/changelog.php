@@ -13,9 +13,12 @@ $changelogDate = $_GET['d'] ?? '';
 $changelogUser = (int)($_GET['u'] ?? 0);
 $changelogTags = $_GET['t'] ?? '';
 
+$commentPerms = comments_get_perms($app->getUserId());
+
 $tpl->vars([
     'changelog_offset' => $changelogOffset,
     'changelog_take' => $changelogRange,
+    'comments_perms' => $commentPerms,
 ]);
 
 if ($changelogChange > 0) {
@@ -55,7 +58,14 @@ if ($changelogChange > 0) {
         $tpl->var('tags', $tags);
     }
 
-    echo $tpl->render('changelog.change', compact('change'));
+    echo $tpl->render('changelog.change', [
+        'change' => $change,
+        'comments_category' => $commentsCategory = comments_category_info(
+            "changelog-date-{$change['change_date']}",
+            true
+        ),
+        'comments' => comments_category_get($commentsCategory['category_id'], $app->getUserId()),
+    ]);
     return;
 }
 
@@ -75,6 +85,13 @@ $changes = changelog_get_changes($changelogDate, $changelogUser, $changelogOffse
 
 if (!$changes) {
     http_response_code(404);
+}
+
+if (!empty($changelogDate)) {
+    $tpl->vars([
+        'comments_category' => $commentsCategory = comments_category_info("changelog-date-{$changelogDate}", true),
+        'comments' => comments_category_get($commentsCategory['category_id'], $app->getUserId()),
+    ]);
 }
 
 echo $tpl->render('changelog.index', [

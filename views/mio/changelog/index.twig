@@ -1,6 +1,7 @@
 {% extends '@mio/changelog/master.twig' %}
 {% from '@mio/macros.twig' import navigation, pagination %}
 {% from '@mio/changelog/macros.twig' import changelog_listing %}
+{% from '@mio/_layout/comments.twig' import comments_section %}
 
 {% set is_valid = changes|length > 0 %}
 {% set is_date = changelog_date|length > 0 %}
@@ -36,6 +37,15 @@
             {% endif %}
         </div>
     </div>
+
+    {% if comments is defined %}
+        <div class="container">
+            <div class="container__title">
+                Comments
+            </div>
+            {{ comments_section(comments, comments_category, current_user|default(null), comments_perms) }}
+        </div>
+    {% endif %}
 
     {{ navigation(mio_navigation) }}
 {% endblock %}

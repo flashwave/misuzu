@@ -22,7 +22,12 @@ $news = Database::query('
     SELECT
         p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
         u.`user_id`, u.`username`,
-        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
+        (
+            SELECT COUNT(`comment_id`)
+            FROM `msz_comments_posts`
+            WHERE `category_id` = `comment_section_id`
+        ) as `post_comments`
     FROM `msz_news_posts` as p
     LEFT JOIN `msz_users` as u
     ON p.`user_id` = u.`user_id`
