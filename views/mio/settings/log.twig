@@ -4,51 +4,55 @@
 {% set alpagination = pagination(audit_log_count, audit_log_take, audit_log_offset, '?m=log', 'settings__') %}
 
 {% block settings_content %}
-    <div class="settings__description">
-        <p>This is a log of all "important" actions that have been done using your account for your review. If you notice anything strange, please alert the staff.</p>
-    </div>
+    <div class="container">
+        <div class="container__title">Account Log</div>
 
-    <div class="settings__log">
-        {{ alpagination }}
-
-        {% for log in audit_logs %}
-            <div class="settings__log__entry" id="log-{{ log.log_id }}">
-                <div class="settings__log__column settings__login-history__column--ip">
-                    <div class="settings__log__column__name">
-                        IP
-                    </div>
-                    <div class="settings__log__column__value">
-                        {{ log.log_ip }}
-                        {% if log.log_country|default('XX') != 'XX' %}
-                            <img class="settings__log__country" src="https://static.flash.moe/flags/fff/{{ log.log_country|lower }}.png" alt="{{ log.log_country }}" title="{{ log.log_country|country_name }}">
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="settings__log__column settings__log__column--date" title="{{ log.log_created|date('r') }}">
-                    <div class="settings__log__column__name">
-                        Date
-                    </div>
-                    <time class="settings__log__column__value" datetime="{{ log.log_created|date('c') }}">
-                        {{ log.log_created|time_diff }}
-                    </time>
-                </div>
-
-                <div class="settings__log__column settings__log__column--action">
-                    <div class="settings__log__column__name">
-                        Action
-                    </div>
-                    <div class="settings__log__column__value">
-                        {% if log.log_action in log_strings|keys %}
-                            {{ log_strings[log.log_action]|vsprintf(log.log_params|json_decode) }}
-                        {% else %}
-                            {{ log.log_action }}({{ log.log_params }})
-                        {% endif %}
-                    </div>
-                </div>
+        <div class="settings__log">
+            <div class="settings__description">
+                <p>This is a log of all "important" actions that have been done using your account for your review. If you notice anything strange, please alert the staff.</p>
             </div>
-        {% endfor %}
 
-        {{ alpagination }}
+            {{ alpagination }}
+
+            {% for log in audit_logs %}
+                <div class="settings__log__entry" id="log-{{ log.log_id }}">
+                    <div class="settings__log__column settings__login-history__column--ip">
+                        <div class="settings__log__column__name">
+                            IP
+                        </div>
+                        <div class="settings__log__column__value">
+                            {{ log.log_ip }}
+                            {% if log.log_country|default('XX') != 'XX' %}
+                                <img class="settings__log__country" src="https://static.flash.moe/flags/fff/{{ log.log_country|lower }}.png" alt="{{ log.log_country }}" title="{{ log.log_country|country_name }}">
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="settings__log__column settings__log__column--date" title="{{ log.log_created|date('r') }}">
+                        <div class="settings__log__column__name">
+                            Date
+                        </div>
+                        <time class="settings__log__column__value" datetime="{{ log.log_created|date('c') }}">
+                            {{ log.log_created|time_diff }}
+                        </time>
+                    </div>
+
+                    <div class="settings__log__column settings__log__column--action">
+                        <div class="settings__log__column__name">
+                            Action
+                        </div>
+                        <div class="settings__log__column__value">
+                            {% if log.log_action in log_strings|keys %}
+                                {{ log_strings[log.log_action]|vsprintf(log.log_params|json_decode) }}
+                            {% else %}
+                                {{ log.log_action }}({{ log.log_params }})
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            {{ alpagination }}
+        </div>
     </div>
 {% endblock %}

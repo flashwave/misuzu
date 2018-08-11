@@ -33,7 +33,7 @@ switch ($_GET['v'] ?? null) {
         $getManageUsers = Database::prepare('
             SELECT
                 u.`user_id`, u.`username`,
-                COALESCE(u.`user_colour`, r.`role_colour`) as `colour`
+                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
             FROM `msz_users` as u
             LEFT JOIN `msz_roles` as r
             ON u.`display_role` = r.`role_id`

@@ -4,7 +4,7 @@
 {% set title = 'Settings » ' ~ settings_title %}
 
 {% block content %}
-    {{ navigation(settings_navigation, settings_mode, true, '?m=%s') }}
+    {{ navigation(settings_modes|flip, settings_mode, true, '?m=%s') }}
 
     {% block settings_container %}
         {% if settings_errors is defined and settings_errors|length > 0 %}
@@ -20,14 +20,14 @@
             </div>
         {% endif %}
 
-    <div class="container settings settings--{{ settings_mode }}">
-        <div class="container__title settings__title settings__title--{{ settings_mode }}">{{ title }}</div>
         {% block settings_content %}
-            <div class="container__content">
-                This is a blank settings page.
+            <div class="container">
+                <div class="container__title">{{ title }}</div>
+                <div class="container__content">
+                    This is a blank settings page.
+                </div>
             </div>
         {% endblock %}
-    </div>
     {% endblock %}
 
     {{ navigation(mio_navigation) }}
