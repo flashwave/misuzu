@@ -8,8 +8,7 @@
 {% block news_content %}
     <div class="container news__container">
         <div class="container__title news__container__title">News</div>
-
-        <div class="container__content news__container__content">
+        <div class="news__container__content">
             <div class="news__preview__listing">
                 {% for post in posts %}
                     {{ news_preview(post) }}

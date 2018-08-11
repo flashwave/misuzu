@@ -3,7 +3,7 @@
 
     <div class="container forum__listing">
         <div class="container__title">{{ title }}</div>
-        <div class="container__content forum__listing__forums">
+        <div class="forum__listing__forums">
             {% if forums|length > 0 %}
                 {% for forum in forums %}
                     {{ forum_category_entry(forum) }}
@@ -152,7 +152,7 @@
 
     <div class="container forum__topics">
         <div class="container__title">Topics</div>
-        <div class="container__content forum__topics__listing">
+        <div class="forum__topics__listing">
             {% if topics|length > 0 %}
                 {% for topic in topics %}
                     {{ forum_topic_entry(topic) }}
@@ -313,7 +313,7 @@
             {{ title }}
         </div>
 
-        <div class="container__content forum__posting__content">
+        <div class="forum__posting__content">
             <input type="hidden" name="post[{{ is_reply ? 'topic' : 'forum' }}]" value="{{ target_id }}">
 
             {#<div class="forum__posting__errors">
