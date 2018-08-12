@@ -48,7 +48,7 @@ function asset_url(string $path): string
 {
     $realPath = realpath(__DIR__ . '/public/' . $path);
 
-    if ($realPath === false) {
+    if ($realPath === false || !file_exists($realPath)) {
         return $path;
     }
 
