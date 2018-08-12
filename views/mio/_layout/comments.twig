@@ -566,7 +566,7 @@
 
                     commentVoteLock = false;
                 };
-                xhr.open('GET', '/comments.php?m=vote&c={0}&v={1}&h={{ csrf_token() }}'.replace('{0}', id).replace('{1}', vote));
+                xhr.open('GET', '/comments.php?m=vote&c={0}&v={1}&csrf={{ csrf_token() }}'.replace('{0}', id).replace('{1}', vote));
                 xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
                 xhr.send();
             }

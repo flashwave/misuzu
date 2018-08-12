@@ -16,7 +16,7 @@ if ($isXHR) {
 }
 
 if (!tmp_csrf_verify($_REQUEST['csrf'] ?? '')) {
-    echo render_info_or_json("Couldn't verify this request, please refresh the page and try again.", 403);
+    echo render_info_or_json($isXHR, "Couldn't verify this request, please refresh the page and try again.", 403);
     return;
 }
 
