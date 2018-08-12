@@ -61,7 +61,12 @@ switch ($mode) {
                     SELECT COUNT(`change_id`)
                     FROM `msz_changelog_changes`
                     WHERE `user_id` = u.`user_id`
-                ) as `changelog_count`
+                ) as `changelog_count`,
+                (
+                    SELECT COUNT(`comment_id`)
+                    FROM `msz_comments_posts`
+                    WHERE `user_id` = u.`user_id`
+                ) as `comments_count`
             FROM `msz_users` as u
             LEFT JOIN `msz_roles` as r
             ON r.`role_id` = u.`display_role`

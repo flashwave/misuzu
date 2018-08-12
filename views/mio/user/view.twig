@@ -133,6 +133,19 @@
                             </div>
                         </div>
 
+                        {% if profile.comments_count > 0 %}
+                            <div class="profile__info__block">
+                                <div class="profile__info__row">
+                                    <div class="profile__info__column profile__info__column--heading">
+                                        Comments
+                                    </div>
+                                    <div class="profile__info__column profile__info__column--numeric">
+                                        {{ profile.comments_count|number_format }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
                         {% if profile.changelog_count > 0 %}
                             <div class="profile__info__block">
                                 <a class="profile__info__row profile__info__row--link" href="/changelog.php?u={{ profile.user_id }}">
