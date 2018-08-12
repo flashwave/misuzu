@@ -1,5 +1,5 @@
 {% extends '@mio/changelog/master.twig' %}
-{% from '@mio/macros.twig' import navigation, pagination %}
+{% from '@mio/macros.twig' import pagination %}
 {% from '@mio/changelog/macros.twig' import changelog_listing %}
 {% from '@mio/_layout/comments.twig' import comments_section %}
 
@@ -46,6 +46,4 @@
             {{ comments_section(comments, comments_category, current_user|default(null), comments_perms) }}
         </div>
     {% endif %}
-
-    {{ navigation(mio_navigation) }}
 {% endblock %}

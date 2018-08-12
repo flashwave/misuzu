@@ -1,5 +1,4 @@
 {% extends '@mio/master.twig' %}
-{% from '@mio/macros.twig' import navigation %}
 
 {% block content %}
     <div class="container">
@@ -17,8 +16,6 @@
             {% endif %}
         </div>
     </div>
-
-    {{ navigation(mio_navigation) }}
 
     {% if error_code|default(0) >= 500 %}
         <audio autoplay>

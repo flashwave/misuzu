@@ -4,7 +4,7 @@
 {% set title = post.post_title ~ ' :: News' %}
 {% set canonical_url = '/news.php?p=' ~ post.post_id %}
 
-{% block news_content %}
+{% block content %}
     <div class="container news__post">
         <div class="container__title">
             <a href="/news.php?c={{ post.category_id }}" class="container__title__link">{{ post.category_name }}</a> »
