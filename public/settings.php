@@ -68,7 +68,7 @@ if (!array_key_exists($settingsMode, $settingsModes)) {
 
 $settingsErrors = [];
 
-$disableAccountOptions = $app->getConfig()->get('Auth', 'prevent_registration', 'bool', false);
+$disableAccountOptions = !$app->inDebugMode() && $app->getConfig()->get('Auth', 'prevent_registration', 'bool', false);
 $avatarFileName = "{$app->getUserId()}.msz";
 $avatarWidthMax = $app->getConfig()->get('Avatar', 'max_width', 'int', 4000);
 $avatarHeightMax = $app->getConfig()->get('Avatar', 'max_height', 'int', 4000);
