@@ -23,8 +23,7 @@ if (!$app->hasActiveSession()) {
 $settingsModes = [
     'account' => 'Account',
     'sessions' => 'Sessions',
-    'login-history' => 'Login History',
-    'log' => 'Account Log',
+    'logs' => 'Logs',
 ];
 $settingsMode = $_GET['m'] ?? key($settingsModes);
 
@@ -338,7 +337,10 @@ switch ($settingsMode) {
         ]);
         break;
 
-    case 'login-history':
+    case 'logs':
+        $loginAttemptsOffset = max(0, $_GET['lo'] ?? 0);
+        $auditLogOffset = max(0, $_GET['ao'] ?? 0);
+
         $getLoginAttemptsCount = Database::prepare('
             SELECT COUNT(`attempt_id`)
             FROM `msz_login_attempts`
@@ -356,24 +358,15 @@ switch ($settingsMode) {
             ORDER BY `attempt_id` DESC
             LIMIT :offset, :take
         ');
-        $getLoginAttempts->bindValue('offset', $queryOffset);
-        $getLoginAttempts->bindValue('take', $queryTake);
+        $getLoginAttempts->bindValue('offset', $loginAttemptsOffset);
+        $getLoginAttempts->bindValue('take', min(20, max(5, $queryTake)));
         $getLoginAttempts->bindValue('user_id', $app->getUserId());
         $loginAttempts = $getLoginAttempts->execute() ? $getLoginAttempts->fetchAll() : [];
 
-        $tpl->vars([
-            'user_login_attempts' => $loginAttempts,
-            'login_attempts_offset' => $queryOffset,
-            'login_attempts_take' => $queryTake,
-            'login_attempts_count' => $loginAttemptsCount,
-        ]);
-        break;
-
-    case 'log':
         $auditLogCount = audit_log_count($app->getUserId());
         $auditLog = audit_log_list(
-            $queryOffset,
-            max(20, $queryTake),
+            $auditLogOffset,
+            min(20, max(5, $queryTake)),
             $app->getUserId()
         );
 
@@ -381,7 +374,7 @@ switch ($settingsMode) {
             'audit_logs' => $auditLog,
             'audit_log_count' => $auditLogCount,
             'audit_log_take' => $queryTake,
-            'audit_log_offset' => $queryOffset,
+            'audit_log_offset' => $auditLogOffset,
             'log_strings' => [
                 'PERSONAL_EMAIL_CHANGE' => 'Changed e-mail address to %s.',
                 'PERSONAL_PASSWORD_CHANGE' => 'Changed account password.',
@@ -396,6 +389,10 @@ switch ($settingsMode) {
                 'CHANGELOG_ACTION_CREATE' => 'Created new changelog action #%d.',
                 'CHANGELOG_ACTION_EDITl' => 'Edited changelog action #%d.',
             ],
+            'user_login_attempts' => $loginAttempts,
+            'login_attempts_offset' => $loginAttemptsOffset,
+            'login_attempts_take' => $queryTake,
+            'login_attempts_count' => $loginAttemptsCount,
         ]);
         break;
 }

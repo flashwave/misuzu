@@ -364,7 +364,7 @@ function url_construct(string $path, array $query = [], string $host = ''): stri
     $url = $host . $path;
 
     if (count($query)) {
-        $url .= '?';
+        $url .= strpos($path, '?') !== false ? '&' : '?';
 
         foreach ($query as $key => $value) {
             if ($value) {
