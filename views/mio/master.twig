@@ -7,10 +7,10 @@
         <link href="{{ '/css/mio.css'|asset_url }}" rel="stylesheet">
         <link href="{{ '/css/libraries.css'|asset_url }}" rel="stylesheet">
     </head>
-    <body class="mio">
-        <div class="mio__wrapper">
-            {% include '_layout/header.twig' %}
+    <body class="main">
+        {% include '_layout/header.twig' %}
 
+        <div class="main__wrapper">
             {% block content %}
                 <div class="container">
                     <div class="container__title">Hello!</div>
@@ -19,30 +19,31 @@
                     </div>
                 </div>
             {% endblock %}
-
-            <footer class="footer">
-                {% autoescape false %}
-                <div class="footer__copyright">
-                    {{ 'https://flash.moe'|html_link('Flashwave', 'footer__copyright__link') }} 2013-{{
-                    ''|date('Y') }} /
-                    {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_branch())|html_link(git_branch(), 'footer__copyright__link') }}
-                    # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__copyright__link') }}
-                    {% if query_count is defined %}
-                        / SQL Queries: {{ query_count|number_format }}
-                        / Took: {{ app.timeSinceStart|number_format(5) }} seconds
-                    {% endif %}
-                </div>
-
-                <div class="footer__links">
-                    {{ '#'|html_link('Rules', 'footer__links__link') }} |
-                    {{ '#'|html_link('Contact', 'footer__links__link') }} |
-                    {{ '#'|html_link('Status', 'footer__links__link') }} |
-                    {{ '/changelog.php'|html_link('Changelog', 'footer__links__link') }} |
-                    {{ 'https://twitter.com/flashiinet'|html_link('Twitter', 'footer__links__link') }}
-                </div>
-                {% endautoescape %}
-            </footer>
         </div>
+
+        <footer class="footer">
+            {% autoescape false %}
+            <div class="footer__copyright">
+                {{ 'https://flash.moe'|html_link('Flashwave', 'footer__copyright__link') }} 2013-{{
+                ''|date('Y') }} /
+                {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_branch())|html_link(git_branch(), 'footer__copyright__link') }}
+                # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__copyright__link') }}
+                {% if query_count is defined %}
+                    / SQL Queries: {{ query_count|number_format }}
+                    / Took: {{ app.timeSinceStart|number_format(5) }} seconds
+                {% endif %}
+            </div>
+
+            <div class="footer__links">
+                {{ '#'|html_link('Rules', 'footer__links__link') }} |
+                {{ '#'|html_link('Contact', 'footer__links__link') }} |
+                {{ '#'|html_link('Status', 'footer__links__link') }} |
+                {{ '/changelog.php'|html_link('Changelog', 'footer__links__link') }} |
+                {{ 'https://twitter.com/flashiinet'|html_link('Twitter', 'footer__links__link') }}
+            </div>
+            {% endautoescape %}
+        </footer>
+
         <script src="{{ '/js/libraries.js'|asset_url }}" charset="utf-8"></script>
         <script>
             window.addEventListener('load', () => {

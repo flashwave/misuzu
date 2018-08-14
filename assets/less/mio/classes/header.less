@@ -1,12 +1,19 @@
 @mio-header-mobile: 700px;
 
 .header {
-    display: flex;
-    align-items: center;
-    padding: 2px 0;
+    flex: 0 0 auto;
+    //background: linear-gradient(0deg, transparent, #c2affe) repeat-x;
 
-    @media (max-width: @mio-header-mobile) {
-        flex-direction: column;
+    &__wrapper {
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        padding: 3px 1px;
+        max-width: @site-max-width;
+
+        @media (max-width: @mio-header-mobile) {
+            flex-direction: column;
+        }
     }
 
     @media (max-width: @mio-header-mobile) {
