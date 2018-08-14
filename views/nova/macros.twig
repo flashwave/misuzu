@@ -1,5 +1,0 @@
-{% macro link(url, content, class) %}
-{% spaceless %}
-<a href="{{ url }}" {% if '://' in url %} target="_blank" rel="noreferrer noopener"{% endif %} {% if class is defined %}class="{{ class }}"{% endif %}>{{ content|raw }}</a>
-{% endspaceless %}
-{% endmacro %}
