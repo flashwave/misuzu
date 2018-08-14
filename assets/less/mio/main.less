@@ -1,5 +1,6 @@
 @mio-font-heading: Verdana, 'Dejavu Sans', Arial, Helvetica, sans-serif;
 @mio-font-regular: Tahoma, Geneva, 'Dejavu Sans', Arial, Helvetica, sans-serif;
+@site-max-width: 1200px;
 
 * {
     margin: 0;
@@ -14,7 +15,9 @@ body {
     height: 100%;
 }
 
-.mio {
+.main {
+    display: flex;
+    flex-direction: column;
     background-color: #fbeeff;
     background-image: linear-gradient(180deg, #c2affe, transparent);
     background-repeat: repeat-x;
@@ -23,11 +26,13 @@ body {
     color: #000;
 
     &__wrapper {
-        max-width: 1200px;
+        max-width: @site-max-width;
+        width: 100%;
         margin: 0 auto;
         padding: 1px;
+        flex: 1 0 auto;
 
-        @media (max-width: 1201px) {
+        @media (max-width: @site-max-width + 1) {
             margin: 0 1px;
         }
     }

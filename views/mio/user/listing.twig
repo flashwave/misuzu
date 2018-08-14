@@ -1,5 +1,5 @@
 {% extends '@mio/user/master.twig' %}
-{% from '@mio/macros.twig' import navigation, pagination %}
+{% from '@mio/macros.twig' import pagination %}
 
 {% set canonical_url = '/members.php'|url_construct({
     'r': role.role_id != 1 ? role.role_id : 0,
@@ -131,5 +131,4 @@
     </div>
 
     {{ pagination(role.role_user_count, users_take, users_offset, full_url) }}
-    {{ navigation(mio_navigation, '/members.php') }}
 {% endblock %}

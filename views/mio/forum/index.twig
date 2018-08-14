@@ -1,5 +1,4 @@
 {% extends '@mio/forum/master.twig' %}
-{% from '@mio/macros.twig' import navigation %}
 {% from '@mio/forum/macros.twig' import forum_category_listing %}
 
 {% set title = 'Forum Listing' %}
@@ -30,6 +29,4 @@
             </div>
         </div>
     {% endif %}
-
-    {{ navigation(mio_navigation, '/forum/') }}
 {% endblock %}

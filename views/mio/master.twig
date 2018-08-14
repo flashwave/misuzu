@@ -1,13 +1,3 @@
-{% from '@mio/macros.twig' import navigation %}
-
-{% set mio_navigation = {
-    'Home': '/',
-    'News': '/news.php',
-    'Forum': '/forum/',
-    'Chat': 'https://chat.flashii.net',
-    'Members': '/members.php',
-} %}
-
 <!doctype html>
 <html>
     <head>
@@ -17,40 +7,10 @@
         <link href="{{ '/css/mio.css'|asset_url }}" rel="stylesheet">
         <link href="{{ '/css/libraries.css'|asset_url }}" rel="stylesheet">
     </head>
-    <body class="mio">
-        <div class="mio__wrapper">
-            <nav class="header">
-                <div class="header__logo">
-                    <a href="/" class="header__logo__link">
-                        <img class="header__logo__image" src="https://static.flash.moe/logos/logo-exo.png" alt="Flashii">
-                    </a>
-                </div>
+    <body class="main">
+        {% include '_layout/header.twig' %}
 
-                <div class="header__menu">
-                    {% if app.hasActiveSession %}
-                        <div class="container header__user">
-                            <div class="container__title">Hey, {{ current_user.username }}!</div>
-                            <div class="header__user__content">
-                                <a href="/settings.php?m=images" class="avatar header__user__avatar" style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');"></a>
-
-                                <div class="header__user__links__container">
-                                    <ul class="header__user__links">
-                                        <li class="header__user__option"><a class="header__user__link" href="/profile.php?u={{ current_user.user_id }}">Profile</a></li>
-                                        <li class="header__user__option"><a class="header__user__link" href="/settings.php">Settings</a></li>
-                                        {% if has_manage_access %}
-                                            <li class="header__user__option"><a class="header__user__link" href="{{ manage_link|default('/manage/index.php') }}">Manage</a></li>
-                                        {% endif %}
-                                        <li class="header__user__option"><a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Logout</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    {% else %}
-                        <a href="/auth.php" class="input__button">Login/Register</a>
-                    {% endif %}
-                </div>
-            </nav>
-
+        <div class="main__wrapper">
             {% block content %}
                 <div class="container">
                     <div class="container__title">Hello!</div>
@@ -58,33 +18,24 @@
                         This page has no content!
                     </div>
                 </div>
-
-                {{ navigation(mio_navigation) }}
             {% endblock %}
-
-            <footer class="footer">
-                {% autoescape false %}
-                <div class="footer__copyright">
-                    {{ 'https://flash.moe'|html_link('Flashwave', 'footer__copyright__link') }} 2013-{{
-                    ''|date('Y') }} /
-                    {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_branch())|html_link(git_branch(), 'footer__copyright__link') }}
-                    # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__copyright__link') }}
-                    {% if query_count is defined %}
-                        / SQL Queries: {{ query_count|number_format }}
-                        / Took: {{ app.timeSinceStart|number_format(5) }} seconds
-                    {% endif %}
-                </div>
-
-                <div class="footer__links">
-                    {{ '#'|html_link('Rules', 'footer__links__link') }} |
-                    {{ '#'|html_link('Contact', 'footer__links__link') }} |
-                    {{ '#'|html_link('Status', 'footer__links__link') }} |
-                    {{ '/changelog.php'|html_link('Changelog', 'footer__links__link') }} |
-                    {{ 'https://twitter.com/flashiinet'|html_link('Twitter', 'footer__links__link') }}
-                </div>
-                {% endautoescape %}
-            </footer>
         </div>
+
+        <footer class="footer">
+            {% autoescape false %}
+            <div class="footer__copyright">
+                {{ 'https://flash.moe'|html_link('Flashwave', 'footer__link') }} 2013-{{
+                ''|date('Y') }} /
+                {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_branch())|html_link(git_branch(), 'footer__link') }}
+                # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__link') }}
+                {% if query_count is defined %}
+                    / SQL Queries: {{ query_count|number_format }}
+                    / Took: {{ app.timeSinceStart|number_format(5) }} seconds
+                {% endif %}
+            </div>
+            {% endautoescape %}
+        </footer>
+
         <script src="{{ '/js/libraries.js'|asset_url }}" charset="utf-8"></script>
         <script>
             window.addEventListener('load', () => {

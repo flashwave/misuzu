@@ -1,5 +1,4 @@
 {% extends '@mio/home/master.twig' %}
-{% from '@mio/macros.twig' import navigation %}
 {% from '@mio/news/macros.twig' import news_preview %}
 {% from '@mio/changelog/macros.twig' import changelog_listing %}
 
@@ -47,8 +46,6 @@
             </div>
         </div>
     </div>
-
-    {{ navigation(mio_navigation, '/') }}
 
     {% if embed_linked_data is defined and embed_linked_data %}
         <script type="application/ld+json">

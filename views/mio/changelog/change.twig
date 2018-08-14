@@ -1,5 +1,4 @@
 {% extends '@mio/changelog/master.twig' %}
-{% from '@mio/macros.twig' import navigation %}
 {% from '@mio/_layout/comments.twig' import comments_section %}
 
 {% set is_valid = change|length > 0 %}
@@ -105,6 +104,4 @@
             {{ comments_section(comments, comments_category, current_user|default(null), comments_perms) }}
         </div>
     {% endif %}
-
-    {{ navigation(mio_navigation) }}
 {% endblock %}

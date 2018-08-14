@@ -64,9 +64,12 @@
 } %}
 
 {% block content %}
-    {{ navigation(mio_navigation, false, true) }}
+    {# navigation({
+        (profile.username): 'profile',
+        'Comments': 'comments',
+    }, 'profile', true, '#%s') #}
 
-    <div class="profile">
+    <div class="profile" id="profile">
         <div class="container profile__header">
             <div class="container__title">Profile of {{ profile.username }}</div>
             <div class="profile__header__content">
