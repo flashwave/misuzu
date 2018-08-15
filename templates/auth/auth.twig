@@ -1,7 +1,7 @@
 {% extends 'auth/master.twig' %}
 
 {% block content %}
-    <div class="container">
+    <div class="auth-container">
         <div class="form__wrapper">
             <input class="form__toggle" id="_authmode_login" type="radio" name="_authmode"{% if auth_mode == 'login' %} checked{% endif %}>
             <div class="form form--login">

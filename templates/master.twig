@@ -6,6 +6,9 @@
         {% include '_layout/meta.twig' %}
         <link href="{{ '/css/mio.css'|asset_url }}" rel="stylesheet">
         <link href="{{ '/css/libraries.css'|asset_url }}" rel="stylesheet">
+        {% if is_auth|default(false) %}
+            <link href="{{ '/css/auth.css'|asset_url }}" rel="stylesheet" type="text/css">
+        {% endif %}
         {% if manage_menu is defined %}
             <link href="{{ '/css/manage.css'|asset_url }}" rel="stylesheet">
             <style>
