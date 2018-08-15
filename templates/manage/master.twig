@@ -1,51 +1,30 @@
 {% extends 'master.twig' %}
+{% from 'manage/macros.twig' import manage_navigation %}
 {% set title = 'Broom Closet' %}
 {% set is_manage = true %}
 
-{% block before_content %}
-    <nav class="manage-header">
-        <div class="manage-header__wrapper">
-            <a class="manage-header__logo" href="/manage/index.php">
-                Broom Closet
-            </a>
-
-            <div class="manage-header__navigation">
-                {% for name, menu in manage_menu %}
-                    <div class="manage-header__menu">
-                        <input type="checkbox" id="menu-{{ name|lower }}-state" class="manage-header__menu__state">
-                        <label for="menu-{{ name|lower }}-state" class="manage-header__menu__toggle">{{ name }}</label>
-                        <div class="manage-header__menu__options">
-                            <div class="manage-header__menu__section">
-                            {% for title, link in menu %}
-                                {% if link == '_' %}
-                            </div>
-                            <div class="manage-header__menu__section">
-                                {% else %}
-                                <a class="manage-header__menu__link" href="{{ link }}">{{ title }}</a>
-                                {% endif %}
-                            {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-
-            <div class="manage-header__user">
-                <div class="manage-header__menu">
-                    <input type="checkbox" id="menu-user-state" class="manage-header__menu__state">
-                    <label for="menu-user-state" class="manage-header__menu__toggle manage-header__menu__toggle--profile" style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');{{ current_user.user_colour|html_colour }}">{{ current_user.username }}</label>
-                    <div class="manage-header__menu__options manage-header__menu__options--user">
-                        <div class="manage-header__menu__section">
-                            <a class="manage-header__menu__link" href="/profile.php?u={{ current_user.user_id }}">Profile</a>
-                            <a class="manage-header__menu__link" href="/settings.php">Settings</a>
-                        </div>
-                        <div class="manage-header__menu__section">
-                            <a class="manage-header__menu__link" href="/">Return</a>
-                            <a class="manage-header__menu__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Logout</a>
-                        </div>
-                    </div>
+{% block content %}
+    <div class="management">
+        <nav class="management__navigation">
+            <div class="container">
+                <div class="container__title">
+                    The Broom Closet
+                </div>
+                <div class="side-navigation__wrapper">
+                    {{ manage_navigation(manage_menu) }}
                 </div>
             </div>
+        </nav>
+
+        <div class="management__content">
+            {% block manage_content %}
+                <div class="container">
+                    <div class="container__title">No brooms</div>
+                    <div class="container__content">
+                        This broom closet is empty.
+                    </div>
+                </div>
+            {% endblock %}
         </div>
-    </nav>
+    </div>
 {% endblock %}

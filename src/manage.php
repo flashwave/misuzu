@@ -25,8 +25,6 @@ function manage_get_menu(int $userId): array
         $perms['general'],
         MSZ_GENERAL_PERM_MANAGE_EMOTICONS | MSZ_GENERAL_PERM_MANAGE_SETTINGS
     )) {
-        $menu['General'][] = '_';
-
         if (perms_check($perms['general'], MSZ_GENERAL_PERM_MANAGE_EMOTICONS)) {
             $menu['General']['Emoticons'] = '/manage/index.php?v=emoticons';
         }
@@ -55,8 +53,6 @@ function manage_get_menu(int $userId): array
             $perms['user'],
             MSZ_USER_PERM_MANAGE_REPORTS | MSZ_USER_PERM_MANAGE_RESTRICTIONS | MSZ_USER_PERM_MANAGE_BLACKLISTS
         )) {
-            $menu['Users'][] = '_';
-
             if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_REPORTS)) {
                 $menu['Users']['Reports'] = '/manage/users.php?v=reports';
             }

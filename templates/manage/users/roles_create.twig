@@ -1,7 +1,7 @@
 {% extends 'manage/users/master.twig' %}
 {% from 'manage/macros.twig' import permissions_table %}
 
-{% block content %}
+{% block manage_content %}
     <form action="?v=role{{ edit_role is defined ? '&r=' ~ edit_role.role_id : '' }}" method="post">
         <div class="container">
             <h1 class="container__title">
@@ -40,7 +40,10 @@
                 </div>
             </label>
 
-            <h2 class="container__subtitle">Colour</h2>
+        </div>
+
+        <div class="container">
+            <div class="container__title">Colour</div>
 
             <label class="form__label">
                 <div class="form__label__text">Inherit Colour</div>
@@ -70,7 +73,10 @@
                 </div>
             </label>
 
-            <h2 class="container__subtitle">Additional</h2>
+        </div>
+
+        <div class="container">
+            <div class="container__title">Additional</div>
 
             <label class="form__label">
                 <div class="form__label__text">Description</div>
@@ -82,7 +88,7 @@
 
         {% if can_manage_perms %}
             <div class="container">
-                <h2 class="container__subtitle">Permissions</h2>
+                <div class="container__title">Permissions</div>
                 {{ permissions_table(permissions) }}
             </div>
         {% endif %}

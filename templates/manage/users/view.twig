@@ -1,7 +1,7 @@
 {% extends 'manage/users/master.twig' %}
 {% from 'manage/macros.twig' import permissions_table %}
 
-{% block content %}
+{% block manage_content %}
     {% if can_manage_users %}
         <form method="post" enctype="multipart/form-data" action="">
             <div class="container">
@@ -173,7 +173,7 @@
                     <label class="form__label">
                         <div class="form__label__text">Has Roles</div>
                         <div class="form__label__input">
-                            <select name="manage_roles[role]" class="input input--select">
+                            <select name="manage_roles[role]" class="input__select">
                                 {% for role in has_roles %}
                                     <option value="{{ role.role_id }}"{% if role.role_id == view_user.display_role %} selected{% endif %}>
                                         {{ role.role_name }}
@@ -197,7 +197,7 @@
                     <label class="form__label">
                         <div class="form__label__text">Available Roles</div>
                         <div class="form__label__input">
-                            <select name="add_role[role]" class="input input--select">
+                            <select name="add_role[role]" class="input__select">
                                 {% for role in available_roles %}
                                     <option value="{{ role.role_id }}">
                                         {{ role.role_name }}

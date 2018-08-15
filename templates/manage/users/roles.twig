@@ -1,7 +1,7 @@
 {% extends 'manage/users/master.twig' %}
-{% from 'manage/macros.twig' import pagination %}
+{% from 'macros.twig' import pagination %}
 
-{% block content %}
+{% block manage_content %}
     {% if can_manage_roles %}
         <div class="container">
             <a href="?v=role" class="input__button">Create new Role</a>

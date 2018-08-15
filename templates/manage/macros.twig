@@ -1,95 +1,19 @@
-{% macro pagination_segment(url_window, base_url, currentPage) %}
-    {% for page, url in url_window %}
-        <li class="pagination__option{{ currentPage == page ? ' pagination__option--active' : '' }}">
-            <a href="{{ base_url ~ url|slice(2) }}" class="pagination__link{{ currentPage == page ? ' pagination__link--active' : '' }}">
-                {{ page }}
-            </a>
-        </li>
-    {% endfor %}
-{% endmacro %}
+{% macro manage_navigation(navi, level) %}
+    {% from _self import manage_navigation %}
+    {% set level = level|default(0) %}
 
-{% macro pagination(itemCount, itemRange, currentOffset, baseUrl, classPrefix, alwaysRender, useRanges, offsetParam, pageRange) %}
-    {% set alwaysRender = alwaysRender|default(false) %}
-
-    {% if alwaysRender or itemCount > itemRange %}
-        {% set classPrefix  = classPrefix|default('') %}
-        {% set separator    = '%3F' in baseUrl|default('')|url_encode ? '&' : '?' %}
-        {% set baseUrl      = baseUrl ~ separator %}
-        {% set pageCount    = (itemCount / itemRange)|round(0, 'ceil') %}
-        {% set currentPage  = currentOffset // itemRange %}
-        {% set useRanges    = useRanges|default(true) %}
-        {% set offsetParam  = offsetParam|default(useRanges ? 'o' : 'p') %}
-        {% set pageRange    = pageRange|default(3) %}
-
-        <ul class="{{ classPrefix }}pagination">
-            {% if currentPage < 1 %}
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--first {{ classPrefix }}pagination__option--disabled">
-                    <span class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--first">
-                        &laquo;
-                    </span>
-                </li>
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--prev {{ classPrefix }}pagination__option--disabled">
-                    <span class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--prev">
-                        &lsaquo;
-                    </span>
-                </li>
-            {% else %}
-                {% set firstUrl = baseUrl|slice(0, (baseUrl|length) - (separator|length)) %}
-
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--first">
-                    <a href="{{ firstUrl }}" class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--first" rel="first">
-                        &laquo;
-                    </a>
-                </li>
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--prev">
-                    <a href="{{ currentPage < 2 ? firstUrl : baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((currentPage - 1) * itemRange) : currentPage) }}" class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--prev" rel="prev">
-                        &lsaquo;
-                    </a>
-                </li>
-            {% endif %}
-
-            <li class="{{ classPrefix }}pagination__separator"></li>
-
-            {% set paginationStart = currentPage - pageRange %}
-            {% set paginationStop = currentPage + pageRange %}
-
-            {% for i in paginationStart..paginationStop %}
-                {% if i >= 0 and i < pageCount %}
-                    <li class="{{ classPrefix }}pagination__option{{ currentPage == i ? ' ' ~ classPrefix ~ 'pagination__option--active' : '' }}">
-                        <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? i * itemRange : i + 1) }}" class="{{ classPrefix }}pagination__link{{ currentPage == i ? ' ' ~ classPrefix ~ 'pagination__link--active' : '' }}">
-                            {{ i + 1 }}
-                        </a>
-                    </li>
+    <ul class="side-navigation side-navigation--layer-{{ level }}">
+        {% for name, value in navi %}
+            <li class="side-navigation__item">
+                {% if value is iterable %}
+                    <span class="side-navigation__title">{{ name }}</span>
+                    {{ manage_navigation(value, level + 1) }}
+                {% else %}
+                    <a href="{{ value }}" class="side-navigation__link">{{ name }}</a>
                 {% endif %}
-            {% endfor %}
-
-            <li class="{{ classPrefix }}pagination__separator"></li>
-
-            {% if currentPage >= pageCount - 1 %}
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--next {{ classPrefix }}pagination__option--disabled">
-                    <span class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--next">
-                        &rsaquo;
-                    </span>
-                </li>
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--last {{ classPrefix }}pagination__option--disabled">
-                    <span class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--last">
-                        &raquo;
-                    </span>
-                </li>
-            {% else %}
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--next">
-                    <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((currentPage + 1) * itemRange) : currentPage + 2) }}" class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--next" rel="next">
-                        &rsaquo;
-                    </a>
-                </li>
-                <li class="{{ classPrefix }}pagination__option {{ classPrefix }}pagination__option--last">
-                    <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((pageCount - 1) * itemRange) : pageCount) }}" class="{{ classPrefix }}pagination__link {{ classPrefix }}pagination__link--last" rel="last">
-                        &raquo;
-                    </a>
-                </li>
-            {% endif %}
-        </ul>
-    {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
 {% endmacro %}
 
 {% macro permissions_table(permissions) %}

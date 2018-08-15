@@ -1,0 +1,40 @@
+{% macro user_card(user, profile_url, rank_url) %}
+    <div class="usercard">
+        <a  href="{{ profile_url|default('/profile.php?u=%d')|format(user.user_id) }}"
+            class="usercard__background"></a>
+
+        <div class="usercard__container">
+            <div class="avatar usercard__avatar"
+                style="background-image:url('/profile.php?u={{ user.user_id }}&amp;m=avatar')">
+            </div>
+
+            <div class="usercard__content">
+                <div class="usercard__name"
+                    {% if user.user_colour is defined %}style="{{ user.user_colour|html_colour({
+                        'color': '%s',
+                        'text-shadow': '0 0 5px %s',
+                    }) }}"{% endif %}>
+                    {{ user.username }}
+                </div>
+
+                <div class="usercard__info">
+                    {% if user.user_country is defined %}
+                        <div class="flag flag--{{ user.user_country|lower }} usercard__item usercard__item--country" title="{{ user.user_country|country_name }}">
+                            {{ user.user_country }}
+                        </div>
+                    {% endif %}
+
+                    {#<a class="usercard__item usercard__item--donator" href="/donate.php">
+                        Donator
+                    </a>#}
+
+                    {% if user.user_title is defined %}
+                        <a class="usercard__item usercard__item--title{% if user.role_id is defined %} usercard__item--active{% endif %}"{% if user.role_id is defined %} href="{{ rank_url|default('/members.php?r=%d')|format(user.role_id) }}"{% endif %}>
+                            {{ user.user_title }}
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}

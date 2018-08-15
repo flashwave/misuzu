@@ -1,19 +1,13 @@
 {% extends 'manage/users/master.twig' %}
-{% from 'manage/macros.twig' import pagination %}
+{% from 'macros.twig' import pagination %}
+{% from 'user/macros.twig' import user_card %}
 
-{% block content %}
-    <div class="listing user-listing">
+{% block manage_content %}
+    <div class="userlist">
         {% for user in manage_users %}
-            <a href="?v=view&amp;u={{ user.user_id }}" class="listing__entry user-listing__entry"{% if not user.user_colour|colour_get_inherit %} style="{{ user.user_colour|html_colour({'border-color':'%s'}) }}"{% endif %}>
-                <div class="listing__entry__content user-listing__entry__content">
-                    <div class="user-listing__info">
-                        <div class="user-listing__username">
-                            {{ user.username }}
-                        </div>
-                    </div>
-                    <div class="avatar user-listing__avatar" style="background-image:url('/profile.php?u={{ user.user_id }}&amp;m=avatar');"></div>
-                </div>
-            </a>
+            <div class="userlist__item">
+                {{ user_card(user, '?v=view&u=%d', '?v=role&r=%d') }}
+            </div>
         {% endfor %}
     </div>
 

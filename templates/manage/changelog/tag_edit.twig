@@ -1,6 +1,6 @@
 {% extends 'manage/changelog/master.twig' %}
 
-{% block content %}
+{% block manage_content %}
     <div class="container">
         <form action="?v=tag{{ edit_tag is defined ? '&t=' ~ edit_tag.tag_id : '' }}" method="post">
             <h1 class="container__title">

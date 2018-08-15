@@ -3,11 +3,16 @@
 @site-max-width: 1200px;
 @site-mobile-width: 800px;
 
+:root {
+    --site-max-width: @site-max-width;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     position: relative;
+    outline-style: none;
 }
 
 html,
@@ -24,7 +29,7 @@ body {
     color: #000;
 
     &__wrapper {
-        max-width: @site-max-width;
+        max-width: var(--site-max-width);
         width: 100%;
         margin: 0 auto;
         padding: 1px;
@@ -49,9 +54,10 @@ body {
 @import "classes/avatar";
 @import "classes/container";
 @import "classes/flag";
-@import "classes/heading";
 @import "classes/navigation";
 @import "classes/pagination";
+@import "classes/management";
+@import "classes/side-navigation";
 
 // Specific styles
 @import "classes/footer";
@@ -59,6 +65,7 @@ body {
 @import "classes/profile";
 @import "classes/index";
 @import "classes/changelog";
+@import "classes/permissions";
 
 // Settings
 @import "classes/settings/description";
@@ -87,9 +94,9 @@ body {
 @import "classes/forum/topic";
 @import "classes/forum/topics";
 
-// Member listing
-@import "classes/members/user";
-@import "classes/members/users";
+// User stuff
+@import "classes/usercard";
+@import "classes/userlist";
 
 // Comments
 @import "classes/comment"; // entries
