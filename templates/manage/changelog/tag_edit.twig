@@ -14,14 +14,14 @@
             <label class="form__label" style="width:100%">
                 <div class="form__label__text">Name</div>
                 <div class="form__label__input">
-                    <input class="input input--text" type="text" value="{{ edit_tag is defined ? edit_tag.tag_name : '' }}" name="tag[name]" maxlength="255">
+                    <input class="input__text" type="text" value="{{ edit_tag is defined ? edit_tag.tag_name : '' }}" name="tag[name]" maxlength="255">
                 </div>
             </label>
 
             <label class="form__label" style="width:100%">
                 <div class="form__label__text">Description</div>
                 <div class="form__label__input">
-                    <textarea class="input input--textarea" name="tag[description]" maxlength="65535">{{ edit_tag is defined ? edit_tag.tag_description : '' }}</textarea>
+                    <textarea class="input__textarea" name="tag[description]" maxlength="65535">{{ edit_tag is defined ? edit_tag.tag_description : '' }}</textarea>
                 </div>
             </label>
 
@@ -36,13 +36,13 @@
                 <label class="form__label">
                     <div class="form__label__text">Created</div>
                     <div class="form__label__input">
-                        <input class="input input--text" type="text" value="{{ edit_tag.tag_created }}" readonly>
+                        <input class="input__text" type="text" value="{{ edit_tag.tag_created }}" readonly>
                     </div>
                 </label>
             {% endif %}
 
             <div>
-                <button class="button" name="csrf" value="{{ csrf_token() }}">Save</button>
+                <button class="input__button" name="csrf" value="{{ csrf_token() }}">Save</button>
             </div>
         </form>
 
@@ -67,7 +67,7 @@
                     </label>
 
                     <div>
-                        <button class="button" name="csrf" value="{{ csrf_token() }}">Remove</button>
+                        <button class="input__button" name="csrf" value="{{ csrf_token() }}">Remove</button>
                     </div>
                 </form>
             {% endif %}
@@ -88,7 +88,7 @@
                     </label>
 
                     <div>
-                        <button class="button" name="csrf" value="{{ csrf_token() }}">Add</button>
+                        <button class="input__button" name="csrf" value="{{ csrf_token() }}">Add</button>
                     </div>
                 </form>
             {% endif %}

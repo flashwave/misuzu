@@ -6,11 +6,15 @@
         {% include '_layout/meta.twig' %}
         <link href="{{ '/css/mio.css'|asset_url }}" rel="stylesheet">
         <link href="{{ '/css/libraries.css'|asset_url }}" rel="stylesheet">
+        {% if is_manage|default(false) %}
+            <link href="{{ '/css/manage.css'|asset_url }}" rel="stylesheet">
+        {% endif %}
     </head>
     <body class="main">
         {% include '_layout/header.twig' %}
 
         <div class="main__wrapper">
+            {% block before_content %}{% endblock %}
             {% block content %}
                 <div class="container">
                     <div class="container__title">Hello!</div>

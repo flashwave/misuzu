@@ -1,83 +1,51 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>{{ globals.site_name|default('The') }} Broom Closet</title>
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-        <link href="{{ '/css/manage.css'|asset_url }}" rel="stylesheet">
-        <link href="{{ '/css/libraries.css'|asset_url }}" rel="stylesheet">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-    </head>
-    <body class="manage">
-        <div class="wrapper">
-            <nav class="header">
-                <div class="header__wrapper">
-                    <a class="header__logo" href="/manage/index.php">
-                        Broom Closet
-                    </a>
+{% extends 'master.twig' %}
+{% set title = 'Broom Closet' %}
+{% set is_manage = true %}
 
-                    <div class="header__navigation">
-                        {% for name, menu in manage_menu %}
-                            <div class="header__menu">
-                                <input type="checkbox" id="menu-{{ name|lower }}-state" class="header__menu__state">
-                                <label for="menu-{{ name|lower }}-state" class="header__menu__toggle">{{ name }}</label>
-                                <div class="header__menu__options">
-                                    <div class="header__menu__section">
-                                    {% for title, link in menu %}
-                                        {% if link == '_' %}
-                                    </div>
-                                    <div class="header__menu__section">
-                                        {% else %}
-                                        <a class="header__menu__link" href="{{ link }}">{{ title }}</a>
-                                        {% endif %}
-                                    {% endfor %}
-                                    </div>
-                                </div>
+{% block before_content %}
+    <nav class="manage-header">
+        <div class="manage-header__wrapper">
+            <a class="manage-header__logo" href="/manage/index.php">
+                Broom Closet
+            </a>
+
+            <div class="manage-header__navigation">
+                {% for name, menu in manage_menu %}
+                    <div class="manage-header__menu">
+                        <input type="checkbox" id="menu-{{ name|lower }}-state" class="manage-header__menu__state">
+                        <label for="menu-{{ name|lower }}-state" class="manage-header__menu__toggle">{{ name }}</label>
+                        <div class="manage-header__menu__options">
+                            <div class="manage-header__menu__section">
+                            {% for title, link in menu %}
+                                {% if link == '_' %}
                             </div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="header__user">
-                        <div class="header__menu">
-                            <input type="checkbox" id="menu-user-state" class="header__menu__state">
-                            <label for="menu-user-state" class="header__menu__toggle header__menu__toggle--profile" style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');{{ current_user.user_colour|html_colour }}">{{ current_user.username }}</label>
-                            <div class="header__menu__options header__menu__options--user">
-                                <div class="header__menu__section">
-                                    <a class="header__menu__link" href="/profile.php?u={{ current_user.user_id }}">Profile</a>
-                                    <a class="header__menu__link" href="/settings.php">Settings</a>
-                                </div>
-                                <div class="header__menu__section">
-                                    <a class="header__menu__link" href="/">Return</a>
-                                    <a class="header__menu__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Logout</a>
-                                </div>
+                            <div class="manage-header__menu__section">
+                                {% else %}
+                                <a class="manage-header__menu__link" href="{{ link }}">{{ title }}</a>
+                                {% endif %}
+                            {% endfor %}
                             </div>
                         </div>
                     </div>
-                </div>
-            </nav>
+                {% endfor %}
+            </div>
 
-            {% block content %}
-                <div class="container">
-                    <p>This page has no content.</p>
+            <div class="manage-header__user">
+                <div class="manage-header__menu">
+                    <input type="checkbox" id="menu-user-state" class="manage-header__menu__state">
+                    <label for="menu-user-state" class="manage-header__menu__toggle manage-header__menu__toggle--profile" style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');{{ current_user.user_colour|html_colour }}">{{ current_user.username }}</label>
+                    <div class="manage-header__menu__options manage-header__menu__options--user">
+                        <div class="manage-header__menu__section">
+                            <a class="manage-header__menu__link" href="/profile.php?u={{ current_user.user_id }}">Profile</a>
+                            <a class="manage-header__menu__link" href="/settings.php">Settings</a>
+                        </div>
+                        <div class="manage-header__menu__section">
+                            <a class="manage-header__menu__link" href="/">Return</a>
+                            <a class="manage-header__menu__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Logout</a>
+                        </div>
+                    </div>
                 </div>
-            {% endblock %}
-
-            <footer class="footer">
-                {{ 'https://flash.moe'|html_link('Flashwave', 'footer__link')|raw }} 2013-{{
-                ''|date('Y') }} /
-                {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_branch())|html_link(git_branch(), 'footer__link')|raw }}
-                # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__link')|raw }}
-                {% if query_count is defined %}
-                    / SQL Queries: {{ query_count|number_format }}
-                {% endif %}
-            </footer>
+            </div>
         </div>
-        <script src="{{ '/js/libraries.js'|asset_url }}" charset="utf-8"></script>
-        <script>
-            window.addEventListener('load', () => {
-                timeago().render(document.querySelectorAll('time'));
-                hljs.initHighlighting();
-            });
-        </script>
-    </body>
-</html>
+    </nav>
+{% endblock %}

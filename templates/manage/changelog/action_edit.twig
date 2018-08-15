@@ -14,14 +14,14 @@
             <label class="form__label">
                 <div class="form__label__text">Name</div>
                 <div class="form__label__input">
-                    <input class="input input--text" type="text" value="{{ edit_action is defined ? edit_action.action_name : '' }}" name="action[name]" maxlength="50">
+                    <input class="input__text" type="text" value="{{ edit_action is defined ? edit_action.action_name : '' }}" name="action[name]" maxlength="50">
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Class</div>
                 <div class="form__label__input">
-                    <input class="input input--text" type="text" value="{{ edit_action is defined ? edit_action.action_class : '' }}" name="action[class]" maxlength="20">
+                    <input class="input__text" type="text" value="{{ edit_action is defined ? edit_action.action_class : '' }}" name="action[class]" maxlength="20">
                 </div>
             </label>
 
@@ -56,7 +56,7 @@
             </label>
 
             <div>
-                <button class="button" name="csrf" value="{{ csrf_token() }}">Save</button>
+                <button class="input__button" name="csrf" value="{{ csrf_token() }}">Save</button>
             </div>
         </form>
     </div>

@@ -3,7 +3,7 @@
         <div class="header__icons">
             <label class="header__icon header__icon--menu" for="toggle-mobile-header-menu"></label>
 
-            <a class="header__logo" href="/">
+            <a class="header__logo{% if is_manage|default(false) %} header__logo--manage{% endif %}" href="/">
                 {{ globals.site_name }}
             </a>
 

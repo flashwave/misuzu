@@ -1,7 +1,8 @@
-.header {
+.manage-header {
     background-color: #111;
     background-image: linear-gradient(0deg, #222, #333);
     font-size: 1.5em;
+    color: #fff;
 
     &__wrapper {
         display: flex;
@@ -71,12 +72,12 @@
         &__state {
             display: none;
 
-            &:checked ~ .header__menu__toggle {
+            &:checked ~ .manage-header__menu__toggle {
                 background-color: #333;
                 min-width: 150px;
             }
 
-            &:checked ~ .header__menu__options {
+            &:checked ~ .manage-header__menu__options {
                 max-height: 250px;
             }
         }

@@ -2,7 +2,7 @@
 {% from 'manage/macros.twig' import pagination %}
 
 {% block content %}
-    <div class="container listing user-listing">
+    <div class="listing user-listing">
         {% for user in manage_users %}
             <a href="?v=view&amp;u={{ user.user_id }}" class="listing__entry user-listing__entry"{% if not user.user_colour|colour_get_inherit %} style="{{ user.user_colour|html_colour({'border-color':'%s'}) }}"{% endif %}>
                 <div class="listing__entry__content user-listing__entry__content">
@@ -17,7 +17,5 @@
         {% endfor %}
     </div>
 
-    <div class="container container--center">
-        {{ pagination(manage_users_count, manage_users_range, manage_users_offset, '?v=listing') }}
-    </div>
+    {{ pagination(manage_users_count, manage_users_range, manage_users_offset, '?v=listing') }}
 {% endblock %}

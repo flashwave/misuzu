@@ -15,7 +15,7 @@
             <label class="form__label">
                 <div class="form__label__text">Role Name</div>
                 <div class="form__label__input">
-                    <input class="input input--text" type="text" value="{{ edit_role is defined ? edit_role.role_name : '' }}" name="role[name]" maxlength="255">
+                    <input class="input__text" type="text" value="{{ edit_role is defined ? edit_role.role_name : '' }}" name="role[name]" maxlength="255">
                 </div>
             </label>
 
@@ -36,7 +36,7 @@
             <label class="form__label">
                 <div class="form__label__text">Title</div>
                 <div class="form__label__input">
-                    <input class="input input--text" type="text" value="{{ edit_role is defined ? edit_role.role_title : '' }}" name="role[title]" maxlength="64">
+                    <input class="input__text" type="text" value="{{ edit_role is defined ? edit_role.role_title : '' }}" name="role[title]" maxlength="64">
                 </div>
             </label>
 
@@ -75,7 +75,7 @@
             <label class="form__label">
                 <div class="form__label__text">Description</div>
                 <div class="form__label__input">
-                    <textarea class="input input--textarea" name="role[description]" maxlength="1000">{{ edit_role is defined ? edit_role.role_description : '' }}</textarea>
+                    <textarea class="input__textarea" name="role[description]" maxlength="1000">{{ edit_role is defined ? edit_role.role_description : '' }}</textarea>
                 </div>
             </label>
         </div>
@@ -88,7 +88,7 @@
         {% endif %}
 
         <div class="container">
-            <button class="button" name="csrf" value="{{ csrf_token() }}">{{ edit_role is defined ? 'Update role' : 'Create role' }}</button>
+            <button class="input__button" name="csrf" value="{{ csrf_token() }}">{{ edit_role is defined ? 'Update role' : 'Create role' }}</button>
         </div>
     </form>
 {% endblock %}

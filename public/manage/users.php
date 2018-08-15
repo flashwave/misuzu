@@ -21,7 +21,7 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $usersTake = 32;
+        $usersTake = 33;
         $manageUsersCount = Database::query('
             SELECT COUNT(`user_id`)
             FROM `msz_users`
