@@ -1,12 +1,9 @@
 @mio-news-mobile: 700px;
 
 .news__container {
-    &__content {
-        margin: 2px;
-        display: flex;
+    display: flex;
 
-        @media (max-width: @mio-news-mobile) {
-            flex-direction: column;
-        }
+    @media (max-width: @mio-news-mobile) {
+        flex-direction: column;
     }
 }

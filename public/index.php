@@ -34,7 +34,7 @@ $news = Database::query('
     ON u.`display_role` = r.`role_id`
     WHERE p.`is_featured` = true
     ORDER BY p.`created_at` DESC
-    LIMIT 3
+    LIMIT 5
 ')->fetchAll(PDO::FETCH_ASSOC);
 
 $statistics = Cache::instance()->get('index:stats:v1', function () {

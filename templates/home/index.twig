@@ -34,16 +34,9 @@
                 </div>
             {% endif %}
 
-            <div class="container news__container">
-                <a class="container__title container__title--link" href="/news.php">Featured News</a>
-                <div class="news__container__content">
-                    <div class="news__preview__listing">
-                        {% for post in featured_news %}
-                            {{ news_preview(post) }}
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+            {% for post in featured_news %}
+                {{ news_preview(post) }}
+            {% endfor %}
         </div>
     </div>
 

@@ -9,42 +9,37 @@
 }) %}
 
 {% block content %}
-    <div class="container news__container">
-        <div class="container__title news__container__title">News » {{ category.category_name }}</div>
-        <div class="news__container__content">
-            <div class="news__preview__listing">
-                {% for post in posts %}
-                    {{ news_preview(post) }}
-                {% endfor %}
+    <div class="news__container">
+        <div class="news__preview__listing">
+            {% for post in posts %}
+                {{ news_preview(post) }}
+            {% endfor %}
+        </div>
+
+        <div class="news__sidebar">
+            <div class="container news__list">
+                <div class="container__title news__container__title">
+                    News » {{ category.category_name }}
+                </div>
+                <div class="container__content">
+                    {{ category.category_description|length > 0 ? category.category_description : '' }}
+                </div>
             </div>
 
-            <div class="news__sidebar">
-                {% if category.category_description|length > 0 %}
-                    <div class="container news__container">
-                        <div class="container__title">
-                            Description
-                        </div>
-                        <div class="container__content">
-                            {{ category.category_description }}
-                        </div>
+            {% if featured|length > 0 %}
+                <div class="container news__list">
+                    <div class="container__title">
+                        Featured Posts
                     </div>
-                {% endif %}
-
-                {% if featured|length > 0 %}
-                    <div class="container news__list">
-                        <div class="container__title">
-                            Featured Posts
-                        </div>
-                        <div class="container__content">
-                            {% for featured_post in featured %}
-                                <a class="news__list__item" href="/news.php?p={{ featured_post.post_id }}">{{ featured_post.post_title }}</a>
-                            {% endfor %}
-                        </div>
+                    <div class="container__content">
+                        {% for featured_post in featured %}
+                            <a class="news__list__item" href="/news.php?p={{ featured_post.post_id }}">{{ featured_post.post_title }}</a>
+                        {% endfor %}
                     </div>
-                {% endif %}
+                </div>
+            {% endif %}
 
-                {{ pagination(category.posts_count, posts_take, posts_offset, '/news.php?c=' ~ category.category_id) }}
-            </div>
+            {{ pagination(category.posts_count, posts_take, posts_offset, '/news.php?c=' ~ category.category_id) }}
         </div>
     </div>
 {% endblock %}
