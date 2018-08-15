@@ -3,8 +3,6 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$tpl = $app->getTemplating();
-
 $changelogOffset = max((int)($_GET['o'] ?? 0), 0);
 $changelogRange = 30;
 
@@ -13,9 +11,12 @@ $changelogDate = $_GET['d'] ?? '';
 $changelogUser = (int)($_GET['u'] ?? 0);
 $changelogTags = $_GET['t'] ?? '';
 
-$tpl->vars([
+$commentPerms = comments_get_perms($app->getUserId());
+
+tpl_vars([
     'changelog_offset' => $changelogOffset,
     'changelog_take' => $changelogRange,
+    'comments_perms' => $commentPerms,
 ]);
 
 if ($changelogChange > 0) {
@@ -52,10 +53,17 @@ if ($changelogChange > 0) {
         ');
         $getTags->bindValue('change_id', $change['change_id']);
         $tags = $getTags->execute() ? $getTags->fetchAll(PDO::FETCH_ASSOC) : [];
-        $tpl->var('tags', $tags);
+        tpl_var('tags', $tags);
     }
 
-    echo $tpl->render('changelog.change', compact('change'));
+    echo tpl_render('changelog.change', [
+        'change' => $change,
+        'comments_category' => $commentsCategory = comments_category_info(
+            "changelog-date-{$change['change_date']}",
+            true
+        ),
+        'comments' => comments_category_get($commentsCategory['category_id'], $app->getUserId()),
+    ]);
     return;
 }
 
@@ -77,7 +85,14 @@ if (!$changes) {
     http_response_code(404);
 }
 
-echo $tpl->render('changelog.index', [
+if (!empty($changelogDate) && count($changes) > 0) {
+    tpl_vars([
+        'comments_category' => $commentsCategory = comments_category_info("changelog-date-{$changelogDate}", true),
+        'comments' => comments_category_get($commentsCategory['category_id'], $app->getUserId()),
+    ]);
+}
+
+echo tpl_render('changelog.index', [
     'changes' => $changes,
     'changelog_count' => $changesCount,
     'changelog_date' => $changelogDate,

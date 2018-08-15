@@ -1,10 +1,8 @@
-@mio-index-mobile: 700px;
-
 .index {
     display: flex;
     flex-direction: row-reverse;
 
-    @media (max-width: @mio-index-mobile) {
+    @media (max-width: @site-mobile-width) {
         flex-direction: column-reverse;
     }
 
@@ -13,7 +11,7 @@
         margin-left: 2px;
         flex: 0 0 auto;
 
-        @media (max-width: @mio-index-mobile) {
+        @media (max-width: @site-mobile-width) {
             width: 100%;
             margin-left: 0;
         }

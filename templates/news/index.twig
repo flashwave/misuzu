@@ -1,0 +1,38 @@
+{% extends 'news/master.twig' %}
+{% from 'macros.twig' import pagination %}
+{% from 'news/macros.twig' import news_preview %}
+
+{% set title = 'News' %}
+{% set canonical_url = '/news.php'|url_construct({'o':posts_offset}) %}
+
+{% block content %}
+    <div class="news__container">
+        <div class="news__preview__listing">
+            {% for post in posts %}
+                {{ news_preview(post) }}
+            {% endfor %}
+        </div>
+
+        <div class="news__sidebar">
+            <div class="container news__list">
+                <div class="container__title">
+                    Categories
+                </div>
+                <div class="container__content">
+                    {% for category in categories %}
+                        <a class="news__list__item news__list__item--kvp" href="/news.php?c={{ category.category_id }}">
+                            <div class="news__list__name">
+                                {{ category.category_name }}
+                            </div>
+                            <div class="news__list__value">
+                                {{ category.count }} post{{ category.count == 1 ? '' : 's' }}
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {{ pagination(posts_count, posts_take, posts_offset, '/news.php') }}
+        </div>
+    </div>
+{% endblock %}

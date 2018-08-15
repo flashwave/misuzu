@@ -3,10 +3,7 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../../misuzu.php';
 
-$tpl = $app->getTemplating();
-
 $changelogPerms = perms_get_user(MSZ_PERMS_CHANGELOG, $app->getUserId());
-
 $queryOffset = (int)($_GET['o'] ?? 0);
 
 switch ($_GET['v'] ?? null) {
@@ -58,7 +55,7 @@ switch ($_GET['v'] ?? null) {
             $changes[$i]['tags'] = $getTags->execute() ? $getTags->fetchAll(PDO::FETCH_ASSOC) : [];
         }
 
-        echo $tpl->render('@manage.changelog.changes', [
+        echo tpl_render('manage.changelog.changes', [
             'changelog_changes' => $changes,
             'changelog_changes_count' => $changesCount,
             'changelog_offset' => $queryOffset,
@@ -157,7 +154,7 @@ switch ($_GET['v'] ?? null) {
             SELECT `action_id`, `action_name`
             FROM `msz_changelog_actions`
         ')->fetchAll(PDO::FETCH_ASSOC);
-        $tpl->var('changelog_actions', $actions);
+        tpl_var('changelog_actions', $actions);
 
         if ($changeId > 0) {
             $getChange = Database::prepare('
@@ -171,7 +168,7 @@ switch ($_GET['v'] ?? null) {
             $change = $getChange->execute() ? $getChange->fetch(PDO::FETCH_ASSOC) : [];
 
             if ($change) {
-                $tpl->var('edit_change', $change);
+                tpl_var('edit_change', $change);
 
                 $assignedTags = Database::prepare('
                     SELECT `tag_id`, `tag_name`
@@ -198,7 +195,7 @@ switch ($_GET['v'] ?? null) {
                 $availableTags->bindValue('change_id', $change['change_id']);
                 $availableTags = $availableTags->execute() ? $availableTags->fetchAll(PDO::FETCH_ASSOC) : [];
 
-                $tpl->vars([
+                tpl_vars([
                     'edit_change_assigned_tags' => $assignedTags,
                     'edit_change_available_tags' => $availableTags,
                 ]);
@@ -208,7 +205,7 @@ switch ($_GET['v'] ?? null) {
             }
         }
 
-        echo $tpl->render('@manage.changelog.change_edit');
+        echo tpl_render('manage.changelog.change_edit');
         break;
 
     case 'tags':
@@ -240,7 +237,7 @@ switch ($_GET['v'] ?? null) {
         $getTags->bindValue('offset', $queryOffset);
         $tags = $getTags->execute() ? $getTags->fetchAll(PDO::FETCH_ASSOC) : [];
 
-        echo $tpl->render('@manage.changelog.tags', [
+        echo tpl_render('manage.changelog.tags', [
             'changelog_tags' => $tags,
             'changelog_tags_count' => $tagsCount,
             'changelog_take' => $tagsTake,
@@ -303,14 +300,14 @@ switch ($_GET['v'] ?? null) {
             $tag = $getTag->execute() ? $getTag->fetch(PDO::FETCH_ASSOC) : [];
 
             if ($tag) {
-                $tpl->var('edit_tag', $tag);
+                tpl_var('edit_tag', $tag);
             } else {
                 header('Location: ?v=tags');
                 return;
             }
         }
 
-        echo $tpl->render('@manage.changelog.tag_edit');
+        echo tpl_render('manage.changelog.tag_edit');
         break;
 
     case 'actions':
@@ -342,7 +339,7 @@ switch ($_GET['v'] ?? null) {
         $getActions->bindValue('offset', $queryOffset);
         $actions = $getActions->execute() ? $getActions->fetchAll(PDO::FETCH_ASSOC) : [];
 
-        echo $tpl->render('@manage.changelog.actions', [
+        echo tpl_render('manage.changelog.actions', [
             'changelog_actions' => $actions,
             'changelog_actions_count' => $actionTake,
             'changelog_take' => $actionTake,
@@ -414,13 +411,13 @@ switch ($_GET['v'] ?? null) {
             $action = $getAction->execute() ? $getAction->fetch(PDO::FETCH_ASSOC) : [];
 
             if ($action) {
-                $tpl->var('edit_action', $action);
+                tpl_var('edit_action', $action);
             } else {
                 header('Location: ?v=actions');
                 return;
             }
         }
 
-        echo $tpl->render('@manage.changelog.action_edit');
+        echo tpl_render('manage.changelog.action_edit');
         break;
 }

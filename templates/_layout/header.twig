@@ -1,0 +1,96 @@
+<nav class="header">
+    <div class="header__wrapper">
+        <div class="header__icons">
+            <label class="header__icon header__icon--menu" for="toggle-mobile-header-menu"></label>
+
+            <a class="header__logo{% if manage_menu is defined %} header__logo--manage{% endif %}" href="/">
+                {{ globals.site_name }}
+            </a>
+
+            <label style="background-image:url('/profile.php?u={{ app.hasActiveSession ? current_user.user_id : 0 }}&amp;m=avatar');"
+                class="avatar header__icon header__icon--user"
+                for="toggle-mobile-header-user"></label>
+        </div>
+
+        <input type="checkbox" class="header__menu-toggle" id="toggle-mobile-header-menu">
+        <ul class="header__menu">
+            <li class="header__menu__item">
+                <a href="/" class="header__menu__link">Home</a>
+                <ul class="header__submenu">
+                    <li class="header__submenu__item"><a href="/members.php" class="header__submenu__link">Members</a></li>
+                    <li class="header__submenu__item"><a href="/changelog.php" class="header__submenu__link">Changelog</a></li>
+                    {#<li class="header__submenu__item"><a href="/info.php?t=contact" class="header__submenu__link">Contact</a></li>
+                    <li class="header__submenu__item"><a href="/info.php?t=rules" class="header__submenu__link">Rules</a></li>#}
+                    <li class="header__submenu__item"><a href="https://twitter.com/flashiinet" class="header__submenu__link">Twitter</a></li>
+                </ul>
+            </li>
+            <li class="header__menu__item"><a href="/news.php" class="header__menu__link">News</a></li>
+            <li class="header__menu__item">
+                <a href="/forum/" class="header__menu__link">Forum</a>
+                {#<ul class="header__submenu">
+                    <li class="header__submenu__item"><a href="#" class="header__submenu__link">Unanswered Posts</a></li>
+                    <li class="header__submenu__item"><a href="#" class="header__submenu__link">New Posts</a></li>
+                    <li class="header__submenu__item"><a href="#" class="header__submenu__link">Your Posts</a></li>
+                </ul>#}
+            </li>
+            <li class="header__menu__item"><a href="https://chat.flashii.net" class="header__menu__link">Chat</a></li>
+        </ul>
+
+        <input type="checkbox" class="header__user-toggle" id="toggle-mobile-header-user">
+        <div class="header__user">
+            {% if app.hasActiveSession %}
+                <a  href="/profile.php?u={{ current_user.user_id }}"
+                    class="avatar header__user__avatar"
+                    style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');"></a>
+            {% else %}
+                <a  href="/auth.php?m=login"
+                    class="avatar header__user__avatar"
+                    style="background-image:url('/profile.php?u=0&amp;m=avatar');"></a>
+            {% endif %}
+
+            <div class="header__user__info">
+                {% if app.hasActiveSession %}
+                    <a  href="/profile.php?u={{ current_user.user_id }}"
+                        class="header__user__name"
+                        style="{{ current_user.user_colour|html_colour({
+                            'color': '%s',
+                            'text-shadow': '0 0 5px %s',
+                        }) }}">
+                        {{ current_user.username }}
+                    </a>
+                {% else %}
+                    <a  href="/auth.php?m=login"
+                        class="header__user__name">
+                        Guest
+                    </a>
+                {% endif %}
+
+                <ul class="header__user__actions">
+                    {% if app.hasActiveSession %}
+                        <li class="header__user__action">
+                            <a class="header__user__link" href="/profile.php?u={{ current_user.user_id }}">Profile</a>
+                        </li>
+                        <li class="header__user__action">
+                            <a class="header__user__link" href="/settings.php">Settings</a>
+                        </li>
+                        {% if has_manage_access %}
+                            <li class="header__user__action">
+                                <a class="header__user__link" href="{{ manage_link|default('/manage/index.php') }}">Manage</a>
+                        </li>
+                        {% endif %}
+                        <li class="header__user__action">
+                            <a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Log out</a>
+                        </li>
+                    {% else %}
+                        <li class="header__user__action">
+                            <a class="header__user__link" href="/auth.php?m=login">Log in</a>
+                        </li>
+                        <li class="header__user__action">
+                            <a class="header__user__link" href="/auth.php?m=register">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>

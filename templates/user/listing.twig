@@ -1,0 +1,80 @@
+{% extends 'user/master.twig' %}
+{% from 'macros.twig' import pagination %}
+{% from 'user/macros.twig' import user_card %}
+
+{% set canonical_url = '/members.php'|url_construct({
+    'r': role.role_id != 1 ? role.role_id : 0,
+    'ss': order_field == order_default ? '' : order_field,
+    'sd': order_fields[order_field]['default-dir'] == order_direction ? '' : order_direction,
+    'o': users_offset,
+    't': users_take == 15 ? 0 : users_take,
+}) %}
+{% set full_url = '/members.php'|url_construct({
+    'r': role.role_id != 1 ? role.role_id : 0,
+    'ss': order_field == order_default ? '' : order_field,
+    'sd': order_fields[order_field]['default-dir'] == order_direction ? '' : order_direction,
+}) %}
+{% set title = role.role_id == 1 ? 'Members' : 'Role » ' ~ role.role_name  %}
+{% set manage_link = '/manage/users.php?v=listing' %}
+
+{% block content %}
+    <form class="container" onchange="this.submit()">
+        <div class="container__title">
+            Member Listing
+        </div>
+        <div class="userlist__selection">
+            <select class="input__select" name="r"
+                style="{{ role.role_colour|html_colour }}">
+                {% for r in roles %}
+                    <option
+                        value="{{ r.role_id }}"
+                        style="{{ r.role_colour|html_colour }}"
+                        {% if r.role_id == role.role_id %} selected{% endif %}>
+                        {{ r.role_name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select class="input__select" name="ss">
+                {% for name, info in order_fields %}
+                    <option
+                        value="{{ name }}"
+                        {% if name == order_field %} selected{% endif %}>
+                        {{ info.title }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select class="input__select" name="sd">
+                {% for name, title in order_directions %}
+                    <option value="{{ name }}"
+                        {% if name == order_direction %} selected{% endif %}>
+                        {{ title }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <noscript>
+                <button class="input__button">Go</button>
+            </noscript>
+        </div>
+    </form>
+
+    {% set mpagination = pagination(role.role_user_count, users_take, users_offset, full_url) %}
+
+    <div class="pagination__wrapper">
+        {{ mpagination }}
+    </div>
+
+    <div class="userlist">
+        {% for user in users %}
+            <div class="userlist__item">
+                {{ user_card(user) }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="pagination__wrapper">
+        {{ mpagination }}
+    </div>
+{% endblock %}

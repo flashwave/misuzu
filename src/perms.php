@@ -20,33 +20,6 @@ define('MSZ_PERM_SETS', [
     MSZ_PERMS_ALLOW, MSZ_PERMS_DENY
 ]);
 
-// phpcs:disable
-$_msz_perms_cache = [];
-// phpcs:enable
-
-function perms_construct_cache_key(string $prefix, string $mode, int $pid): string
-{
-    return $prefix . '_' . $mode . '_' . $pid;
-}
-
-function perms_get_cache(string $prefix, string $mode, int $pid): int
-{
-    global $_msz_perms_cache;
-    return $_msz_perms_cache[perms_construct_cache_key($prefix, $mode, $pid)];
-}
-
-function perms_set_cache(string $prefix, string $mode, int $pid, int $perms): int
-{
-    global $_msz_perms_cache;
-    return $_msz_perms_cache[perms_construct_cache_key($prefix, $mode, $pid)] = $perms;
-}
-
-function perms_is_cached(string $prefix, string $mode, int $pid): bool
-{
-    global $_msz_perms_cache;
-    return array_key_exists(perms_construct_cache_key($prefix, $mode, $pid), $_msz_perms_cache);
-}
-
 function perms_get_keys(): array
 {
     $perms = [];
@@ -84,15 +57,8 @@ function perms_get_user(string $prefix, int $user): int
         return 0x7FFFFFFF;
     }
 
-    if (perms_is_cached($prefix, 'user', $user)) {
-        return perms_get_cache($prefix, 'user', $user);
-    }
-
-    $permsAllow = 0;
-    $permsDeny = 0;
-
     $getPerms = Database::prepare("
-        SELECT `{$prefix}_perms_allow` as `allow`, `{$prefix}_perms_deny` as `deny`
+        SELECT BIT_OR(`{$prefix}_perms_allow`) &~ BIT_OR(`{$prefix}_perms_deny`)
         FROM `msz_permissions`
         WHERE (`user_id` = :user_id_1 AND `role_id` IS NULL)
         OR (
@@ -106,24 +72,13 @@ function perms_get_user(string $prefix, int $user): int
     ");
     $getPerms->bindValue('user_id_1', $user);
     $getPerms->bindValue('user_id_2', $user);
-    $perms = $getPerms->execute() ? $getPerms->fetchAll(PDO::FETCH_ASSOC) : [];
-
-    foreach ($perms as $perm) {
-        $permsAllow |= $perm['allow'];
-        $permsDeny |= $perm['deny'];
-    }
-
-    return perms_set_cache($prefix, 'user', $user, $permsAllow &~ $permsDeny);
+    return $getPerms->execute() ? (int)$getPerms->fetchColumn() : 0;
 }
 
 function perms_get_role(string $prefix, int $role): int
 {
     if (!in_array($prefix, MSZ_PERM_MODES) || $role < 1) {
         return 0;
-    }
-
-    if (perms_is_cached($prefix, 'role', $user)) {
-        return perms_get_cache($prefix, 'role', $user);
     }
 
     $getPerms = Database::prepare("
@@ -133,7 +88,7 @@ function perms_get_role(string $prefix, int $role): int
         AND `user_id` IS NULL
     ");
     $getPerms->bindValue('role_id', $role);
-    return perms_set_cache($prefix, 'role', $role, $getPerms->execute() ? (int)$getPerms->fetchColumn() : 0);
+    return $getPerms->execute() ? (int)$getPerms->fetchColumn() : 0;
 }
 
 function perms_get_user_raw(int $user): array

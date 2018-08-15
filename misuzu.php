@@ -13,6 +13,7 @@ require_once __DIR__ . '/src/git.php';
 require_once __DIR__ . '/src/manage.php';
 require_once __DIR__ . '/src/news.php';
 require_once __DIR__ . '/src/perms.php';
+require_once __DIR__ . '/src/tpl.php';
 require_once __DIR__ . '/src/zalgo.php';
 require_once __DIR__ . '/src/Forum/forum.php';
 require_once __DIR__ . '/src/Forum/post.php';
@@ -103,7 +104,7 @@ if (PHP_SAPI === 'cli') {
 
             case 'migrate':
                 $migrationTargets = [
-                'mysql-main' => __DIR__ . '/database',
+                    'mysql-main' => __DIR__ . '/database',
                 ];
                 $doRollback = !empty($argv[2]) && $argv[2] === 'rollback';
                 $targetDb = isset($argv[$doRollback ? 3 : 2]) ? $argv[$doRollback ? 3 : 2] : null;
@@ -204,16 +205,14 @@ MIG;
 
     $app->startCache();
     $app->startTemplating();
-    $tpl = $app->getTemplating();
+
+    tpl_add_path(__DIR__ . '/templates');
 
     if ($app->getConfig()->get('Auth', 'lockdown', 'bool', false)) {
         http_response_code(503);
-        $tpl->addPath('auth', __DIR__ . '/views/auth');
-        echo $tpl->render('lockdown');
+        echo tpl_render('auth/lockdown');
         exit;
     }
-
-    $tpl->addPath('mio', __DIR__ . '/views/mio');
 
     if (isset($_COOKIE['msz_uid'], $_COOKIE['msz_sid'])) {
         $app->startSession((int)$_COOKIE['msz_uid'], $_COOKIE['msz_sid']);
@@ -232,7 +231,7 @@ MIG;
             $getUserDisplayInfo = Database::prepare('
                 SELECT
                     u.`user_id`, u.`username`,
-                    COALESCE(u.`user_colour`, r.`role_colour`) as `colour`
+                    COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
                 FROM `msz_users` as u
                 LEFT JOIN `msz_roles` as r
                 ON u.`display_role` = r.`role_id`
@@ -240,13 +239,13 @@ MIG;
             ');
             $getUserDisplayInfo->bindValue('user_id', $app->getUserId());
             $userDisplayInfo = $getUserDisplayInfo->execute() ? $getUserDisplayInfo->fetch() : [];
-            $tpl->var('current_user', $userDisplayInfo);
+            tpl_var('current_user', $userDisplayInfo);
         }
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
     $hasManageAccess = perms_check(perms_get_user(MSZ_PERMS_GENERAL, $app->getUserId()), MSZ_GENERAL_PERM_CAN_MANAGE);
-    $tpl->var('has_manage_access', $hasManageAccess);
+    tpl_var('has_manage_access', $hasManageAccess);
 
     if ($inManageMode) {
         if (!$hasManageAccess) {
@@ -254,8 +253,6 @@ MIG;
             exit;
         }
 
-        $tpl = $app->getTemplating();
-        $tpl->var('manage_menu', manage_get_menu($app->getUserId()));
-        $tpl->addPath('manage', __DIR__ . '/views/manage');
+        tpl_var('manage_menu', manage_get_menu($app->getUserId()));
     }
 }

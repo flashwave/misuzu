@@ -10,7 +10,6 @@ if ($forumId === 0) {
     exit;
 }
 
-$templating = $app->getTemplating();
 $forum = forum_fetch($forumId);
 
 if (empty($forum) || ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK && empty($forum['forum_link']))) {
@@ -35,7 +34,7 @@ foreach ($forum['forum_subforums'] as $skey => $subforum) {
         = forum_get_children($subforum['forum_id'], $app->getUserId(), true);
 }
 
-echo $app->getTemplating()->render('forum.forum', [
+echo tpl_render('forum.forum', [
     'forum_breadcrumbs' => forum_get_breadcrumbs($forum['forum_id']),
     'forum_info' => $forum,
     'forum_topics' => $topics,

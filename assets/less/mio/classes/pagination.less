@@ -4,6 +4,12 @@
     padding: 1px;
     border: 1px solid #9475b2;
 
+    &__wrapper {
+        background-color: #fbeeff;
+        margin: 2px 0;
+        box-shadow: 0 1px 2px #9475b2;
+    }
+
     &__separator {
         flex-grow: 1;
         flex-shrink: 1;
@@ -24,7 +30,7 @@
             background: #777;
         }
 
-        @media (max-width: @mio-news-mobile) {
+        @media (max-width: @site-mobile-width) {
             height: 30px;
             min-width: 30px;
             font-size: 1.5em;

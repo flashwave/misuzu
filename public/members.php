@@ -4,7 +4,7 @@ use Misuzu\Database;
 require_once __DIR__ . '/../misuzu.php';
 
 $usersOffset = max((int)($_GET['o'] ?? 0), 0);
-$usersTake = max(min((int)($_GET['t'] ?? 15), 30), 6);
+$usersTake = 30;
 
 $roleId = (int)($_GET['r'] ?? MSZ_ROLE_MAIN);
 $orderBy = strtolower($_GET['ss'] ?? '');
@@ -58,8 +58,6 @@ if (empty($orderDir)) {
     return;
 }
 
-$tpl = $app->getTemplating();
-
 $getRole = Database::prepare('
     SELECT
         `role_id`, `role_name`, `role_colour`, `role_description`, `created_at`,
@@ -88,22 +86,9 @@ $roles = Database::query('
 
 $getUsers = Database::prepare("
     SELECT
-        u.`user_id`, u.`username`, u.`user_country`,
-        u.`created_at` as `user_joined`, u.`last_seen` as `user_last_seen`,
-        COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
-        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
-        (
-            SELECT COUNT(`topic_id`)
-            FROM `msz_forum_topics`
-            WHERE `user_id` = u.`user_id`
-            AND `topic_deleted` IS NULL
-        ) as `user_topic_count`,
-        (
-            SELECT COUNT(`post_id`)
-            FROM `msz_forum_posts`
-            WHERE `user_id` = u.`user_id`
-            AND `post_deleted` IS NULL
-        ) as `user_post_count`
+        u.`user_id`, u.`username`, u.`user_country`, r.`role_id`,
+        COALESCE(u.`user_title`, r.`role_title`, r.`role_name`) as `user_title`,
+        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
     FROM `msz_users` as u
     LEFT JOIN `msz_roles` as r
     ON r.`role_id` = u.`display_role`
@@ -118,7 +103,7 @@ $getUsers->bindValue('offset', $usersOffset);
 $getUsers->bindValue('take', $usersTake);
 $users = $getUsers->execute() ? $getUsers->fetchAll(PDO::FETCH_ASSOC) : [];
 
-echo $tpl->render('user.listing', [
+echo tpl_render('user.listing', [
     'roles' => $roles,
     'role' => $role,
     'users' => $users,

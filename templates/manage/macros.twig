@@ -1,0 +1,67 @@
+{% macro manage_navigation(navi, level) %}
+    {% from _self import manage_navigation %}
+    {% set level = level|default(0) %}
+
+    <ul class="side-navigation side-navigation--layer-{{ level }}">
+        {% for name, value in navi %}
+            <li class="side-navigation__item">
+                {% if value is iterable %}
+                    <span class="side-navigation__title">{{ name }}</span>
+                    {{ manage_navigation(value, level + 1) }}
+                {% else %}
+                    <a href="{{ value }}" class="side-navigation__link">{{ name }}</a>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% macro permissions_table(permissions) %}
+    <div class="permissions">
+        {% for perms in permissions %}
+            <div class="permissions__line permissions__line--header">
+                <div class="permissions__title">
+                    {{ perms.title }}
+                </div>
+                <div class="permissions__choice">
+                    Yes
+                </div>
+                <div class="permissions__choice">
+                    No
+                </div>
+                <div class="permissions__choice">
+                    Never
+                </div>
+            </div>
+
+            {% for perm in perms.perms %}
+                <div class="permissions__line">
+                    <div class="permissions__title">
+                        {{ perm.title }}
+                    </div>
+                    <label class="permissions__choice permissions__choice--radio permissions__choice--yes">
+                        <input {% if perm.value == 'yes' %}checked{% endif %}
+                            class="permissions__input"
+                            type="radio"
+                            name="perms[{{ perms.section }}][{{ perm.section }}]"
+                            value="yes">
+                    </label>
+                    <label class="permissions__choice permissions__choice--radio permissions__choice--no">
+                        <input {% if perm.value == 'no' %}checked{% endif %}
+                            class="permissions__input"
+                            type="radio"
+                            name="perms[{{ perms.section }}][{{ perm.section }}]"
+                            value="no">
+                    </label>
+                    <label class="permissions__choice permissions__choice--radio permissions__choice--never">
+                        <input {% if perm.value == 'never' %}checked{% endif %}
+                            class="permissions__input"
+                            type="radio"
+                            name="perms[{{ perms.section }}][{{ perm.section }}]"
+                            value="never">
+                    </label>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endmacro %}

@@ -4,60 +4,26 @@ use Misuzu\IO\File;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$tpl = $app->getTemplating();
-
 $queryOffset = (int)($_GET['o'] ?? 0);
 $queryTake = 15;
 
 $userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
-
-$settingsModes = [
-    'account' => [
-        'title' => 'Account',
-        'allow' => perms_check($userPerms, MSZ_USER_PERM_EDIT_PROFILE),
-    ],
-    'images' => [
-        'title' => 'Avatar',
-        'allow' => perms_check($userPerms, MSZ_USER_PERM_CHANGE_AVATAR),
-    ],
-    'sessions' => [
-        'title' => 'Sessions',
-        'allow' => true,
-    ],
-    'login-history' => [
-        'title' => 'Login History',
-        'allow' => true,
-    ],
-    'log' => [
-        'title' => 'Account Log',
-        'allow' => true,
-    ],
+$perms = [
+    'edit_profile' => perms_check($userPerms, MSZ_USER_PERM_EDIT_PROFILE),
+    'edit_avatar' => perms_check($userPerms, MSZ_USER_PERM_CHANGE_AVATAR),
 ];
-$settingsMode = $_GET['m'] ?? null;
 
-if ($settingsMode === 'avatar') {
-    header('Location: ?m=images');
-    return;
-}
-
-$settingsNavigation = [];
-
-foreach ($settingsModes as $key => $value) {
-    if ($value['allow']) {
-        $settingsNavigation[$value['title']] = $key;
-
-        if ($settingsMode === null) {
-            $settingsMode = $key;
-        }
-    }
-}
-
-if (!$app->hasActiveSession() || !$settingsModes[$settingsMode]['allow']) {
+if (!$app->hasActiveSession()) {
     echo render_error(403);
     return;
 }
 
-$tpl->var('settings_navigation', $settingsNavigation);
+$settingsModes = [
+    'account' => 'Account',
+    'sessions' => 'Sessions',
+    'logs' => 'Logs',
+];
+$settingsMode = $_GET['m'] ?? key($settingsModes);
 
 $csrfErrorString = "Couldn't verify you, please refresh the page and retry.";
 
@@ -85,250 +51,241 @@ $avatarErrorStrings = [
     ],
 ];
 
-$tpl->vars([
+tpl_vars([
+    'settings_perms' => $perms,
     'settings_mode' => $settingsMode,
     'settings_modes' => $settingsModes,
 ]);
 
 if (!array_key_exists($settingsMode, $settingsModes)) {
     http_response_code(404);
-    $tpl->var('settings_title', 'Not Found');
-    echo $tpl->render('settings.notfound');
+    tpl_var('settings_title', 'Not Found');
+    echo tpl_render('settings.notfound');
     return;
 }
 
 $settingsErrors = [];
 
-$disableAccountOptions = $app->getConfig()->get('Auth', 'prevent_registration', 'bool', false);
+$disableAccountOptions = !$app->inDebugMode() && $app->getConfig()->get('Auth', 'prevent_registration', 'bool', false);
 $avatarFileName = "{$app->getUserId()}.msz";
 $avatarWidthMax = $app->getConfig()->get('Avatar', 'max_width', 'int', 4000);
 $avatarHeightMax = $app->getConfig()->get('Avatar', 'max_height', 'int', 4000);
 $avatarFileSizeMax = $app->getConfig()->get('Avatar', 'max_filesize', 'int', 1000000);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    switch ($settingsMode) {
-        case 'account':
-            if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
-                $settingsErrors[] = $csrfErrorString;
-                break;
-            }
+    if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
+        $settingsErrors[] = $csrfErrorString;
+    } else {
+        if (!empty($_POST['profile']) && is_array($_POST['profile'])) {
+            $setUserFieldErrors = user_profile_fields_set($app->getUserId(), $_POST['profile']);
 
-            if (isset($_POST['profile']) && is_array($_POST['profile'])) {
-                $setUserFieldErrors = user_profile_fields_set($app->getUserId(), $_POST['profile']);
-
-                if (count($setUserFieldErrors) > 0) {
-                    foreach ($setUserFieldErrors as $name => $error) {
-                        switch ($error) {
-                            case MSZ_USER_PROFILE_INVALID_FIELD:
-                                $settingsErrors[] = sprintf("Field '%s' does not exist!", $name);
-                                break;
-
-                            case MSZ_USER_PROFILE_FILTER_FAILED:
-                                $settingsErrors[] = sprintf(
-                                    '%s field was invalid!',
-                                    user_profile_field_get_display_name($name)
-                                );
-                                break;
-
-                            case MSZ_USER_PROFILE_UPDATE_FAILED:
-                                $settingsErrors[] = 'Failed to update values, contact an administator.';
-                                break;
-
-                            default:
-                                $settingsErrors[] = 'An unexpected error occurred, contact an administator.';
-                                break;
-                        }
-                    }
-                }
-            }
-
-            if (!$disableAccountOptions) {
-                if (!empty($_POST['current_password'])
-                || (
-                    (isset($_POST['password']) || isset($_POST['email']))
-                    && (!empty($_POST['password']['new']) || !empty($_POST['email']['new']))
-                )
-                ) {
-                    $updateAccountFields = [];
-
-                    $fetchPassword = Database::prepare('
-                        SELECT `password`
-                        FROM `msz_users`
-                        WHERE `user_id` = :user_id
-                    ');
-                    $fetchPassword->bindValue('user_id', $app->getUserId());
-                    $currentPassword = $fetchPassword->execute() ? $fetchPassword->fetchColumn() : null;
-
-                    if (empty($currentPassword)) {
-                        $settingsErrors[] = 'Something went horribly wrong.';
-                        break;
-                    }
-
-                    if (!password_verify($_POST['current_password'], $currentPassword)) {
-                        $settingsErrors[] = 'Your current password was incorrect.';
-                        break;
-                    }
-
-                    if (!empty($_POST['email']['new'])) {
-                        if (empty($_POST['email']['confirm'])
-                            || $_POST['email']['new'] !== $_POST['email']['confirm']) {
-                            $settingsErrors[] = 'The given e-mail addresses did not match.';
+            if (count($setUserFieldErrors) > 0) {
+                foreach ($setUserFieldErrors as $name => $error) {
+                    switch ($error) {
+                        case MSZ_USER_PROFILE_INVALID_FIELD:
+                            $settingsErrors[] = sprintf("Field '%s' does not exist!", $name);
                             break;
-                        }
 
-                        $email_validate = user_validate_email($_POST['email']['new'], true);
-
-                        if ($email_validate !== '') {
-                            switch ($email_validate) {
-                                case 'dns':
-                                    $settingsErrors[] = 'No valid MX record exists for this domain.';
-                                    break;
-
-                                case 'format':
-                                    $settingsErrors[] = 'The given e-mail address was incorrectly formatted.';
-                                    break;
-
-                                case 'in-use':
-                                    $settingsErrors[] = 'This e-mail address is already in use.';
-                                    break;
-
-                                default:
-                                    $settingsErrors[] = 'Unknown e-mail validation error.';
-                            }
-                            break;
-                        }
-
-                        $updateAccountFields['email'] = strtolower($_POST['email']['new']);
-
-                        audit_log('PERSONAL_EMAIL_CHANGE', $app->getUserId(), [
-                            $updateAccountFields['email'],
-                        ]);
-                    }
-
-                    if (!empty($_POST['password']['new'])) {
-                        if (empty($_POST['password']['confirm'])
-                        || $_POST['password']['new'] !== $_POST['password']['confirm']) {
-                            $settingsErrors[] = "The given passwords did not match.";
-                            break;
-                        }
-
-                        $password_validate = user_validate_password($_POST['password']['new']);
-
-                        if ($password_validate !== '') {
-                            $settingsErrors[] = "The given passwords was too weak.";
-                            break;
-                        }
-
-                        $updateAccountFields['password'] = user_password_hash($_POST['password']['new']);
-
-                        audit_log('PERSONAL_PASSWORD_CHANGE', $app->getUserId());
-                    }
-
-                    if (count($updateAccountFields) > 0) {
-                        $updateUser = Database::prepare('
-                            UPDATE `msz_users`
-                            SET ' . pdo_prepare_array_update($updateAccountFields, true) . '
-                            WHERE `user_id` = :user_id
-                        ');
-                        $updateAccountFields['user_id'] = $app->getUserId();
-                        $updateUser->execute($updateAccountFields);
-                    }
-                }
-            }
-            break;
-
-        case 'images':
-            if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
-                $settingsErrors[] = $csrfErrorString;
-                break;
-            }
-
-            if (!empty($_POST['avatar']) && is_array($_POST['avatar']) && !empty($_POST['avatar']['mode'])) {
-                switch ($_POST['avatar']['mode']) {
-                    case 'delete':
-                        user_avatar_delete($app->getUserId());
-                        break;
-
-                    case 'upload':
-                        if (empty($_FILES['avatar'])
-                            || !is_array($_FILES['avatar'])
-                            || empty($_FILES['avatar']['name']['file'])) {
-                            break;
-                        }
-
-                        if ($_FILES['avatar']['error']['file'] !== UPLOAD_ERR_OK) {
+                        case MSZ_USER_PROFILE_FILTER_FAILED:
                             $settingsErrors[] = sprintf(
-                                $avatarErrorStrings['upload'][$_FILES['avatar']['error']['file']]
-                                    ?? $avatarErrorStrings['upload']['default'],
-                                $_FILES['avatar']['error']['file'],
-                                byte_symbol($avatarFileSizeMax, true),
-                                $avatarWidthMax,
-                                $avatarHeightMax
+                                '%s field was invalid!',
+                                user_profile_field_get_display_name($name)
                             );
                             break;
-                        }
 
-                        $setAvatar = user_avatar_set_from_path(
-                            $app->getUserId(),
-                            $_FILES['avatar']['tmp_name']['file']
+                        case MSZ_USER_PROFILE_UPDATE_FAILED:
+                            $settingsErrors[] = 'Failed to update values, contact an administator.';
+                            break;
+
+                        default:
+                            $settingsErrors[] = 'An unexpected error occurred, contact an administator.';
+                            break;
+                    }
+                }
+            }
+        }
+
+        if (!empty($_POST['avatar']) && is_array($_POST['avatar'])) {
+            switch ($_POST['avatar']['mode'] ?? '') {
+                case 'delete':
+                    user_avatar_delete($app->getUserId());
+                    break;
+
+                case 'upload':
+                    if (empty($_FILES['avatar'])
+                    || !is_array($_FILES['avatar'])
+                    || empty($_FILES['avatar']['name']['file'])) {
+                        break;
+                    }
+
+                    if ($_FILES['avatar']['error']['file'] !== UPLOAD_ERR_OK) {
+                        $settingsErrors[] = sprintf(
+                            $avatarErrorStrings['upload'][$_FILES['avatar']['error']['file']]
+                            ?? $avatarErrorStrings['upload']['default'],
+                            $_FILES['avatar']['error']['file'],
+                            byte_symbol($avatarFileSizeMax, true),
+                            $avatarWidthMax,
+                            $avatarHeightMax
                         );
-
-                        if ($setAvatar !== MSZ_USER_AVATAR_NO_ERRORS) {
-                            $settingsErrors[] = sprintf(
-                                $avatarErrorStrings['set'][$setAvatar]
-                                    ?? $avatarErrorStrings['set']['default'],
-                                $setAvatar,
-                                byte_symbol($avatarFileSizeMax, true),
-                                $avatarWidthMax,
-                                $avatarHeightMax
-                            );
-                        }
                         break;
-                }
-            }
-            break;
+                    }
 
-        case 'sessions':
-            if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
-                $settingsErrors[] = $csrfErrorString;
-                break;
-            }
+                    $setAvatar = user_avatar_set_from_path(
+                        $app->getUserId(),
+                        $_FILES['avatar']['tmp_name']['file']
+                    );
 
+                    if ($setAvatar !== MSZ_USER_AVATAR_NO_ERRORS) {
+                        $settingsErrors[] = sprintf(
+                            $avatarErrorStrings['set'][$setAvatar]
+                            ?? $avatarErrorStrings['set']['default'],
+                            $setAvatar,
+                            byte_symbol($avatarFileSizeMax, true),
+                            $avatarWidthMax,
+                            $avatarHeightMax
+                        );
+                    }
+                    break;
+            }
+        }
+
+        if (!empty($_POST['session_action'])) {
+            switch ($_POST['session_action']) {
+                case 'kill-all':
+                    Database::prepare('
+                        DELETE FROM `msz_sessions`
+                        WHERE `user_id` = :user_id
+                    ')->execute([
+                        'user_id' => $app->getUserId(),
+                    ]);
+                    audit_log('PERSONAL_SESSION_DESTROY_ALL', $app->getUserId());
+                    header('Location: /');
+                    return;
+            }
+        }
+
+        if (!empty($_POST['session']) && is_numeric($_POST['session'])) {
             $session_id = (int)($_POST['session'] ?? 0);
 
             if ($session_id < 1) {
                 $settingsErrors[] = 'Invalid session.';
-                break;
-            }
+            } else {
+                $findSession = Database::prepare('
+                    SELECT `session_id`, `user_id`
+                    FROM `msz_sessions`
+                    WHERE `session_id` = :session_id
+                ');
+                $findSession->bindValue('session_id', $session_id);
+                $session = $findSession->execute() ? $findSession->fetch() : null;
 
-            $findSession = Database::prepare('
-                SELECT `session_id`, `user_id`
-                FROM `msz_sessions`
-                WHERE `session_id` = :session_id
+                if (!$session || (int)$session['user_id'] !== $app->getUserId()) {
+                    $settingsErrors[] = 'You may only end your own sessions.';
+                } else {
+                    if ((int)$session['session_id'] === $app->getSessionId()) {
+                        header('Location: /auth.php?m=logout&s=' . tmp_csrf_token());
+                        return;
+                    }
+
+                    user_session_delete($session['session_id']);
+                    audit_log('PERSONAL_SESSION_DESTROY', $app->getUserId(), [
+                        $session['session_id'],
+                    ]);
+                }
+            }
+        }
+
+        if (!$disableAccountOptions) {
+            if (!empty($_POST['current_password'])
+            || (
+            (isset($_POST['password']) || isset($_POST['email']))
+            && (!empty($_POST['password']['new']) || !empty($_POST['email']['new']))
+            )
+            ) {
+                $updateAccountFields = [];
+
+                $fetchPassword = Database::prepare('
+                SELECT `password`
+                FROM `msz_users`
+                WHERE `user_id` = :user_id
             ');
-            $findSession->bindValue('session_id', $session_id);
-            $session = $findSession->execute() ? $findSession->fetch() : null;
+                $fetchPassword->bindValue('user_id', $app->getUserId());
+                $currentPassword = $fetchPassword->execute() ? $fetchPassword->fetchColumn() : null;
 
-            if (!$session || (int)$session['user_id'] !== $app->getUserId()) {
-                $settingsErrors[] = 'You may only end your own sessions.';
-                break;
+                if (empty($currentPassword)) {
+                    $settingsErrors[] = 'Something went horribly wrong.';
+                } else {
+                    if (!password_verify($_POST['current_password'], $currentPassword)) {
+                        $settingsErrors[] = 'Your current password was incorrect.';
+                    } else {
+                        if (!empty($_POST['email']['new'])) {
+                            if (empty($_POST['email']['confirm'])
+                            || $_POST['email']['new'] !== $_POST['email']['confirm']) {
+                                $settingsErrors[] = 'The given e-mail addresses did not match.';
+                            } else {
+                                $email_validate = user_validate_email($_POST['email']['new'], true);
+
+                                if ($email_validate !== '') {
+                                    switch ($email_validate) {
+                                        case 'dns':
+                                            $settingsErrors[] = 'No valid MX record exists for this domain.';
+                                            break;
+
+                                        case 'format':
+                                            $settingsErrors[] = 'The given e-mail address was incorrectly formatted.';
+                                            break;
+
+                                        case 'in-use':
+                                            $settingsErrors[] = 'This e-mail address is already in use.';
+                                            break;
+
+                                        default:
+                                            $settingsErrors[] = 'Unknown e-mail validation error.';
+                                    }
+                                } else {
+                                    $updateAccountFields['email'] = strtolower($_POST['email']['new']);
+                                    audit_log('PERSONAL_EMAIL_CHANGE', $app->getUserId(), [
+                                        $updateAccountFields['email'],
+                                    ]);
+                                }
+                            }
+                        }
+
+                        if (!empty($_POST['password']['new'])) {
+                            if (empty($_POST['password']['confirm'])
+                            || $_POST['password']['new'] !== $_POST['password']['confirm']) {
+                                $settingsErrors[] = "The given passwords did not match.";
+                            } else {
+                                $password_validate = user_validate_password($_POST['password']['new']);
+
+                                if ($password_validate !== '') {
+                                    $settingsErrors[] = "The given passwords was too weak.";
+                                } else {
+                                    $updateAccountFields['password'] = user_password_hash($_POST['password']['new']);
+                                    audit_log('PERSONAL_PASSWORD_CHANGE', $app->getUserId());
+                                }
+                            }
+                        }
+
+                        if (count($updateAccountFields) > 0) {
+                            $updateUser = Database::prepare('
+                                UPDATE `msz_users`
+                                SET ' . pdo_prepare_array_update($updateAccountFields, true) . '
+                                WHERE `user_id` = :user_id
+                            ');
+                            $updateAccountFields['user_id'] = $app->getUserId();
+                            $updateUser->execute($updateAccountFields);
+                        }
+                    }
+                }
             }
-
-            if ((int)$session['session_id'] === $app->getSessionId()) {
-                header('Location: /auth.php?m=logout&s=' . tmp_csrf_token());
-                return;
-            }
-
-            user_session_delete($session['session_id']);
-            audit_log('PERSONAL_SESSION_DESTROY', $app->getUserId(), [
-                $session['session_id'],
-            ]);
-            break;
+        }
     }
 }
 
-$tpl->var('settings_title', $settingsModes[$settingsMode]['title']);
-$tpl->var('settings_errors', $settingsErrors);
+tpl_vars([
+    'settings_title' => $settingsModes[$settingsMode],
+    'settings_errors' => $settingsErrors,
+]);
 
 switch ($settingsMode) {
     case 'account':
@@ -348,23 +305,18 @@ switch ($settingsMode) {
         ');
         $getMail->bindValue('user_id', $app->getUserId());
         $currentEmail = $getMail->execute() ? $getMail->fetchColumn() : 'Failed to fetch e-mail address.';
-
-        $tpl->vars([
-            'settings_profile_fields' => $profileFields,
-            'settings_profile_values' => $userFields,
-            'settings_disable_account_options' => $disableAccountOptions,
-            'settings_email' => $currentEmail,
-        ]);
-        break;
-
-    case 'images':
         $userHasAvatar = File::exists($app->getStore('avatars/original')->filename($avatarFileName));
-        $tpl->vars([
+
+        tpl_vars([
             'avatar_user_id' => $app->getUserId(),
             'avatar_max_width' => $avatarWidthMax,
             'avatar_max_height' => $avatarHeightMax,
             'avatar_max_filesize' => $avatarFileSizeMax,
             'user_has_avatar' => $userHasAvatar,
+            'settings_profile_fields' => $profileFields,
+            'settings_profile_values' => $userFields,
+            'settings_disable_account_options' => $disableAccountOptions,
+            'settings_email' => $currentEmail,
         ]);
         break;
 
@@ -391,7 +343,7 @@ switch ($settingsMode) {
         $getSessions->bindValue('user_id', $app->getUserId());
         $sessions = $getSessions->execute() ? $getSessions->fetchAll() : [];
 
-        $tpl->vars([
+        tpl_vars([
             'active_session_id' => $app->getSessionId(),
             'user_sessions' => $sessions,
             'sessions_offset' => $queryOffset,
@@ -400,7 +352,10 @@ switch ($settingsMode) {
         ]);
         break;
 
-    case 'login-history':
+    case 'logs':
+        $loginAttemptsOffset = max(0, $_GET['lo'] ?? 0);
+        $auditLogOffset = max(0, $_GET['ao'] ?? 0);
+
         $getLoginAttemptsCount = Database::prepare('
             SELECT COUNT(`attempt_id`)
             FROM `msz_login_attempts`
@@ -418,36 +373,28 @@ switch ($settingsMode) {
             ORDER BY `attempt_id` DESC
             LIMIT :offset, :take
         ');
-        $getLoginAttempts->bindValue('offset', $queryOffset);
-        $getLoginAttempts->bindValue('take', $queryTake);
+        $getLoginAttempts->bindValue('offset', $loginAttemptsOffset);
+        $getLoginAttempts->bindValue('take', min(20, max(5, $queryTake)));
         $getLoginAttempts->bindValue('user_id', $app->getUserId());
         $loginAttempts = $getLoginAttempts->execute() ? $getLoginAttempts->fetchAll() : [];
 
-        $tpl->vars([
-            'user_login_attempts' => $loginAttempts,
-            'login_attempts_offset' => $queryOffset,
-            'login_attempts_take' => $queryTake,
-            'login_attempts_count' => $loginAttemptsCount,
-        ]);
-        break;
-
-    case 'log':
         $auditLogCount = audit_log_count($app->getUserId());
         $auditLog = audit_log_list(
-            $queryOffset,
-            max(20, $queryTake),
+            $auditLogOffset,
+            min(20, max(5, $queryTake)),
             $app->getUserId()
         );
 
-        $tpl->vars([
+        tpl_vars([
             'audit_logs' => $auditLog,
             'audit_log_count' => $auditLogCount,
             'audit_log_take' => $queryTake,
-            'audit_log_offset' => $queryOffset,
+            'audit_log_offset' => $auditLogOffset,
             'log_strings' => [
                 'PERSONAL_EMAIL_CHANGE' => 'Changed e-mail address to %s.',
                 'PERSONAL_PASSWORD_CHANGE' => 'Changed account password.',
                 'PERSONAL_SESSION_DESTROY' => 'Ended session #%d.',
+                'PERSONAL_SESSION_DESTROY_ALL' => 'Ended all personal sessions.',
                 'PASSWORD_RESET' => 'Successfully used the password reset form to change password.',
                 'CHANGELOG_ENTRY_CREATE' => 'Created a new changelog entry #%d.',
                 'CHANGELOG_ENTRY_EDIT' => 'Edited changelog entry #%d.',
@@ -456,10 +403,14 @@ switch ($settingsMode) {
                 'CHANGELOG_TAG_CREATE' => 'Created new changelog tag #%d.',
                 'CHANGELOG_TAG_EDIT' => 'Edited changelog tag #%d.',
                 'CHANGELOG_ACTION_CREATE' => 'Created new changelog action #%d.',
-                'CHANGELOG_ACTION_EDITl' => 'Edited changelog action #%d.',
+                'CHANGELOG_ACTION_EDIT' => 'Edited changelog action #%d.',
             ],
+            'user_login_attempts' => $loginAttempts,
+            'login_attempts_offset' => $loginAttemptsOffset,
+            'login_attempts_take' => $queryTake,
+            'login_attempts_count' => $loginAttemptsCount,
         ]);
         break;
 }
 
-echo $tpl->render("settings.{$settingsMode}");
+echo tpl_render("settings.{$settingsMode}");

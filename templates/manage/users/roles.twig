@@ -1,0 +1,45 @@
+{% extends 'manage/users/master.twig' %}
+{% from 'macros.twig' import pagination %}
+
+{% block manage_content %}
+    {% if can_manage_roles %}
+        <a href="?v=role" class="input__button">Create new Role</a>
+    {% endif %}
+
+    <div class="userlist">
+        {% for role in manage_roles %}
+            <div class="userlist__item">
+                <div class="usercard">
+                    <a  href="?v=role&amp;r={{ role.role_id }}"
+                        class="usercard__background"></a>
+
+                    <div class="usercard__container">
+                        <div class="avatar usercard__avatar"
+                            style="{{ role.role_colour|html_colour({'background-color':'%s'}) }}">
+                        </div>
+
+                        <div class="usercard__content">
+                            <div class="usercard__name">
+                                {{ role.role_name }}
+                            </div>
+
+                            <div class="usercard__info">
+                                <span class="usercard__item usercard__item--title">
+                                    {{ role.role_title }}
+                                </span>
+
+                                <span class="usercard__item usercard__item--title">
+                                    {{ role.users|number_format }} users
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="pagination__wrapper">
+        {{ pagination(manage_roles_count, manage_roles_range, manage_roles_offset, '?v=roles') }}
+    </div>
+{% endblock %}

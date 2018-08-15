@@ -1,0 +1,25 @@
+.side-navigation {
+    list-style: none;
+    padding: 2px 5px;
+
+    &:not(.side-navigation--layer-0) {
+        padding-left: 1em;
+    }
+
+    &__title {
+        color: #306;
+        font-family: @mio-font-heading;
+        display: block;
+        font-weight: 700;
+    }
+
+    &__link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}

@@ -1,91 +1,282 @@
-@mio-header-mobile: 700px;
-
 .header {
-    display: flex;
-    margin: 4px 0;
+    flex: 0 0 auto;
+    background: linear-gradient(0deg, transparent, #c2affe) repeat-x;
 
-    @media (max-width: @mio-header-mobile) {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    &__logo {
-        flex-grow: 0;
-        flex-shrink: 0;
-
-        &__link {
-            color: inherit;
-            text-decoration: none;
-            cursor: pointer;
-            display: block;
-        }
-
-        &__image {
-            vertical-align: bottom;
-
-            @media (max-width: @mio-header-mobile) {
-                max-width: 200px;
-                max-height: 100px;
-                margin-bottom: 4px;
-            }
-        }
-    }
-
-    &__menu {
-        flex-grow: 1;
-        flex-shrink: 1;
+    &__wrapper {
+        margin: 0 auto;
         display: flex;
-        align-items: flex-start;
-        justify-content: flex-end;
+        align-items: center;
+        padding: 3px 1px;
+        max-width: var(--site-max-width);
 
-        @media (max-width: @mio-header-mobile) {
+        @media (max-width: @site-mobile-width) {
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: @site-mobile-width) {
+        &__icons {
+            display: flex;
+            justify-content: space-between;
             width: 100%;
         }
     }
 
-    &__user {
-        border: 1px solid #9475b2;
-        display: inline-block;
+    &__icon {
+        display: none;
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
 
-        &__content {
-            margin: 2px;
-            display: flex;
+        &--menu {
+            background-image: url('https://static.flash.moe/images/mobile-menu.png');
+            background-size: 40px;
+        }
+
+        @media (max-width: @site-mobile-width) {
+            display: block;
+        }
+    }
+
+    &__logo {
+        flex: 0 0 auto;
+        color: inherit;
+        text-decoration: none;
+        cursor: pointer;
+        display: block;
+        background: url('https://static.flash.moe/images/imouto-transparent.png') no-repeat center / cover;
+        width: 60px;
+        height: 60px;
+        font-size: 0;
+
+        &--manage {
+            background-image: url('https://static.flash.moe/images/imouto-broom.png');
+        }
+
+        @media (max-width: @site-mobile-width) {
+            width: 40px;
+            height: 40px;
+        }
+    }
+
+    &__menu {
+        flex: 1 1 auto;
+        margin: 0 6px;
+        font-family: @mio-font-heading;
+        list-style: none;
+        display: flex;
+
+        &-toggle {
+            display: none;
+        }
+
+        @media (max-width: @site-mobile-width) {
+            display: none;
+            font-size: 1.6em;
+            line-height: 1.5em;
+
+            &-toggle:checked ~ .header__menu {
+                display: block;
+            }
+        }
+
+        @media (max-width: @site-mobile-width) {
+            width: 100%;
+            background: #c2affe;
+
+            &__item:not(:last-child) {
+                border-bottom: 1px solid #9475b2;
+            }
+
+            &__link {
+                width: 100%;
+                display: block;
+                padding: 4px 8px;
+                color: inherit;
+                text-decoration: none;
+            }
+        }
+
+        @media (min-width: @site-mobile-width) {
+            &__item {
+                text-align: center;
+                transition: background-color .2s;
+
+                &:hover {
+                    background-color: #c2affe;
+
+                    .header__submenu {
+                        transform: scaleY(1);
+                    }
+                }
+            }
+
+            &__link {
+                font-size: 1.2em;
+                color: inherit;
+                text-decoration: none;
+                display: block;
+                padding: 6px 4px;
+                min-width: 100px;
+                cursor: pointer;
+            }
+        }
+    }
+
+    &__submenu {
+        list-style: none;
+        display: block;
+
+        @media (max-width: @site-mobile-width) {
+            &__link {
+                padding: 2px 16px;
+                display: block;
+                width: 100%;
+                color: inherit;
+                text-decoration: none;
+            }
+        }
+
+        @media (min-width: @site-mobile-width) {
+            position: absolute; // floating
+            transform: scaleY(0);
+            transform-origin: center top 0;
+            background: #c2affe;
+            overflow: hidden;
+            z-index: 100;
+            text-align: left;
+            box-shadow: 0 1px 2px #9475b2;
+            transition: transform .2s;
+
+            &:hover {
+                transform: scaleY(1);
+            }
+
+            &__link {
+                color: inherit;
+                text-decoration: none;
+                display: block;
+                padding: 2px 6px;
+                min-width: 100px;
+            }
+        }
+    }
+
+    &__user {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: row-reverse;
+        order: 3;
+
+        &-toggle {
+            display: none;
+        }
+
+        @media (max-width: @site-mobile-width) {
+            display: none;
+            width: 100%;
+            background: #c2affe;
+            font-size: 1.1em;
+
+            &-toggle:checked ~ .header__user {
+                display: flex;
+            }
         }
 
         &__avatar {
             width: 60px;
             height: 60px;
+
+            @media (max-width: @site-mobile-width) {
+                display: none;
+            }
         }
 
-        &__links {
-            text-align: right;
-            list-style: none;
-            margin: 0 2px;
-            line-height: 1.5em;
+        &__info {
+            padding: 1px;
+            margin-right: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
 
-            &__container {
-                flex-grow: 1;
+            @media (max-width: @site-mobile-width) {
+                margin: 0;
+                padding: 0;
+                display: block;
+                width: 100%;
+            }
+        }
+
+        &__name {
+            color: inherit;
+            font-size: 1.4em;
+            line-height: 1.4em;
+            font-family: @mio-font-heading;
+            text-decoration: none;
+            display: block;
+            text-align: right;
+
+            @media (min-width: @site-mobile-width) {
+                &:hover {
+                    text-decoration: underline;
+                }
             }
 
-            @media (max-width: @mio-header-mobile) {
-                font-size: 1.5em;
+            @media (max-width: @site-mobile-width) {
+                font-size: 1.6em;
+                line-height: 1.5em;
+                border-bottom: 1px solid #9475b2;
+                padding: 4px 8px;
+                text-align: left;
+            }
+        }
+
+        &__actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: right;
+            list-style: none;
+            max-width: 100px;
+            font-size: .9em;
+            line-height: 1.4em;
+
+            @media (max-width: @site-mobile-width) {
+                font-size: 1.6em;
+                line-height: 1.5em;
+                max-width: initial;
+                width: 100%;
+                flex-direction: column;
+            }
+        }
+
+        &__action {
+            padding-left: 6px;
+
+            @media (max-width: @site-mobile-width) {
+                padding: 0;
+
+                &:not(:last-child) {
+                    border-bottom: 1px solid #9475b2;
+                }
             }
         }
 
         &__link {
             color: inherit;
             text-decoration: none;
-            display: block;
-            min-width: 70px;
 
-            &:hover {
-                text-decoration: underline;
+            @media (max-width: @site-mobile-width) {
+                padding: 4px 8px;
+                display: block;
+                width: 100%;
             }
-        }
 
-        @media (max-width: @mio-header-mobile) {
-            width: 100%;
-            margin: 0;
+            @media (min-width: @site-mobile-width) {
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
         }
     }
 }

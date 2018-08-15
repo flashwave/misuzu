@@ -270,53 +270,42 @@ class Application extends ApplicationBase
             throw new UnexpectedValueException('Templating module has already been started.');
         }
 
-        $this->templatingInstance = new TemplateEngine;
-        $this->templatingInstance->debug($this->debugMode);
+        tpl_init([
+            'debug' => $this->debugMode,
+        ]);
 
-        $this->templatingInstance->var('globals', [
+        tpl_var('globals', [
             'site_name' => $this->configInstance->get('Site', 'name', 'string', 'Flashii'),
             'site_description' => $this->configInstance->get('Site', 'description'),
             'site_twitter' => $this->configInstance->get('Site', 'twitter'),
             'site_url' => $this->configInstance->get('Site', 'url'),
         ]);
 
-        $this->templatingInstance->addFilter('json_decode');
-        $this->templatingInstance->addFilter('byte_symbol');
-        $this->templatingInstance->addFilter('html_link');
-        $this->templatingInstance->addFilter('html_colour');
-        $this->templatingInstance->addFilter('url_construct');
-        $this->templatingInstance->addFilter('country_name', 'get_country_name');
-        $this->templatingInstance->addFilter('first_paragraph');
-        $this->templatingInstance->addFilter('colour_get_css');
-        $this->templatingInstance->addFilter('colour_get_css_contrast');
-        $this->templatingInstance->addFilter('colour_get_inherit');
-        $this->templatingInstance->addFilter('colour_get_red');
-        $this->templatingInstance->addFilter('colour_get_green');
-        $this->templatingInstance->addFilter('colour_get_blue');
-        $this->templatingInstance->addFilter('parse_line');
-        $this->templatingInstance->addFilter('parse_text');
-        $this->templatingInstance->addFilter('asset_url');
-        $this->templatingInstance->addFilter('vsprintf');
+        tpl_add_function('json_decode', true);
+        tpl_add_function('byte_symbol', true);
+        tpl_add_function('html_link', true);
+        tpl_add_function('html_colour', true);
+        tpl_add_function('url_construct', true);
+        tpl_add_function('country_name', true, 'get_country_name');
+        tpl_add_function('flip', true, 'array_flip');
+        tpl_add_function('first_paragraph', true);
+        tpl_add_function('colour_get_css', true);
+        tpl_add_function('colour_get_css_contrast', true);
+        tpl_add_function('colour_get_inherit', true);
+        tpl_add_function('colour_get_red', true);
+        tpl_add_function('colour_get_green', true);
+        tpl_add_function('colour_get_blue', true);
+        tpl_add_function('parse_line', true);
+        tpl_add_function('parse_text', true);
+        tpl_add_function('asset_url', true);
+        tpl_add_function('vsprintf', true);
 
-        $this->templatingInstance->addFunction('git_commit_hash');
-        $this->templatingInstance->addFunction('git_branch');
-        $this->templatingInstance->addFunction('csrf_token', 'tmp_csrf_token');
-        $this->templatingInstance->addFunction('perms_check');
+        tpl_add_function('git_commit_hash');
+        tpl_add_function('git_branch');
+        tpl_add_function('csrf_token', false, 'tmp_csrf_token');
+        tpl_add_function('perms_check');
 
-        $this->templatingInstance->var('app', $this);
-    }
-
-    /**
-     * Gets an instance of the templating engine.
-     * @return TemplateEngine
-     */
-    public function getTemplating(): TemplateEngine
-    {
-        if (is_null($this->templatingInstance)) {
-            throw new UnexpectedValueException('Internal templating engine instance is null, did you run startDatabase yet?');
-        }
-
-        return $this->templatingInstance;
+        tpl_var('app', $this);
     }
 
     public function startMailer(): void

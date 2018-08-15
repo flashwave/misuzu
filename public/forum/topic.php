@@ -1,8 +1,6 @@
 <?php
 require_once __DIR__ . '/../../misuzu.php';
 
-$templating = $app->getTemplating();
-
 $postId = (int)($_GET['p'] ?? 0);
 $topicId = (int)($_GET['t'] ?? 0);
 $postsOffset = max((int)($_GET['o'] ?? 0), 0);
@@ -33,7 +31,7 @@ if (!$posts) {
 
 forum_topic_mark_read($app->getUserId(), $topic['topic_id'], $topic['forum_id']);
 
-echo $templating->render('forum.topic', [
+echo tpl_render('forum.topic', [
     'topic_breadcrumbs' => forum_get_breadcrumbs($topic['forum_id']),
     'topic_info' => $topic,
     'topic_posts' => $posts,

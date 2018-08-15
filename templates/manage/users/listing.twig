@@ -1,0 +1,15 @@
+{% extends 'manage/users/master.twig' %}
+{% from 'macros.twig' import pagination %}
+{% from 'user/macros.twig' import user_card %}
+
+{% block manage_content %}
+    <div class="userlist">
+        {% for user in manage_users %}
+            <div class="userlist__item">
+                {{ user_card(user, '?v=view&u=%d', '?v=role&r=%d') }}
+            </div>
+        {% endfor %}
+    </div>
+
+    {{ pagination(manage_users_count, manage_users_range, manage_users_offset, '?v=listing') }}
+{% endblock %}

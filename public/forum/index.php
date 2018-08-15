@@ -17,7 +17,7 @@ foreach ($categories as $key => $category) {
     }
 }
 
-echo $app->getTemplating()->render('forum.index', [
+echo tpl_render('forum.index', [
     'forum_categories' => $categories,
     'forum_empty' => $blankForum,
 ]);

@@ -48,7 +48,7 @@ function asset_url(string $path): string
 {
     $realPath = realpath(__DIR__ . '/public/' . $path);
 
-    if ($realPath === false) {
+    if ($realPath === false || !file_exists($realPath)) {
         return $path;
     }
 
@@ -225,6 +225,22 @@ function parse_bbcode(string $text): string
     return \Misuzu\Parsers\BBCode\BBCodeParser::instance()->parseText($text);
 }
 
+function is_local_url(string $url): bool
+{
+    $length = strlen($url);
+
+    if ($length < 1) {
+        return false;
+    }
+
+    if ($url[0] === '/' && ($length > 1 ? $url[1] !== '/' : true)) {
+        return true;
+    }
+
+    $prefix = 'http' . (empty($_SERVER['HTTPS']) ? '' : 's') . '://' . $_SERVER['HTTP_HOST'] . '/';
+    return starts_with($url, $prefix);
+}
+
 function parse_text(string $text, string $parser): string
 {
     switch (strtolower($parser)) {
@@ -259,13 +275,43 @@ function parse_line(string $line, string $parser): string
 
 function render_error(int $code, string $template = 'errors.%d'): string
 {
-    http_response_code($code);
+    return render_info(null, $code, $template);
+}
+
+function render_info(?string $message, int $httpCode, string $template = 'errors.%d'): string
+{
+    http_response_code($httpCode);
 
     try {
-        return \Misuzu\Application::getInstance()->getTemplating()->render(sprintf($template, $code));
+        tpl_var('http_code', $httpCode);
+
+        if (strlen($message)) {
+            tpl_var('message', $message);
+        }
+
+        $template = sprintf($template, $httpCode);
+
+        if (!tpl_exists($template)) {
+            $template = 'errors.master';
+        }
+
+        return tpl_render(sprintf($template, $httpCode));
     } catch (Exception $ex) {
-        return '';
+        echo $ex->getMessage();
+        return $message ?? '';
     }
+}
+
+function render_info_or_json(bool $json, string $message, int $httpCode = 200, string $template = 'errors.%d'): string
+{
+    $error = $httpCode >= 400;
+    http_response_code($httpCode);
+
+    if ($json) {
+        return json_encode([($error ? 'error' : 'message') => $message]);
+    }
+
+    return render_info($message, $httpCode, $template);
 }
 
 function html_link(string $url, ?string $content = null, $attributes = []): string
@@ -316,7 +362,7 @@ function url_construct(string $path, array $query = [], string $host = ''): stri
     $url = $host . $path;
 
     if (count($query)) {
-        $url .= '?';
+        $url .= strpos($path, '?') !== false ? '&' : '?';
 
         foreach ($query as $key => $value) {
             if ($value) {

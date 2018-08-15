@@ -1,0 +1,66 @@
+{% extends 'news/master.twig' %}
+{% from '_layout/comments.twig' import comments_section %}
+
+{% set title = post.post_title ~ ' :: News' %}
+{% set canonical_url = '/news.php?p=' ~ post.post_id %}
+
+{% block content %}
+    <div class="container news__post">
+        <div class="container__title">
+            <a href="/news.php?c={{ post.category_id }}" class="container__title__link">{{ post.category_name }}</a> »
+            {{ post.post_title }}
+        </div>
+
+        <div class="news__post__content">
+            <div class="news__post__text">
+                {{ post.post_text|parse_text('md')|raw }}
+            </div>
+
+            <div class="news__sidebar news__post__details">
+                <a class="news__post__detail news__post__user" href="/profile.php?u={{ post.user_id }}">
+                    <div class="news__post__username" style="{{ post.user_colour|html_colour }}">{{ post.username }}</div>
+                    <div class="avatar news__post__avatar" style="background-image:url('/profile.php?u={{ post.user_id }}&amp;m=avatar');"></div>
+                </a>
+
+                <a class="news__post__detail news__post__info news__post__info--link" href="/news.php?c={{ post.category_id }}">
+                    <div class="news__post__info__name">
+                        Category
+                    </div>
+                    <div class="news__post__info__value">
+                        {{ post.category_name }}
+                    </div>
+                </a>
+
+                <div class="news__post__detail news__post__info">
+                    <div class="news__post__info__name">
+                        Posted
+                    </div>
+                    <time class="news__post__info__value" datetime="{{ post.created_at|date('c') }}" title="{{ post.created_at|date('r') }}">
+                        {{ post.created_at|time_diff }}
+                    </time>
+                </div>
+
+                {# TODO: make this work
+                {% if post.updated_at is defined %}
+                    <div class="news__post__detail news__post__info">
+                        <div class="news__post__info__name">
+                            Updated
+                        </div>
+                        <div class="news__post__info__value">
+                            {{ post.updated_at }}
+                        </div>
+                    </div>
+                {% endif %} #}
+            </div>
+        </div>
+    </div>
+
+    {% if comments is defined %}
+        <div class="container">
+            <div class="container__title">
+                Comments
+            </div>
+            {{ comments_section(comments, comments_category, current_user|default(null), comments_perms) }}
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,59 @@
+.permissions {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 4px;
+
+    &__line {
+        display: flex;
+        font-size: .9em;
+        line-height: 1.2em;
+
+        &--header {
+            font-size: 1.2em;
+            line-height: 1.4em;
+            border-bottom: 1px solid #9475b2;
+            padding-bottom: 1px;
+            font-family: @mio-font-heading;
+
+            &:not(:first-child) {
+                margin-top: 4px;
+            }
+        }
+    }
+
+    &__title {
+        flex: 1 1 auto;
+        padding: 4px;
+    }
+
+    &__line:not(&__line--header) &__title {
+        border-bottom: 1px solid #ded5e7;
+    }
+
+    &__input {
+        cursor: pointer;
+    }
+
+    &__choice {
+        width: 100px;
+        text-align: center;
+        padding: 4px;
+
+        &--radio {
+            cursor: pointer;
+            border-left: 1px solid #9475b2;
+        }
+
+        &--yes:hover {
+            background-color: #0a0;
+        }
+
+        &--no:hover {
+            background-color: #a00;
+        }
+
+        &--never:hover {
+            background-color: #400;
+        }
+    }
+}

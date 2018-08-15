@@ -1,5 +1,3 @@
-@mio-forum-listing-mobile: 700px;
-
 .forum__listing {
     &__forums {
         margin: 2px;
@@ -83,7 +81,7 @@
             min-width: 100px;
             flex-direction: column;
 
-            @media (max-width: @mio-forum-listing-mobile) {
+            @media (max-width: @site-mobile-width) {
                 min-width: initial;
                 border-left-width: 0;
                 align-self: flex-end;
@@ -101,7 +99,7 @@
             color: #555;
         }
 
-        @media (max-width: @mio-forum-listing-mobile) {
+        @media (max-width: @site-mobile-width) {
             &__topics,
             &__posts {
                 font-size: 1em;
@@ -114,7 +112,7 @@
             min-height: 50px;
             align-items: center;
 
-            @media (max-width: @mio-forum-listing-mobile) {
+            @media (max-width: @site-mobile-width) {
                 min-width: 150px;
 
                 &--empty {
@@ -176,7 +174,7 @@
                 flex-shrink: 1;
             }
 
-            @media (max-width: @mio-forum-listing-mobile) {
+            @media (max-width: @site-mobile-width) {
                 &__title,
                 &__info,
                 &__none {

@@ -1,11 +1,18 @@
 @mio-font-heading: Verdana, 'Dejavu Sans', Arial, Helvetica, sans-serif;
 @mio-font-regular: Tahoma, Geneva, 'Dejavu Sans', Arial, Helvetica, sans-serif;
+@site-max-width: 1200px;
+@site-mobile-width: 800px;
+
+:root {
+    --site-max-width: @site-max-width;
+}
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     position: relative;
+    outline-style: none;
 }
 
 html,
@@ -14,22 +21,19 @@ body {
     height: 100%;
 }
 
-.mio {
+.main {
+    display: flex;
+    flex-direction: column;
     background-color: #fbeeff;
-    background-image: linear-gradient(180deg, #c2affe, transparent);
-    background-repeat: repeat-x;
-    background-size: 100% 150px;
     font: 12px/20px @mio-font-regular;
     color: #000;
 
     &__wrapper {
-        max-width: 1200px;
+        max-width: var(--site-max-width);
+        width: 100%;
         margin: 0 auto;
         padding: 1px;
-
-        @media (max-width: 1201px) {
-            margin: 0 1px;
-        }
+        flex: 1 0 auto;
     }
 
     &--dark {
@@ -50,9 +54,10 @@ body {
 @import "classes/avatar";
 @import "classes/container";
 @import "classes/flag";
-@import "classes/heading";
 @import "classes/navigation";
 @import "classes/pagination";
+@import "classes/management";
+@import "classes/side-navigation";
 
 // Specific styles
 @import "classes/footer";
@@ -60,9 +65,9 @@ body {
 @import "classes/profile";
 @import "classes/index";
 @import "classes/changelog";
+@import "classes/permissions";
 
 // Settings
-@import "classes/settings/content";
 @import "classes/settings/description";
 @import "classes/settings/errors";
 @import "classes/settings/pagination";
@@ -89,6 +94,10 @@ body {
 @import "classes/forum/topic";
 @import "classes/forum/topics";
 
-// Member listing
-@import "classes/members/user";
-@import "classes/members/users";
+// User stuff
+@import "classes/usercard";
+@import "classes/userlist";
+
+// Comments
+@import "classes/comment"; // entries
+@import "classes/comments"; // listing

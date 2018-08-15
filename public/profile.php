@@ -40,8 +40,6 @@ switch ($mode) {
 
     case 'view':
     default:
-        $templating = $app->getTemplating();
-
         $getProfile = Database::prepare('
             SELECT
                 u.*,
@@ -61,7 +59,12 @@ switch ($mode) {
                     SELECT COUNT(`change_id`)
                     FROM `msz_changelog_changes`
                     WHERE `user_id` = u.`user_id`
-                ) as `changelog_count`
+                ) as `changelog_count`,
+                (
+                    SELECT COUNT(`comment_id`)
+                    FROM `msz_comments_posts`
+                    WHERE `user_id` = u.`user_id`
+                ) as `comments_count`
             FROM `msz_users` as u
             LEFT JOIN `msz_roles` as r
             ON r.`role_id` = u.`display_role`
@@ -72,11 +75,11 @@ switch ($mode) {
 
         if (!$profile) {
             http_response_code(404);
-            echo $templating->render('user.notfound');
+            echo tpl_render('user.notfound');
             break;
         }
 
-        $templating->vars(compact('profile'));
-        echo $templating->render('user.view');
+        tpl_vars(compact('profile'));
+        echo tpl_render('user.view');
         break;
 }

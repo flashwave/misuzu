@@ -1,5 +1,3 @@
-@mio-forum-post-mobile: 700px;
-
 .forum__post {
     display: flex;
     border: 1px solid #9475b2;
@@ -7,7 +5,7 @@
     background-color: #fbeeff;
     margin: 2px 0;
 
-    @media (max-width: @mio-forum-post-mobile) {
+    @media (max-width: @site-mobile-width) {
         flex-direction: column;
     }
 
@@ -23,7 +21,7 @@
             margin: 2px;
             line-height: 1.2em;
 
-            @media (max-width: @mio-forum-post-mobile) {
+            @media (max-width: @site-mobile-width) {
                 margin: 4px;
                 font-size: 1.2em;
                 line-height: 1.3em;
@@ -59,7 +57,7 @@
         flex-direction: column;
         align-items: center;
 
-        @media (max-width: @mio-forum-post-mobile) {
+        @media (max-width: @site-mobile-width) {
             border-right-width: 0;
             border: 1px solid #9475b2;
             flex-direction: row;
@@ -72,7 +70,7 @@
             margin: 5px;
             max-width: 170px;
 
-            @media (max-width: @mio-forum-post-mobile) {
+            @media (max-width: @site-mobile-width) {
                 display: none;
             }
         }
@@ -84,7 +82,7 @@
             flex-grow: 0;
             flex-shrink: 0;
 
-            @media (max-width: @mio-forum-post-mobile) {
+            @media (max-width: @site-mobile-width) {
                 display: flex;
                 align-items: center;
                 margin: 5px;
@@ -97,7 +95,7 @@
             height: 120px;
             box-shadow: 0 1px 2px #9475b2;
 
-            @media (max-width: @mio-forum-post-mobile) {
+            @media (max-width: @site-mobile-width) {
                 width: 40px;
                 height: 40px;
                 margin-right: 5px;

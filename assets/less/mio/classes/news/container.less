@@ -1,18 +1,7 @@
-@mio-news-mobile: 700px;
-
 .news__container {
-    margin: 0;
+    display: flex;
 
-    &:not(:last-child) {
-        margin-bottom: 2px;
-    }
-
-    &__content {
-        margin: 2px;
-        display: flex;
-
-        @media (max-width: @mio-news-mobile) {
-            flex-direction: column;
-        }
+    @media (max-width: @site-mobile-width) {
+        flex-direction: column;
     }
 }

@@ -6,10 +6,9 @@ use Misuzu\Database;
 require_once __DIR__ . '/../misuzu.php';
 
 $config = $app->getConfig();
-$tpl = $app->getTemplating();
 
 if ($config->get('Site', 'embed_linked_data', 'bool', false)) {
-    $tpl->vars([
+    tpl_vars([
         'embed_linked_data' => true,
         'embed_name' => $config->get('Site', 'name'),
         'embed_url' => $config->get('Site', 'url'),
@@ -22,7 +21,12 @@ $news = Database::query('
     SELECT
         p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
         u.`user_id`, u.`username`,
-        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
+        (
+            SELECT COUNT(`comment_id`)
+            FROM `msz_comments_posts`
+            WHERE `category_id` = `comment_section_id`
+        ) as `post_comments`
     FROM `msz_news_posts` as p
     LEFT JOIN `msz_users` as u
     ON p.`user_id` = u.`user_id`
@@ -30,7 +34,7 @@ $news = Database::query('
     ON u.`display_role` = r.`role_id`
     WHERE p.`is_featured` = true
     ORDER BY p.`created_at` DESC
-    LIMIT 3
+    LIMIT 5
 ')->fetchAll(PDO::FETCH_ASSOC);
 
 $statistics = Cache::instance()->get('index:stats:v1', function () {
@@ -67,7 +71,7 @@ $changelog = Cache::instance()->get('index:changelog:v1', function () {
     ')->fetchAll(PDO::FETCH_ASSOC);
 }, 1800);
 
-echo $tpl->render('home.index', [
+echo tpl_render('home.index', [
     'users_count' => $statistics['users'],
     'last_user' => $statistics['lastUser'],
     'featured_changelog' => $changelog,

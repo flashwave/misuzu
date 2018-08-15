@@ -1,0 +1,52 @@
+{% extends 'manage/changelog/master.twig' %}
+{% from 'macros.twig' import pagination %}
+
+{% block manage_content %}
+    <a href="?v=change" class="input__button">Create new change</a>
+
+    <div class="container listing">
+        {% for change in changelog_changes %}
+            <a href="?v=change&amp;c={{ change.change_id }}" class="listing__entry" style="{{ change.action_colour|html_colour({'border-color':'%s'}) }}">
+                <div class="listing__entry__content changelog-change">
+                    <div class="changelog-change__change">
+                        <div class="changelog-change__text">
+                            {{ change.change_log }}
+                        </div>
+
+                        <time class="changelog-change__datetime"
+                            datetime="{{ change.change_created|date('c') }}"
+                            title="{{ change.change_created|date('r') }}">
+                            {{ change.change_created|time_diff }}
+                        </time>
+
+                        <ul class="changelog-change__tags">
+                            <li style="{{ change.action_colour|html_colour({'background-color':'%s'}) }}"
+                                class="changelog-change__tag changelog-change__tag--{{ change.action_colour|colour_get_css_contrast }}">
+                                {{ change.action_name }}
+                            </li>
+
+                            {% for tag in change.tags %}
+                                <li class="changelog-change__tag">{{ tag.tag_name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="changelog-change__contributor">
+                        <div class="changelog-change__username"
+                            style="{{ change.user_colour|html_colour }}">
+                            {{ change.username }}
+                        </div>
+
+                        <div class="avatar changelog-change__avatar"
+                            style="background-image:url('/profile.php?u={{ change.user_id }}&amp;m=avatar')">
+                        </div>
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="pagination__wrapper">
+        {{ pagination(changelog_changes_count, changelog_take, changelog_offset, '?v=changes') }}
+    </div>
+{% endblock %}
