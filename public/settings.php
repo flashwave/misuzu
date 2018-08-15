@@ -149,6 +149,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        if (!empty($_POST['session_action'])) {
+            switch ($_POST['session_action']) {
+                case 'kill-all':
+                    Database::prepare('
+                        DELETE FROM `msz_sessions`
+                        WHERE `user_id` = :user_id
+                    ')->execute([
+                        'user_id' => $app->getUserId(),
+                    ]);
+                    audit_log('PERSONAL_SESSION_DESTROY_ALL', $app->getUserId());
+                    header('Location: /');
+                    return;
+            }
+        }
+
         if (!empty($_POST['session']) && is_numeric($_POST['session'])) {
             $session_id = (int)($_POST['session'] ?? 0);
 
@@ -379,6 +394,7 @@ switch ($settingsMode) {
                 'PERSONAL_EMAIL_CHANGE' => 'Changed e-mail address to %s.',
                 'PERSONAL_PASSWORD_CHANGE' => 'Changed account password.',
                 'PERSONAL_SESSION_DESTROY' => 'Ended session #%d.',
+                'PERSONAL_SESSION_DESTROY_ALL' => 'Ended all personal sessions.',
                 'PASSWORD_RESET' => 'Successfully used the password reset form to change password.',
                 'CHANGELOG_ENTRY_CREATE' => 'Created a new changelog entry #%d.',
                 'CHANGELOG_ENTRY_EDIT' => 'Edited changelog entry #%d.',
@@ -387,7 +403,7 @@ switch ($settingsMode) {
                 'CHANGELOG_TAG_CREATE' => 'Created new changelog tag #%d.',
                 'CHANGELOG_TAG_EDIT' => 'Edited changelog tag #%d.',
                 'CHANGELOG_ACTION_CREATE' => 'Created new changelog action #%d.',
-                'CHANGELOG_ACTION_EDITl' => 'Edited changelog action #%d.',
+                'CHANGELOG_ACTION_EDIT' => 'Edited changelog action #%d.',
             ],
             'user_login_attempts' => $loginAttempts,
             'login_attempts_offset' => $loginAttemptsOffset,

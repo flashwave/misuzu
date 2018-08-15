@@ -5,12 +5,19 @@
 
 {% block settings_content %}
     <div class="container">
-        <div class="container__title">Login History</div>
+        <div class="container__title">Sessions</div>
 
         <div class="settings__sessions">
             <div class="settings__description">
                 <p>These are the active logins to your account, clicking the Kill button will force a logout on that session. Your current login is highlighted with a darker purple so you don't accidentally force yourself to logout.</p>
             </div>
+
+            <form class="settings__sessions__actions" method="post" action="?m=sessions">
+                <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+                <button class="input__button" name="session_action" value="kill-all">
+                    Kill all active sessions
+                </button>
+            </form>
 
             {{ spagination }}
 
