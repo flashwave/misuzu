@@ -12,110 +12,70 @@ function manage_get_menu(int $userId): array
     }
 
     $menu = [];
-
-    $menu['General'] = [
-        'Overview' => '/manage/index.php?v=overview',
-    ];
+    $menu['General']['Overview'] = '/manage/index.php?v=overview';
 
     if (perms_check($perms['general'], MSZ_GENERAL_PERM_VIEW_LOGS)) {
         $menu['General']['Logs'] = '/manage/index.php?v=logs';
     }
 
-    if (perms_check(
-        $perms['general'],
-        MSZ_GENERAL_PERM_MANAGE_EMOTICONS | MSZ_GENERAL_PERM_MANAGE_SETTINGS
-    )) {
-        if (perms_check($perms['general'], MSZ_GENERAL_PERM_MANAGE_EMOTICONS)) {
-            $menu['General']['Emoticons'] = '/manage/index.php?v=emoticons';
-        }
-
-        if (perms_check($perms['general'], MSZ_GENERAL_PERM_MANAGE_SETTINGS)) {
-            $menu['General']['Settings'] = '/manage/index.php?v=settings';
-        }
+    if (perms_check($perms['general'], MSZ_GENERAL_PERM_MANAGE_EMOTICONS)) {
+        $menu['General']['Emoticons'] = '/manage/index.php?v=emoticons';
     }
 
-    $canUserManage = MSZ_USER_PERM_MANAGE_USERS | MSZ_USER_PERM_MANAGE_ROLES
-        | MSZ_USER_PERM_MANAGE_PERMS | MSZ_USER_PERM_MANAGE_REPORTS
-        | MSZ_USER_PERM_MANAGE_RESTRICTIONS | MSZ_USER_PERM_MANAGE_BLACKLISTS;
-
-    if (perms_check($perms['user'], $canUserManage)) {
-        $menu['Users'] = [];
-
-        if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_USERS | MSZ_USER_PERM_MANAGE_PERMS)) {
-            $menu['Users']['Listing'] = '/manage/users.php?v=listing';
-        }
-
-        if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_ROLES | MSZ_USER_PERM_MANAGE_PERMS)) {
-            $menu['Users']['Roles'] = '/manage/users.php?v=roles';
-        }
-
-        if (perms_check(
-            $perms['user'],
-            MSZ_USER_PERM_MANAGE_REPORTS | MSZ_USER_PERM_MANAGE_RESTRICTIONS | MSZ_USER_PERM_MANAGE_BLACKLISTS
-        )) {
-            if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_REPORTS)) {
-                $menu['Users']['Reports'] = '/manage/users.php?v=reports';
-            }
-
-            if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_RESTRICTIONS)) {
-                $menu['Users']['Restrictions'] = '/manage/users.php?v=restrictions';
-            }
-
-            if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_BLACKLISTS)) {
-                $menu['Users']['Blacklisting'] = '/manage/users.php?v=blacklisting';
-            }
-        }
+    if (perms_check($perms['general'], MSZ_GENERAL_PERM_MANAGE_SETTINGS)) {
+        $menu['General']['Settings'] = '/manage/index.php?v=settings';
     }
 
-    $canNewsManage = MSZ_NEWS_PERM_MANAGE_POSTS | MSZ_NEWS_PERM_MANAGE_CATEGORIES;
-
-    if (perms_check($perms['news'], $canNewsManage)) {
-        $menu['News'] = [];
-
-        if (perms_check($perms['news'], MSZ_NEWS_PERM_MANAGE_POSTS)) {
-            $menu['News']['Posts'] = '/manage/news.php?v=posts';
-        }
-
-        if (perms_check($perms['news'], MSZ_NEWS_PERM_MANAGE_CATEGORIES)) {
-            $menu['News']['Categories'] = '/manage/news.php?v=categories';
-        }
+    if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_USERS | MSZ_USER_PERM_MANAGE_PERMS)) {
+        $menu['Users']['Listing'] = '/manage/users.php?v=listing';
     }
 
-    $canForumManage = MSZ_FORUM_PERM_MANAGE_FORUMS;
-
-    if (perms_check($perms['forum'], $canForumManage)) {
-        $menu['Forums'] = [];
-
-        if (perms_check($perms['forum'], MSZ_FORUM_PERM_MANAGE_FORUMS)) {
-            $menu['Forums']['Listing'] = '/manage/forums.php?v=listing';
-        }
-
-        if (perms_check($perms['forum'], 0)) {
-            $menu['Forums']['Permissions'] = '/manage/forums.php?v=permissions';
-        }
-
-        if (perms_check($perms['forum'], 0)) {
-            $menu['Forums']['Settings'] = '/manage/forums.php?v=settings';
-        }
+    if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_ROLES | MSZ_USER_PERM_MANAGE_PERMS)) {
+        $menu['Users']['Roles'] = '/manage/users.php?v=roles';
     }
 
-    $canChangelogManage = MSZ_CHANGELOG_PERM_MANAGE_CHANGES | MSZ_CHANGELOG_PERM_MANAGE_TAGS
-        | MSZ_CHANGELOG_PERM_MANAGE_ACTIONS;
+    if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_REPORTS)) {
+        $menu['Users']['Reports'] = '/manage/users.php?v=reports';
+    }
 
-    if (perms_check($perms['changelog'], $canChangelogManage)) {
-        $menu['Changelog'] = [];
+    if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_RESTRICTIONS)) {
+        $menu['Users']['Restrictions'] = '/manage/users.php?v=restrictions';
+    }
 
-        if (perms_check($perms['changelog'], MSZ_CHANGELOG_PERM_MANAGE_CHANGES)) {
-            $menu['Changelog']['Changes'] = '/manage/changelog.php?v=changes';
-        }
+    if (perms_check($perms['user'], MSZ_USER_PERM_MANAGE_BLACKLISTS)) {
+        $menu['Users']['Blacklisting'] = '/manage/users.php?v=blacklisting';
+    }
 
-        if (perms_check($perms['changelog'], MSZ_CHANGELOG_PERM_MANAGE_TAGS)) {
-            $menu['Changelog']['Tags'] = '/manage/changelog.php?v=tags';
-        }
+    if (perms_check($perms['news'], MSZ_NEWS_PERM_MANAGE_POSTS)) {
+        $menu['News']['Posts'] = '/manage/news.php?v=posts';
+    }
 
-        if (perms_check($perms['changelog'], MSZ_CHANGELOG_PERM_MANAGE_ACTIONS)) {
-            $menu['Changelog']['Actions'] = '/manage/changelog.php?v=actions';
-        }
+    if (perms_check($perms['news'], MSZ_NEWS_PERM_MANAGE_CATEGORIES)) {
+        $menu['News']['Categories'] = '/manage/news.php?v=categories';
+    }
+
+    if (perms_check($perms['forum'], MSZ_FORUM_PERM_MANAGE_FORUMS)) {
+        $menu['Forums']['Listing'] = '/manage/forums.php?v=listing';
+    }
+
+    if (perms_check($perms['forum'], 0)) {
+        $menu['Forums']['Permissions'] = '/manage/forums.php?v=permissions';
+    }
+
+    if (perms_check($perms['forum'], 0)) {
+        $menu['Forums']['Settings'] = '/manage/forums.php?v=settings';
+    }
+
+    if (perms_check($perms['changelog'], MSZ_CHANGELOG_PERM_MANAGE_CHANGES)) {
+        $menu['Changelog']['Changes'] = '/manage/changelog.php?v=changes';
+    }
+
+    if (perms_check($perms['changelog'], MSZ_CHANGELOG_PERM_MANAGE_TAGS)) {
+        $menu['Changelog']['Tags'] = '/manage/changelog.php?v=tags';
+    }
+
+    if (perms_check($perms['changelog'], MSZ_CHANGELOG_PERM_MANAGE_ACTIONS)) {
+        $menu['Changelog']['Actions'] = '/manage/changelog.php?v=actions';
     }
 
     return $menu;

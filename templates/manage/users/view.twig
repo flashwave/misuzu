@@ -156,18 +156,15 @@
                 </div>
             {% endif %}
 
-            <div class="container">
-                <button class="input__button" name="csrf" value="{{ csrf_token() }}">Update</button>
-            </div>
+            <button class="input__button" name="csrf" value="{{ csrf_token() }}">Update</button>
         </form>
     {% endif %}
 
     {% if can_manage_users %}
-        <div class="container">
-            {% if has_roles|length > 0 %}
-                <form method="post" action="" style="display:inline-block">
-                    <div class="container__title">Manage Roles</div>
-
+        {% if has_roles|length > 0 %}
+            <form method="post" action="" class="container">
+                <div class="container__title">Manage Roles</div>
+                <div class="container__content">
                     <input type="hidden" name="csrf" value="{{ csrf_token() }}">
 
                     <label class="form__label">
@@ -183,17 +180,16 @@
                         </div>
                     </label>
 
-                    <div>
-                        <button class="input__button" name="manage_roles[mode]" value="display">Set Display</button>
-                        <button class="input__button" name="manage_roles[mode]" value="remove">Remove</button>
-                    </div>
-                </form>
-            {% endif %}
+                    <button class="input__button" name="manage_roles[mode]" value="display">Set Display</button>
+                    <button class="input__button" name="manage_roles[mode]" value="remove">Remove</button>
+                </div>
+            </form>
+        {% endif %}
 
-            {% if available_roles|length > 0 %}
-                <form method="post" action="" style="display:inline-block">
-                    <div class="container__title">Add Role</div>
-
+        {% if available_roles|length > 0 %}
+            <form method="post" action="" class="container">
+                <div class="container__title">Add Role</div>
+                <div class="container__content">
                     <label class="form__label">
                         <div class="form__label__text">Available Roles</div>
                         <div class="form__label__input">
@@ -207,11 +203,9 @@
                         </div>
                     </label>
 
-                    <div>
-                        <button class="input__button" name="csrf" value="{{ csrf_token() }}">Add</button>
-                    </div>
-                </form>
-            {% endif %}
-        </div>
+                    <button class="input__button" name="csrf" value="{{ csrf_token() }}">Add</button>
+                </div>
+            </form>
+        {% endif %}
     {% endif %}
 {% endblock %}

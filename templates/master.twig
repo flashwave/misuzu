@@ -6,7 +6,7 @@
         {% include '_layout/meta.twig' %}
         <link href="{{ '/css/mio.css'|asset_url }}" rel="stylesheet">
         <link href="{{ '/css/libraries.css'|asset_url }}" rel="stylesheet">
-        {% if is_manage|default(false) %}
+        {% if manage_menu is defined %}
             <link href="{{ '/css/manage.css'|asset_url }}" rel="stylesheet">
             <style>
                 :root {

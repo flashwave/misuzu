@@ -15,14 +15,25 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        var_dump(audit_log_list(0, 20));
+        tpl_var('log_dump', print_r(audit_log_list(0, 50), true));
+        echo tpl_render('manage.general.logs');
         break;
 
     case 'emoticons':
-        echo 'soon as well';
+        if (!perms_check($generalPerms, MSZ_GENERAL_PERM_MANAGE_EMOTICONS)) {
+            echo render_error(403);
+            break;
+        }
+
+        echo tpl_render('manage.general.emoticons');
         break;
 
     case 'settings':
-        echo 'somewhat soon i guess';
+        if (!perms_check($generalPerms, MSZ_GENERAL_PERM_MANAGE_SETTINGS)) {
+            echo render_error(403);
+            break;
+        }
+
+        echo tpl_render('manage.general.settings');
         break;
 }

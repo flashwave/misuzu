@@ -272,7 +272,7 @@ switch ($_GET['v'] ?? null) {
 
         $getManageRoles = Database::prepare('
             SELECT
-                `role_id`, `role_colour`, `role_name`,
+                `role_id`, `role_colour`, `role_name`, `role_title`,
                 (
                     SELECT COUNT(`user_id`)
                     FROM `msz_user_roles` as ur

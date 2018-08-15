@@ -2,9 +2,7 @@
 {% from 'macros.twig' import pagination %}
 
 {% block manage_content %}
-    <div class="container">
-        <a href="?v=change" class="input__button">Create new change</a>
-    </div>
+    <a href="?v=change" class="input__button">Create new change</a>
 
     <div class="container listing">
         {% for change in changelog_changes %}
@@ -48,7 +46,7 @@
         {% endfor %}
     </div>
 
-    <div class="container container--center">
+    <div class="pagination__wrapper">
         {{ pagination(changelog_changes_count, changelog_take, changelog_offset, '?v=changes') }}
     </div>
 {% endblock %}

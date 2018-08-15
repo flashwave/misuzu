@@ -93,8 +93,6 @@
             </div>
         {% endif %}
 
-        <div class="container">
-            <button class="input__button" name="csrf" value="{{ csrf_token() }}">{{ edit_role is defined ? 'Update role' : 'Create role' }}</button>
-        </div>
+        <button class="input__button" name="csrf" value="{{ csrf_token() }}">{{ edit_role is defined ? 'Update role' : 'Create role' }}</button>
     </form>
 {% endblock %}

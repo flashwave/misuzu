@@ -3,7 +3,7 @@
         <div class="header__icons">
             <label class="header__icon header__icon--menu" for="toggle-mobile-header-menu"></label>
 
-            <a class="header__logo{% if is_manage|default(false) %} header__logo--manage{% endif %}" href="/">
+            <a class="header__logo{% if manage_menu is defined %} header__logo--manage{% endif %}" href="/">
                 {{ globals.site_name }}
             </a>
 
@@ -17,6 +17,7 @@
             <li class="header__menu__item">
                 <a href="/" class="header__menu__link">Home</a>
                 <ul class="header__submenu">
+                    <li class="header__submenu__item"><a href="/members.php" class="header__submenu__link">Members</a></li>
                     <li class="header__submenu__item"><a href="/changelog.php" class="header__submenu__link">Changelog</a></li>
                     {#<li class="header__submenu__item"><a href="/info.php?t=contact" class="header__submenu__link">Contact</a></li>
                     <li class="header__submenu__item"><a href="/info.php?t=rules" class="header__submenu__link">Rules</a></li>#}
@@ -24,9 +25,15 @@
                 </ul>
             </li>
             <li class="header__menu__item"><a href="/news.php" class="header__menu__link">News</a></li>
-            <li class="header__menu__item"><a href="/forum/" class="header__menu__link">Forum</a></li>
+            <li class="header__menu__item">
+                <a href="/forum/" class="header__menu__link">Forum</a>
+                {#<ul class="header__submenu">
+                    <li class="header__submenu__item"><a href="#" class="header__submenu__link">Unanswered Posts</a></li>
+                    <li class="header__submenu__item"><a href="#" class="header__submenu__link">New Posts</a></li>
+                    <li class="header__submenu__item"><a href="#" class="header__submenu__link">Your Posts</a></li>
+                </ul>#}
+            </li>
             <li class="header__menu__item"><a href="https://chat.flashii.net" class="header__menu__link">Chat</a></li>
-            <li class="header__menu__item"><a href="/members.php" class="header__menu__link">Members</a></li>
         </ul>
 
         <input type="checkbox" class="header__user-toggle" id="toggle-mobile-header-user">

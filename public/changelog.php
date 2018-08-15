@@ -85,7 +85,7 @@ if (!$changes) {
     http_response_code(404);
 }
 
-if (!empty($changelogDate)) {
+if (!empty($changelogDate) && count($changes) > 0) {
     tpl_vars([
         'comments_category' => $commentsCategory = comments_category_info("changelog-date-{$changelogDate}", true),
         'comments' => comments_category_get($commentsCategory['category_id'], $app->getUserId()),

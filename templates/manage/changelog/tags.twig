@@ -2,9 +2,7 @@
 {% from 'macros.twig' import pagination %}
 
 {% block manage_content %}
-    <div class="container">
-        <a href="?v=tag" class="input__button">Create new tag</a>
-    </div>
+    <a href="?v=tag" class="input__button">Create new tag</a>
 
     <div class="container listing changelog-tags">
         {% for tag in changelog_tags %}
@@ -22,7 +20,7 @@
         {% endfor %}
     </div>
 
-    <div class="container container--center">
+    <div class="pagination__wrapper">
         {{ pagination(changelog_tags_count, changelog_take, changelog_offset, '?v=tags') }}
     </div>
 {% endblock %}
