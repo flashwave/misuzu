@@ -3,14 +3,11 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../../misuzu.php';
 
-$tpl = $app->getTemplating();
-
 $userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
-
 $isPostRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
 $queryQffset = (int)($_GET['o'] ?? 0);
 
-$tpl->vars([
+tpl_vars([
     'can_manage_users' => $canManageUsers = perms_check($userPerms, MSZ_USER_PERM_MANAGE_USERS),
     'can_manage_roles' => $canManageRoles = perms_check($userPerms, MSZ_USER_PERM_MANAGE_ROLES),
     'can_manage_perms' => $canManagePerms = perms_check($userPerms, MSZ_USER_PERM_MANAGE_PERMS),
@@ -44,13 +41,13 @@ switch ($_GET['v'] ?? null) {
         $getManageUsers->bindValue('take', $usersTake);
         $manageUsers = $getManageUsers->execute() ? $getManageUsers->fetchAll() : [];
 
-        $tpl->vars([
+        tpl_vars([
             'manage_users' => $manageUsers,
             'manage_users_count' => $manageUsersCount,
             'manage_users_range' => $usersTake,
             'manage_users_offset' => $queryQffset,
         ]);
-        echo $tpl->render('@manage.users.listing');
+        echo tpl_render('manage.users.listing');
         break;
 
     case 'view':
@@ -111,7 +108,7 @@ switch ($_GET['v'] ?? null) {
         $availableRoles = $getAvailableRoles->execute() ? $getAvailableRoles->fetchAll() : [];
 
         if ($canManagePerms) {
-            $tpl->var('permissions', $permissions = manage_perms_list(perms_get_user_raw($userId)));
+            tpl_var('permissions', $permissions = manage_perms_list(perms_get_user_raw($userId)));
         }
 
         if ($isPostRequest) {
@@ -251,13 +248,13 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $tpl->vars([
+        tpl_vars([
             'available_roles' => $availableRoles,
             'has_roles' => $hasRoles,
             'view_user' => $manageUser,
             'profile_fields' => user_profile_fields_get(),
         ]);
-        echo $tpl->render('@manage.users.view');
+        echo tpl_render('manage.users.view');
         break;
 
     case 'roles':
@@ -287,13 +284,13 @@ switch ($_GET['v'] ?? null) {
         $getManageRoles->bindValue('take', $rolesTake);
         $manageRoles = $getManageRoles->execute() ? $getManageRoles->fetchAll() : [];
 
-        $tpl->vars([
+        tpl_vars([
             'manage_roles' => $manageRoles,
             'manage_roles_count' => $manageRolesCount,
             'manage_roles_range' => $rolesTake,
             'manage_roles_offset' => $queryQffset,
         ]);
-        echo $tpl->render('@manage.users.roles');
+        echo tpl_render('manage.users.roles');
         break;
 
     case 'role':
@@ -305,7 +302,7 @@ switch ($_GET['v'] ?? null) {
         $roleId = $_GET['r'] ?? null;
 
         if ($canManagePerms) {
-            $tpl->var('permissions', $permissions = manage_perms_list(perms_get_role_raw($roleId ?? 0)));
+            tpl_var('permissions', $permissions = manage_perms_list(perms_get_role_raw($roleId ?? 0)));
         }
 
         if ($isPostRequest) {
@@ -470,9 +467,9 @@ switch ($_GET['v'] ?? null) {
                 break;
             }
 
-            $tpl->vars(['edit_role' => $editRole]);
+            tpl_vars(['edit_role' => $editRole]);
         }
 
-        echo $tpl->render('@manage.users.roles_create');
+        echo tpl_render('manage.users.roles_create');
         break;
 }

@@ -283,21 +283,19 @@ function render_info(?string $message, int $httpCode, string $template = 'errors
     http_response_code($httpCode);
 
     try {
-        $tpl = \Misuzu\Application::getInstance()->getTemplating();
-
-        $tpl->var('http_code', $httpCode);
+        tpl_var('http_code', $httpCode);
 
         if (strlen($message)) {
-            $tpl->var('message', $message);
+            tpl_var('message', $message);
         }
 
         $template = sprintf($template, $httpCode);
 
-        if (!$tpl->exists($template, \Misuzu\TemplateEngine::TWIG_DEFAULT)) {
+        if (!tpl_exists($template)) {
             $template = 'errors.master';
         }
 
-        return $tpl->render(sprintf($template, $httpCode));
+        return tpl_render(sprintf($template, $httpCode));
     } catch (Exception $ex) {
         echo $ex->getMessage();
         return $message ?? '';

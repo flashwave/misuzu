@@ -2,12 +2,11 @@
 require_once __DIR__ . '/../../misuzu.php';
 
 $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $app->getUserId());
-$tpl = $app->getTemplating();
 
 switch ($_GET['v'] ?? null) {
     default:
     case 'overview':
-        echo $tpl->render('@manage.general.overview');
+        echo tpl_render('manage.general.overview');
         break;
 
     case 'logs':

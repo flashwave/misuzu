@@ -4,8 +4,6 @@ use Misuzu\Net\IPAddress;
 
 require_once __DIR__ . '/../../misuzu.php';
 
-$templating = $app->getTemplating();
-
 if (!$app->hasActiveSession()) {
     echo render_error(403);
     return;
@@ -132,10 +130,10 @@ if ($postRequest) {
 }
 
 if (!empty($topic)) {
-    $templating->var('posting_topic', $topic);
+    tpl_var('posting_topic', $topic);
 }
 
-echo $templating->render('forum.posting', [
+echo tpl_render('forum.posting', [
     'posting_breadcrumbs' => forum_get_breadcrumbs($forumId),
     'posting_forum' => $forum,
 ]);

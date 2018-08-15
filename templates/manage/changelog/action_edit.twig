@@ -1,0 +1,63 @@
+{% extends 'manage/changelog/master.twig' %}
+
+{% block content %}
+    <div class="container">
+        <form action="?v=action{{ edit_action is defined ? '&a=' ~ edit_action.action_id : '' }}" method="post">
+            <h1 class="container__title">
+                {% if edit_action is defined %}
+                    Editing <span style="{{ edit_action.action_colour|html_colour }}">{{ edit_action.action_name }}</span> ({{ edit_action.action_id }})
+                {% else %}
+                    Adding a new action
+                {% endif %}
+            </h1>
+
+            <label class="form__label">
+                <div class="form__label__text">Name</div>
+                <div class="form__label__input">
+                    <input class="input input--text" type="text" value="{{ edit_action is defined ? edit_action.action_name : '' }}" name="action[name]" maxlength="50">
+                </div>
+            </label>
+
+            <label class="form__label">
+                <div class="form__label__text">Class</div>
+                <div class="form__label__input">
+                    <input class="input input--text" type="text" value="{{ edit_action is defined ? edit_action.action_class : '' }}" name="action[class]" maxlength="20">
+                </div>
+            </label>
+
+            <h2 class="container__subtitle">Colour</h2>
+
+            <label class="form__label">
+                <div class="form__label__text">Inherit Colour</div>
+                <div class="form__label__input">
+                    <input class="input" type="checkbox" name="action[colour][inherit]"{% if edit_action is defined and edit_action.action_colour|colour_get_inherit %} checked{% endif %}>
+                </div>
+            </label>
+
+            <label class="form__label">
+                <div class="form__label__text">Red</div>
+                <div class="form__label__input">
+                    <input class="input input--number" type="number" value="{{ edit_action is defined ? edit_action.action_colour|colour_get_red : '0' }}" min="0" max="255" name="action[colour][red]">
+                </div>
+            </label>
+
+            <label class="form__label">
+                <div class="form__label__text">Green</div>
+                <div class="form__label__input">
+                    <input class="input input--number" type="number" value="{{ edit_action is defined ? edit_action.action_colour|colour_get_green : '0' }}" min="0" max="255" name="action[colour][green]">
+                </div>
+            </label>
+
+            <label class="form__label">
+                <div class="form__label__text">Blue</div>
+                <div class="form__label__input">
+                    <input class="input input--number" type="number" value="{{ edit_action is defined ? edit_action.action_colour|colour_get_blue : '0' }}" min="0" max="255" name="action[colour][blue]">
+                </div>
+            </label>
+
+            <div>
+                <button class="button" name="csrf" value="{{ csrf_token() }}">Save</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

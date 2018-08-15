@@ -58,8 +58,6 @@ if (empty($orderDir)) {
     return;
 }
 
-$tpl = $app->getTemplating();
-
 $getRole = Database::prepare('
     SELECT
         `role_id`, `role_name`, `role_colour`, `role_description`, `created_at`,
@@ -118,7 +116,7 @@ $getUsers->bindValue('offset', $usersOffset);
 $getUsers->bindValue('take', $usersTake);
 $users = $getUsers->execute() ? $getUsers->fetchAll(PDO::FETCH_ASSOC) : [];
 
-echo $tpl->render('user.listing', [
+echo tpl_render('user.listing', [
     'roles' => $roles,
     'role' => $role,
     'users' => $users,

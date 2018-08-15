@@ -4,8 +4,6 @@ use Misuzu\IO\File;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$tpl = $app->getTemplating();
-
 $queryOffset = (int)($_GET['o'] ?? 0);
 $queryTake = 15;
 
@@ -53,7 +51,7 @@ $avatarErrorStrings = [
     ],
 ];
 
-$tpl->vars([
+tpl_vars([
     'settings_perms' => $perms,
     'settings_mode' => $settingsMode,
     'settings_modes' => $settingsModes,
@@ -61,8 +59,8 @@ $tpl->vars([
 
 if (!array_key_exists($settingsMode, $settingsModes)) {
     http_response_code(404);
-    $tpl->var('settings_title', 'Not Found');
-    echo $tpl->render('settings.notfound');
+    tpl_var('settings_title', 'Not Found');
+    echo tpl_render('settings.notfound');
     return;
 }
 
@@ -269,8 +267,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$tpl->var('settings_title', $settingsModes[$settingsMode]);
-$tpl->var('settings_errors', $settingsErrors);
+tpl_vars([
+    'settings_title' => $settingsModes[$settingsMode],
+    'settings_errors' => $settingsErrors,
+]);
 
 switch ($settingsMode) {
     case 'account':
@@ -292,7 +292,7 @@ switch ($settingsMode) {
         $currentEmail = $getMail->execute() ? $getMail->fetchColumn() : 'Failed to fetch e-mail address.';
         $userHasAvatar = File::exists($app->getStore('avatars/original')->filename($avatarFileName));
 
-        $tpl->vars([
+        tpl_vars([
             'avatar_user_id' => $app->getUserId(),
             'avatar_max_width' => $avatarWidthMax,
             'avatar_max_height' => $avatarHeightMax,
@@ -328,7 +328,7 @@ switch ($settingsMode) {
         $getSessions->bindValue('user_id', $app->getUserId());
         $sessions = $getSessions->execute() ? $getSessions->fetchAll() : [];
 
-        $tpl->vars([
+        tpl_vars([
             'active_session_id' => $app->getSessionId(),
             'user_sessions' => $sessions,
             'sessions_offset' => $queryOffset,
@@ -370,7 +370,7 @@ switch ($settingsMode) {
             $app->getUserId()
         );
 
-        $tpl->vars([
+        tpl_vars([
             'audit_logs' => $auditLog,
             'audit_log_count' => $auditLogCount,
             'audit_log_take' => $queryTake,
@@ -397,4 +397,4 @@ switch ($settingsMode) {
         break;
 }
 
-echo $tpl->render("settings.{$settingsMode}");
+echo tpl_render("settings.{$settingsMode}");

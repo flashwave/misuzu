@@ -1,0 +1,108 @@
+{% extends 'manage/changelog/master.twig' %}
+
+{% block content %}
+    <div class="container">
+        <form action="?v=change{{ edit_change is defined ? '&c=' ~ edit_change.change_id : '' }}" method="post">
+            <h1 class="container__title">
+                {% if edit_change is defined %}
+                    Editing #{{ edit_change.change_id }}
+                {% else %}
+                    Adding a new change
+                {% endif %}
+            </h1>
+
+            <label class="form__label" style="width:100%">
+                <div class="form__label__text">Log</div>
+                <div class="form__label__input">
+                    <input class="input input--text" type="text" value="{{ edit_change is defined ? edit_change.change_log : '' }}" name="change[log]" maxlength="255">
+                </div>
+            </label>
+
+            <label class="form__label" style="width:100%">
+                <div class="form__label__text">Text</div>
+                <div class="form__label__input">
+                    <textarea class="input input--textarea" name="change[text]" maxlength="65535">{{ edit_change is defined ? edit_change.change_text : '' }}</textarea>
+                </div>
+            </label>
+
+            <label class="form__label">
+                <div class="form__label__text">Action</div>
+                <div class="form__label__input">
+                    <select name="change[action]" class="input input--select">
+                        {% for action in changelog_actions %}
+                            <option value="{{ action.action_id }}"{% if edit_change is defined and action.action_id == edit_change.action_id %} selected{% endif %}>
+                                {{ action.action_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </label>
+
+            <label class="form__label">
+                <div class="form__label__text">Contributor Id</div>
+                <div class="form__label__input">
+                    <input class="input input--text" type="number" value="{{ edit_change is defined ? edit_change.user_id : current_user.user_id }}" name="change[user]" min="1">
+                </div>
+            </label>
+
+            <label class="form__label">
+                <div class="form__label__text">Created</div>
+                <div class="form__label__input">
+                    <input class="input input--text" type="text" value="{{ edit_change is defined ? edit_change.change_created : ''|date('Y-m-d H:i:s') }}" name="change[created]">
+                </div>
+            </label>
+
+            <div>
+                <button class="button" name="csrf" value="{{ csrf_token() }}">Save</button>
+            </div>
+        </form>
+
+        {% if edit_change is defined %}
+            <h1 class="container__title">
+                Tags
+            </h1>
+
+            {% if edit_change_assigned_tags|length > 0 %}
+                <form class="container" method="post" action="" style="display:inline-block">
+                    <label class="form__label">
+                        <div class="form__label__text">Assigned Tags</div>
+                        <div class="form__label__input">
+                            <select name="remove_tag" class="input input--select">
+                                {% for tag in edit_change_assigned_tags %}
+                                    <option value="{{ tag.tag_id }}">
+                                        {{ tag.tag_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </label>
+
+                    <div>
+                        <button class="button" name="csrf" value="{{ csrf_token() }}">Remove</button>
+                    </div>
+                </form>
+            {% endif %}
+
+            {% if edit_change_available_tags|length > 0 %}
+                <form class="container" method="post" action="" style="display:inline-block">
+                    <label class="form__label">
+                        <div class="form__label__text">Available Tags</div>
+                        <div class="form__label__input">
+                            <select name="add_tag" class="input input--select">
+                                {% for tag in edit_change_available_tags %}
+                                    <option value="{{ tag.tag_id }}">
+                                        {{ tag.tag_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </label>
+
+                    <div>
+                        <button class="button" name="csrf" value="{{ csrf_token() }}">Add</button>
+                    </div>
+                </form>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}

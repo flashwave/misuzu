@@ -3,14 +3,12 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$templating = $app->getTemplating();
-
 $categoryId = isset($_GET['c']) ? (int)$_GET['c'] : null;
 $postId = isset($_GET['p']) ? (int)$_GET['p'] : (isset($_GET['n']) ? (int)$_GET['n'] : null);
 $postsOffset = (int)($_GET['o'] ?? 0);
 $postsTake = 5;
 
-$templating->vars([
+tpl_vars([
     'posts_offset' => $postsOffset,
     'posts_take' => $postsTake,
 ]);
@@ -57,7 +55,7 @@ if ($postId !== null) {
         $commentsInfo = comments_category_info($post['comment_section_id']);
     }
 
-    echo $templating->render('news.post', [
+    echo tpl_render('news.post', [
         'post' => $post,
         'comments_perms' => comments_get_perms($app->getUserId()),
         'comments_category' => $commentsInfo,
@@ -123,7 +121,7 @@ if ($categoryId !== null) {
     $getFeatured->bindValue('category_id', $category['category_id'], PDO::PARAM_INT);
     $featured = $getFeatured->execute() ? $getFeatured->fetchAll() : [];
 
-    echo $templating->render('news.category', compact('category', 'posts', 'featured'));
+    echo tpl_render('news.category', compact('category', 'posts', 'featured'));
     return;
 }
 
@@ -149,7 +147,7 @@ $postsCount = (int)Database::query('
     AND c.`is_hidden` = false
 ')->fetchColumn();
 
-$templating->var('posts_count', $postsCount);
+tpl_var('posts_count', $postsCount);
 
 if ($postsOffset < 0 || $postsOffset >= $postsCount) {
     echo render_error(404);
@@ -188,4 +186,4 @@ if (!$posts) {
     return;
 }
 
-echo $templating->render('news.index', compact('categories', 'posts'));
+echo tpl_render('news.index', compact('categories', 'posts'));

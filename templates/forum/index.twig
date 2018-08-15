@@ -1,0 +1,32 @@
+{% extends 'forum/master.twig' %}
+{% from 'forum/macros.twig' import forum_category_listing %}
+
+{% set title = 'Forum Listing' %}
+{% set canonical_url = '/forum/' %}
+
+{% block content %}
+    {% if not forum_empty %}
+        {% for category in forum_categories %}
+            {% if category.forum_children > 0 %}
+                {{ forum_category_listing(category.forum_subforums, category.forum_name) }}
+            {% endif %}
+        {% endfor %}
+
+        <div class="container forum__actions">
+            <div class="container__title">Actions</div>
+            <div class="forum__actions__content">
+                <a class="input__button forum__actions__button">Mark All Read</a>
+                <a class="input__button forum__actions__button">Unanswered Posts</a>
+                <a class="input__button forum__actions__button">New Posts</a>
+                <a class="input__button forum__actions__button">Your Posts</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="container">
+            <div class="container__title">Forums</div>
+            <div class="container__content">
+                <p>There are no forums yet, check back later!</p>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

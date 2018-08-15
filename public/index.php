@@ -6,10 +6,9 @@ use Misuzu\Database;
 require_once __DIR__ . '/../misuzu.php';
 
 $config = $app->getConfig();
-$tpl = $app->getTemplating();
 
 if ($config->get('Site', 'embed_linked_data', 'bool', false)) {
-    $tpl->vars([
+    tpl_vars([
         'embed_linked_data' => true,
         'embed_name' => $config->get('Site', 'name'),
         'embed_url' => $config->get('Site', 'url'),
@@ -72,7 +71,7 @@ $changelog = Cache::instance()->get('index:changelog:v1', function () {
     ')->fetchAll(PDO::FETCH_ASSOC);
 }, 1800);
 
-echo $tpl->render('home.index', [
+echo tpl_render('home.index', [
     'users_count' => $statistics['users'],
     'last_user' => $statistics['lastUser'],
     'featured_changelog' => $changelog,

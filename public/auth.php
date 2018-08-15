@@ -8,7 +8,6 @@ use Misuzu\Users\Session;
 require_once __DIR__ . '/../misuzu.php';
 
 $config = $app->getConfig();
-$tpl = $app->getTemplating();
 
 $usernameValidationErrors = [
     'trim' => 'Your username may not start or end with spaces!',
@@ -22,9 +21,8 @@ $usernameValidationErrors = [
 
 $authMode = $_GET['m'] ?? 'login';
 $preventRegistration = $config->get('Auth', 'prevent_registration', 'bool', false);
-$tpl->addPath('auth', __DIR__ . '/../views/auth');
 
-$tpl->vars([
+tpl_vars([
     'prevent_registration' => $preventRegistration,
     'auth_mode' => $authMode,
     'auth_username' => $_REQUEST['username'] ?? '',
@@ -46,7 +44,7 @@ switch ($authMode) {
             return;
         }
 
-        echo $tpl->render('@auth.logout');
+        echo tpl_render('auth.logout');
         break;
 
     case 'reset':
@@ -69,7 +67,7 @@ switch ($authMode) {
             break;
         }
 
-        $tpl->var('auth_reset_message', 'A verification code should\'ve been sent to your e-mail address.');
+        tpl_var('auth_reset_message', 'A verification code should\'ve been sent to your e-mail address.');
 
         while ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $validateRequest = Database::prepare('
@@ -87,21 +85,21 @@ switch ($authMode) {
                 : false;
 
             if (!$validateRequest) {
-                $tpl->var('auth_reset_error', 'Invalid verification code!');
+                tpl_var('auth_reset_error', 'Invalid verification code!');
                 break;
             }
 
-            $tpl->var('reset_verify', $_POST['verification']);
+            tpl_var('reset_verify', $_POST['verification']);
 
             if (empty($_POST['password']['new'])
                 || empty($_POST['password']['confirm'])
                 || $_POST['password']['new'] !== $_POST['password']['confirm']) {
-                $tpl->var('auth_reset_error', 'Your passwords didn\'t match!');
+                tpl_var('auth_reset_error', 'Your passwords didn\'t match!');
                 break;
             }
 
             if (user_validate_password($_POST['password']['new']) !== '') {
-                $tpl->var('auth_reset_error', 'Your password is too weak!');
+                tpl_var('auth_reset_error', 'Your password is too weak!');
                 break;
             }
 
@@ -136,7 +134,7 @@ switch ($authMode) {
             break;
         }
 
-        echo $tpl->render('@auth.password', [
+        echo tpl_render('auth.password', [
             'reset_user' => $resetUser,
         ]);
         break;
@@ -149,7 +147,7 @@ switch ($authMode) {
 
         while ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($_POST['email'])) {
-                $tpl->var('auth_forgot_error', 'Please enter an e-mail address.');
+                tpl_var('auth_forgot_error', 'Please enter an e-mail address.');
                 break;
             }
 
@@ -221,7 +219,7 @@ MSG;
             break;
         }
 
-        echo $tpl->render('@auth.auth');
+        echo tpl_render('auth.auth');
         break;
 
     case 'login':
@@ -298,10 +296,10 @@ MSG;
         }
 
         if (!empty($authLoginError)) {
-            $tpl->var('auth_login_error', $authLoginError);
+            tpl_var('auth_login_error', $authLoginError);
         }
 
-        echo $tpl->render('@auth.auth');
+        echo tpl_render('auth.auth');
         break;
 
     case 'register':
@@ -359,14 +357,14 @@ MSG;
 
             user_role_add($createUser, MSZ_ROLE_MAIN);
 
-            $tpl->var('auth_register_message', 'Welcome to Flashii! You may now log in.');
+            tpl_var('auth_register_message', 'Welcome to Flashii! You may now log in.');
             break;
         }
 
         if (!empty($authRegistrationError)) {
-            $tpl->var('auth_register_error', $authRegistrationError);
+            tpl_var('auth_register_error', $authRegistrationError);
         }
 
-        echo $tpl->render('@auth.auth');
+        echo tpl_render('auth.auth');
         break;
 }

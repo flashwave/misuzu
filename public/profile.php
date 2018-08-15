@@ -40,8 +40,6 @@ switch ($mode) {
 
     case 'view':
     default:
-        $templating = $app->getTemplating();
-
         $getProfile = Database::prepare('
             SELECT
                 u.*,
@@ -77,11 +75,11 @@ switch ($mode) {
 
         if (!$profile) {
             http_response_code(404);
-            echo $templating->render('user.notfound');
+            echo tpl_render('user.notfound');
             break;
         }
 
-        $templating->vars(compact('profile'));
-        echo $templating->render('user.view');
+        tpl_vars(compact('profile'));
+        echo tpl_render('user.view');
         break;
 }
