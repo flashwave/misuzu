@@ -55,7 +55,7 @@
                         style="{{ current_user.user_colour|html_colour({
                             'color': '%s',
                             'text-shadow': '0 0 5px %s',
-                        }) }}">
+                        }) }}" title="{{ current_user.username }}">
                         {{ current_user.username }}
                     </a>
                 {% else %}

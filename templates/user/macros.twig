@@ -1,7 +1,7 @@
 {% macro user_card(user, profile_url, rank_url) %}
     <div class="usercard">
         <a  href="{{ profile_url|default('/profile.php?u=%d')|format(user.user_id) }}"
-            class="usercard__background"></a>
+            class="usercard__background" title="{{ user.username }}"></a>
 
         <div class="usercard__container">
             <div class="avatar usercard__avatar"
@@ -19,7 +19,7 @@
 
                 <div class="usercard__info">
                     {% if user.user_country is defined %}
-                        <div class="flag flag--{{ user.user_country|lower }} usercard__item usercard__item--country" title="{{ user.user_country|country_name }}">
+                        <div class="flag flag--{{ user.user_country|lower }} usercard__item usercard__item--country usercard__item--active" title="{{ user.user_country|country_name }}">
                             {{ user.user_country }}
                         </div>
                     {% endif %}
@@ -29,7 +29,7 @@
                     </a>#}
 
                     {% if user.user_title is defined %}
-                        <a class="usercard__item usercard__item--title{% if user.role_id is defined %} usercard__item--active{% endif %}"{% if user.role_id is defined %} href="{{ rank_url|default('/members.php?r=%d')|format(user.role_id) }}"{% endif %}>
+                        <a class="usercard__item usercard__item--title{% if user.role_id is defined %} usercard__item--active{% endif %}"{% if user.role_id is defined %} href="{{ rank_url|default('/members.php?r=%d')|format(user.role_id) }}"{% endif %} title="{{ user.user_title }}">
                             {{ user.user_title }}
                         </a>
                     {% endif %}
