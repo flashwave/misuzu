@@ -1,12 +1,18 @@
 .changelog-actions-tags {
     display: flex;
-    justify-content: space-evenly;
+
+    @media (max-width: @site-mobile-width) {
+        flex-direction: column;
+    }
 
     &__panel {
 
         &--actions {
-            margin-left: 2px;
-            width: 210px;
+
+            @media (min-width: @site-mobile-width) {
+                margin-left: 2px;
+                width: 210px;
+            }
         }
     }
 

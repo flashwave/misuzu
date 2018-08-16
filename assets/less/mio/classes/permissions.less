@@ -19,6 +19,12 @@
                 margin-top: 4px;
             }
         }
+
+        @media (max-width: @site-mobile-width) {
+            flex-wrap: wrap;
+            justify-content: right;
+            border-bottom: 1px solid #ded5e7;
+        }
     }
 
     &__title {
@@ -28,6 +34,11 @@
 
     &__line:not(&__line--header) &__title {
         border-bottom: 1px solid #ded5e7;
+
+        @media (max-width: @site-mobile-width) {
+            width: 100%;
+            border-bottom-width: 0;
+        }
     }
 
     &__input {
@@ -39,13 +50,25 @@
         text-align: center;
         padding: 4px;
 
+        @media (max-width: @site-mobile-width) {
+            border-left-width: 0;
+            padding: 10px;
+        }
+
         &--radio {
             cursor: pointer;
             border-left: 1px solid #9475b2;
         }
 
-        &--yes:hover {
-            background-color: #0a0;
+        &--yes {
+
+            &:hover {
+                background-color: #0a0;
+            }
+
+            @media (max-width: @site-mobile-width) {
+                border-left-width: 0;
+            }
         }
 
         &--no:hover {
