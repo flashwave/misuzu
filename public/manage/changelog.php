@@ -14,7 +14,7 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $changesTake = 20;
+        $changesTake = 30;
         $changesCount = (int)Database::query('
             SELECT COUNT(`change_id`)
             FROM `msz_changelog_changes`
@@ -25,7 +25,9 @@ switch ($_GET['v'] ?? null) {
                 c.`change_id`, c.`change_log`, c.`change_created`,
                 a.`action_name`, a.`action_colour`, a.`action_class`,
                 u.`user_id`, u.`username`,
-                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
+                DATE(`change_created`) as `change_date`,
+                !ISNULL(c.`change_text`) as `change_has_text`
             FROM `msz_changelog_changes` as c
             LEFT JOIN `msz_changelog_actions` as a
             ON a.`action_id` = c.`action_id`
@@ -209,40 +211,45 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'tags':
-        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_TAGS)) {
+        $canManageTags = perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_TAGS);
+        $canManageActions = perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_ACTIONS);
+
+        if (!$canManageTags && !$canManageActions) {
             echo render_error(403);
             break;
         }
 
-        $tagsTake = 32;
+        if ($canManageActions) {
+            $getActions = Database::prepare('
+                SELECT
+                    a.`action_id`, a.`action_name`, a.`action_colour`,
+                    (
+                        SELECT COUNT(c.`action_id`)
+                        FROM `msz_changelog_changes` as c
+                        WHERE c.`action_id` = a.`action_id`
+                    ) as `action_count`
+                FROM `msz_changelog_actions` as a
+                ORDER BY a.`action_id` ASC
+            ');
+            tpl_var('changelog_actions', $getActions->execute() ? $getActions->fetchAll(PDO::FETCH_ASSOC) : []);
+        }
 
-        $tagsCount = (int)Database::query('
-            SELECT COUNT(`tag_id`)
-            FROM `msz_changelog_tags`
-        ')->fetchColumn();
+        if ($canManageTags) {
+            $getTags = Database::prepare('
+                SELECT
+                    t.`tag_id`, t.`tag_name`, t.`tag_description`, t.`tag_created`,
+                    (
+                        SELECT COUNT(ct.`change_id`)
+                        FROM `msz_changelog_change_tags` as ct
+                        WHERE ct.`tag_id` = t.`tag_id`
+                    ) as `tag_count`
+                FROM `msz_changelog_tags` as t
+                ORDER BY t.`tag_id` ASC
+            ');
+            tpl_var('changelog_tags', $getTags->execute() ? $getTags->fetchAll(PDO::FETCH_ASSOC) : []);
+        }
 
-        $getTags = Database::prepare('
-            SELECT
-                t.`tag_id`, t.`tag_name`, t.`tag_description`, t.`tag_created`,
-                (
-                    SELECT COUNT(ct.`change_id`)
-                    FROM `msz_changelog_change_tags` as ct
-                    WHERE ct.`tag_id` = t.`tag_id`
-                ) as `tag_count`
-            FROM `msz_changelog_tags` as t
-            ORDER BY t.`tag_id` ASC
-            LIMIT :offset, :take
-        ');
-        $getTags->bindValue('take', $tagsTake);
-        $getTags->bindValue('offset', $queryOffset);
-        $tags = $getTags->execute() ? $getTags->fetchAll(PDO::FETCH_ASSOC) : [];
-
-        echo tpl_render('manage.changelog.tags', [
-            'changelog_tags' => $tags,
-            'changelog_tags_count' => $tagsCount,
-            'changelog_take' => $tagsTake,
-            'changelog_offset' => $queryOffset,
-        ]);
+        echo tpl_render('manage.changelog.actions_tags');
         break;
 
     case 'tag':
@@ -308,43 +315,6 @@ switch ($_GET['v'] ?? null) {
         }
 
         echo tpl_render('manage.changelog.tag_edit');
-        break;
-
-    case 'actions':
-        if (!perms_check($changelogPerms, MSZ_CHANGELOG_PERM_MANAGE_ACTIONS)) {
-            echo render_error(403);
-            break;
-        }
-
-        $actionTake = 32;
-
-        $actionCount = (int)Database::query('
-            SELECT COUNT(`action_id`)
-            FROM `msz_changelog_actions`
-        ')->fetchColumn();
-
-        $getActions = Database::prepare('
-            SELECT
-                a.`action_id`, a.`action_name`, a.`action_colour`,
-                (
-                    SELECT COUNT(c.`action_id`)
-                    FROM `msz_changelog_changes` as c
-                    WHERE c.`action_id` = a.`action_id`
-                ) as `action_count`
-            FROM `msz_changelog_actions` as a
-            ORDER BY a.`action_id` ASC
-            LIMIT :offset, :take
-        ');
-        $getActions->bindValue('take', $actionTake);
-        $getActions->bindValue('offset', $queryOffset);
-        $actions = $getActions->execute() ? $getActions->fetchAll(PDO::FETCH_ASSOC) : [];
-
-        echo tpl_render('manage.changelog.actions', [
-            'changelog_actions' => $actions,
-            'changelog_actions_count' => $actionTake,
-            'changelog_take' => $actionTake,
-            'changelog_offset' => $queryOffset,
-        ]);
         break;
 
     case 'action':

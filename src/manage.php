@@ -70,12 +70,8 @@ function manage_get_menu(int $userId): array
         $menu['Changelog']['Changes'] = '/manage/changelog.php?v=changes';
     }
 
-    if (perms_check($perms['changelog'], MSZ_CHANGELOG_PERM_MANAGE_TAGS)) {
-        $menu['Changelog']['Tags'] = '/manage/changelog.php?v=tags';
-    }
-
-    if (perms_check($perms['changelog'], MSZ_CHANGELOG_PERM_MANAGE_ACTIONS)) {
-        $menu['Changelog']['Actions'] = '/manage/changelog.php?v=actions';
+    if (perms_check($perms['changelog'], MSZ_CHANGELOG_PERM_MANAGE_TAGS | MSZ_CHANGELOG_PERM_MANAGE_ACTIONS)) {
+        $menu['Changelog']['Action & Tags'] = '/manage/changelog.php?v=tags';
     }
 
     return $menu;

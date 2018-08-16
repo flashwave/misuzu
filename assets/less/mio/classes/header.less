@@ -216,6 +216,10 @@
             text-decoration: none;
             display: block;
             text-align: right;
+            text-overflow: ellipsis;
+            max-width: 150px;
+            overflow: hidden;
+            white-space: nowrap;
 
             @media (min-width: @site-mobile-width) {
                 &:hover {
@@ -224,6 +228,7 @@
             }
 
             @media (max-width: @site-mobile-width) {
+                max-width: 100%;
                 font-size: 1.6em;
                 line-height: 1.5em;
                 border-bottom: 1px solid #9475b2;

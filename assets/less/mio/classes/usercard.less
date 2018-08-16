@@ -50,6 +50,9 @@
     &__name {
         font-size: 1.4em;
         line-height: 1.4em;
+        text-overflow: ellipsis;
+        max-width: 220px;
+        overflow: hidden;
     }
 
     &__info {
@@ -64,6 +67,10 @@
         color: inherit;
         text-decoration: none;
         flex: 0 0 auto;
+        text-overflow: ellipsis;
+        max-width: 150px;
+        overflow: hidden;
+        white-space: nowrap;
 
         &--active {
             pointer-events: auto;

@@ -1,0 +1,49 @@
+{% extends 'manage/changelog/master.twig' %}
+
+{% block manage_content %}
+    <div class="changelog-actions-tags">
+        {% if changelog_tags is defined %}
+            <div class="container changelog-actions-tags__panel changelog-actions-tags__panel--tags">
+                <div class="container__title">Tags</div>
+
+                <a href="?v=tag" class="input__button">Create new tag</a>
+
+                <div class="changelog-actions-tags__list">
+                    {% for tag in changelog_tags %}
+                        <a href="?v=tag&amp;t={{ tag.tag_id }}" class="changelog-actions-tags__entry">
+                            <div class="listing__entry__content changelog-tags__content">
+                                <div class="changelog-tags__text">
+                                    {{ tag.tag_name }} ({{ tag.tag_count }})
+                                </div>
+
+                                <div class="changelog-tags__description">
+                                    {{ tag.tag_description }}
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if changelog_actions is defined %}
+            <div class="container changelog-actions-tags__panel changelog-actions-tags__panel--actions">
+                <div class="container__title">Actions</div>
+                <a href="?v=action" class="input__button">Create new action</a>
+
+                <div class="changelog-actions-tags__list">
+                    {% for action in changelog_actions %}
+                        <a href="?v=action&amp;a={{ action.action_id }}" class="changelog-actions-tags__entry"
+                            style="{{ action.action_colour|html_colour({'border-color':'%s'}) }}">
+                            <div class="listing__entry__content changelog-tags__content">
+                                <div class="changelog-tags__text">
+                                    {{ action.action_name }} ({{ action.action_count }})
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

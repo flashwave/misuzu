@@ -8,7 +8,7 @@ define('MSZ_USERNAME_MIN_LENGTH', 3);
 define('MSZ_USERNAME_MAX_LENGTH', 16);
 
 // Username character constraint.
-define('MSZ_USERNAME_REGEX', '#^[A-Za-z0-9-_ ]+$#u');
+define('MSZ_USERNAME_REGEX', '#^[A-Za-z0-9-_]+$#u');
 
 // Minimum entropy value for passwords.
 define('MSZ_PASSWORD_MIN_ENTROPY', 32);
