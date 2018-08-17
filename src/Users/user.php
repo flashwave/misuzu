@@ -55,13 +55,6 @@ function user_id_from_username(string $username): int
     return $getId->execute() ? (int)$getId->fetchColumn() : 0;
 }
 
-function user_username_from_id(int $userId): string
-{
-    $getId = Database::prepare('SELECT `username` FROM `msz_users` WHERE `user_id` = :user_id');
-    $getId->bindValue('user_id', $userId);
-    return $getId->execute() ? (string)$getId->fetchColumn() : 'deleted';
-}
-
 define('MSZ_USER_AVATAR_FORMAT', '%d.msz');
 
 function user_avatar_delete(int $userId): void

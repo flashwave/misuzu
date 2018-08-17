@@ -39,7 +39,32 @@ function comments_parse_for_store(string $text): string
 function comments_parse_for_display(string $text): string
 {
     return preg_replace_callback(MSZ_COMMENTS_MARKUP_USER_ID, function ($matches) {
-        return '<a href="/profile.php?u=' . $matches[1] . '">@' .  user_username_from_id($matches[1]) . '</a>';
+        $getInfo = Database::prepare('
+            SELECT
+                u.`user_id`, u.`username`,
+                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+            FROM `msz_users` as u
+            LEFT JOIN `msz_roles` as r
+            ON u.`display_role` = r.`role_id`
+            WHERE `user_id` = :user_id
+        ');
+        $getInfo->bindValue('user_id', $matches[1]);
+        $info = $getInfo->execute() ? $getInfo->fetch(PDO::FETCH_ASSOC) : [];
+
+        if (!$info) {
+            return $matches[0];
+        }
+
+        return '<a href="/profile.php?u='
+            . $info['user_id']
+            . '" class="comment__mention" style="'
+            . html_colour($info['user_colour'], [
+                'color' => '%s',
+                'text-shadow' => '0 0 5px %s',
+            ])
+            . '">@'
+            .  $info['username']
+            . '</a>';
     }, $text);
 }
 
