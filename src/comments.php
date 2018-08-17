@@ -55,16 +55,15 @@ function comments_parse_for_display(string $text): string
             return $matches[0];
         }
 
-        return '<a href="/profile.php?u='
-            . $info['user_id']
-            . '" class="comment__mention" style="'
-            . html_colour($info['user_colour'], [
+        return sprintf(
+            '<a href="/profile.php?u=%d" class="comment__mention", style="%s">@%s</a>',
+            $info['user_id'],
+            html_colour($info['user_colour'], [
                 'color' => '%s',
                 'text-shadow' => '0 0 5px %s',
-            ])
-            . '">@'
-            .  $info['username']
-            . '</a>';
+            ]),
+            $info['username']
+        );
     }, $text);
 }
 
