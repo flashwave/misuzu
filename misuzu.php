@@ -16,6 +16,7 @@ require_once __DIR__ . '/src/perms.php';
 require_once __DIR__ . '/src/tpl.php';
 require_once __DIR__ . '/src/zalgo.php';
 require_once __DIR__ . '/src/Forum/forum.php';
+require_once __DIR__ . '/src/Forum/perms.php';
 require_once __DIR__ . '/src/Forum/post.php';
 require_once __DIR__ . '/src/Forum/topic.php';
 require_once __DIR__ . '/src/Forum/validate.php';
