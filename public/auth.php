@@ -13,9 +13,7 @@ $usernameValidationErrors = [
     'trim' => 'Your username may not start or end with spaces!',
     'short' => sprintf('Your username is too short, it has to be at least %d characters!', MSZ_USERNAME_MIN_LENGTH),
     'long' => sprintf("Your username is too long, it can't be longer than %d characters!", MSZ_USERNAME_MAX_LENGTH),
-    'double-spaces' => "Your username can't contain double spaces.",
     'invalid' => 'Your username contains invalid characters.',
-    'spacing' => 'Please use either underscores or spaces, not both!',
     'in-use' => 'This username is already taken!',
 ];
 

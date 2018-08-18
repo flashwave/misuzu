@@ -8,7 +8,8 @@ define('MSZ_USERNAME_MIN_LENGTH', 3);
 define('MSZ_USERNAME_MAX_LENGTH', 16);
 
 // Username character constraint.
-define('MSZ_USERNAME_REGEX', '#^[A-Za-z0-9-_]+$#u');
+define('MSZ_USERNAME_REGEX', '[A-Za-z0-9-_]+');
+define('MSZ_USERNAME_REGEX_FULL', '#^' . MSZ_USERNAME_REGEX . '$#u');
 
 // Minimum entropy value for passwords.
 define('MSZ_PASSWORD_MIN_ENTROPY', 32);
@@ -29,16 +30,8 @@ function user_validate_username(string $username, bool $checkInUse = false): str
         return 'long';
     }
 
-    if (strpos($username, '  ') !== false) {
-        return 'double-spaces';
-    }
-
-    if (!preg_match(MSZ_USERNAME_REGEX, $username)) {
+    if (!preg_match(MSZ_USERNAME_REGEX_FULL, $username)) {
         return 'invalid';
-    }
-
-    if (strpos($username, '_') !== false && strpos($username, ' ') !== false) {
-        return 'spacing';
     }
 
     if ($checkInUse) {

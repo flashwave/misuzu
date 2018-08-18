@@ -80,7 +80,7 @@
                         {% endif %}
                     </div>
                     <div class="comment__text{{ comment.comment_deleted is null ? '' : ' comment__text--deleted' }}">
-                        {{ comment.comment_deleted is null ? comment.comment_text|nl2br : 'deleted' }}
+                        {{ comment.comment_deleted is null ? (comment.comment_html is defined ? comment.comment_html|raw : comment.comment_text|nl2br) : 'deleted' }}
                     </div>
                     {% if comment.comment_deleted is null and user is not null %}
                         <div class="comment__actions">
@@ -347,7 +347,12 @@
 
                 var commentText = document.createElement('div');
                 commentText.className = 'comment__text';
-                commentText.textContent = comment.comment_text;
+
+                if (comment.comment_html)
+                    commentText.innerHTML = comment.comment_html;
+                else
+                    commentText.textContent = comment.comment_text;
+
                 commentContent.appendChild(commentText);
 
                 var commentActions = document.createElement('div');

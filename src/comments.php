@@ -1,6 +1,8 @@
 <?php
 use Misuzu\Database;
 
+require_once __DIR__ . '/Users/validation.php';
+
 define('MSZ_COMMENTS_PERM_CREATE', 1);
 define('MSZ_COMMENTS_PERM_EDIT_OWN', 1 << 1);
 define('MSZ_COMMENTS_PERM_EDIT_ANY', 1 << 2);
@@ -18,6 +20,52 @@ define('MSZ_COMMENTS_VOTE_TYPES', [
     1 => MSZ_COMMENTS_VOTE_LIKE,
     -1 => MSZ_COMMENTS_VOTE_DISLIKE,
 ]);
+
+// gets parsed on post
+define('MSZ_COMMENTS_MARKUP_USERNAME', '#\B(?:@{1}(' . MSZ_USERNAME_REGEX . '))#u');
+
+// gets parsed on fetch
+define('MSZ_COMMENTS_MARKUP_USER_ID', '#\B(?:@{2}([0-9]+))#u');
+
+function comments_parse_for_store(string $text): string
+{
+    return preg_replace_callback(MSZ_COMMENTS_MARKUP_USERNAME, function ($matches) {
+        return ($userId = user_id_from_username($matches[1])) < 1
+            ? $matches[0]
+            : "@@{$userId}";
+    }, $text);
+}
+
+function comments_parse_for_display(string $text): string
+{
+    return preg_replace_callback(MSZ_COMMENTS_MARKUP_USER_ID, function ($matches) {
+        $getInfo = Database::prepare('
+            SELECT
+                u.`user_id`, u.`username`,
+                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+            FROM `msz_users` as u
+            LEFT JOIN `msz_roles` as r
+            ON u.`display_role` = r.`role_id`
+            WHERE `user_id` = :user_id
+        ');
+        $getInfo->bindValue('user_id', $matches[1]);
+        $info = $getInfo->execute() ? $getInfo->fetch(PDO::FETCH_ASSOC) : [];
+
+        if (!$info) {
+            return $matches[0];
+        }
+
+        return sprintf(
+            '<a href="/profile.php?u=%d" class="comment__mention", style="%s">@%s</a>',
+            $info['user_id'],
+            html_colour($info['user_colour'], [
+                'color' => '%s',
+                'text-shadow' => '0 0 5px %s',
+            ]),
+            $info['username']
+        );
+    }, $text);
+}
 
 // usually this is not how you're suppose to handle permission checking,
 // but in the context of comments this is fine since the same shit is used
@@ -202,14 +250,25 @@ function comments_category_get(int $category, int $user, ?int $parent = null): a
 
     $commentsCount = count($comments);
     for ($i = 0; $i < $commentsCount; $i++) {
+        $comments[$i]['comment_html'] = nl2br(comments_parse_for_display(htmlentities($comments[$i]['comment_text'])));
         $comments[$i]['comment_replies'] = comments_category_get($category, $user, $comments[$i]['comment_id']);
     }
 
     return $comments;
 }
 
-function comments_post_create(int $user, int $category, string $text, bool $pinned = false, ?int $reply = null): int
-{
+function comments_post_create(
+    int $user,
+    int $category,
+    string $text,
+    bool $pinned = false,
+    ?int $reply = null,
+    bool $parse = true
+): int {
+    if ($parse) {
+        $text = comments_parse_for_store($text);
+    }
+
     $create = Database::prepare('
         INSERT INTO `msz_comments_posts`
             (`user_id`, `category_id`, `comment_text`, `comment_pinned`, `comment_reply_to`)
@@ -236,7 +295,7 @@ function comments_post_delete(int $commentId, bool $delete = true): bool
     return $deleteComment->execute();
 }
 
-function comments_post_get(int $commentId): array
+function comments_post_get(int $commentId, bool $parse = true): array
 {
     $fetch = Database::prepare('
         SELECT
@@ -253,7 +312,14 @@ function comments_post_get(int $commentId): array
         WHERE `comment_id` = :id
     ');
     $fetch->bindValue('id', $commentId);
-    return $fetch->execute() ? $fetch->fetch(PDO::FETCH_ASSOC) : [];
+    $comment = $fetch->execute() ? $fetch->fetch(PDO::FETCH_ASSOC) : false;
+    $comment = $comment ? $comment : []; // prevent type errors
+
+    if ($comment && $parse) {
+        $comment['comment_html'] = nl2br(comments_parse_for_display(htmlentities($comment['comment_text'])));
+    }
+
+    return $comment;
 }
 
 function comments_post_exists(int $commentId): bool

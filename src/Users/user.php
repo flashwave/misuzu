@@ -48,6 +48,13 @@ function user_password_hash(string $password): string
     return password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO);
 }
 
+function user_id_from_username(string $username): int
+{
+    $getId = Database::prepare('SELECT `user_id` FROM `msz_users` WHERE LOWER(`username`) = LOWER(:username)');
+    $getId->bindValue('username', $username);
+    return $getId->execute() ? (int)$getId->fetchColumn() : 0;
+}
+
 define('MSZ_USER_AVATAR_FORMAT', '%d.msz');
 
 function user_avatar_delete(int $userId): void
