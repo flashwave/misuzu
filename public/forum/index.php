@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../misuzu.php';
 
-$categories = forum_get_root_categories();
+$categories = forum_get_root_categories($app->getUserId());
 $blankForum = count($categories) <= 1 && $categories[0]['forum_children'] < 1;
 
 foreach ($categories as $key => $category) {

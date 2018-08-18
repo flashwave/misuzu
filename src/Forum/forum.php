@@ -76,7 +76,7 @@ function forum_fetch(int $forumId): array
     return $forums ? $forums : [];
 }
 
-function forum_get_root_categories(): array
+function forum_get_root_categories(int $userId): array
 {
     $categories = Database::query('
         SELECT
@@ -99,6 +99,7 @@ function forum_get_root_categories(): array
         SELECT COUNT(`forum_id`)
         FROM `msz_forum_categories`
         WHERE `forum_parent` = ' . MSZ_FORUM_ROOT . '
+        AND `forum_type` != 1
     ')->fetchColumn();
 
     return $categories;
