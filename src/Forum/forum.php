@@ -3,6 +3,23 @@ use Misuzu\Database;
 
 define('MSZ_FORUM_PERM_MANAGE_FORUMS', 1);
 
+define('MSZ_FORUM_PERM_LIST_FORUM', 1); // can see stats, but will get error when trying to view
+define('MSZ_FORUM_PERM_VIEW_FORUM', 1 << 1);
+
+define('MSZ_FORUM_PERM_CREATE_TOPIC', 1 << 10);
+define('MSZ_FORUM_PERM_DELETE_TOPIC', 1 << 11);
+define('MSZ_FORUM_PERM_MOVE_TOPIC', 1 << 12);
+define('MSZ_FORUM_PERM_LOCK_TOPIC', 1 << 13);
+define('MSZ_FORUM_PERM_STICKY_TOPIC', 1 << 14);
+define('MSZ_FORUM_PERM_ANNOUNCE_TOPIC', 1 << 15);
+define('MSZ_FORUM_PERM_GLOBAL_ANNOUNCE_TOPIC', 1 << 16);
+
+define('MSZ_FORUM_PERM_CREATE_POST', 1 << 20);
+define('MSZ_FORUM_PERM_EDIT_POST', 1 << 21);
+define('MSZ_FORUM_PERM_EDIT_ANY_POST', 1 << 22);
+define('MSZ_FORUM_PERM_DELETE_POST', 1 << 23);
+define('MSZ_FORUM_PERM_DELETE_ANY_POST', 1 << 24);
+
 define('MSZ_FORUM_TYPE_DISCUSSION', 0);
 define('MSZ_FORUM_TYPE_CATEGORY', 1);
 define('MSZ_FORUM_TYPE_LINK', 2);

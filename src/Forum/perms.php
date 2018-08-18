@@ -31,12 +31,12 @@ function forum_perms_create(): int
     return $perms;
 }
 
-function forum_perms_get_user(string $prefix, ?int $forum, int $user): int
+function forum_perms_get_user(string $prefix, int $forum, int $user): int
 {
     if (!in_array($prefix, MSZ_FORUM_PERM_MODES) || $user < 1) {
         return 0;
     } elseif ($user === 1) {
-        return 0x7FFFFFFF;
+        //return 0x7FFFFFFF;
     }
 
     $getPerms = Database::prepare("
@@ -64,7 +64,7 @@ function forum_perms_get_user(string $prefix, ?int $forum, int $user): int
     return $getPerms->execute() ? (int)$getPerms->fetchColumn() : 0;
 }
 
-function forum_perms_get_role(string $prefix, ?int $forum, int $role): int
+function forum_perms_get_role(string $prefix, int $forum, int $role): int
 {
     if (!in_array($prefix, MSZ_FORUM_PERM_MODES) || $role < 1) {
         return 0;
@@ -85,7 +85,7 @@ function forum_perms_get_role(string $prefix, ?int $forum, int $role): int
     return $getPerms->execute() ? (int)$getPerms->fetchColumn() : 0;
 }
 
-function perms_get_user_raw(?int $forum, int $user): array
+function forum_perms_get_user_raw(?int $forum, int $user): array
 {
     $emptyPerms = forum_perms_create();
 
@@ -93,14 +93,19 @@ function perms_get_user_raw(?int $forum, int $user): array
         return $emptyPerms;
     }
 
-    $getPerms = Database::prepare('
+    $getPerms = Database::prepare(sprintf('
         SELECT
             `' . implode('`, `', forum_perms_get_keys()) . '`
         FROM `msz_forum_permissions`
-        WHERE `user_id` = :user_id
+        WHERE `forum_id` %s
+        AND `user_id` = :user_id
         AND `role_id` IS NULL
-    ');
-    $getPerms->bindValue('forum_id', $user);
+    ', $forum === null ? 'IS NULL' : '= :forum_id'));
+
+    if ($forum !== null) {
+        $getPerms->bindValue('forum_id', $forum);
+    }
+
     $getPerms->bindValue('user_id', $user);
 
     if (!$getPerms->execute()) {
@@ -116,21 +121,27 @@ function perms_get_user_raw(?int $forum, int $user): array
     return $perms;
 }
 
-function perms_get_role_raw(int $role): array
+function forum_perms_get_role_raw(?int $forum, int $role): array
 {
-    $emptyPerms = perms_create();
+    $emptyPerms = forum_perms_create();
 
     if ($role < 1) {
         return $emptyPerms;
     }
 
-    $getPerms = Database::prepare('
+    $getPerms = Database::prepare(sprintf('
         SELECT
-            `' . implode('`, `', perms_get_keys()) . '`
-        FROM `msz_permissions`
-        WHERE `user_id` IS NULL
+            `' . implode('`, `', forum_perms_get_keys()) . '`
+        FROM `msz_forum_permissions`
+        WHERE `forum_id` %s
+        AND `user_id` IS NULL
         AND `role_id` = :role_id
-    ');
+    ', $forum === null ? 'IS NULL' : '= :forum_id'));
+
+    if ($forum !== null) {
+        $getPerms->bindValue('forum_id', $forum);
+    }
+
     $getPerms->bindValue('role_id', $role);
 
     if (!$getPerms->execute()) {
