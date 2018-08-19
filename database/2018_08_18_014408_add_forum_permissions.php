@@ -11,7 +11,7 @@ function migrate_up(PDO $conn): void
         CREATE TABLE `msz_forum_permissions` (
             `user_id`               INT(10) UNSIGNED NULL       DEFAULT NULL,
             `role_id`               INT(10) UNSIGNED NULL       DEFAULT NULL,
-            `forum_id`              INT(10) UNSIGNED NULL       DEFAULT NULL,
+            `forum_id`              INT(10) UNSIGNED NOT NULL,
             `forum_perms_allow`     INT(10) UNSIGNED NOT NULL   DEFAULT '0',
             `forum_perms_deny`      INT(10) UNSIGNED NOT NULL   DEFAULT '0',
             UNIQUE INDEX `forum_permissions_user_id_unique`     (`user_id`),

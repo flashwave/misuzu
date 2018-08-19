@@ -6,6 +6,9 @@ define('MSZ_PERM_FORUM_MANAGE_FORUMS', 1);
 define('MSZ_FORUM_PERM_LIST_FORUM', 1); // can see stats, but will get error when trying to view
 define('MSZ_FORUM_PERM_VIEW_FORUM', 1 << 1);
 
+// shorthand, never use this to SET!!!!!!!
+define('MSZ_FORUM_PERM_CAN_LIST_FORUM', MSZ_FORUM_PERM_LIST_FORUM | MSZ_FORUM_PERM_VIEW_FORUM);
+
 define('MSZ_FORUM_PERM_CREATE_TOPIC', 1 << 10);
 define('MSZ_FORUM_PERM_DELETE_TOPIC', 1 << 11);
 define('MSZ_FORUM_PERM_MOVE_TOPIC', 1 << 12);
@@ -78,7 +81,12 @@ function forum_fetch(int $forumId): array
 
 function forum_get_root_categories(int $userId): array
 {
-    $categories = Database::query('
+    $categoryPermSql = sprintf(
+        '(%s & %d)',
+        forum_perms_get_user_sql('forum', 'f.`forum_id`'),
+        MSZ_FORUM_PERM_CAN_LIST_FORUM
+    );
+    $getCategories = Database::prepare("
         SELECT
             f.`forum_id`, f.`forum_name`, f.`forum_type`,
             (
@@ -90,17 +98,31 @@ function forum_get_root_categories(int $userId): array
         WHERE f.`forum_parent` = 0
         AND f.`forum_type` = 1
         AND f.`forum_hidden` = false
+        AND {$categoryPermSql} > 0
         ORDER BY f.`forum_order`
-    ')->fetchAll();
-
+    ");
+    $getCategories->bindValue('perm_user_id_1', $userId);
+    $getCategories->bindValue('perm_user_id_2', $userId);
+    $categories = $getCategories->execute() ? $getCategories->fetchAll(PDO::FETCH_ASSOC) : [];
     $categories = array_merge([MSZ_FORUM_ROOT_DATA], $categories);
 
-    $categories[0]['forum_children'] = (int)Database::query('
+    $forumPermSql = sprintf(
+        '(%s & %d)',
+        forum_perms_get_user_sql('forum', '`forum_id`'),
+        MSZ_FORUM_PERM_CAN_LIST_FORUM
+    );
+    $getRootForumCount = Database::prepare(sprintf("
         SELECT COUNT(`forum_id`)
         FROM `msz_forum_categories`
-        WHERE `forum_parent` = ' . MSZ_FORUM_ROOT . '
+        WHERE `forum_parent` = %d
         AND `forum_type` != 1
-    ')->fetchColumn();
+        AND {$forumPermSql} > 0
+    ", MSZ_FORUM_ROOT));
+    $getRootForumCount->bindValue('perm_user_id_1', $userId);
+    $getRootForumCount->bindValue('perm_user_id_2', $userId);
+    $getRootForumCount->execute();
+
+    $categories[0]['forum_children'] = (int)$getRootForumCount->fetchColumn();
 
     return $categories;
 }

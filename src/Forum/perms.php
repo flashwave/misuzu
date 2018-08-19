@@ -31,6 +31,34 @@ function forum_perms_create(): int
     return $perms;
 }
 
+function forum_perms_get_user_sql(
+    string $prefix,
+    string $forum = ':perm_forum_id',
+    string $user_for_user = ':perm_user_id_1',
+    string $user_for_role = ':perm_user_id_2'
+): string {
+    return "
+        SELECT BIT_OR(`{$prefix}_perms_allow`) &~ BIT_OR(`{$prefix}_perms_deny`)
+        FROM `msz_forum_permissions`
+        WHERE (
+            `forum_id` = {$forum}
+            OR `forum_id` IS NULL
+        )
+        AND (
+            (`user_id` IS NULL AND `role_id` IS NULL)
+            OR (`user_id` = {$user_for_user} AND `role_id` IS NULL)
+            OR (
+                `user_id` IS NULL
+                AND `role_id` IN (
+                    SELECT `role_id`
+                    FROM `msz_user_roles`
+                    WHERE `user_id` = {$user_for_role}
+                )
+            )
+        )
+    ";
+}
+
 function forum_perms_get_user(string $prefix, int $forum, int $user): int
 {
     if (!in_array($prefix, MSZ_FORUM_PERM_MODES) || $user < 1) {
@@ -39,28 +67,10 @@ function forum_perms_get_user(string $prefix, int $forum, int $user): int
         //return 0x7FFFFFFF;
     }
 
-    $getPerms = Database::prepare("
-        SELECT BIT_OR(`{$prefix}_perms_allow`) &~ BIT_OR(`{$prefix}_perms_deny`)
-        FROM `msz_forum_permissions`
-        WHERE (
-            `forum_id` = :forum_id
-            OR `forum_id` IS NULL
-        )
-        AND (
-            (`user_id` = :user_id_1 AND `role_id` IS NULL)
-            OR (
-                `user_id` IS NULL
-                AND `role_id` IN (
-                    SELECT `role_id`
-                    FROM `msz_user_roles`
-                    WHERE `user_id` = :user_id_2
-                )
-            )
-        )
-    ");
-    $getPerms->bindValue('forum_id', $forum);
-    $getPerms->bindValue('user_id_1', $user);
-    $getPerms->bindValue('user_id_2', $user);
+    $getPerms = Database::prepare(forum_perms_get_user_sql($prefix));
+    $getPerms->bindValue('perm_forum_id', $forum);
+    $getPerms->bindValue('perm_user_id_1', $user);
+    $getPerms->bindValue('perm_user_id_2', $user);
     return $getPerms->execute() ? (int)$getPerms->fetchColumn() : 0;
 }
 
