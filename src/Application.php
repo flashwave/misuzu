@@ -78,11 +78,14 @@ class Application extends ApplicationBase
         $this->debugMode = $debug;
         $this->configInstance = new ConfigManager($configFile);
 
-        ExceptionHandler::register(
-            $debug,
-            $this->configInstance->get('Exceptions', 'report_url', 'string', null),
-            $this->configInstance->get('Exceptions', 'hash_key', 'string', null)
-        );
+        // only use this error handler in prod mode, dev uses Whoops now
+        if (!$debug) {
+            ExceptionHandler::register(
+                false,
+                $this->configInstance->get('Exceptions', 'report_url', 'string', null),
+                $this->configInstance->get('Exceptions', 'hash_key', 'string', null)
+            );
+        }
     }
 
     public function getTimeSinceStart(): float
@@ -103,14 +106,6 @@ class Application extends ApplicationBase
         }
 
         return $this->configInstance;
-    }
-
-    /**
-     * Shuts the application down.
-     */
-    public function __destruct()
-    {
-        ExceptionHandler::unregister();
     }
 
     /**

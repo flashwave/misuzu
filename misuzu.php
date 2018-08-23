@@ -3,7 +3,20 @@ namespace Misuzu;
 
 date_default_timezone_set('UTC');
 
+define('MSZ_DEBUG', file_exists(__DIR__ . '/vendor/phpunit/phpunit/composer.json'));
+
 require_once __DIR__ . '/vendor/autoload.php';
+
+if (MSZ_DEBUG) {
+    $errorHandler = new \Whoops\Run;
+    $errorHandler->pushHandler(
+        PHP_SAPI === 'cli'
+        ? new \Whoops\Handler\PlainTextHandler
+        : new \Whoops\Handler\PrettyPageHandler
+    );
+    $errorHandler->register();
+}
+
 require_once __DIR__ . '/src/audit_log.php';
 require_once __DIR__ . '/src/changelog.php';
 require_once __DIR__ . '/src/colour.php';
@@ -29,7 +42,7 @@ require_once __DIR__ . '/src/Users/validation.php';
 
 $app = new Application(
     __DIR__ . '/config/config.ini',
-    IO\Directory::exists(__DIR__ . '/vendor/phpunit/phpunit')
+    MSZ_DEBUG
 );
 $app->startDatabase();
 
