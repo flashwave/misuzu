@@ -59,7 +59,7 @@ function forum_post_find(int $postId): array
     ');
     $getPostInfo->bindValue('post_id', $postId);
 
-    return $getPostInfo->execute() ? $getPostInfo->fetch() : false;
+    return $getPostInfo->execute() ? $getPostInfo->fetch() : [];
 }
 
 define('MSZ_FORUM_POST_LISTING_QUERY_STANDARD', '

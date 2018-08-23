@@ -17,9 +17,11 @@
     </div>
 {% endmacro %}
 
-{% macro forum_category_buttons(forum) %}
+{% macro forum_category_buttons(forum, perms) %}
     <div class="forum__actions forum__actions__content">
-        <a href="/forum/posting.php?f={{ forum.forum_id }}" class="input__button forum__actions__button">New Topic</a>
+        {% if perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
+            <a href="/forum/posting.php?f={{ forum.forum_id }}" class="input__button forum__actions__button">New Topic</a>
+        {% endif %}
     </div>
 {% endmacro %}
 

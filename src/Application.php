@@ -294,11 +294,11 @@ class Application extends ApplicationBase
         tpl_add_function('parse_text', true);
         tpl_add_function('asset_url', true);
         tpl_add_function('vsprintf', true);
+        tpl_add_function('perms_check', true);
 
         tpl_add_function('git_commit_hash');
         tpl_add_function('git_branch');
         tpl_add_function('csrf_token', false, 'tmp_csrf_token');
-        tpl_add_function('perms_check');
 
         tpl_var('app', $this);
     }

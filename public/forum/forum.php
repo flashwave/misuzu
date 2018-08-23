@@ -17,6 +17,15 @@ if (empty($forum) || ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK && empty($foru
     return;
 }
 
+$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], $app->getUserId());
+
+if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
+    echo render_error(403);
+    return;
+}
+
+tpl_var('forum_perms', $perms);
+
 if ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK) {
     forum_increment_clicks($forum['forum_id']);
     header('Location: ' . $forum['forum_link']);

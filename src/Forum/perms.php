@@ -41,7 +41,7 @@ function forum_perms_get_user_sql(
         '
             SELECT BIT_OR(`%1$s_perms`)
             FROM `msz_forum_permissions_view`
-            WHERE `forum_id` = %2$s
+            WHERE (`forum_id` = %2$s OR `forum_id` IS NULL)
             AND (
                 (`user_id` IS NULL AND `role_id` IS NULL)
                 OR (`user_id` = %3$s AND `role_id` IS NULL)
@@ -72,8 +72,8 @@ function forum_perms_get_user(string $prefix, int $forum, int $user): int
 
     $getPerms = Database::prepare(forum_perms_get_user_sql($prefix));
     $getPerms->bindValue('perm_forum_id', $forum);
-    $getPerms->bindValue('perm_user_id_1', $user);
-    $getPerms->bindValue('perm_user_id_2', $user);
+    $getPerms->bindValue('perm_user_id_user', $user);
+    $getPerms->bindValue('perm_user_id_role', $user);
     return $getPerms->execute() ? (int)$getPerms->fetchColumn() : 0;
 }
 
@@ -84,12 +84,9 @@ function forum_perms_get_role(string $prefix, int $forum, int $role): int
     }
 
     $getPerms = Database::prepare("
-        SELECT `{$prefix}_perms_allow` &~ `{$prefix}_perms_deny`
-        FROM `msz_forum_permissions`
-        WHERE (
-            `forum_id` = :forum_id
-            OR `forum_id` IS NULL
-        )
+        SELECT BIT_OR(`{$prefix}_perms`)
+        FROM `msz_forum_permissions_view`
+        WHERE (`forum_id` = :forum_id OR `forum_id` IS NULL)
         AND `role_id` = :role_id
         AND `user_id` IS NULL
     ");
