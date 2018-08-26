@@ -20,7 +20,7 @@ function forum_perms_get_keys(): array
     return $perms;
 }
 
-function forum_perms_create(): int
+function forum_perms_create(): array
 {
     $perms = [];
 
@@ -131,28 +131,34 @@ function forum_perms_get_user_raw(?int $forum, int $user): array
     return $perms;
 }
 
-function forum_perms_get_role_raw(?int $forum, int $role): array
+function forum_perms_get_role_raw(?int $forum, ?int $role): array
 {
     $emptyPerms = forum_perms_create();
 
-    if ($role < 1) {
+    if ($role < 1 && $role !== null) {
         return $emptyPerms;
     }
 
-    $getPerms = Database::prepare(sprintf('
-        SELECT
-            `' . implode('`, `', forum_perms_get_keys()) . '`
-        FROM `msz_forum_permissions`
-        WHERE `forum_id` %s
-        AND `user_id` IS NULL
-        AND `role_id` = :role_id
-    ', $forum === null ? 'IS NULL' : '= :forum_id'));
+    $getPerms = Database::prepare(sprintf(
+        '
+            SELECT
+                `' . implode('`, `', forum_perms_get_keys()) . '`
+            FROM `msz_forum_permissions`
+            WHERE `forum_id` %s
+            AND `user_id` IS NULL
+            AND `role_id` %s
+        ',
+        $forum === null ? 'IS NULL' : '= :forum_id',
+        $role === null ? 'IS NULL' : '= :role_id'
+    ));
 
     if ($forum !== null) {
         $getPerms->bindValue('forum_id', $forum);
     }
 
-    $getPerms->bindValue('role_id', $role);
+    if ($role !== null) {
+        $getPerms->bindValue('role_id', $role);
+    }
 
     if (!$getPerms->execute()) {
         return $emptyPerms;

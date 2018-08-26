@@ -55,15 +55,11 @@ function manage_get_menu(int $userId): array
     }
 
     if (perms_check($perms['forum'], MSZ_PERM_FORUM_MANAGE_FORUMS)) {
-        $menu['Forums']['Listing'] = '/manage/forums.php?v=listing';
+        $menu['Forum']['Listing'] = '/manage/forum.php?v=listing';
     }
 
     if (perms_check($perms['forum'], 0)) {
-        $menu['Forums']['Permissions'] = '/manage/forums.php?v=permissions';
-    }
-
-    if (perms_check($perms['forum'], 0)) {
-        $menu['Forums']['Settings'] = '/manage/forums.php?v=settings';
+        $menu['Forum']['Settings'] = '/manage/forum.php?v=settings';
     }
 
     if (perms_check($perms['changelog'], MSZ_PERM_CHANGELOG_MANAGE_CHANGES)) {
@@ -436,6 +432,158 @@ function manage_perms_list(array $rawPerms): array
                         MSZ_PERM_CHANGELOG_MANAGE_ACTIONS,
                         $rawPerms['changelog_perms_allow'],
                         $rawPerms['changelog_perms_deny']
+                    ),
+                ],
+            ],
+        ],
+    ];
+}
+
+function manage_forum_perms_list(array $rawPerms): array
+{
+    return [
+        [
+            'section' => 'forum',
+            'title' => 'Forum',
+            'perms' => [
+                [
+                    'section' => 'can-list',
+                    'title' => 'Can see the forum listed, but not access it.',
+                    'perm' => MSZ_FORUM_PERM_LIST_FORUM,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_LIST_FORUM,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-view',
+                    'title' => 'Can view and access the forum.',
+                    'perm' => MSZ_FORUM_PERM_VIEW_FORUM,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_VIEW_FORUM,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-create-topic',
+                    'title' => 'Can create topics.',
+                    'perm' => MSZ_FORUM_PERM_CREATE_TOPIC,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_CREATE_TOPIC,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-delete-topic',
+                    'title' => 'Can delete topics (required a post delete permission).',
+                    'perm' => MSZ_FORUM_PERM_DELETE_TOPIC,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_DELETE_TOPIC,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-move-topic',
+                    'title' => 'Can move topics between forums.',
+                    'perm' => MSZ_FORUM_PERM_MOVE_TOPIC,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_MOVE_TOPIC,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-lock-topic',
+                    'title' => 'Can lock topics.',
+                    'perm' => MSZ_FORUM_PERM_LOCK_TOPIC,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_LOCK_TOPIC,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-sticky-topic',
+                    'title' => 'Can make topics sticky.',
+                    'perm' => MSZ_FORUM_PERM_STICKY_TOPIC,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_STICKY_TOPIC,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-announce-topic',
+                    'title' => 'Can make topics announcements.',
+                    'perm' => MSZ_FORUM_PERM_ANNOUNCE_TOPIC,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_ANNOUNCE_TOPIC,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-global-announce-topic',
+                    'title' => 'Can make topics global announcements.',
+                    'perm' => MSZ_FORUM_PERM_GLOBAL_ANNOUNCE_TOPIC,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_GLOBAL_ANNOUNCE_TOPIC,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-create-post',
+                    'title' => 'Can make posts (reply only, if create topic is disallowed).',
+                    'perm' => MSZ_FORUM_PERM_CREATE_POST,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_CREATE_POST,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-edit-post',
+                    'title' => 'Can edit their own posts.',
+                    'perm' => MSZ_FORUM_PERM_EDIT_POST,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_EDIT_POST,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-edit-any-post',
+                    'title' => 'Can edit any posts.',
+                    'perm' => MSZ_FORUM_PERM_EDIT_ANY_POST,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_EDIT_ANY_POST,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-delete-post',
+                    'title' => 'Can delete own posts.',
+                    'perm' => MSZ_FORUM_PERM_DELETE_POST,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_DELETE_POST,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
+                    ),
+                ],
+                [
+                    'section' => 'can-delete-any-post',
+                    'title' => 'Can delete any posts.',
+                    'perm' => MSZ_FORUM_PERM_DELETE_ANY_POST,
+                    'value' => manage_perms_value(
+                        MSZ_FORUM_PERM_DELETE_ANY_POST,
+                        $rawPerms['forum_perms_allow'],
+                        $rawPerms['forum_perms_deny']
                     ),
                 ],
             ],
