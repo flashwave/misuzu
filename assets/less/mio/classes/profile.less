@@ -25,7 +25,7 @@
 
     &__header {
         height: 300px;
-        background-color: #fbeeff;
+        background-color: var(--background-colour);
         background-size: cover;
         background-repeat: no-repeat;
         background-position: 50%;
@@ -55,7 +55,7 @@
 
         @media (max-width: @site-mobile-width) {
             flex-direction: column;
-            background-color: #9475b2;
+            background-color: var(--accent-colour);
             width: 100%;
             padding-top: 2px;
         }
@@ -69,13 +69,13 @@
         }
 
         &__block {
-            border: 1px solid #9475b2;
+            border: 1px solid var(--accent-colour);
             padding: 2px 4px;
             margin-bottom: 2px;
             background-color: rgba(251, 238, 255, .9);
 
             @media (max-width: @site-mobile-width) {
-                background-color: #fbeeff;
+                background-color: var(--background-colour);
             }
 
             &--links:empty {

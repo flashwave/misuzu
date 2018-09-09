@@ -1,8 +1,8 @@
 .forum__post {
     display: flex;
-    border: 1px solid #9475b2;
-    box-shadow: 0 1px 2px #9475b2;
-    background-color: #fbeeff;
+    border: 1px solid var(--accent-colour);
+    box-shadow: 0 1px 2px var(--accent-colour);
+    background-color: var(--background-colour);
     margin: 2px 0;
 
     @media (max-width: @site-mobile-width) {
@@ -32,7 +32,7 @@
             font-size: .9em;
             line-height: 1.7em;
             padding: 0 2px;
-            border-bottom: 1px solid #9475b2;
+            border-bottom: 1px solid var(--accent-colour);
             display: flex;
             justify-content: space-between;
 
@@ -48,7 +48,7 @@
     }
 
     &__author {
-        border-right: 1px solid #9475b2;
+        border-right: 1px solid var(--accent-colour);
         text-align: center;
         flex-grow: 0;
         flex-shrink: 0;
@@ -59,7 +59,7 @@
 
         @media (max-width: @site-mobile-width) {
             border-right-width: 0;
-            border: 1px solid #9475b2;
+            border: 1px solid var(--accent-colour);
             flex-direction: row;
             border-bottom-width: 2px;
         }
@@ -93,7 +93,7 @@
         &__avatar {
             width: 120px;
             height: 120px;
-            box-shadow: 0 1px 2px #9475b2;
+            box-shadow: 0 1px 2px var(--accent-colour);
 
             @media (max-width: @site-mobile-width) {
                 width: 40px;

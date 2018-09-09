@@ -1,6 +1,6 @@
 .input__button {
-    background-image: linear-gradient(0deg, transparent, #c2affe);
-    background-color: #9475b2;
+    background-image: linear-gradient(0deg, transparent, var(--gradient-start));
+    background-color: var(--accent-colour);
     font-family: @mio-font-regular;
     font-size: 1.1em;
     line-height: 1.4em;
@@ -9,8 +9,8 @@
     text-align: center;
     cursor: pointer;
     transition: background-color .2s, box-shadow .2s;
-    color: #306;
-    border: 1px solid #306;
+    color: var(--text-colour-header);
+    border: 1px solid var(--text-colour-header);
     border-radius: 2px;
     display: inline-block;
     text-decoration: none;
@@ -23,7 +23,7 @@
 
     &:not(&--disabled) {
         &:focus {
-            box-shadow: inset 0 0 2px 0 #306;
+            box-shadow: inset 0 0 2px 0 var(--text-colour-header);
         }
 
         &:hover {
@@ -31,7 +31,7 @@
         }
 
         &:active {
-            background-color: #c2affe;
+            background-color: var(--gradient-start);
         }
     }
 }

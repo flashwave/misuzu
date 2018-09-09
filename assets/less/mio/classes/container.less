@@ -1,8 +1,8 @@
 .container {
-    border: 1px solid #9475b2;
-    background-color: #fbeeff;
+    border: 1px solid var(--accent-colour);
+    background-color: var(--background-colour);
     margin: 2px 0;
-    box-shadow: 0 1px 2px #9475b2;
+    box-shadow: 0 1px 2px var(--accent-colour);
 
     &--hidden { // __title should always be the first element of a container
         :not(:first-child) {
@@ -13,8 +13,8 @@
     &__title {
         display: block;
         text-decoration: none;
-        background-color: #9475b2;
-        color: #306;
+        background-color: var(--accent-colour);
+        color: var(--text-colour-header);
         font-size: 1.17em;
         font-weight: 700;
         padding: 3px;

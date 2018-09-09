@@ -5,7 +5,7 @@
     width: 100%;
     display: flex;
     border-width: 0;
-    border-color: #000;
+    border-color: var(--text-colour);
     border-style: solid;
     border-top-width: 1px;
     align-items: flex-start;
@@ -49,12 +49,12 @@
     &__option {
         list-style: none;
         background-color: #c9bbcc;
-        border: 1px solid #000;
+        border: 1px solid var(--text-colour);
         border-top-width: 0;
         flex-grow: 0;
 
         @media (max-width: @mio-navigation-mobile) {
-            background-color: #9475b2;
+            background-color: var(--accent-colour);
             width: 100%;
             border: none;
             flex-grow: 1;
@@ -66,11 +66,11 @@
         }
 
         &--selected {
-            background-color: #fbeeff;
+            background-color: var(--background-colour);
             top: -1px;
 
             @media (max-width: @mio-navigation-mobile) {
-                background-color: #A586c3;
+                background-color: #a586c3;
                 top: 0;
             }
 
@@ -90,12 +90,12 @@
     &__link {
         display: block;
         padding: 2px 1em;
-        color: #000;
+        color: var(--text-colour);
         text-decoration: none;
 
         @media (max-width: @mio-navigation-mobile) {
             padding: 10px 15px;
-            color: #306;
+            color: var(--text-colour-header);
             font-size: 1.5em;
         }
 

@@ -9,7 +9,7 @@
         margin-bottom: 1px;
 
         @media (max-width: @site-mobile-width) {
-            border-bottom: 1px solid #9475b2;
+            border-bottom: 1px solid var(--accent-colour);
             padding-bottom: 1px;
         }
     }
@@ -29,8 +29,8 @@
     // date header in public changelog
     &__date {
         display: block;
-        background: #9475b2;
-        color: #306;
+        background: var(--accent-colour);
+        color: var(--text-colour-header);
         font-weight: 700;
         margin-bottom: 1px;
         text-decoration: none;
@@ -92,7 +92,7 @@
         }
 
         &--light {
-            color: #fff;
+            color: var(--text-colour-inverted);
         }
     }
 
@@ -124,7 +124,7 @@
     }
 
     &__tag {
-        border: 1px solid #9475b2;
+        border: 1px solid var(--accent-colour);
         margin-right: 1px;
         border-radius: 2px;
         display: block;
@@ -140,7 +140,7 @@
     &__change {
 
         &__line {
-            border: 1px solid #9475b2;
+            border: 1px solid var(--accent-colour);
             display: flex;
             align-items: stretch;
             flex: 1 0 auto;
@@ -168,7 +168,7 @@
         &__action {
             display: block;
             padding: 6px 2px;
-            border-right: 1px solid #9475b2;
+            border-right: 1px solid var(--accent-colour);
             writing-mode: sideways-lr;
             text-orientation: sideways;
             letter-spacing: 1px;
@@ -176,7 +176,7 @@
             flex: 0 0 auto;
 
             &--light {
-                color: #fff;
+                color: var(--text-colour-inverted);
             }
         }
 
@@ -193,7 +193,7 @@
         }
 
         &__date {
-            border: 1px solid #9475b2;
+            border: 1px solid var(--accent-colour);
             color: inherit;
             text-decoration: none;
             margin-right: 1px;
@@ -206,7 +206,7 @@
         }
 
         &__user {
-            border: 1px solid #9475b2;
+            border: 1px solid var(--accent-colour);
             padding: 2px;
             display: flex;
             align-items: center;
@@ -240,7 +240,7 @@
         &__text {
             margin: 1px 0;
             padding: 1px 3px;
-            border-top: 1px solid #9475b2;
+            border-top: 1px solid var(--accent-colour);
             font-size: 1.2em;
             line-height: 1.5em;
             flex: 1 1 auto;
@@ -254,7 +254,7 @@
         }
 
         &__tag {
-            border: 1px solid #9475b2;
+            border: 1px solid var(--accent-colour);
             margin-right: 1px;
             border-radius: 2px;
 
