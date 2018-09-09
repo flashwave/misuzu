@@ -1,0 +1,7 @@
+{% extends 'manage/users/master.twig' %}
+
+{% block manage_content %}
+    {% for forum in forums %}
+        <a href="?v=forum&amp;f={{ forum.forum_id }}">{{ forum.forum_name }}</a><br>
+    {% endfor %}
+{% endblock %}

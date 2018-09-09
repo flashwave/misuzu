@@ -1,9 +1,9 @@
 <?php
 use Misuzu\Database;
 
-define('MSZ_CHANGELOG_PERM_MANAGE_CHANGES', 1);
-define('MSZ_CHANGELOG_PERM_MANAGE_TAGS', 1 << 1);
-define('MSZ_CHANGELOG_PERM_MANAGE_ACTIONS', 1 << 2);
+define('MSZ_PERM_CHANGELOG_MANAGE_CHANGES', 1);
+define('MSZ_PERM_CHANGELOG_MANAGE_TAGS', 1 << 1);
+define('MSZ_PERM_CHANGELOG_MANAGE_ACTIONS', 1 << 2);
 
 function changelog_action_add(string $name, ?int $colour = null, ?string $class = null): int
 {

@@ -22,6 +22,13 @@ if (!$topic) {
     return;
 }
 
+$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], $app->getUserId());
+
+if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
+    echo render_error(403);
+    return;
+}
+
 $posts = forum_post_listing($topic['topic_id'], $postsOffset, $postsRange);
 
 if (!$posts) {

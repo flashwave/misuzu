@@ -1,0 +1,25 @@
+{% extends 'manage/users/master.twig' %}
+{% from 'manage/macros.twig' import permissions_table %}
+
+{% block manage_content %}
+    <div class="container">
+        <div class="container__title">{{ forum.forum_name }}</div>
+        <div class="container__content">
+            <form action="" method="get">
+                <input type="hidden" name="v" value="forumperms">
+                <input type="hidden" name="f" value="{{ forum.forum_id }}">
+                <select name="r" class="input__select">
+                    {% for role in roles %}
+                        <option value="{{ role.role_id }}">{{ role.role_name }}</option>
+                    {% endfor %}
+                </select>
+                <button class="input__button">Manage permissions</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="container__title">Base Permissions</div>
+        {{ permissions_table(perms) }}
+    </div>
+{% endblock %}

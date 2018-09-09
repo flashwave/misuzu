@@ -78,11 +78,14 @@ class Application extends ApplicationBase
         $this->debugMode = $debug;
         $this->configInstance = new ConfigManager($configFile);
 
-        ExceptionHandler::register(
-            $debug,
-            $this->configInstance->get('Exceptions', 'report_url', 'string', null),
-            $this->configInstance->get('Exceptions', 'hash_key', 'string', null)
-        );
+        // only use this error handler in prod mode, dev uses Whoops now
+        if (!$debug) {
+            ExceptionHandler::register(
+                false,
+                $this->configInstance->get('Exceptions', 'report_url', 'string', null),
+                $this->configInstance->get('Exceptions', 'hash_key', 'string', null)
+            );
+        }
     }
 
     public function getTimeSinceStart(): float
@@ -103,14 +106,6 @@ class Application extends ApplicationBase
         }
 
         return $this->configInstance;
-    }
-
-    /**
-     * Shuts the application down.
-     */
-    public function __destruct()
-    {
-        ExceptionHandler::unregister();
     }
 
     /**
@@ -299,11 +294,11 @@ class Application extends ApplicationBase
         tpl_add_function('parse_text', true);
         tpl_add_function('asset_url', true);
         tpl_add_function('vsprintf', true);
+        tpl_add_function('perms_check', true);
 
         tpl_add_function('git_commit_hash');
         tpl_add_function('git_branch');
         tpl_add_function('csrf_token', false, 'tmp_csrf_token');
-        tpl_add_function('perms_check');
 
         tpl_var('app', $this);
     }

@@ -8,9 +8,9 @@ $isPostRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
 $queryQffset = (int)($_GET['o'] ?? 0);
 
 tpl_vars([
-    'can_manage_users' => $canManageUsers = perms_check($userPerms, MSZ_USER_PERM_MANAGE_USERS),
-    'can_manage_roles' => $canManageRoles = perms_check($userPerms, MSZ_USER_PERM_MANAGE_ROLES),
-    'can_manage_perms' => $canManagePerms = perms_check($userPerms, MSZ_USER_PERM_MANAGE_PERMS),
+    'can_manage_users' => $canManageUsers = perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS),
+    'can_manage_roles' => $canManageRoles = perms_check($userPerms, MSZ_PERM_USER_MANAGE_ROLES),
+    'can_manage_perms' => $canManagePerms = perms_check($userPerms, MSZ_PERM_USER_MANAGE_PERMS),
 ]);
 
 switch ($_GET['v'] ?? null) {
