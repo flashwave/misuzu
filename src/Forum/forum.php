@@ -1,8 +1,6 @@
 <?php
 use Misuzu\Database;
 
-require_once __DIR__ . '/perms.php';
-
 define('MSZ_PERM_FORUM_MANAGE_FORUMS', 1);
 
 define('MSZ_FORUM_PERM_LIST_FORUM', 1); // can see stats, but will get error when trying to view
@@ -215,104 +213,102 @@ function forum_read_status_sql(
 
 define(
     'MSZ_FORUM_GET_CHILDREN_QUERY_SMALL',
-    sprintf(
-        '
-            SELECT
-                :user_id as `target_user_id`,
-                f.`forum_id`, f.`forum_name`,
-                (%s) as `forum_unread`
-            FROM `msz_forum_categories` as f
-            LEFT JOIN `msz_forum_topics` as t
-            ON t.`topic_id` = (
-                SELECT `topic_id`
-                FROM `msz_forum_topics`
-                WHERE `forum_id` = f.`forum_id`
-                AND `topic_deleted` IS NULL
-                ORDER BY `topic_bumped` DESC
-                LIMIT 1
-            )
-            WHERE `forum_parent` = :parent_id
-            AND `forum_hidden` = false
-            AND (%s & %d) > 0
-            ORDER BY f.`forum_order`
-        ',
-        forum_read_status_sql('t.`topic_id`', 't.`topic_bumped`'),
-        forum_perms_get_user_sql('forum', 'f.`forum_id`'),
-        MSZ_FORUM_PERM_CAN_LIST_FORUM
-    )
+    '
+        SELECT
+            :user_id as `target_user_id`,
+            f.`forum_id`, f.`forum_name`,
+            (%1$s) as `forum_unread`
+        FROM `msz_forum_categories` as f
+        LEFT JOIN `msz_forum_topics` as t
+        ON t.`topic_id` = (
+            SELECT `topic_id`
+            FROM `msz_forum_topics`
+            WHERE `forum_id` = f.`forum_id`
+            AND `topic_deleted` IS NULL
+            ORDER BY `topic_bumped` DESC
+            LIMIT 1
+        )
+        WHERE `forum_parent` = :parent_id
+        AND `forum_hidden` = false
+        AND (%4$s & %5$d) > 0
+        ORDER BY f.`forum_order`
+    '
 );
 
 define(
     'MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD',
-    sprintf(
-        '
-            SELECT
-                :user_id as `target_user_id`,
-                f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`,
-                f.`forum_link`, f.`forum_link_clicks`, f.`forum_archived`,
-                t.`topic_id` as `recent_topic_id`, p.`post_id` as `recent_post_id`,
-                t.`topic_title` as `recent_topic_title`, t.`topic_bumped` as `recent_topic_bumped`,
-                p.`post_created` as `recent_post_created`,
-                u.`user_id` as `recent_post_user_id`,
-                u.`username` as `recent_post_username`,
-                COALESCE(u.`user_colour`, r.`role_colour`) as `recent_post_user_colour`,
-                (
-                    SELECT COUNT(`topic_id`)
-                    FROM `msz_forum_topics`
-                    WHERE `forum_id` = f.`forum_id`
-                ) as `forum_topic_count`,
-                (
-                    SELECT COUNT(`post_id`)
-                    FROM `msz_forum_posts`
-                    WHERE `forum_id` = f.`forum_id`
-                ) as `forum_post_count`,
-                (%s) as `forum_unread`
-            FROM `msz_forum_categories` as f
-            LEFT JOIN `msz_forum_topics` as t
-            ON t.`topic_id` = (
-                SELECT `topic_id`
+    '
+        SELECT
+            :user_id as `target_user_id`,
+            f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`,
+            f.`forum_link`, f.`forum_link_clicks`, f.`forum_archived`,
+            t.`topic_id` as `recent_topic_id`, p.`post_id` as `recent_post_id`,
+            t.`topic_title` as `recent_topic_title`, t.`topic_bumped` as `recent_topic_bumped`,
+            p.`post_created` as `recent_post_created`,
+            u.`user_id` as `recent_post_user_id`,
+            u.`username` as `recent_post_username`,
+            COALESCE(u.`user_colour`, r.`role_colour`) as `recent_post_user_colour`,
+            (
+                SELECT COUNT(`topic_id`)
                 FROM `msz_forum_topics`
                 WHERE `forum_id` = f.`forum_id`
-                AND `topic_deleted` IS NULL
-                ORDER BY `topic_bumped` DESC
-                LIMIT 1
-            )
-            LEFT JOIN `msz_forum_posts` as p
-            ON p.`post_id` = (
-                SELECT `post_id`
+            ) as `forum_topic_count`,
+            (
+                SELECT COUNT(`post_id`)
                 FROM `msz_forum_posts`
-                WHERE `topic_id` = t.`topic_id`
-                ORDER BY `post_id` DESC
-                LIMIT 1
-            )
-            LEFT JOIN `msz_users` as u
-            ON u.`user_id` = p.`user_id`
-            LEFT JOIN `msz_roles` as r
-            ON r.`role_id` = u.`display_role`
-            WHERE f.`forum_parent` = :parent_id
-            AND f.`forum_hidden` = false
-            AND (%4$s & %5$d) > 0
-            AND (
-                (f.`forum_parent` = %2$d AND f.`forum_type` != %3$d)
-                OR f.`forum_parent` != %2$d
-            )
-            ORDER BY f.`forum_order`
-        ',
-        forum_read_status_sql('`recent_topic_id`', '`recent_topic_bumped`'),
+                WHERE `forum_id` = f.`forum_id`
+            ) as `forum_post_count`,
+            (%1$s) as `forum_unread`
+        FROM `msz_forum_categories` as f
+        LEFT JOIN `msz_forum_topics` as t
+        ON t.`topic_id` = (
+            SELECT `topic_id`
+            FROM `msz_forum_topics`
+            WHERE `forum_id` = f.`forum_id`
+            AND `topic_deleted` IS NULL
+            ORDER BY `topic_bumped` DESC
+            LIMIT 1
+        )
+        LEFT JOIN `msz_forum_posts` as p
+        ON p.`post_id` = (
+            SELECT `post_id`
+            FROM `msz_forum_posts`
+            WHERE `topic_id` = t.`topic_id`
+            ORDER BY `post_id` DESC
+            LIMIT 1
+        )
+        LEFT JOIN `msz_users` as u
+        ON u.`user_id` = p.`user_id`
+        LEFT JOIN `msz_roles` as r
+        ON r.`role_id` = u.`display_role`
+        WHERE f.`forum_parent` = :parent_id
+        AND f.`forum_hidden` = false
+        AND (%4$s & %5$d) > 0
+        AND (
+            (f.`forum_parent` = %2$d AND f.`forum_type` != %3$d)
+            OR f.`forum_parent` != %2$d
+        )
+        ORDER BY f.`forum_order`
+    '
+);
+
+function forum_get_children_query(bool $small = false): string
+{
+    return sprintf(
+        $small
+            ? MSZ_FORUM_GET_CHILDREN_QUERY_SMALL
+            : MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD,
+        forum_read_status_sql('t.`topic_id`', 't.`topic_bumped`'),
         MSZ_FORUM_ROOT,
         MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql('forum', 'f.`forum_id`'),
         MSZ_FORUM_PERM_CAN_LIST_FORUM
-    )
-);
+    );
+}
 
 function forum_get_children(int $parentId, int $userId, bool $small = false): array
 {
-    $getListing = Database::prepare(
-        $small
-        ? MSZ_FORUM_GET_CHILDREN_QUERY_SMALL
-        : MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD
-    );
+    $getListing = Database::prepare(forum_get_children_query($small));
     $getListing->bindValue('user_id', $userId);
     $getListing->bindValue('perm_user_id_user', $userId);
     $getListing->bindValue('perm_user_id_role', $userId);
