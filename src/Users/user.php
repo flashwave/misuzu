@@ -68,9 +68,7 @@ function user_avatar_delete(int $userId): void
     ];
 
     foreach ($deleteThis as $deleteAvatar) {
-        if (File::exists($deleteAvatar)) {
-            File::delete($deleteAvatar);
-        }
+        File::safeDelete($deleteAvatar);
     }
 }
 
