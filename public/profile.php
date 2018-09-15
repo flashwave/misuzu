@@ -9,10 +9,7 @@ $mode = (string)($_GET['m'] ?? 'view');
 
 switch ($mode) {
     case 'avatar':
-        $avatar_filename = $app->getPath(
-            $app->getConfig()->get('Avatar', 'default_path', 'string', 'public/images/no-avatar.png')
-        );
-
+        $avatar_filename = $app->getDefaultAvatar();
         $user_avatar = "{$user_id}.msz";
         $cropped_avatar = $app->getStore('avatars/200x200')->filename($user_avatar);
 

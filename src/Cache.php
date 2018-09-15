@@ -1,7 +1,6 @@
 <?php
 namespace Misuzu;
 
-use Misuzu\Config\ConfigManager;
 use Redis;
 use InvalidArgumentException;
 use UnexpectedValueException;

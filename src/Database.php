@@ -1,7 +1,6 @@
 <?php
 namespace Misuzu;
 
-use Misuzu\Config\ConfigManager;
 use PDO;
 use PDOStatement;
 use InvalidArgumentException;
@@ -38,11 +37,6 @@ final class Database
     private $connections = [];
 
     /**
-     * @var ConfigManager
-     */
-    private $configManager;
-
-    /**
      * @var string
      */
     private $default;
@@ -62,7 +56,7 @@ final class Database
     }
 
     public function __construct(
-        ConfigManager $config,
+        array $connections,
         string $default = 'default'
     ) {
         if (self::hasInstance()) {
@@ -71,7 +65,10 @@ final class Database
 
         self::$instance = $this;
         $this->default = $default;
-        $this->configManager = $config;
+
+        foreach ($connections as $name => $info) {
+            $this->addConnection($info, $name);
+        }
     }
 
     public static function connection(?string $name = null): PDO
@@ -110,21 +107,17 @@ final class Database
         return $this->connections[$name] ?? $this->addConnection($name);
     }
 
-    public function addConnection(string $name): PDO
+    public function addConnection(array $info, string $name): PDO
     {
-        $section = "Database.{$name}";
-
-        if (!$this->configManager->contains($section, 'driver')) {
+        if (!array_key_exists('driver', $info)) {
             throw new InvalidArgumentException('Config section not found!');
         }
 
-        $driver = $this->configManager->get($section, 'driver');
-
-        if (!in_array($driver, self::SUPPORTED)) {
+        if (!in_array($info['driver'], self::SUPPORTED)) {
             throw new InvalidArgumentException('Unsupported driver.');
         }
 
-        $dsn = $driver . ':';
+        $dsn = $info['driver'] . ':';
         $options = [
             PDO::ATTR_CASE => PDO::CASE_NATURAL,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -133,40 +126,29 @@ final class Database
             PDO::ATTR_EMULATE_PREPARES => false,
         ];
 
-        switch ($driver) {
+        switch ($info['driver']) {
             case 'sqlite':
-                if ($this->configManager->get($section, 'memory', 'bool', false)) {
+                if ($info['memory']) {
                     $dsn .= ':memory:';
                 } else {
-                    $databasePath = realpath(
-                        $this->configManager->get($section, 'database', 'string', __DIR__ . '/../store/misuzu.db')
-                    );
+                    $databasePath = realpath($info['database'] ?? __DIR__ . '/../store/misuzu.db');
 
                     if ($databasePath === false) {
-                        throw new \UnexpectedValueException("Database does not exist.");
+                        throw new UnexpectedValueException("Database does not exist.");
                     }
-
-                    $dsn .= $databasePath . ';';
                 }
                 break;
 
             case 'mysql':
-                $is_unix_socket = $this->configManager->contains($section, 'unix_socket');
-
-                if ($is_unix_socket) {
-                    $dsn .= 'unix_socket=' . $this->configManager->get($section, 'unix_socket', 'string') . ';';
+                if ($info['unix_socket'] ?? false) {
+                    $dsn .= 'unix_socket=' . $info['unix_socket'] . ';';
                 } else {
-                    $dsn .= 'host=' . $this->configManager->get($section, 'host', 'string', self::DEFAULT_HOST) . ';';
-                    $dsn .= 'port=' . $this->configManager->get($section, 'port', 'int', self::DEFAULT_PORT_MYSQL) . ';';
+                    $dsn .= 'host=' . ($info['host'] ?? self::DEFAULT_HOST) . ';';
+                    $dsn .= 'port=' . intval($info['port'] ?? self::DEFAULT_PORT_MYSQL) . ';';
                 }
 
-                $dsn .= 'charset=' . (
-                    $this->configManager->contains($section, 'charset')
-                        ? $this->configManager->get($section, 'charset', 'string')
-                        : 'utf8mb4'
-                ) . ';';
-
-                $dsn .= 'dbname=' . $this->configManager->get($section, 'database', 'string', 'misuzu') . ';';
+                $dsn .= 'charset=' . ($info['charset'] ?? 'utf8mb4') . ';';
+                $dsn .= 'dbname=' . ($info['database'] ?? 'misuzu') . ';';
 
                 $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "
                     SET SESSION
@@ -178,8 +160,8 @@ final class Database
 
         $connection = new PDO(
             $dsn,
-            $this->configManager->get($section, 'username', 'string', null),
-            $this->configManager->get($section, 'password', 'string', null),
+            ($info['username'] ?? null),
+            ($info['password'] ?? null),
             $options
         );
 

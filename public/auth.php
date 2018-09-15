@@ -7,8 +7,6 @@ use Misuzu\Users\Session;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$config = $app->getConfig();
-
 $usernameValidationErrors = [
     'trim' => 'Your username may not start or end with spaces!',
     'short' => sprintf('Your username is too short, it has to be at least %d characters!', MSZ_USERNAME_MIN_LENGTH),
@@ -18,7 +16,7 @@ $usernameValidationErrors = [
 ];
 
 $authMode = $_GET['m'] ?? 'login';
-$preventRegistration = $config->get('Auth', 'prevent_registration', 'bool', false);
+$preventRegistration = $app->disableRegistration();
 
 tpl_vars([
     'prevent_registration' => $preventRegistration,
@@ -203,10 +201,7 @@ If you weren't the person who requested this reset, please send a reply to this 
 MSG;
 
                 $message = (new Swift_Message('Flashii Password Reset'))
-                    ->setFrom([
-                        $config->get('Mail', 'sender_email', 'string', 'sys@misuzu.lh') =>
-                        $config->get('Mail', 'sender_name', 'string', 'Misuzu')
-                    ])
+                    ->setFrom($app->getMailSender())
                     ->setTo([$forgotUser['email'] => $forgotUser['username']])
                     ->setBody($messageBody);
 

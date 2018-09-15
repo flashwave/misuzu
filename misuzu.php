@@ -223,7 +223,7 @@ MIG;
 
     tpl_add_path(__DIR__ . '/templates');
 
-    if ($app->getConfig()->get('Auth', 'lockdown', 'bool', false)) {
+    if ($app->underLockdown()) {
         http_response_code(503);
         echo tpl_render('auth/lockdown');
         exit;
