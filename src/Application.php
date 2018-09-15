@@ -153,7 +153,7 @@ class Application extends ApplicationBase
 
         if (array_key_exists('Storage', $this->config)) {
             try {
-                return new Directory($this->config['Storage'][$override_key]);
+                return new Directory($this->config['Storage'][$override_key] ?? '');
             } catch (DirectoryDoesNotExistException $ex) {
                 // fall through and just get the default path.
             }
