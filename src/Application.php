@@ -17,8 +17,10 @@ use GeoIp2\Database\Reader as GeoIP;
  * Handles the set up procedures.
  * @package Misuzu
  */
-class Application extends ApplicationBase
+final class Application
 {
+    private static $instance = null;
+
     /**
      * Whether the application is in debug mode, this should only be set in the constructor and never altered.
      * @var bool
@@ -71,8 +73,12 @@ class Application extends ApplicationBase
      */
     public function __construct(?string $configFile = null, bool $debug = false)
     {
+        if (!empty(self::$instance)) {
+            throw new UnexpectedValueException('An Application has already been set up.');
+        }
+
+        self::$instance = $this;
         $this->startupTime = microtime(true);
-        parent::__construct();
         $this->debugMode = $debug;
         $this->config = parse_ini_file($configFile, true, INI_SCANNER_TYPED);
 
@@ -422,5 +428,18 @@ class Application extends ApplicationBase
     public function getDefaultAvatar(): string
     {
         return $this->getPath($this->config['Avatar']['default_path'] ?? 'public/images/no-avatar.png');
+    }
+
+    /**
+     * Gets the currently active instance of Application
+     * @return Application
+     */
+    public static function getInstance(): Application
+    {
+        if (empty(self::$instance)) {
+            throw new UnexpectedValueException('No instances.');
+        }
+
+        return self::$instance;
     }
 }
