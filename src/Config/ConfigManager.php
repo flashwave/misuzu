@@ -92,7 +92,7 @@ class ConfigManager
         switch (strtolower($type)) {
             case "bool":
             case "boolean":
-                $value = strlen($raw) > 0 && ($raw[0] === '1' || strtolower($raw) === "true");
+                $value = mb_strlen($raw) > 0 && ($raw[0] === '1' || mb_strtolower($raw) === "true");
                 break;
 
             case "int":
@@ -124,7 +124,7 @@ class ConfigManager
         $type = gettype($value);
         $store = null;
 
-        switch (strtolower($type)) {
+        switch (mb_strtolower($type)) {
             case 'boolean':
                 $store = $value ? '1' : '0';
                 break;
@@ -209,7 +209,7 @@ class ConfigManager
 
         foreach ($lines as $line) {
             $line = trim($line, "\r\n");
-            $length = strlen($line);
+            $length = mb_strlen($line);
 
             if ($length < 1
                 || starts_with($line, '#')
@@ -228,7 +228,7 @@ class ConfigManager
                 continue;
             }
 
-            if (strpos($line, '=') !== false) {
+            if (mb_strpos($line, '=') !== false) {
                 $split = explode('=', $line, 2);
 
                 if (count($split) < 2) {
@@ -238,7 +238,7 @@ class ConfigManager
                 $key = trim($split[0]);
                 $value = trim($split[1]);
 
-                if (strlen($key) > 0 && strlen($value) > 0) {
+                if (mb_strlen($key) > 0 && mb_strlen($value) > 0) {
                     $collection[$section][$key] = $value;
                 }
             }

@@ -242,7 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             $settingsErrors[] = 'Unknown e-mail validation error.';
                                     }
                                 } else {
-                                    $updateAccountFields['email'] = strtolower($_POST['email']['new']);
+                                    $updateAccountFields['email'] = mb_strtolower($_POST['email']['new']);
                                     audit_log('PERSONAL_EMAIL_CHANGE', $app->getUserId(), [
                                         $updateAccountFields['email'],
                                     ]);

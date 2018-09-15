@@ -102,7 +102,7 @@ class Directory
         foreach ($split_path as $path_part) {
             $existing_path .= $path_part . self::SEPARATOR;
 
-            if ($on_windows && substr($path_part, 1, 2) === ':\\') {
+            if ($on_windows && mb_substr($path_part, 1, 2) === ':\\') {
                 continue;
             }
 

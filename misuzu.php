@@ -2,6 +2,7 @@
 namespace Misuzu;
 
 date_default_timezone_set('UTC');
+mb_internal_encoding('UTF-8');
 
 define('MSZ_DEBUG', file_exists(__DIR__ . '/vendor/phpunit/phpunit/composer.json'));
 

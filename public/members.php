@@ -7,8 +7,8 @@ $usersOffset = max((int)($_GET['o'] ?? 0), 0);
 $usersTake = 30;
 
 $roleId = (int)($_GET['r'] ?? MSZ_ROLE_MAIN);
-$orderBy = strtolower($_GET['ss'] ?? '');
-$orderDir = strtolower($_GET['sd'] ?? '');
+$orderBy = mb_strtolower($_GET['ss'] ?? '');
+$orderDir = mb_strtolower($_GET['sd'] ?? '');
 
 $orderDirs = [
     'asc' => 'Ascending',

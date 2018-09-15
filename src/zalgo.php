@@ -74,7 +74,7 @@ function zalgo_run(
     int $mode = MSZ_ZALGO_MODE_MINI,
     int $direction = MSZ_ZALGO_DIR_MID | MSZ_ZALGO_DIR_DOWN
 ): string {
-    $text_length = strlen($text);
+    $text_length = mb_strlen($text);
 
     if (!$text_length || !$mode || !$direction) {
         return $text;

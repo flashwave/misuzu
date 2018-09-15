@@ -11,7 +11,7 @@ function changelog_action_add(string $name, ?int $colour = null, ?string $class 
         $colour = colour_none();
     }
 
-    $class = preg_replace('#[^a-z]#', '', strtolower($class ?? $name));
+    $class = preg_replace('#[^a-z]#', '', mb_strtolower($class ?? $name));
 
     $addAction = Database::prepare('
         INSERT INTO `msz_changelog_actions`
@@ -66,7 +66,7 @@ define('MSZ_CHANGELOG_GET_QUERY', '
 
 function changelog_get_changes(string $date, int $user, int $offset, int $take): array
 {
-    $hasDate = strlen($date) > 0;
+    $hasDate = mb_strlen($date) > 0;
     $hasUser = $user > 0;
 
     $query = sprintf(
@@ -101,7 +101,7 @@ define('CHANGELOG_COUNT_QUERY', '
 
 function changelog_count_changes(string $date, int $user): int
 {
-    $hasDate = strlen($date) > 0;
+    $hasDate = mb_strlen($date) > 0;
     $hasUser = $user > 0;
 
     $query = sprintf(

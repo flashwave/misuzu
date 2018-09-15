@@ -124,7 +124,7 @@ class Application extends ApplicationBase
      */
     public function getPath(string $path): string
     {
-        if (!starts_with($path, '/') && substr($path, 1, 2) !== ':\\') {
+        if (!starts_with($path, '/') && mb_substr($path, 1, 2) !== ':\\') {
             $path = __DIR__ . '/../' . $path;
         }
 
@@ -310,7 +310,7 @@ class Application extends ApplicationBase
         }
 
         if ($this->configInstance->contains('Mail')) {
-            $method = strtolower($this->configInstance->get('Mail', 'method'));
+            $method = mb_strtolower($this->configInstance->get('Mail', 'method'));
         }
 
         if (empty($method) || !array_key_exists($method, self::MAIL_TRANSPORT)) {
