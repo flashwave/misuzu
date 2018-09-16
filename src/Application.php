@@ -365,7 +365,16 @@ final class Application
         return [
             'max_width' => intval($this->config['Avatar']['max_width'] ?? 4000),
             'max_height' => intval($this->config['Avatar']['max_height'] ?? 4000),
-            'max_filesize' => intval($this->config['Avatar']['max_filesize'] ?? 1000000),
+            'max_size' => intval($this->config['Avatar']['max_filesize'] ?? 1000000),
+        ];
+    }
+
+    public function getBackgroundProps(): array
+    {
+        return [
+            'max_width' => intval($this->config['Background']['max_width'] ?? 3840),
+            'max_height' => intval($this->config['Background']['max_height'] ?? 2160),
+            'max_size' => intval($this->config['Background']['max_filesize'] ?? 1000000),
         ];
     }
 

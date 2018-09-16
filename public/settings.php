@@ -70,6 +70,7 @@ $settingsErrors = [];
 $disableAccountOptions = !$app->inDebugMode() && $app->disableRegistration();
 $avatarFileName = "{$app->getUserId()}.msz";
 $avatarProps = $app->getAvatarProps();
+$backgroundProps = $app->getBackgroundProps();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
@@ -112,8 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 case 'upload':
                     if (empty($_FILES['avatar'])
-                    || !is_array($_FILES['avatar'])
-                    || empty($_FILES['avatar']['name']['file'])) {
+                        || !is_array($_FILES['avatar'])
+                        || empty($_FILES['avatar']['name']['file'])) {
                         break;
                     }
 
@@ -131,7 +132,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     $setAvatar = user_avatar_set_from_path(
                         $app->getUserId(),
-                        $_FILES['avatar']['tmp_name']['file']
+                        $_FILES['avatar']['tmp_name']['file'],
+                        $avatarProps
                     );
 
                     if ($setAvatar !== MSZ_USER_AVATAR_NO_ERRORS) {
@@ -142,6 +144,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             byte_symbol($avatarProps['max_filesize'], true),
                             $avatarProps['max_width'],
                             $avatarProps['max_height']
+                        );
+                    }
+                    break;
+            }
+        }
+
+        if (!empty($_POST['background']) && is_array($_POST['background'])) {
+            switch ($_POST['background']['mode'] ?? '') {
+                case 'delete':
+                    user_background_delete($app->getUserId());
+                    break;
+
+                case 'upload':
+                    if (empty($_FILES['background'])
+                        || !is_array($_FILES['background'])
+                        || empty($_FILES['background']['name']['file'])) {
+                        break;
+                    }
+
+                    if ($_FILES['background']['error']['file'] !== UPLOAD_ERR_OK) {
+                        $settingsErrors[] = sprintf(
+                            $avatarErrorStrings['upload'][$_FILES['background']['error']['file']]
+                            ?? $avatarErrorStrings['upload']['default'],
+                            $_FILES['background']['error']['file'],
+                            byte_symbol($backgroundProps['max_filesize'], true),
+                            $backgroundProps['max_width'],
+                            $backgroundProps['max_height']
+                        );
+                        break;
+                    }
+
+                    $setBackground = user_background_set_from_path(
+                        $app->getUserId(),
+                        $_FILES['background']['tmp_name']['file'],
+                        $backgroundProps
+                    );
+
+                    if ($setBackground !== MSZ_USER_BACKGROUND_NO_ERRORS) {
+                        $settingsErrors[] = sprintf(
+                            $avatarErrorStrings['set'][$setBackground]
+                            ?? $avatarErrorStrings['set']['default'],
+                            $setBackground,
+                            byte_symbol($backgroundProps['max_filesize'], true),
+                            $backgroundProps['max_width'],
+                            $backgroundProps['max_height']
                         );
                     }
                     break;
@@ -305,13 +352,13 @@ switch ($settingsMode) {
         $getMail->bindValue('user_id', $app->getUserId());
         $currentEmail = $getMail->execute() ? $getMail->fetchColumn() : 'Failed to fetch e-mail address.';
         $userHasAvatar = is_file(build_path($app->getStoragePath(), 'avatars/original', $avatarFileName));
+        $userHasBackground = is_file(build_path($app->getStoragePath(), 'backgrounds/original', $avatarFileName));
 
         tpl_vars([
-            'avatar_user_id' => $app->getUserId(),
-            'avatar_max_width' => $avatarProps['max_width'],
-            'avatar_max_height' => $avatarProps['max_height'],
-            'avatar_max_filesize' => $avatarProps['max_filesize'],
+            'avatar' => $avatarProps,
+            'background' => $backgroundProps,
             'user_has_avatar' => $userHasAvatar,
+            'user_has_background' => $userHasBackground,
             'settings_profile_fields' => $profileFields,
             'settings_profile_values' => $userFields,
             'settings_disable_account_options' => $disableAccountOptions,
