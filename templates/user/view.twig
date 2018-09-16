@@ -8,6 +8,10 @@
 
 {% set youtube_is_channel_id = profile.user_youtube|slice(0, 2) == 'UC' and profile.user_youtube|length == 24 %}
 
+{% if has_background %}
+    {% set site_background_url = '/profile.php?m=background&u=' ~ profile.user_id %}
+{% endif %}
+
 {% set profile_fields = {
     'twitter': {
         'title': 'Twitter',

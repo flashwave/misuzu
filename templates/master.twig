@@ -17,6 +17,13 @@
                 }
             </style>
         {% endif %}
+        {% if site_background_url is defined %}
+            <style>
+                :root {
+                    --site-background-image: url('{{ site_background_url|raw }}');
+                }
+            </style>
+        {% endif %}
     </head>
     <body class="main">
         {% include '_layout/header.twig' %}

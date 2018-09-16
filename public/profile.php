@@ -39,6 +39,21 @@ switch ($mode) {
         echo file_get_contents($avatar_filename);
         break;
 
+    case 'background':
+        $user_background = build_path(
+            create_directory(build_path($app->getStoragePath(), 'backgrounds/original')),
+            "{$user_id}.msz"
+        );
+
+        if (!is_file($user_background)) {
+            echo render_error(404);
+            break;
+        }
+
+        header('Content-Type: ' . mime_content_type($user_background));
+        echo file_get_contents($user_background);
+        break;
+
     case 'view':
     default:
         $getProfile = Database::prepare('
@@ -80,7 +95,10 @@ switch ($mode) {
             break;
         }
 
-        tpl_vars(compact('profile'));
+        tpl_vars([
+            'profile' => $profile,
+            'has_background' => is_file(build_path($app->getStoragePath(), 'backgrounds/original', "{$profile['user_id']}.msz")),
+        ]);
         echo tpl_render('user.view');
         break;
 }

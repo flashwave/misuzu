@@ -134,7 +134,6 @@
                             <li class="settings__images__requirement settings__images__requirement--header">Guidelines</li>
                             <li class="settings__images__requirement">Keep things sane and suitable for all ages.</li>
                             <li class="settings__images__requirement">Image may not exceed the <strong>{{ avatar_max_filesize|byte_symbol(true) }}</strong> filesize limit.</li>
-                            <li class="settings__images__requirement settings__images__requirement--header">Avatar</li>
                             <li class="settings__images__requirement">May not be larger than <strong>{{ avatar_max_width }}x{{ avatar_max_height }}</strong>.</li>
                             <li class="settings__images__requirement">Will be centre cropped to be <strong>200x200</strong>.</li>
                             <li class="settings__images__requirement">Animated gif images are allowed.</li>
@@ -189,6 +188,72 @@
 
             document.getElementById('avatar-selection').addEventListener('change', function (ev) {
                 updateAvatarPreview(ev.target.files[0].name, URL.createObjectURL(ev.target.files[0]));
+            });
+        </script>
+    {% endif %}
+
+    {% if settings_perms.edit_background %}
+        <div class="container">
+            <div class="container__title">Background</div>
+            <form action="" method="post" class="settings__images" enctype="multipart/form-data">
+                <input type="hidden" name="MAX_FILE_SIZE" value="{{ avatar_max_filesize }}">
+                <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+
+                <div class="settings__images__sections">
+                    <div class="settings__images__requirements">
+                        <ul class="settings__images__requirements__list">
+                            <li class="settings__images__requirement settings__images__requirement--header">Guidelines</li>
+                            <li class="settings__images__requirement">Keep things sane and suitable for all ages.</li>
+                            <li class="settings__images__requirement">Image may not exceed the <strong>{{ avatar_max_filesize|byte_symbol(true) }}</strong> filesize limit.</li>
+                            <li class="settings__images__requirement">May not be larger than <strong>{{ avatar_max_width }}x{{ avatar_max_height }}</strong>.</li>
+                            <li class="settings__images__requirement">Animated gif images are <strong>not</strong> allowed.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="settings__avatar">
+                    <label class="settings__avatar__label">
+                        <input
+                            class="settings__avatar__input"
+                            accept="image/png,image/jpeg,image/gif"
+                            type="file"
+                            name="background[file]"
+                            id="background-selection">
+                        <div class="settings__avatar__name" id="background-name">
+                            Click to select a file!
+                        </div>
+                    </label>
+
+                    <div class="settings__avatar__buttons">
+                        <button
+                            class="settings__avatar__button"
+                            name="background[mode]"
+                            value="upload">
+                            Upload
+                        </button>
+                        <button
+                            class="settings__avatar__button settings__avatar__button--delete{{ user_has_avatar ? '' : ' settings__avatar__button--disabled' }}"
+                            {{ user_has_avatar ? '' : 'disabled' }}
+                            name="background[mode]"
+                            value="delete">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            function updateBackgroundPreview(name, url, previewEl, nameEl) {
+                url = url || "/profile.php?u={{ avatar_user_id }}&m=background";
+                previewEl = previewEl || document.body;
+                nameEl = nameEl || document.getElementById('background-name');
+                previewEl.style.setProperty('--site-background-image', 'url(\'{0}\')'.replace('{0}', url));
+                nameEl.textContent = name;
+            }
+
+            document.getElementById('background-selection').addEventListener('change', function (ev) {
+                updateBackgroundPreview(ev.target.files[0].name, URL.createObjectURL(ev.target.files[0]));
             });
         </script>
     {% endif %}
