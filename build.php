@@ -71,7 +71,7 @@ function deleteAllFilesInDir(string $dir, string $pattern): void
     $files = globDir($dir, $pattern);
 
     foreach ($files as $file) {
-        unlink($file);
+        safe_delete($file);
         misuzu_log("Deleted '{$file}'");
     }
 }

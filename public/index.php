@@ -5,17 +5,7 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$config = $app->getConfig();
-
-if ($config->get('Site', 'embed_linked_data', 'bool', false)) {
-    tpl_vars([
-        'embed_linked_data' => true,
-        'embed_name' => $config->get('Site', 'name'),
-        'embed_url' => $config->get('Site', 'url'),
-        'embed_logo' => $config->get('Site', 'external_logo'),
-        'embed_same_as' => explode(',', $config->get('Site', 'social_media')),
-    ]);
-}
+tpl_vars($app->getLinkedData());
 
 $news = Database::query('
     SELECT

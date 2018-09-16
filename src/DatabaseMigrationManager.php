@@ -146,7 +146,7 @@ final class DatabaseMigrationManager
             }
 
             for ($i = 4; $i < count($filenameSplit); $i++) {
-                $migrationName .= ucfirst(strtolower($filenameSplit[$i]));
+                $migrationName .= ucfirst(mb_strtolower($filenameSplit[$i]));
             }
 
             include_once $migration;
@@ -217,7 +217,7 @@ final class DatabaseMigrationManager
             $migrationName = '';
 
             for ($i = 4; $i < count($nameSplit); $i++) {
-                $migrationName .= ucfirst(strtolower($nameSplit[$i]));
+                $migrationName .= ucfirst(mb_strtolower($nameSplit[$i]));
             }
 
             include_once $migration['migration_path'];

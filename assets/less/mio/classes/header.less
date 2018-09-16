@@ -1,6 +1,6 @@
 .header {
     flex: 0 0 auto;
-    background: linear-gradient(0deg, transparent, #c2affe) repeat-x;
+    background: linear-gradient(0deg, transparent, var(--gradient-start)) repeat-x;
 
     &__wrapper {
         margin: 0 auto;
@@ -82,10 +82,10 @@
 
         @media (max-width: @site-mobile-width) {
             width: 100%;
-            background: #c2affe;
+            background: var(--gradient-start);
 
             &__item:not(:last-child) {
-                border-bottom: 1px solid #9475b2;
+                border-bottom: 1px solid var(--accent-colour);
             }
 
             &__link {
@@ -103,7 +103,7 @@
                 transition: background-color .2s;
 
                 &:hover {
-                    background-color: #c2affe;
+                    background-color: var(--gradient-start);
 
                     .header__submenu {
                         transform: scaleY(1);
@@ -141,11 +141,11 @@
             position: absolute; // floating
             transform: scaleY(0);
             transform-origin: center top 0;
-            background: #c2affe;
+            background: var(--gradient-start);
             overflow: hidden;
             z-index: 100;
             text-align: left;
-            box-shadow: 0 1px 2px #9475b2;
+            box-shadow: 0 1px 2px var(--accent-colour);
             transition: transform .2s;
 
             &:hover {
@@ -175,7 +175,7 @@
         @media (max-width: @site-mobile-width) {
             display: none;
             width: 100%;
-            background: #c2affe;
+            background: var(--gradient-start);
             font-size: 1.1em;
 
             &-toggle:checked ~ .header__user {
@@ -231,7 +231,7 @@
                 max-width: 100%;
                 font-size: 1.6em;
                 line-height: 1.5em;
-                border-bottom: 1px solid #9475b2;
+                border-bottom: 1px solid var(--accent-colour);
                 padding: 4px 8px;
                 text-align: left;
             }
@@ -262,7 +262,7 @@
                 padding: 0;
 
                 &:not(:last-child) {
-                    border-bottom: 1px solid #9475b2;
+                    border-bottom: 1px solid var(--accent-colour);
                 }
             }
         }

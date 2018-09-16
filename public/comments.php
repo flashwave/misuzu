@@ -136,7 +136,7 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        if (strlen($commentText) > 5000) {
+        if (mb_strlen($commentText) > 5000) {
             echo render_info_or_json($isXHR, 'Your comment is too long.', 400);
             break;
         }

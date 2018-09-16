@@ -10,7 +10,7 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'logs':
-        if (!perms_check($generalPerms, MSZ_GENERAL_PERM_VIEW_LOGS)) {
+        if (!perms_check($generalPerms, MSZ_PERM_GENERAL_VIEW_LOGS)) {
             echo render_error(403);
             break;
         }
@@ -20,7 +20,7 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'emoticons':
-        if (!perms_check($generalPerms, MSZ_GENERAL_PERM_MANAGE_EMOTICONS)) {
+        if (!perms_check($generalPerms, MSZ_PERM_GENERAL_MANAGE_EMOTICONS)) {
             echo render_error(403);
             break;
         }
@@ -29,7 +29,7 @@ switch ($_GET['v'] ?? null) {
         break;
 
     case 'settings':
-        if (!perms_check($generalPerms, MSZ_GENERAL_PERM_MANAGE_SETTINGS)) {
+        if (!perms_check($generalPerms, MSZ_PERM_GENERAL_MANAGE_SETTINGS)) {
             echo render_error(403);
             break;
         }

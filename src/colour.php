@@ -115,10 +115,10 @@ function colour_from_rgb(int &$colour, int $red, int $green, int $blue): bool
 function colour_from_hex(int &$colour, string $hex): bool
 {
     if ($hex[0] === '#') {
-        $hex = substr($hex, 1);
+        $hex = mb_substr($hex, 1);
     }
 
-    $length = strlen($hex);
+    $length = mb_strlen($hex);
 
     if ($length === 3) {
         $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
@@ -128,9 +128,9 @@ function colour_from_hex(int &$colour, string $hex): bool
 
     colour_from_rgb(
         $colour,
-        hexdec(substr($hex, 0, 2)),
-        hexdec(substr($hex, 2, 2)),
-        hexdec(substr($hex, 4, 2))
+        hexdec(mb_substr($hex, 0, 2)),
+        hexdec(mb_substr($hex, 2, 2)),
+        hexdec(mb_substr($hex, 4, 2))
     );
 
     return true;

@@ -3,8 +3,23 @@
 @site-max-width: 1200px;
 @site-mobile-width: 800px;
 
+@default-accent-colour: #9475b2;
+@default-background-colour: #fbeeff;
+@default-text-colour: #000;
+@default-header-text-colour: #306;
+@default-gradient-start: #c2affe;
+
 :root {
     --site-max-width: @site-max-width;
+    --site-background-meta: initial;
+    --site-background-image: initial;
+
+    --accent-colour: @default-accent-colour;
+    --text-colour: @default-text-colour;
+    --text-colour-inverted: color(#fff - @default-text-colour);
+    --text-colour-header: @default-header-text-colour;
+    --background-colour: @default-background-colour;
+    --gradient-start: @default-gradient-start;
 }
 
 * {
@@ -24,9 +39,11 @@ body {
 .main {
     display: flex;
     flex-direction: column;
-    background-color: #fbeeff;
+    background: var(--site-background-meta);
+    background-image: var(--site-background-image);
+    background-color: var(--background-colour);
     font: 12px/20px @mio-font-regular;
-    color: #000;
+    color: var(--text-colour);
 
     &__wrapper {
         max-width: var(--site-max-width);
@@ -34,12 +51,6 @@ body {
         margin: 0 auto;
         padding: 1px;
         flex: 1 0 auto;
-    }
-
-    &--dark {
-        background-color: #23172a;
-        background-image: linear-gradient(180deg, #462e55, transparent);
-        color: #fff;
     }
 }
 

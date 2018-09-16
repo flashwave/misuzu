@@ -3,14 +3,14 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/Users/validation.php';
 
-define('MSZ_COMMENTS_PERM_CREATE', 1);
-define('MSZ_COMMENTS_PERM_EDIT_OWN', 1 << 1);
-define('MSZ_COMMENTS_PERM_EDIT_ANY', 1 << 2);
-define('MSZ_COMMENTS_PERM_DELETE_OWN', 1 << 3);
-define('MSZ_COMMENTS_PERM_DELETE_ANY', 1 << 4);
-define('MSZ_COMMENTS_PERM_PIN', 1 << 5);
-define('MSZ_COMMENTS_PERM_LOCK', 1 << 6);
-define('MSZ_COMMENTS_PERM_VOTE', 1 << 7);
+define('MSZ_PERM_COMMENTS_CREATE', 1);
+define('MSZ_PERM_COMMENTS_EDIT_OWN', 1 << 1);
+define('MSZ_PERM_COMMENTS_EDIT_ANY', 1 << 2);
+define('MSZ_PERM_COMMENTS_DELETE_OWN', 1 << 3);
+define('MSZ_PERM_COMMENTS_DELETE_ANY', 1 << 4);
+define('MSZ_PERM_COMMENTS_PIN', 1 << 5);
+define('MSZ_PERM_COMMENTS_LOCK', 1 << 6);
+define('MSZ_PERM_COMMENTS_VOTE', 1 << 7);
 
 define('MSZ_COMMENTS_VOTE_INDIFFERENT', null);
 define('MSZ_COMMENTS_VOTE_LIKE', 'Like');
@@ -74,14 +74,14 @@ function comments_get_perms(int $userId): array
 {
     $perms = perms_get_user(MSZ_PERMS_COMMENTS, $userId);
     return [
-        'can_comment' => perms_check($perms, MSZ_COMMENTS_PERM_CREATE),
-        'can_edit' => perms_check($perms, MSZ_COMMENTS_PERM_EDIT_OWN | MSZ_COMMENTS_PERM_EDIT_ANY),
-        'can_edit_any' => perms_check($perms, MSZ_COMMENTS_PERM_EDIT_ANY),
-        'can_delete' => perms_check($perms, MSZ_COMMENTS_PERM_DELETE_OWN | MSZ_COMMENTS_PERM_DELETE_ANY),
-        'can_delete_any' => perms_check($perms, MSZ_COMMENTS_PERM_DELETE_ANY),
-        'can_pin' => perms_check($perms, MSZ_COMMENTS_PERM_PIN),
-        'can_lock' => perms_check($perms, MSZ_COMMENTS_PERM_LOCK),
-        'can_vote' => perms_check($perms, MSZ_COMMENTS_PERM_VOTE),
+        'can_comment' => perms_check($perms, MSZ_PERM_COMMENTS_CREATE),
+        'can_edit' => perms_check($perms, MSZ_PERM_COMMENTS_EDIT_OWN | MSZ_PERM_COMMENTS_EDIT_ANY),
+        'can_edit_any' => perms_check($perms, MSZ_PERM_COMMENTS_EDIT_ANY),
+        'can_delete' => perms_check($perms, MSZ_PERM_COMMENTS_DELETE_OWN | MSZ_PERM_COMMENTS_DELETE_ANY),
+        'can_delete_any' => perms_check($perms, MSZ_PERM_COMMENTS_DELETE_ANY),
+        'can_pin' => perms_check($perms, MSZ_PERM_COMMENTS_PIN),
+        'can_lock' => perms_check($perms, MSZ_PERM_COMMENTS_LOCK),
+        'can_vote' => perms_check($perms, MSZ_PERM_COMMENTS_VOTE),
     ];
 }
 

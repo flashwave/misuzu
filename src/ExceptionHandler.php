@@ -92,7 +92,7 @@ class ExceptionHandler
      */
     private static function report(Throwable $throwable): bool
     {
-        if (!strlen(self::$reportUrl)) {
+        if (!mb_strlen(self::$reportUrl)) {
             return false;
         }
 
@@ -119,7 +119,7 @@ class ExceptionHandler
             'Content-Type: application/json;charset=utf-8',
         ];
 
-        if (strlen(self::$reportSign)) {
+        if (mb_strlen(self::$reportSign)) {
             $headers[] = 'X-Misuzu-Signature: sha256=' . hash_hmac('sha256', $json, self::$reportSign);
         }
 

@@ -2,8 +2,22 @@
 namespace Misuzu;
 
 date_default_timezone_set('UTC');
+mb_internal_encoding('UTF-8');
+
+define('MSZ_DEBUG', file_exists(__DIR__ . '/vendor/phpunit/phpunit/composer.json'));
 
 require_once __DIR__ . '/vendor/autoload.php';
+
+if (MSZ_DEBUG) {
+    $errorHandler = new \Whoops\Run;
+    $errorHandler->pushHandler(
+        PHP_SAPI === 'cli'
+        ? new \Whoops\Handler\PlainTextHandler
+        : new \Whoops\Handler\PrettyPageHandler
+    );
+    $errorHandler->register();
+}
+
 require_once __DIR__ . '/src/audit_log.php';
 require_once __DIR__ . '/src/changelog.php';
 require_once __DIR__ . '/src/colour.php';
@@ -16,6 +30,7 @@ require_once __DIR__ . '/src/perms.php';
 require_once __DIR__ . '/src/tpl.php';
 require_once __DIR__ . '/src/zalgo.php';
 require_once __DIR__ . '/src/Forum/forum.php';
+require_once __DIR__ . '/src/Forum/perms.php';
 require_once __DIR__ . '/src/Forum/post.php';
 require_once __DIR__ . '/src/Forum/topic.php';
 require_once __DIR__ . '/src/Forum/validate.php';
@@ -28,7 +43,7 @@ require_once __DIR__ . '/src/Users/validation.php';
 
 $app = new Application(
     __DIR__ . '/config/config.ini',
-    IO\Directory::exists(__DIR__ . '/vendor/phpunit/phpunit')
+    MSZ_DEBUG
 );
 $app->startDatabase();
 
@@ -196,9 +211,7 @@ MIG;
     // we're running this again because ob_clean breaks gzip otherwise
     ob_start();
 
-    $storage_dir = $app->getStoragePath();
-    if (!$storage_dir->isReadable()
-        || !$storage_dir->isWritable()) {
+    if (!$app->canAccessStorage()) {
         echo 'Cannot access storage directory.';
         exit;
     }
@@ -208,7 +221,7 @@ MIG;
 
     tpl_add_path(__DIR__ . '/templates');
 
-    if ($app->getConfig()->get('Auth', 'lockdown', 'bool', false)) {
+    if ($app->underLockdown()) {
         http_response_code(503);
         echo tpl_render('auth/lockdown');
         exit;
@@ -244,7 +257,7 @@ MIG;
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
-    $hasManageAccess = perms_check(perms_get_user(MSZ_PERMS_GENERAL, $app->getUserId()), MSZ_GENERAL_PERM_CAN_MANAGE);
+    $hasManageAccess = perms_check(perms_get_user(MSZ_PERMS_GENERAL, $app->getUserId()), MSZ_PERM_GENERAL_CAN_MANAGE);
     tpl_var('has_manage_access', $hasManageAccess);
 
     if ($inManageMode) {

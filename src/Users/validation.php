@@ -16,7 +16,7 @@ define('MSZ_PASSWORD_MIN_ENTROPY', 32);
 
 function user_validate_username(string $username, bool $checkInUse = false): string
 {
-    $username_length = strlen($username);
+    $username_length = mb_strlen($username);
 
     if ($username !== trim($username)) {
         return 'trim';

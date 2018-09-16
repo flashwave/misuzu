@@ -2,9 +2,6 @@
 namespace Misuzu;
 
 use Carbon\Carbon;
-use Misuzu\Config\ConfigManager;
-use Misuzu\IO\Directory;
-use Misuzu\IO\DirectoryDoesNotExistException;
 use Misuzu\Users\Session;
 use UnexpectedValueException;
 use InvalidArgumentException;
@@ -12,13 +9,16 @@ use Swift_Mailer;
 use Swift_NullTransport;
 use Swift_SmtpTransport;
 use Swift_SendmailTransport;
+use GeoIp2\Database\Reader as GeoIP;
 
 /**
  * Handles the set up procedures.
  * @package Misuzu
  */
-class Application extends ApplicationBase
+final class Application
 {
+    private static $instance = null;
+
     /**
      * Whether the application is in debug mode, this should only be set in the constructor and never altered.
      * @var bool
@@ -50,11 +50,7 @@ class Application extends ApplicationBase
      */
     private $currentUserId = 0;
 
-    /**
-     * ConfigManager instance.
-     * @var \Misuzu\Config\ConfigManager
-     */
-    private $configInstance = null;
+    private $config = [];
 
     /**
      * TemplatingEngine instance.
@@ -63,6 +59,8 @@ class Application extends ApplicationBase
     private $templatingInstance = null;
 
     private $mailerInstance = null;
+
+    private $geoipInstance = null;
 
     private $startupTime = 0;
 
@@ -73,44 +71,32 @@ class Application extends ApplicationBase
      */
     public function __construct(?string $configFile = null, bool $debug = false)
     {
-        $this->startupTime = microtime(true);
-        parent::__construct();
-        $this->debugMode = $debug;
-        $this->configInstance = new ConfigManager($configFile);
+        if (!empty(self::$instance)) {
+            throw new UnexpectedValueException('An Application has already been set up.');
+        }
 
-        ExceptionHandler::register(
-            $debug,
-            $this->configInstance->get('Exceptions', 'report_url', 'string', null),
-            $this->configInstance->get('Exceptions', 'hash_key', 'string', null)
-        );
+        self::$instance = $this;
+        $this->startupTime = microtime(true);
+        $this->debugMode = $debug;
+        $this->config = parse_ini_file($configFile, true, INI_SCANNER_TYPED);
+
+        if ($this->config === false) {
+            throw new UnexpectedValueException('Failed to parse configuration.');
+        }
+
+        // only use this error handler in prod mode, dev uses Whoops now
+        if (!$debug) {
+            ExceptionHandler::register(
+                false,
+                $this->config['Exceptions']['report_url'] ?? null,
+                $this->config['Exceptions']['hash_key'] ?? null
+            );
+        }
     }
 
     public function getTimeSinceStart(): float
     {
         return microtime(true) - $this->startupTime;
-    }
-
-    /**
-     * Gets instance of the config manager.
-     * @return ConfigManager
-     */
-    public function getConfig(): ConfigManager
-    {
-        if (is_null($this->configInstance)) {
-            throw new UnexpectedValueException(
-                'Internal ConfigManager instance is null, how did you even manage to do this?'
-            );
-        }
-
-        return $this->configInstance;
-    }
-
-    /**
-     * Shuts the application down.
-     */
-    public function __destruct()
-    {
-        ExceptionHandler::unregister();
     }
 
     /**
@@ -129,55 +115,26 @@ class Application extends ApplicationBase
      */
     public function getPath(string $path): string
     {
-        if (!starts_with($path, '/') && substr($path, 1, 2) !== ':\\') {
+        if (!starts_with($path, '/') && mb_substr($path, 1, 2) !== ':\\') {
             $path = __DIR__ . '/../' . $path;
         }
 
-        return Directory::fixSlashes(rtrim($path, '/'));
+        return fix_path_separator(rtrim($path, '/'));
     }
 
     /**
-     * Gets a data storage path, with config storage path prefix.
-     * @param string $append
-     * @return Directory
-     * @throws DirectoryDoesNotExistException
-     * @throws IO\DirectoryExistsException
+     * Gets a data storage path.
+     * @return string
      */
-    public function getStoragePath(string $append = ''): Directory
+    public function getStoragePath(): string
     {
-        if (starts_with($append, '/')) {
-            $path = $append;
-        } else {
-            $path = $this->getConfig()->get('Storage', 'path', 'string', __DIR__ . '/../store');
-
-            if (!empty($append)) {
-                $path .= '/' . $append;
-            }
-        }
-
-        return Directory::createOrOpen($this->getPath($path));
+        return create_directory($this->config['Storage']['path'] ?? __DIR__ . '/../store');
     }
 
-    /**
-     * Gets a data store, with config overrides!
-     * @param string $purpose
-     * @return Directory
-     * @throws DirectoryDoesNotExistException
-     * @throws IO\DirectoryExistsException
-     */
-    public function getStore(string $purpose): Directory
+    public function canAccessStorage(): bool
     {
-        $override_key = 'override_' . str_replace('/', '_', $purpose);
-
-        if ($this->configInstance->contains('Storage', $override_key)) {
-            try {
-                return new Directory($this->configInstance->get('Storage', $override_key));
-            } catch (DirectoryDoesNotExistException $ex) {
-                // fall through and just get the default path.
-            }
-        }
-
-        return $this->getStoragePath($purpose);
+        $path = $this->getStoragePath();
+        return is_readable($path) && is_writable($path);
     }
 
     /**
@@ -240,7 +197,13 @@ class Application extends ApplicationBase
             throw new UnexpectedValueException('Database has already been started.');
         }
 
-        new Database($this->configInstance, self::DATABASE_CONNECTIONS[0]);
+        $connections = [];
+
+        foreach (self::DATABASE_CONNECTIONS as $name) {
+            $connections[$name] = $this->config["Database.{$name}"] ?? [];
+        }
+
+        new Database($connections, self::DATABASE_CONNECTIONS[0]);
     }
 
     /**
@@ -253,11 +216,11 @@ class Application extends ApplicationBase
         }
 
         new Cache(
-            $this->configInstance->get('Cache', 'host', 'string', null),
-            $this->configInstance->get('Cache', 'port', 'int', null),
-            $this->configInstance->get('Cache', 'database', 'int', null),
-            $this->configInstance->get('Cache', 'password', 'string', null),
-            $this->configInstance->get('Cache', 'prefix', 'string', '')
+            $this->config['Cache']['host'] ?? null,
+            $this->config['Cache']['port'] ?? null,
+            $this->config['Cache']['database'] ?? null,
+            $this->config['Cache']['password'] ?? null,
+            $this->config['Cache']['prefix'] ?? ''
         );
     }
 
@@ -275,10 +238,10 @@ class Application extends ApplicationBase
         ]);
 
         tpl_var('globals', [
-            'site_name' => $this->configInstance->get('Site', 'name', 'string', 'Flashii'),
-            'site_description' => $this->configInstance->get('Site', 'description'),
-            'site_twitter' => $this->configInstance->get('Site', 'twitter'),
-            'site_url' => $this->configInstance->get('Site', 'url'),
+            'site_name' => $this->config['Site']['name'] ?? 'Flashii',
+            'site_description' => $this->config['Site']['description'] ?? '',
+            'site_twitter' => $this->config['Site']['twitter'] ?? '',
+            'site_url' => $this->config['Site']['url'] ?? '',
         ]);
 
         tpl_add_function('json_decode', true);
@@ -299,11 +262,11 @@ class Application extends ApplicationBase
         tpl_add_function('parse_text', true);
         tpl_add_function('asset_url', true);
         tpl_add_function('vsprintf', true);
+        tpl_add_function('perms_check', true);
 
         tpl_add_function('git_commit_hash');
         tpl_add_function('git_branch');
         tpl_add_function('csrf_token', false, 'tmp_csrf_token');
-        tpl_add_function('perms_check');
 
         tpl_var('app', $this);
     }
@@ -314,8 +277,8 @@ class Application extends ApplicationBase
             return;
         }
 
-        if ($this->configInstance->contains('Mail')) {
-            $method = strtolower($this->configInstance->get('Mail', 'method'));
+        if (array_key_exists('Mail', $this->config) && array_key_exists('method', $this->config['Mail'])) {
+            $method = mb_strtolower($this->config['Mail']['method'] ?? '');
         }
 
         if (empty($method) || !array_key_exists($method, self::MAIL_TRANSPORT)) {
@@ -327,27 +290,25 @@ class Application extends ApplicationBase
 
         switch ($method) {
             case 'sendmail':
-                if ($this->configInstance->contains('Mail', 'command')) {
-                    $transport->setCommand(
-                        $this->configInstance->get('Mail', 'command')
-                    );
+                if (array_key_exists('command', $this->config['Mail'])) {
+                    $transport->setCommand($this->config['Mail']['command']);
                 }
                 break;
 
             case 'smtp':
-                $transport->setHost($this->configInstance->get('Mail', 'host'));
-                $transport->setPort($this->configInstance->get('Mail', 'port', 'int', 25));
+                $transport->setHost($this->config['Mail']['host'] ?? '');
+                $transport->setPort(intval($this->config['Mail']['port'] ?? 25));
 
-                if ($this->configInstance->contains('Mail', 'encryption')) {
-                    $transport->setEncryption($this->configInstance->get('Mail', 'encryption'));
+                if (array_key_exists('encryption', $this->config['Mail'])) {
+                    $transport->setEncryption($this->config['Mail']['encryption']);
                 }
 
-                if ($this->configInstance->contains('Mail', 'username')) {
-                    $transport->setUsername($this->configInstance->get('Mail', 'username'));
+                if (array_key_exists('username', $this->config['Mail'])) {
+                    $transport->setUsername($this->config['Mail']['username']);
                 }
 
-                if ($this->configInstance->contains('Mail', 'password')) {
-                    $transport->setPassword($this->configInstance->get('Mail', 'password'));
+                if (array_key_exists('password', $this->config['Mail'])) {
+                    $transport->setPassword($this->config['Mail']['password']);
                 }
                 break;
         }
@@ -367,5 +328,87 @@ class Application extends ApplicationBase
     public static function mailer(): Swift_Mailer
     {
         return self::getInstance()->getMailer();
+    }
+
+    public function getMailSender(): array
+    {
+        return [
+            ($this->config['Mail']['sender_email'] ?? 'sys@msz.lh') => ($this->config['Mail']['sender_name'] ?? 'Misuzu System')
+        ];
+    }
+
+    public function startGeoIP(): void
+    {
+        if (!empty($this->geoipInstance)) {
+            return;
+        }
+
+        $this->geoipInstance = new GeoIP($this->config['GeoIP']['database_path'] ?? '');
+    }
+
+    public function getGeoIP(): GeoIP
+    {
+        if (empty($this->geoipInstance)) {
+            $this->startGeoIP();
+        }
+
+        return $this->geoipInstance;
+    }
+
+    public static function geoip(): GeoIP
+    {
+        return self::getInstance()->getGeoIP();
+    }
+
+    public function getAvatarProps(): array
+    {
+        return [
+            'max_width' => intval($this->config['Avatar']['max_width'] ?? 4000),
+            'max_height' => intval($this->config['Avatar']['max_height'] ?? 4000),
+            'max_filesize' => intval($this->config['Avatar']['max_filesize'] ?? 1000000),
+        ];
+    }
+
+    public function underLockdown(): bool
+    {
+        return boolval($this->config['Auth']['lockdown'] ?? false);
+    }
+
+    public function disableRegistration(): bool
+    {
+        return $this->underLockdown() || boolval($this->config['Auth']['prevent_registration'] ?? false);
+    }
+
+    public function getLinkedData(): array
+    {
+        if (!($this->config['Site']['embed_linked_data'] ?? false)) {
+            return ['embed_linked_data' => false];
+        }
+
+        return [
+            'embed_linked_data' => true,
+            'embed_name' => $this->config['Site']['name'] ?? 'Flashii',
+            'embed_url' => $this->config['Site']['url'] ?? '',
+            'embed_logo' => $this->config['Site']['external_logo'] ?? '',
+            'embed_same_as' => explode(',', $this->config['Site']['social_media'] ?? '')
+        ];
+    }
+
+    public function getDefaultAvatar(): string
+    {
+        return $this->getPath($this->config['Avatar']['default_path'] ?? 'public/images/no-avatar.png');
+    }
+
+    /**
+     * Gets the currently active instance of Application
+     * @return Application
+     */
+    public static function getInstance(): Application
+    {
+        if (empty(self::$instance)) {
+            throw new UnexpectedValueException('No instances.');
+        }
+
+        return self::$instance;
     }
 }

@@ -68,13 +68,18 @@ if (empty($forum)) {
     return;
 }
 
-if ($forum['forum_type'] != MSZ_FORUM_TYPE_DISCUSSION) {
-    echo render_error(400);
+$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], $app->getUserId());
+
+if ($forum['forum_archived']
+    || !empty($topic['topic_locked'])
+    || !perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM | MSZ_FORUM_PERM_CREATE_POST)
+    || (empty($topic) && !perms_check($perms, MSZ_FORUM_PERM_CREATE_TOPIC))) {
+    echo render_error(403);
     return;
 }
 
-if ($forum['forum_archived'] || !empty($topic['topic_locked'])) {
-    echo render_error(403);
+if (!forum_may_have_topics($forum['forum_type'])) {
+    echo render_error(400);
     return;
 }
 

@@ -9,8 +9,8 @@ $queryTake = 15;
 
 $userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
 $perms = [
-    'edit_profile' => perms_check($userPerms, MSZ_USER_PERM_EDIT_PROFILE),
-    'edit_avatar' => perms_check($userPerms, MSZ_USER_PERM_CHANGE_AVATAR),
+    'edit_profile' => perms_check($userPerms, MSZ_PERM_USER_EDIT_PROFILE),
+    'edit_avatar' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_AVATAR),
 ];
 
 if (!$app->hasActiveSession()) {
@@ -66,11 +66,9 @@ if (!array_key_exists($settingsMode, $settingsModes)) {
 
 $settingsErrors = [];
 
-$disableAccountOptions = !$app->inDebugMode() && $app->getConfig()->get('Auth', 'prevent_registration', 'bool', false);
+$disableAccountOptions = !$app->inDebugMode() && $app->disableRegistration();
 $avatarFileName = "{$app->getUserId()}.msz";
-$avatarWidthMax = $app->getConfig()->get('Avatar', 'max_width', 'int', 4000);
-$avatarHeightMax = $app->getConfig()->get('Avatar', 'max_height', 'int', 4000);
-$avatarFileSizeMax = $app->getConfig()->get('Avatar', 'max_filesize', 'int', 1000000);
+$avatarProps = $app->getAvatarProps();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
@@ -123,9 +121,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $avatarErrorStrings['upload'][$_FILES['avatar']['error']['file']]
                             ?? $avatarErrorStrings['upload']['default'],
                             $_FILES['avatar']['error']['file'],
-                            byte_symbol($avatarFileSizeMax, true),
-                            $avatarWidthMax,
-                            $avatarHeightMax
+                            byte_symbol($avatarProps['max_filesize'], true),
+                            $avatarProps['max_width'],
+                            $avatarProps['max_height']
                         );
                         break;
                     }
@@ -140,9 +138,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $avatarErrorStrings['set'][$setAvatar]
                             ?? $avatarErrorStrings['set']['default'],
                             $setAvatar,
-                            byte_symbol($avatarFileSizeMax, true),
-                            $avatarWidthMax,
-                            $avatarHeightMax
+                            byte_symbol($avatarProps['max_filesize'], true),
+                            $avatarProps['max_width'],
+                            $avatarProps['max_height']
                         );
                     }
                     break;
@@ -242,7 +240,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             $settingsErrors[] = 'Unknown e-mail validation error.';
                                     }
                                 } else {
-                                    $updateAccountFields['email'] = strtolower($_POST['email']['new']);
+                                    $updateAccountFields['email'] = mb_strtolower($_POST['email']['new']);
                                     audit_log('PERSONAL_EMAIL_CHANGE', $app->getUserId(), [
                                         $updateAccountFields['email'],
                                     ]);
@@ -305,13 +303,13 @@ switch ($settingsMode) {
         ');
         $getMail->bindValue('user_id', $app->getUserId());
         $currentEmail = $getMail->execute() ? $getMail->fetchColumn() : 'Failed to fetch e-mail address.';
-        $userHasAvatar = File::exists($app->getStore('avatars/original')->filename($avatarFileName));
+        $userHasAvatar = is_file(build_path($app->getStoragePath(), 'avatars/original', $avatarFileName));
 
         tpl_vars([
             'avatar_user_id' => $app->getUserId(),
-            'avatar_max_width' => $avatarWidthMax,
-            'avatar_max_height' => $avatarHeightMax,
-            'avatar_max_filesize' => $avatarFileSizeMax,
+            'avatar_max_width' => $avatarProps['max_width'],
+            'avatar_max_height' => $avatarProps['max_height'],
+            'avatar_max_filesize' => $avatarProps['max_filesize'],
             'user_has_avatar' => $userHasAvatar,
             'settings_profile_fields' => $profileFields,
             'settings_profile_values' => $userFields,

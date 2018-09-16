@@ -1,12 +1,12 @@
 <?php
 function starts_with(string $string, string $text): bool
 {
-    return substr($string, 0, strlen($text)) === $text;
+    return mb_substr($string, 0, mb_strlen($text)) === $text;
 }
 
 function ends_with(string $string, string $text): bool
 {
-    return substr($string, 0 - strlen($text)) === $text;
+    return mb_substr($string, 0 - mb_strlen($text)) === $text;
 }
 
 function array_test(array $array, callable $func): bool
@@ -38,9 +38,70 @@ function password_entropy(string $password): int
     return count(count_chars(utf8_decode($password), 1)) * 8;
 }
 
+function fix_path_separator(string $path, string $separator = DIRECTORY_SEPARATOR, array $separators = ['/', '\\']): string
+{
+    return str_replace($separators, $separator, rtrim($path, implode($separators)));
+}
+
+function safe_delete(string $path): void
+{
+    $path = realpath($path);
+
+    if (empty($path)) {
+        return;
+    }
+
+    if (is_dir($path)) {
+        rmdir($path);
+        return;
+    }
+
+    unlink($path);
+}
+
+// mkdir + recursion
+function create_directory(string $path): string
+{
+    if (is_file($path)) {
+        return '';
+    }
+
+    if (is_dir($path)) {
+        return realpath($path);
+    }
+
+    $on_windows = running_on_windows();
+    $path = fix_path_separator($path);
+    $split_path = explode(DIRECTORY_SEPARATOR, $path);
+    $existing_path = $on_windows ? '' : DIRECTORY_SEPARATOR;
+
+    foreach ($split_path as $path_part) {
+        $existing_path .= $path_part . DIRECTORY_SEPARATOR;
+
+        if ($on_windows && mb_substr($path_part, 1, 2) === ':\\') {
+            continue;
+        }
+
+        if (!file_exists($existing_path)) {
+            mkdir($existing_path);
+        }
+    }
+
+    return ($path = realpath($path)) === false ? '' : $path;
+}
+
+function build_path(string ...$path): string
+{
+    for ($i = 0; $i < count($path); $i++) {
+        $path[$i] = fix_path_separator($path[$i]);
+    }
+
+    return implode(DIRECTORY_SEPARATOR, $path);
+}
+
 function check_mx_record(string $email): bool
 {
-    $domain = substr(strstr($email, '@'), 1);
+    $domain = mb_substr(mb_strstr($email, '@'), 1);
     return checkdnsrr($domain, 'MX') || checkdnsrr($domain, 'A');
 }
 
@@ -78,29 +139,8 @@ function byte_symbol($bytes, $decimal = false)
 
 function get_country_code(string $ipAddr, string $fallback = 'XX'): string
 {
-    global $_msz_geoip;
-
     try {
-        if (!$_msz_geoip) {
-            $app = \Misuzu\Application::getInstance();
-            $config = $app->getConfig();
-
-            if ($config === null) {
-                return $fallback;
-            }
-
-            $database_path = $config->get('GeoIP', 'database_path');
-
-            if ($database_path === null) {
-                return $fallback;
-            }
-
-            $_msz_geoip = new \GeoIp2\Database\Reader($database_path);
-        }
-
-        $record = $_msz_geoip->country($ipAddr);
-
-        return $record->country->isoCode;
+        return \Misuzu\Application::geoip()->country($ipAddr)->country->isoCode ?? $fallback;
     } catch (\Exception $e) {
         // report error?
     }
@@ -186,7 +226,7 @@ function crop_image_centred(Imagick $image, int $target_width, int $target_heigh
 
 function running_on_windows(): bool
 {
-    return starts_with(strtolower(PHP_OS), 'win');
+    return starts_with(mb_strtolower(PHP_OS), 'win');
 }
 
 function first_paragraph(string $text, string $delimiter = "\n"): string
@@ -227,7 +267,7 @@ function parse_bbcode(string $text): string
 
 function is_local_url(string $url): bool
 {
-    $length = strlen($url);
+    $length = mb_strlen($url);
 
     if ($length < 1) {
         return false;
@@ -243,7 +283,7 @@ function is_local_url(string $url): bool
 
 function parse_text(string $text, string $parser): string
 {
-    switch (strtolower($parser)) {
+    switch (mb_strtolower($parser)) {
         case 'md':
         case 'markdown':
             return \Misuzu\Parsers\MarkdownParser::instance()->parseText($text);
@@ -259,7 +299,7 @@ function parse_text(string $text, string $parser): string
 
 function parse_line(string $line, string $parser): string
 {
-    switch (strtolower($parser)) {
+    switch (mb_strtolower($parser)) {
         case 'md':
         case 'markdown':
             return \Misuzu\Parsers\MarkdownParser::instance()->parseLine($line);
@@ -285,7 +325,7 @@ function render_info(?string $message, int $httpCode, string $template = 'errors
     try {
         tpl_var('http_code', $httpCode);
 
-        if (strlen($message)) {
+        if (mb_strlen($message)) {
             tpl_var('message', $message);
         }
 
@@ -322,7 +362,7 @@ function html_link(string $url, ?string $content = null, $attributes = []): stri
         ['href' => $url]
     );
 
-    if (strpos($url, '://') !== false) {
+    if (mb_strpos($url, '://') !== false) {
         $attributes['target'] = '_blank';
         $attributes['rel'] = 'noreferrer noopener';
     }
@@ -362,7 +402,7 @@ function url_construct(string $path, array $query = [], string $host = ''): stri
     $url = $host . $path;
 
     if (count($query)) {
-        $url .= strpos($path, '?') !== false ? '&' : '?';
+        $url .= mb_strpos($path, '?') !== false ? '&' : '?';
 
         foreach ($query as $key => $value) {
             if ($value) {
@@ -371,12 +411,12 @@ function url_construct(string $path, array $query = [], string $host = ''): stri
         }
     }
 
-    return substr($url, 0, -1);
+    return mb_substr($url, 0, -1);
 }
 
 function camel_to_snake(string $camel): string
 {
-    return trim(strtolower(preg_replace('#([A-Z][a-z]+)#', '$1_', $camel)), '_');
+    return trim(mb_strtolower(preg_replace('#([A-Z][a-z]+)#', '$1_', $camel)), '_');
 }
 
 function snake_to_camel(string $snake): string

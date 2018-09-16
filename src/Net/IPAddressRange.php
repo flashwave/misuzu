@@ -97,7 +97,7 @@ final class IPAddressRange
      */
     public static function fromMaskedString(string $maskedString): IPAddressRange
     {
-        if (strpos($maskedString, '/') === false) {
+        if (mb_strpos($maskedString, '/') === false) {
             throw new InvalidArgumentException('Invalid masked string.');
         }
 
@@ -118,7 +118,7 @@ final class IPAddressRange
      */
     public static function fromRangeString(string $rangeString): IPAddressRange
     {
-        if (strpos($rangeString, '-') === false) {
+        if (mb_strpos($rangeString, '-') === false) {
             throw new InvalidArgumentException('Invalid range string.');
         }
 

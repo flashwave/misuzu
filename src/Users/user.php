@@ -3,15 +3,15 @@ use Misuzu\Application;
 use Misuzu\Database;
 use Misuzu\IO\File;
 
-define('MSZ_USER_PERM_EDIT_PROFILE', 1);
-define('MSZ_USER_PERM_CHANGE_AVATAR', 1 << 1);
+define('MSZ_PERM_USER_EDIT_PROFILE', 1);
+define('MSZ_PERM_USER_CHANGE_AVATAR', 1 << 1);
 
-define('MSZ_USER_PERM_MANAGE_USERS', 1 << 20);
-define('MSZ_USER_PERM_MANAGE_ROLES', 1 << 21);
-define('MSZ_USER_PERM_MANAGE_PERMS', 1 << 22);
-define('MSZ_USER_PERM_MANAGE_REPORTS', 1 << 23);
-define('MSZ_USER_PERM_MANAGE_RESTRICTIONS', 1 << 24);
-define('MSZ_USER_PERM_MANAGE_BLACKLISTS', 1 << 25);
+define('MSZ_PERM_USER_MANAGE_USERS', 1 << 20);
+define('MSZ_PERM_USER_MANAGE_ROLES', 1 << 21);
+define('MSZ_PERM_USER_MANAGE_PERMS', 1 << 22);
+define('MSZ_PERM_USER_MANAGE_REPORTS', 1 << 23);
+define('MSZ_PERM_USER_MANAGE_RESTRICTIONS', 1 << 24);
+define('MSZ_PERM_USER_MANAGE_BLACKLISTS', 1 << 25);
 
 define('MSZ_USERS_PASSWORD_HASH_ALGO', PASSWORD_ARGON2I);
 
@@ -61,16 +61,15 @@ function user_avatar_delete(int $userId): void
 {
     $app = Application::getInstance();
     $avatarFileName = sprintf(MSZ_USER_AVATAR_FORMAT, $userId);
+    $storePath = $app->getStoragePath();
 
     $deleteThis = [
-        $app->getStore('avatars/original')->filename($avatarFileName),
-        $app->getStore('avatars/200x200')->filename($avatarFileName),
+        build_path($storePath, 'avatars/original', $avatarFileName),
+        build_path($storePath, 'avatars/200x200', $avatarFileName),
     ];
 
     foreach ($deleteThis as $deleteAvatar) {
-        if (File::exists($deleteAvatar)) {
-            File::delete($deleteAvatar);
-        }
+        safe_delete($deleteAvatar);
     }
 }
 
@@ -137,7 +136,10 @@ function user_avatar_set_from_path(int $userId, string $path, array $options = [
     user_avatar_delete($userId);
 
     $fileName = sprintf(MSZ_USER_AVATAR_FORMAT, $userId);
-    $avatarPath = Application::getInstance()->getStore('avatars/original')->filename($fileName);
+    $avatarPath = build_path(
+        create_directory(build_path(Application::getInstance()->getStoragePath(), 'avatars/original')),
+        $fileName
+    );
 
     if (!copy($path, $avatarPath)) {
         return MSZ_USER_AVATAR_ERROR_STORE_FAILED;
@@ -157,7 +159,7 @@ function user_avatar_set_from_data(int $userId, string $data, array $options = [
     chmod($tmp, 644);
     file_put_contents($tmp, $data);
     $result = user_avatar_set_from_path($userId, $tmp, $options);
-    unlink($tmp);
+    safe_delete($tmp);
 
     return $result;
 }
