@@ -68,136 +68,127 @@
 } %}
 
 {% block content %}
-    {# navigation({
-        (profile.username): 'profile',
-        'Comments': 'comments',
-    }, 'profile', true, '#%s') #}
-
     <div class="profile" id="profile">
-        <div class="container profile__header">
-            <div class="container__title">Profile of {{ profile.username }}</div>
-            <div class="profile__header__content">
-                <div class="profile__info">
-                    <div class="profile__info__section">
-                        <div class="profile__info__block">
-                            {% if profile.user_title is not empty %}
-                            <div class="profile__info__row">
-                                <div class="profile__info__column profile__info__column--user-title" style="{{ profile.user_colour|html_colour }}">
-                                    {{ profile.user_title }}
-                                </div>
-                            </div>
-                            {% endif %}
+        <div class="profile__header">
+            <div class="profile__header__details">
+                <div class="avatar profile__header__avatar" style="background-image:url('{{ image }}')"></div>
 
-                            <div class="profile__info__row">
-                                <div class="profile__info__column profile__info__column--icons">
-                                    <div class="flag flag--{{ profile.user_country|lower }} profile__icon">{{ profile.user_country }}</div>
-                                </div>
-                                <div class="profile__info__column profile__info__column--country">
-                                    {{ profile.user_country|country_name }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="profile__info__block">
-                            <div class="profile__info__row" title="{{ profile.created_at|date('r') }}">
-                                <div class="profile__info__column profile__info__column--heading">
-                                    Joined
-                                </div>
-                                <time class="profile__info__column" datetime="{{ profile.created_at|date('c') }}">
-                                    {{ profile.created_at|time_diff }}
-                                </time>
-                            </div>
-
-                            {% if profile.last_seen is not null %}
-                                <div class="profile__info__row" title="{{ profile.last_seen|date('r') }}">
-                                    <div class="profile__info__column profile__info__column--heading">
-                                        Last Seen
-                                    </div>
-                                    <time class="profile__info__column" datetime="{{ profile.last_seen|date('c') }}">
-                                        {{ profile.last_seen|date('U') + 10 >= ''|date('U') ? 'just now' : profile.last_seen|time_diff }}
-                                    </time>
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="profile__info__block">
-                            <div class="profile__info__row">
-                                <div class="profile__info__column profile__info__column--heading">
-                                    Topics
-                                </div>
-                                <div class="profile__info__column profile__info__column--numeric">
-                                    {{ profile.forum_topic_count|number_format }}
-                                </div>
-                            </div>
-
-                            <div class="profile__info__row">
-                                <div class="profile__info__column profile__info__column--heading">
-                                    Posts
-                                </div>
-                                <div class="profile__info__column profile__info__column--numeric">
-                                    {{ profile.forum_post_count|number_format }}
-                                </div>
-                            </div>
-                        </div>
-
-                        {% if profile.comments_count > 0 %}
-                            <div class="profile__info__block">
-                                <div class="profile__info__row">
-                                    <div class="profile__info__column profile__info__column--heading">
-                                        Comments
-                                    </div>
-                                    <div class="profile__info__column profile__info__column--numeric">
-                                        {{ profile.comments_count|number_format }}
-                                    </div>
-                                </div>
-                            </div>
-                        {% endif %}
-
-                        {% if profile.changelog_count > 0 %}
-                            <div class="profile__info__block">
-                                <a class="profile__info__row profile__info__row--link" href="/changelog.php?u={{ profile.user_id }}">
-                                    <div class="profile__info__column profile__info__column--heading">
-                                        Changes
-                                    </div>
-                                    <div class="profile__info__column profile__info__column--numeric">
-                                        {{ profile.changelog_count|number_format }}
-                                    </div>
-                                </a>
-                            </div>
-                        {% endif %}
+                <div class="profile__header__details__content">
+                    <div class="profile__header__username" style="{{ profile.user_colour|html_colour({
+                        'color': '%s',
+                        'text-shadow': '0 0 5px %s',
+                    }) }}">
+                        {{ profile.username }}
                     </div>
 
-                    {% if current_user is defined %}
-                    {% spaceless %}
-                    <div class="profile__info__section">
-                        <div class="profile__info__block profile__info__block--links">
-                            {% autoescape false %}
-                            {% for name, data in profile_fields %}
-                                {% if (data.display is defined ? data.display : true) and data.value|length > 0 %}
-                                    <div class="profile__info__row profile__info__row--field-{{ name }}">
-                                        <div class="profile__info__column profile__info__column--heading">
-                                            {{ data.title }}
-                                        </div>
-                                        <div class="profile__info__column"
-                                            {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>
-                                            {% set profile_field_value = (data.format is defined ? data.format : '%s')|format(data.value) %}
-                                            {% if data.link is defined %}
-                                                {{ data.link|format(data.value)|html_link(profile_field_value, 'profile__account-link') }}
-                                            {% else %}
-                                                {{ profile_field_value }}
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                            {% endautoescape %}
+                    {% if profile.user_title is not empty %}
+                        <div class="profile__header__title">
+                            {{ profile.user_title }}
                         </div>
-                    </div>
-                    {% endspaceless %}
                     {% endif %}
+
+                    <div class="profile__header__country">
+                        <div class="flag flag--{{ profile.user_country|lower }}"></div>
+                        <div class="profile__header__country__name">
+                            {{ profile.user_country|country_name }}
+                        </div>
+                    </div>
                 </div>
-                <div class="avatar profile__avatar" style="background-image:url('{{ image }}')"></div>
+            </div>
+
+            <div class="profile__header__stats">
+                <div class="profile__header__stat" title="{{ profile.created_at|date('r') }}">
+                    <div class="profile__header__stat__name">
+                        Joined
+                    </div>
+                    <time class="profile__header__stat__value" datetime="{{ profile.created_at|date('c') }}">
+                        {{ profile.created_at|time_diff }}
+                    </time>
+                </div>
+
+                {% if profile.last_seen is not null %}
+                    <div class="profile__header__stat" title="{{ profile.last_seen|date('r') }}">
+                        <div class="profile__header__stat__name">
+                            Last seen
+                        </div>
+                        <time class="profile__header__stat__value" datetime="{{ profile.last_seen|date('c') }}">
+                            {{ profile.last_seen|date('U') + 10 >= ''|date('U') ? 'just now' : profile.last_seen|time_diff }}
+                        </time>
+                    </div>
+                {% endif %}
+
+                <div class="profile__header__stat">
+                    <div class="profile__header__stat__name">
+                        Topics
+                    </div>
+                    <div class="profile__header__stat__value">
+                        {{ profile.forum_topic_count|number_format }}
+                    </div>
+                </div>
+
+                <div class="profile__header__stat">
+                    <div class="profile__header__stat__name">
+                        Posts
+                    </div>
+                    <div class="profile__header__stat__value">
+                        {{ profile.forum_post_count|number_format }}
+                    </div>
+                </div>
+
+                {% if profile.comments_count > 0 %}
+                    <div class="profile__header__stat">
+                        <div class="profile__header__stat__name">
+                            Comments
+                        </div>
+                        <div class="profile__header__stat__value">
+                            {{ profile.comments_count|number_format }}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if profile.changelog_count > 0 %}
+                    <a class="profile__header__stat" href="/changelog.php?u={{ profile.user_id }}">
+                        <div class="profile__header__stat__name">
+                            Changes
+                        </div>
+                        <div class="profile__header__stat__value">
+                            {{ profile.changelog_count|number_format }}
+                        </div>
+                    </a>
+                {% endif %}
             </div>
         </div>
+
+
+            <div class="profile__info">
+                {% if current_user is defined %}
+                {% spaceless %}
+                <div class="profile__info__section">
+                    <div class="profile__info__block profile__info__block--links">
+                        {% autoescape false %}
+                        {% for name, data in profile_fields %}
+                            {% if (data.display is defined ? data.display : true) and data.value|length > 0 %}
+                                <div class="profile__info__row profile__info__row--field-{{ name }}">
+                                    <div class="profile__info__column profile__info__column--heading">
+                                        {{ data.title }}
+                                    </div>
+                                    <div class="profile__info__column"
+                                        {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>
+                                        {% set profile_field_value = (data.format is defined ? data.format : '%s')|format(data.value) %}
+                                        {% if data.link is defined %}
+                                            {{ data.link|format(data.value)|html_link(profile_field_value, 'profile__account-link') }}
+                                        {% else %}
+                                            {{ profile_field_value }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% endautoescape %}
+                    </div>
+                </div>
+                {% endspaceless %}
+                {% endif %}
+            </div>
     </div>
 {% endblock %}

@@ -23,33 +23,6 @@
         vertical-align: middle;
     }
 
-    &__header {
-        height: 300px;
-        background-color: var(--background-colour);
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: 50%;
-
-        @media (max-width: @site-mobile-width) {
-            height: auto;
-            background-size: @site-mobile-width auto;
-            background-position: center top;
-        }
-
-        &__content {
-            margin: 2px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-
-            @media (max-width: @site-mobile-width) {
-                flex-direction: column-reverse;
-                align-items: center;
-                margin: 0;
-            }
-        }
-    }
-
     &__info {
         display: flex;
 
