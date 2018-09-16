@@ -46,8 +46,8 @@
                 ''|date('Y') }} /
                 {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_branch())|html_link(git_branch(), 'footer__link') }}
                 # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__link') }}
-                {% if query_count is defined %}
-                    / SQL Queries: {{ query_count|number_format }}
+                {% if constant('MSZ_DEBUG') or current_user.user_id|default(0) == 1 %}
+                    / SQL Queries: {{ sql_query_count()|number_format }}
                     / Took: {{ startup_time()|number_format(5) }} seconds
                     / Render: {{ startup_time(constant('MSZ_TPL_RENDER'))|number_format(5) }} seconds
                 {% endif %}

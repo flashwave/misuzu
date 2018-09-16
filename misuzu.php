@@ -246,6 +246,7 @@ MIG;
     tpl_add_function('startup_time', false, function (float $time = MSZ_STARTUP) {
         return microtime(true) - $time;
     });
+    tpl_add_function('sql_query_count', false, [Database::class, 'queryCount']);
 
     tpl_add_path(__DIR__ . '/templates');
 
