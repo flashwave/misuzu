@@ -48,7 +48,8 @@
                 # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__link') }}
                 {% if query_count is defined %}
                     / SQL Queries: {{ query_count|number_format }}
-                    / Took: {{ app.timeSinceStart|number_format(5) }} seconds
+                    / Took: {{ startup_time()|number_format(5) }} seconds
+                    / Render: {{ startup_time(constant('MSZ_TPL_RENDER'))|number_format(5) }} seconds
                 {% endif %}
             </div>
             {% endautoescape %}

@@ -167,7 +167,7 @@
                         {% endif %}
                     </div>
 
-                    {% if app.hasActiveSession %}
+                    {% if current_user is defined %}
                     {% spaceless %}
                     <div class="profile__info__section">
                         <div class="profile__info__block profile__info__block--links">

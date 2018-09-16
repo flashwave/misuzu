@@ -76,5 +76,9 @@ function tpl_render(string $path, array $vars = []): string
         tpl_vars($vars);
     }
 
+    if (!defined('MSZ_TPL_RENDER')) {
+        define('MSZ_TPL_RENDER', microtime(true));
+    }
+
     return $twig->render($path, $GLOBALS[MSZ_TPL_VARS_STORE]);
 }

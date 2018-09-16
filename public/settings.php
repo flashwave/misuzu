@@ -67,7 +67,7 @@ if (!array_key_exists($settingsMode, $settingsModes)) {
 
 $settingsErrors = [];
 
-$disableAccountOptions = !$app->inDebugMode() && $app->disableRegistration();
+$disableAccountOptions = !MSZ_DEBUG && $app->disableRegistration();
 $avatarFileName = "{$app->getUserId()}.msz";
 $avatarProps = $app->getAvatarProps();
 $backgroundProps = $app->getBackgroundProps();

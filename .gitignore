@@ -6,6 +6,7 @@
 
 # Configuration
 /config/config.ini
+/.debug
 
 # Storage
 /store

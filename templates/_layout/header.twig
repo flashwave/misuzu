@@ -7,7 +7,7 @@
                 {{ globals.site_name }}
             </a>
 
-            <label style="background-image:url('/profile.php?u={{ app.hasActiveSession ? current_user.user_id : 0 }}&amp;m=avatar');"
+            <label style="background-image:url('/profile.php?u={{ current_user.user_id|default(0) }}&amp;m=avatar');"
                 class="avatar header__icon header__icon--user"
                 for="toggle-mobile-header-user"></label>
         </div>
@@ -38,7 +38,7 @@
 
         <input type="checkbox" class="header__user-toggle" id="toggle-mobile-header-user">
         <div class="header__user">
-            {% if app.hasActiveSession %}
+            {% if current_user is defined %}
                 <a  href="/profile.php?u={{ current_user.user_id }}"
                     class="avatar header__user__avatar"
                     style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');"></a>
@@ -49,7 +49,7 @@
             {% endif %}
 
             <div class="header__user__info">
-                {% if app.hasActiveSession %}
+                {% if current_user is defined %}
                     <a  href="/profile.php?u={{ current_user.user_id }}"
                         class="header__user__name"
                         style="{{ current_user.user_colour|html_colour({
@@ -66,7 +66,7 @@
                 {% endif %}
 
                 <ul class="header__user__actions">
-                    {% if app.hasActiveSession %}
+                    {% if current_user is defined %}
                         <li class="header__user__action">
                             <a class="header__user__link" href="/profile.php?u={{ current_user.user_id }}">Profile</a>
                         </li>

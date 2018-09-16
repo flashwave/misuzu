@@ -15,7 +15,7 @@
     'o': topic_offset,
 }) %}
 
-{% set can_reply = app.hasActiveSession and topic_info.topic_locked is null and not topic_info.topic_archived %}
+{% set can_reply = current_user is defined and topic_info.topic_locked is null and not topic_info.topic_archived %}
 {% set ftbuttons = can_reply ? forum_topic_buttons(topic_info) : '' %}
 {% set ftpagination = pagination(
     topic_info.topic_post_count,

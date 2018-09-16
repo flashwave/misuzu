@@ -1,10 +1,11 @@
 <?php
 namespace Misuzu;
 
+define('MSZ_STARTUP', microtime(true));
+define('MSZ_DEBUG', file_exists(__DIR__ . '/.debug'));
+
 date_default_timezone_set('UTC');
 mb_internal_encoding('UTF-8');
-
-define('MSZ_DEBUG', file_exists(__DIR__ . '/vendor/phpunit/phpunit/composer.json'));
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -41,10 +42,7 @@ require_once __DIR__ . '/src/Users/session.php';
 require_once __DIR__ . '/src/Users/user.php';
 require_once __DIR__ . '/src/Users/validation.php';
 
-$app = new Application(
-    __DIR__ . '/config/config.ini',
-    MSZ_DEBUG
-);
+$app = new Application(__DIR__ . '/config/config.ini');
 $app->startDatabase();
 
 if (PHP_SAPI === 'cli') {
@@ -204,7 +202,7 @@ MIG;
         }
     }
 } else {
-    if (!$app->inDebugMode()) {
+    if (!MSZ_DEBUG) {
         ob_start('ob_gzhandler');
     }
 
@@ -217,7 +215,37 @@ MIG;
     }
 
     $app->startCache();
-    $app->startTemplating();
+
+    tpl_init(['debug' => MSZ_DEBUG]);
+
+    tpl_var('globals', $app->getSiteInfo());
+
+    tpl_add_function('json_decode', true);
+    tpl_add_function('byte_symbol', true);
+    tpl_add_function('html_link', true);
+    tpl_add_function('html_colour', true);
+    tpl_add_function('url_construct', true);
+    tpl_add_function('country_name', true, 'get_country_name');
+    tpl_add_function('flip', true, 'array_flip');
+    tpl_add_function('first_paragraph', true);
+    tpl_add_function('colour_get_css', true);
+    tpl_add_function('colour_get_css_contrast', true);
+    tpl_add_function('colour_get_inherit', true);
+    tpl_add_function('colour_get_red', true);
+    tpl_add_function('colour_get_green', true);
+    tpl_add_function('colour_get_blue', true);
+    tpl_add_function('parse_line', true);
+    tpl_add_function('parse_text', true);
+    tpl_add_function('asset_url', true);
+    tpl_add_function('vsprintf', true);
+    tpl_add_function('perms_check', true);
+
+    tpl_add_function('git_commit_hash');
+    tpl_add_function('git_branch');
+    tpl_add_function('csrf_token', false, 'tmp_csrf_token');
+    tpl_add_function('startup_time', false, function (float $time = MSZ_STARTUP) {
+        return microtime(true) - $time;
+    });
 
     tpl_add_path(__DIR__ . '/templates');
 
