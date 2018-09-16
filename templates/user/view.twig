@@ -117,23 +117,27 @@
                     </div>
                 {% endif %}
 
-                <div class="profile__header__stat">
-                    <div class="profile__header__stat__name">
-                        Topics
+                {% if profile.forum_topic_count > 0 %}
+                    <div class="profile__header__stat">
+                        <div class="profile__header__stat__name">
+                            Topics
+                        </div>
+                        <div class="profile__header__stat__value">
+                            {{ profile.forum_topic_count|number_format }}
+                        </div>
                     </div>
-                    <div class="profile__header__stat__value">
-                        {{ profile.forum_topic_count|number_format }}
-                    </div>
-                </div>
+                {% endif %}
 
-                <div class="profile__header__stat">
-                    <div class="profile__header__stat__name">
-                        Posts
+                {% if profile.forum_post_count > 0 %}
+                    <div class="profile__header__stat">
+                        <div class="profile__header__stat__name">
+                            Posts
+                        </div>
+                        <div class="profile__header__stat__value">
+                            {{ profile.forum_post_count|number_format }}
+                        </div>
                     </div>
-                    <div class="profile__header__stat__value">
-                        {{ profile.forum_post_count|number_format }}
-                    </div>
-                </div>
+                {% endif %}
 
                 {% if profile.comments_count > 0 %}
                     <div class="profile__header__stat">
