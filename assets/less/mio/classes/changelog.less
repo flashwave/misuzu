@@ -1,5 +1,6 @@
 .changelog {
     display: flex;
+    margin: 1px;
 
     @media (max-width: @site-mobile-width) {
         flex-wrap: wrap;
@@ -14,8 +15,12 @@
         }
     }
 
-    &__content {
+    &__pagination {
         margin: 1px;
+    }
+
+    &__content {
+        margin: 0;
     }
 
     &__none {
@@ -29,7 +34,7 @@
     // date header in public changelog
     &__date {
         display: block;
-        background: var(--accent-colour);
+        background-image: linear-gradient(0deg, var(--accent-colour), transparent);
         color: var(--text-colour-header);
         font-weight: 700;
         margin-bottom: 1px;
