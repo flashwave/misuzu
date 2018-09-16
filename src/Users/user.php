@@ -61,14 +61,15 @@ function user_avatar_delete(int $userId): void
 {
     $app = Application::getInstance();
     $avatarFileName = sprintf(MSZ_USER_AVATAR_FORMAT, $userId);
+    $storePath = $app->getStoragePath();
 
     $deleteThis = [
-        $app->getStore('avatars/original')->filename($avatarFileName),
-        $app->getStore('avatars/200x200')->filename($avatarFileName),
+        build_path($storePath, 'avatars/original', $avatarFileName),
+        build_path($storePath, 'avatars/200x200', $avatarFileName),
     ];
 
     foreach ($deleteThis as $deleteAvatar) {
-        File::safeDelete($deleteAvatar);
+        safe_delete($deleteAvatar);
     }
 }
 
@@ -135,7 +136,10 @@ function user_avatar_set_from_path(int $userId, string $path, array $options = [
     user_avatar_delete($userId);
 
     $fileName = sprintf(MSZ_USER_AVATAR_FORMAT, $userId);
-    $avatarPath = Application::getInstance()->getStore('avatars/original')->filename($fileName);
+    $avatarPath = build_path(
+        create_directory(build_path(Application::getInstance()->getStoragePath(), 'avatars/original')),
+        $fileName
+    );
 
     if (!copy($path, $avatarPath)) {
         return MSZ_USER_AVATAR_ERROR_STORE_FAILED;
@@ -155,7 +159,7 @@ function user_avatar_set_from_data(int $userId, string $data, array $options = [
     chmod($tmp, 644);
     file_put_contents($tmp, $data);
     $result = user_avatar_set_from_path($userId, $tmp, $options);
-    unlink($tmp);
+    safe_delete($tmp);
 
     return $result;
 }

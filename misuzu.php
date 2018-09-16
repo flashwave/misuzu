@@ -211,9 +211,7 @@ MIG;
     // we're running this again because ob_clean breaks gzip otherwise
     ob_start();
 
-    $storage_dir = $app->getStoragePath();
-    if (!$storage_dir->isReadable()
-        || !$storage_dir->isWritable()) {
+    if (!$app->canAccessStorage()) {
         echo 'Cannot access storage directory.';
         exit;
     }

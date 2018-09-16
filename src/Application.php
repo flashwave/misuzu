@@ -2,8 +2,6 @@
 namespace Misuzu;
 
 use Carbon\Carbon;
-use Misuzu\IO\Directory;
-use Misuzu\IO\DirectoryDoesNotExistException;
 use Misuzu\Users\Session;
 use UnexpectedValueException;
 use InvalidArgumentException;
@@ -121,51 +119,22 @@ final class Application
             $path = __DIR__ . '/../' . $path;
         }
 
-        return Directory::fixSlashes(rtrim($path, '/'));
+        return fix_path_separator(rtrim($path, '/'));
     }
 
     /**
-     * Gets a data storage path, with config storage path prefix.
-     * @param string $append
-     * @return Directory
-     * @throws DirectoryDoesNotExistException
-     * @throws IO\DirectoryExistsException
+     * Gets a data storage path.
+     * @return string
      */
-    public function getStoragePath(string $append = ''): Directory
+    public function getStoragePath(): string
     {
-        if (starts_with($append, '/')) {
-            $path = $append;
-        } else {
-            $path = $this->config['Storage']['path'] ?? __DIR__ . '/../store';
-
-            if (!empty($append)) {
-                $path .= '/' . $append;
-            }
-        }
-
-        return Directory::createOrOpen($this->getPath($path));
+        return create_directory($this->config['Storage']['path'] ?? __DIR__ . '/../store');
     }
 
-    /**
-     * Gets a data store, with config overrides!
-     * @param string $purpose
-     * @return Directory
-     * @throws DirectoryDoesNotExistException
-     * @throws IO\DirectoryExistsException
-     */
-    public function getStore(string $purpose): Directory
+    public function canAccessStorage(): bool
     {
-        $override_key = 'override_' . str_replace('/', '_', $purpose);
-
-        if (array_key_exists('Storage', $this->config)) {
-            try {
-                return new Directory($this->config['Storage'][$override_key] ?? '');
-            } catch (DirectoryDoesNotExistException $ex) {
-                // fall through and just get the default path.
-            }
-        }
-
-        return $this->getStoragePath($purpose);
+        $path = $this->getStoragePath();
+        return is_readable($path) && is_writable($path);
     }
 
     /**

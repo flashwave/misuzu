@@ -11,18 +11,22 @@ switch ($mode) {
     case 'avatar':
         $avatar_filename = $app->getDefaultAvatar();
         $user_avatar = "{$user_id}.msz";
-        $cropped_avatar = $app->getStore('avatars/200x200')->filename($user_avatar);
+        $cropped_avatar = build_path(
+            create_directory(build_path($app->getStoragePath(), 'avatars/200x200')),
+            $user_avatar
+        );
 
-        if (File::exists($cropped_avatar)) {
+        if (is_file($cropped_avatar)) {
             $avatar_filename = $cropped_avatar;
         } else {
-            $original_avatar = $app->getStore('avatars/original')->filename($user_avatar);
+            $original_avatar = build_path($app->getStoragePath(), 'avatars/original', $user_avatar);
 
-            if (File::exists($original_avatar)) {
+            if (is_file($original_avatar)) {
                 try {
-                    File::writeAll(
+                    file_put_contents(
                         $cropped_avatar,
-                        crop_image_centred_path($original_avatar, 200, 200)->getImagesBlob()
+                        crop_image_centred_path($original_avatar, 200, 200)->getImagesBlob(),
+                        LOCK_EX
                     );
 
                     $avatar_filename = $cropped_avatar;
@@ -32,7 +36,7 @@ switch ($mode) {
         }
 
         header('Content-Type: ' . mime_content_type($avatar_filename));
-        echo File::readToEnd($avatar_filename);
+        echo file_get_contents($avatar_filename);
         break;
 
     case 'view':

@@ -38,6 +38,67 @@ function password_entropy(string $password): int
     return count(count_chars(utf8_decode($password), 1)) * 8;
 }
 
+function fix_path_separator(string $path, string $separator = DIRECTORY_SEPARATOR, array $separators = ['/', '\\']): string
+{
+    return str_replace($separators, $separator, rtrim($path, implode($separators)));
+}
+
+function safe_delete(string $path): void
+{
+    $path = realpath($path);
+
+    if (empty($path)) {
+        return;
+    }
+
+    if (is_dir($path)) {
+        rmdir($path);
+        return;
+    }
+
+    unlink($path);
+}
+
+// mkdir + recursion
+function create_directory(string $path): string
+{
+    if (is_file($path)) {
+        return '';
+    }
+
+    if (is_dir($path)) {
+        return realpath($path);
+    }
+
+    $on_windows = running_on_windows();
+    $path = fix_path_separator($path);
+    $split_path = explode(DIRECTORY_SEPARATOR, $path);
+    $existing_path = $on_windows ? '' : DIRECTORY_SEPARATOR;
+
+    foreach ($split_path as $path_part) {
+        $existing_path .= $path_part . DIRECTORY_SEPARATOR;
+
+        if ($on_windows && mb_substr($path_part, 1, 2) === ':\\') {
+            continue;
+        }
+
+        if (!file_exists($existing_path)) {
+            mkdir($existing_path);
+        }
+    }
+
+    return ($path = realpath($path)) === false ? '' : $path;
+}
+
+function build_path(string ...$path): string
+{
+    for ($i = 0; $i < count($path); $i++) {
+        $path[$i] = fix_path_separator($path[$i]);
+    }
+
+    return implode(DIRECTORY_SEPARATOR, $path);
+}
+
 function check_mx_record(string $email): bool
 {
     $domain = mb_substr(mb_strstr($email, '@'), 1);

@@ -303,7 +303,7 @@ switch ($settingsMode) {
         ');
         $getMail->bindValue('user_id', $app->getUserId());
         $currentEmail = $getMail->execute() ? $getMail->fetchColumn() : 'Failed to fetch e-mail address.';
-        $userHasAvatar = File::exists($app->getStore('avatars/original')->filename($avatarFileName));
+        $userHasAvatar = is_file(build_path($app->getStoragePath(), 'avatars/original', $avatarFileName));
 
         tpl_vars([
             'avatar_user_id' => $app->getUserId(),
