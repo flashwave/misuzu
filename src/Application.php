@@ -67,15 +67,14 @@ final class Application
         if ($this->config === false) {
             throw new UnexpectedValueException('Failed to parse configuration.');
         }
+    }
 
-        // only use this error handler in prod mode, dev uses Whoops now
-        if (!MSZ_DEBUG) {
-            ExceptionHandler::register(
-                false,
-                $this->config['Exceptions']['report_url'] ?? null,
-                $this->config['Exceptions']['hash_key'] ?? null
-            );
-        }
+    public function getReportInfo(): array
+    {
+        return [
+            $this->config['Exceptions']['report_url'] ?? null,
+            $this->config['Exceptions']['hash_key'] ?? null,
+        ];
     }
 
     /**

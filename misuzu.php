@@ -4,20 +4,25 @@ namespace Misuzu;
 define('MSZ_STARTUP', microtime(true));
 define('MSZ_DEBUG', file_exists(__DIR__ . '/.debug'));
 
+error_reporting(MSZ_DEBUG ? -1 : 0);
+ini_set('display_errors', MSZ_DEBUG ? 'On' : 'Off');
+
 date_default_timezone_set('UTC');
 mb_internal_encoding('UTF-8');
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-if (MSZ_DEBUG) {
-    $errorHandler = new \Whoops\Run;
-    $errorHandler->pushHandler(
+$errorHandler = new \Whoops\Run;
+$errorHandler->pushHandler(
+    MSZ_DEBUG
+    ? (
         PHP_SAPI === 'cli'
         ? new \Whoops\Handler\PlainTextHandler
         : new \Whoops\Handler\PrettyPageHandler
-    );
-    $errorHandler->register();
-}
+    )
+    : ($errorReporter = new WhoopsReporter)
+);
+$errorHandler->register();
 
 require_once __DIR__ . '/src/audit_log.php';
 require_once __DIR__ . '/src/changelog.php';
@@ -43,6 +48,11 @@ require_once __DIR__ . '/src/Users/user.php';
 require_once __DIR__ . '/src/Users/validation.php';
 
 $app = new Application(__DIR__ . '/config/config.ini');
+
+if (!empty($errorReporter)) {
+    $errorReporter->setReportInfo(...$app->getReportInfo());
+}
+
 $app->startDatabase();
 
 if (PHP_SAPI === 'cli') {

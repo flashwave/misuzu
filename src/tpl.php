@@ -63,14 +63,14 @@ function tpl_exists(string $path): bool
 
 function tpl_render(string $path, array $vars = []): string
 {
+    if (!defined('MSZ_TPL_RENDER')) {
+        define('MSZ_TPL_RENDER', microtime(true));
+    }
+
     $path = tpl_sanitise_path($path);
 
     if (count($vars)) {
         tpl_vars($vars);
-    }
-
-    if (!defined('MSZ_TPL_RENDER')) {
-        define('MSZ_TPL_RENDER', microtime(true));
     }
 
     return Twig::instance()->render($path, $GLOBALS[MSZ_TPL_VARS_STORE]);
