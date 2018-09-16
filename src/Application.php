@@ -78,7 +78,7 @@ final class Application
         self::$instance = $this;
         $this->startupTime = microtime(true);
         $this->debugMode = $debug;
-        $this->config = parse_ini_file($configFile, true, INI_SCANNER_TYPED);
+        $this->config = is_file($configFile) ? parse_ini_file($configFile, true, INI_SCANNER_TYPED) : [];
 
         if ($this->config === false) {
             throw new UnexpectedValueException('Failed to parse configuration.');
