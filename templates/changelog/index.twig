@@ -33,7 +33,7 @@
                 {{ pagination(changelog_count, changelog_take, changelog_offset, '/changelog.php'|url_construct({
                     'd': changelog_date,
                     'u': changelog_user ? changelog_user : ''
-                })) }}
+                }), 'changelog__') }}
             {% endif %}
         </div>
     </div>

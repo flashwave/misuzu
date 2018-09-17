@@ -211,6 +211,16 @@ function manage_perms_list(array $rawPerms): array
                     ),
                 ],
                 [
+                    'section' => 'change-background',
+                    'title' => 'Can change own background.',
+                    'perm' => MSZ_PERM_USER_CHANGE_BACKGROUND,
+                    'value' => manage_perms_value(
+                        MSZ_PERM_USER_CHANGE_BACKGROUND,
+                        $rawPerms['user_perms_allow'],
+                        $rawPerms['user_perms_deny']
+                    ),
+                ],
+                [
                     'section' => 'manage-users',
                     'title' => 'Can manage other users.',
                     'perm' => MSZ_PERM_USER_MANAGE_USERS,

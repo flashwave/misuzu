@@ -1,5 +1,4 @@
 <?php
-use Misuzu\Database;
 use Misuzu\Twig;
 
 define('MSZ_TPL_FILE_EXT', '.twig');
@@ -64,10 +63,8 @@ function tpl_exists(string $path): bool
 
 function tpl_render(string $path, array $vars = []): string
 {
-    $twig = Twig::instance();
-
-    if ($twig->isDebug()) {
-        tpl_var('query_count', Database::queryCount());
+    if (!defined('MSZ_TPL_RENDER')) {
+        define('MSZ_TPL_RENDER', microtime(true));
     }
 
     $path = tpl_sanitise_path($path);
@@ -76,5 +73,5 @@ function tpl_render(string $path, array $vars = []): string
         tpl_vars($vars);
     }
 
-    return $twig->render($path, $GLOBALS[MSZ_TPL_VARS_STORE]);
+    return Twig::instance()->render($path, $GLOBALS[MSZ_TPL_VARS_STORE]);
 }

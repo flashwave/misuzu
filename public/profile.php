@@ -5,7 +5,7 @@ use Misuzu\IO\File;
 require_once __DIR__ . '/../misuzu.php';
 
 $user_id = (int)($_GET['u'] ?? 0);
-$mode = (string)($_GET['m'] ?? 'view');
+$mode = (string)($_GET['m'] ?? null);
 
 switch ($mode) {
     case 'avatar':
@@ -39,7 +39,21 @@ switch ($mode) {
         echo file_get_contents($avatar_filename);
         break;
 
-    case 'view':
+    case 'background':
+        $user_background = build_path(
+            create_directory(build_path($app->getStoragePath(), 'backgrounds/original')),
+            "{$user_id}.msz"
+        );
+
+        if (!is_file($user_background)) {
+            echo render_error(404);
+            break;
+        }
+
+        header('Content-Type: ' . mime_content_type($user_background));
+        echo file_get_contents($user_background);
+        break;
+
     default:
         $getProfile = Database::prepare('
             SELECT
@@ -80,7 +94,11 @@ switch ($mode) {
             break;
         }
 
-        tpl_vars(compact('profile'));
-        echo tpl_render('user.view');
+        tpl_vars([
+            'profile' => $profile,
+            'profile_fields' => $app->hasActiveSession() ? user_profile_fields_display($profile) : [],
+            'has_background' => is_file(build_path($app->getStoragePath(), 'backgrounds/original', "{$profile['user_id']}.msz")),
+        ]);
+        echo tpl_render('user.profile');
         break;
 }

@@ -1,0 +1,137 @@
+.profile__header {
+    display: flex;
+    flex-direction: column;
+    margin: 2px 0;
+    color: #fff;
+    text-shadow: 0 1px 4px #111;
+    box-shadow: 0 1px 4px #111;
+
+    --profile-header: initial; //url('/profile.php?u=1&m=background');
+
+    background-color: var(--background-colour);
+    background-image: var(--profile-header);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: 50%;
+
+    @media (max-width: @site-mobile-width) {
+        height: auto;
+        background-size: @site-mobile-width auto;
+        background-position: center top;
+    }
+
+    &__avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 2px;
+        border: initial;
+        box-shadow: 0 1px 4px #111;
+    }
+
+    &__details {
+        height: 100%;
+        display: flex;
+        align-items: flex-end;
+        padding: 20px;
+        background-image: linear-gradient(0deg, rgba(0, 0, 0, .9), transparent);
+
+        &__content {
+            margin: 5px 10px;
+            flex: 1 1 auto;
+        }
+
+        &__relation {
+            font-variant: all-small-caps;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 2px;
+            line-height: 1.2em;
+            padding: 1px 5px 4px;
+        }
+    }
+
+    &__options {
+        background-color: rgba(0, 0, 0, .9);
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    &__actions {
+        display: flex;
+        align-items: center;
+    }
+
+    &__action {
+        border-radius: 2px;
+        color: var(--accent-colour);
+        background-color: #111;
+        text-decoration: none;
+        border: 1px solid var(--accent-colour);
+        margin-right: 10px;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 1.2em;
+        transition: color .2s, background-color .2s;
+
+        &:hover {
+            color: #111;
+            background-color: var(--accent-colour);
+            text-shadow: initial;
+        }
+
+        &--destroy {
+            color: #c00;
+            border-color: #c00;
+
+            &:hover {
+                background-color: #c00;
+            }
+        }
+    }
+
+    &__stats {
+        display: flex;
+    }
+
+    &__stat {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+        padding: 10px;
+
+        &--date {
+            min-width: 130px;
+        }
+
+        &__name {
+            font-size: .9em;
+            font-variant: small-caps;
+        }
+
+        &__value {
+            font-size: 1.3em;
+            text-align: right;
+        }
+    }
+
+    &__username {
+        font-size: 2em;
+        line-height: 1.5em;
+    }
+
+    &__title {
+        font-size: .9em;
+        line-height: 1.2em;
+    }
+
+    &__country {
+        display: inline-flex;
+        align-items: center;
+
+        &__name {
+            font-size: .9em;
+            margin-left: 4px;
+            line-height: 1.2em;
+        }
+    }
+}

@@ -11,6 +11,7 @@ $userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
 $perms = [
     'edit_profile' => perms_check($userPerms, MSZ_PERM_USER_EDIT_PROFILE),
     'edit_avatar' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_AVATAR),
+    'edit_background' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_BACKGROUND),
 ];
 
 if (!$app->hasActiveSession()) {
@@ -66,38 +67,43 @@ if (!array_key_exists($settingsMode, $settingsModes)) {
 
 $settingsErrors = [];
 
-$disableAccountOptions = !$app->inDebugMode() && $app->disableRegistration();
+$disableAccountOptions = !MSZ_DEBUG && $app->disableRegistration();
 $avatarFileName = "{$app->getUserId()}.msz";
 $avatarProps = $app->getAvatarProps();
+$backgroundProps = $app->getBackgroundProps();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
         $settingsErrors[] = $csrfErrorString;
     } else {
         if (!empty($_POST['profile']) && is_array($_POST['profile'])) {
-            $setUserFieldErrors = user_profile_fields_set($app->getUserId(), $_POST['profile']);
+            if (!$perms['edit_profile']) {
+                $settingsErrors[] = "You're not allowed to edit your profile.";
+            } else {
+                $setUserFieldErrors = user_profile_fields_set($app->getUserId(), $_POST['profile']);
 
-            if (count($setUserFieldErrors) > 0) {
-                foreach ($setUserFieldErrors as $name => $error) {
-                    switch ($error) {
-                        case MSZ_USER_PROFILE_INVALID_FIELD:
-                            $settingsErrors[] = sprintf("Field '%s' does not exist!", $name);
-                            break;
+                if (count($setUserFieldErrors) > 0) {
+                    foreach ($setUserFieldErrors as $name => $error) {
+                        switch ($error) {
+                            case MSZ_USER_PROFILE_INVALID_FIELD:
+                                $settingsErrors[] = sprintf("Field '%s' does not exist!", $name);
+                                break;
 
-                        case MSZ_USER_PROFILE_FILTER_FAILED:
-                            $settingsErrors[] = sprintf(
-                                '%s field was invalid!',
-                                user_profile_field_get_display_name($name)
-                            );
-                            break;
+                            case MSZ_USER_PROFILE_FILTER_FAILED:
+                                $settingsErrors[] = sprintf(
+                                    '%s field was invalid!',
+                                    user_profile_field_get_display_name($name)
+                                );
+                                break;
 
-                        case MSZ_USER_PROFILE_UPDATE_FAILED:
-                            $settingsErrors[] = 'Failed to update values, contact an administator.';
-                            break;
+                            case MSZ_USER_PROFILE_UPDATE_FAILED:
+                                $settingsErrors[] = 'Failed to update values, contact an administator.';
+                                break;
 
-                        default:
-                            $settingsErrors[] = 'An unexpected error occurred, contact an administator.';
-                            break;
+                            default:
+                                $settingsErrors[] = 'An unexpected error occurred, contact an administator.';
+                                break;
+                        }
                     }
                 }
             }
@@ -110,9 +116,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
 
                 case 'upload':
+                    if (!$perms['edit_avatar']) {
+                        $settingsErrors[] = "You aren't allow to change your avatar.";
+                        break;
+                    }
+
                     if (empty($_FILES['avatar'])
-                    || !is_array($_FILES['avatar'])
-                    || empty($_FILES['avatar']['name']['file'])) {
+                        || !is_array($_FILES['avatar'])
+                        || empty($_FILES['avatar']['name']['file'])) {
                         break;
                     }
 
@@ -121,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $avatarErrorStrings['upload'][$_FILES['avatar']['error']['file']]
                             ?? $avatarErrorStrings['upload']['default'],
                             $_FILES['avatar']['error']['file'],
-                            byte_symbol($avatarProps['max_filesize'], true),
+                            byte_symbol($avatarProps['max_size'], true),
                             $avatarProps['max_width'],
                             $avatarProps['max_height']
                         );
@@ -130,7 +141,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     $setAvatar = user_avatar_set_from_path(
                         $app->getUserId(),
-                        $_FILES['avatar']['tmp_name']['file']
+                        $_FILES['avatar']['tmp_name']['file'],
+                        $avatarProps
                     );
 
                     if ($setAvatar !== MSZ_USER_AVATAR_NO_ERRORS) {
@@ -138,9 +150,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $avatarErrorStrings['set'][$setAvatar]
                             ?? $avatarErrorStrings['set']['default'],
                             $setAvatar,
-                            byte_symbol($avatarProps['max_filesize'], true),
+                            byte_symbol($avatarProps['max_size'], true),
                             $avatarProps['max_width'],
                             $avatarProps['max_height']
+                        );
+                    }
+                    break;
+            }
+        }
+
+        if (!empty($_POST['background']) && is_array($_POST['background'])) {
+            switch ($_POST['background']['mode'] ?? '') {
+                case 'delete':
+                    user_background_delete($app->getUserId());
+                    break;
+
+                case 'upload':
+                    if (!$perms['edit_background']) {
+                        $settingsErrors[] = "You aren't allow to change your background.";
+                        break;
+                    }
+
+                    if (empty($_FILES['background'])
+                        || !is_array($_FILES['background'])
+                        || empty($_FILES['background']['name']['file'])) {
+                        break;
+                    }
+
+                    if ($_FILES['background']['error']['file'] !== UPLOAD_ERR_OK) {
+                        $settingsErrors[] = sprintf(
+                            $avatarErrorStrings['upload'][$_FILES['background']['error']['file']]
+                            ?? $avatarErrorStrings['upload']['default'],
+                            $_FILES['background']['error']['file'],
+                            byte_symbol($backgroundProps['max_size'], true),
+                            $backgroundProps['max_width'],
+                            $backgroundProps['max_height']
+                        );
+                        break;
+                    }
+
+                    $setBackground = user_background_set_from_path(
+                        $app->getUserId(),
+                        $_FILES['background']['tmp_name']['file'],
+                        $backgroundProps
+                    );
+
+                    if ($setBackground !== MSZ_USER_BACKGROUND_NO_ERRORS) {
+                        $settingsErrors[] = sprintf(
+                            $avatarErrorStrings['set'][$setBackground]
+                            ?? $avatarErrorStrings['set']['default'],
+                            $setBackground,
+                            byte_symbol($backgroundProps['max_size'], true),
+                            $backgroundProps['max_width'],
+                            $backgroundProps['max_height']
                         );
                     }
                     break;
@@ -304,13 +366,13 @@ switch ($settingsMode) {
         $getMail->bindValue('user_id', $app->getUserId());
         $currentEmail = $getMail->execute() ? $getMail->fetchColumn() : 'Failed to fetch e-mail address.';
         $userHasAvatar = is_file(build_path($app->getStoragePath(), 'avatars/original', $avatarFileName));
+        $userHasBackground = is_file(build_path($app->getStoragePath(), 'backgrounds/original', $avatarFileName));
 
         tpl_vars([
-            'avatar_user_id' => $app->getUserId(),
-            'avatar_max_width' => $avatarProps['max_width'],
-            'avatar_max_height' => $avatarProps['max_height'],
-            'avatar_max_filesize' => $avatarProps['max_filesize'],
+            'avatar' => $avatarProps,
+            'background' => $backgroundProps,
             'user_has_avatar' => $userHasAvatar,
+            'user_has_background' => $userHasBackground,
             'settings_profile_fields' => $profileFields,
             'settings_profile_values' => $userFields,
             'settings_disable_account_options' => $disableAccountOptions,

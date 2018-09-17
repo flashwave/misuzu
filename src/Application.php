@@ -20,12 +20,6 @@ final class Application
     private static $instance = null;
 
     /**
-     * Whether the application is in debug mode, this should only be set in the constructor and never altered.
-     * @var bool
-     */
-    private $debugMode = false;
-
-    /**
      * Array of database connection names, first in the list is assumed to be the default.
      */
     private const DATABASE_CONNECTIONS = [
@@ -52,60 +46,35 @@ final class Application
 
     private $config = [];
 
-    /**
-     * TemplatingEngine instance.
-     * @var \Misuzu\TemplateEngine
-     */
-    private $templatingInstance = null;
-
     private $mailerInstance = null;
 
     private $geoipInstance = null;
-
-    private $startupTime = 0;
 
     /**
      * Constructor, called by ApplicationBase::start() which also passes the arguments through.
      * @param null|string $configFile
      * @param bool        $debug
      */
-    public function __construct(?string $configFile = null, bool $debug = false)
+    public function __construct(?string $configFile = null)
     {
         if (!empty(self::$instance)) {
             throw new UnexpectedValueException('An Application has already been set up.');
         }
 
         self::$instance = $this;
-        $this->startupTime = microtime(true);
-        $this->debugMode = $debug;
-        $this->config = parse_ini_file($configFile, true, INI_SCANNER_TYPED);
+        $this->config = is_file($configFile) ? parse_ini_file($configFile, true, INI_SCANNER_TYPED) : [];
 
         if ($this->config === false) {
             throw new UnexpectedValueException('Failed to parse configuration.');
         }
-
-        // only use this error handler in prod mode, dev uses Whoops now
-        if (!$debug) {
-            ExceptionHandler::register(
-                false,
-                $this->config['Exceptions']['report_url'] ?? null,
-                $this->config['Exceptions']['hash_key'] ?? null
-            );
-        }
     }
 
-    public function getTimeSinceStart(): float
+    public function getReportInfo(): array
     {
-        return microtime(true) - $this->startupTime;
-    }
-
-    /**
-     * Gets whether we're in debug mode or not.
-     * @return bool
-     */
-    public function inDebugMode(): bool
-    {
-        return $this->debugMode;
+        return [
+            $this->config['Exceptions']['report_url'] ?? null,
+            $this->config['Exceptions']['hash_key'] ?? null,
+        ];
     }
 
     /**
@@ -224,53 +193,6 @@ final class Application
         );
     }
 
-    /**
-     * Sets up the templating engine module.
-     */
-    public function startTemplating(): void
-    {
-        if (!is_null($this->templatingInstance)) {
-            throw new UnexpectedValueException('Templating module has already been started.');
-        }
-
-        tpl_init([
-            'debug' => $this->debugMode,
-        ]);
-
-        tpl_var('globals', [
-            'site_name' => $this->config['Site']['name'] ?? 'Flashii',
-            'site_description' => $this->config['Site']['description'] ?? '',
-            'site_twitter' => $this->config['Site']['twitter'] ?? '',
-            'site_url' => $this->config['Site']['url'] ?? '',
-        ]);
-
-        tpl_add_function('json_decode', true);
-        tpl_add_function('byte_symbol', true);
-        tpl_add_function('html_link', true);
-        tpl_add_function('html_colour', true);
-        tpl_add_function('url_construct', true);
-        tpl_add_function('country_name', true, 'get_country_name');
-        tpl_add_function('flip', true, 'array_flip');
-        tpl_add_function('first_paragraph', true);
-        tpl_add_function('colour_get_css', true);
-        tpl_add_function('colour_get_css_contrast', true);
-        tpl_add_function('colour_get_inherit', true);
-        tpl_add_function('colour_get_red', true);
-        tpl_add_function('colour_get_green', true);
-        tpl_add_function('colour_get_blue', true);
-        tpl_add_function('parse_line', true);
-        tpl_add_function('parse_text', true);
-        tpl_add_function('asset_url', true);
-        tpl_add_function('vsprintf', true);
-        tpl_add_function('perms_check', true);
-
-        tpl_add_function('git_commit_hash');
-        tpl_add_function('git_branch');
-        tpl_add_function('csrf_token', false, 'tmp_csrf_token');
-
-        tpl_var('app', $this);
-    }
-
     public function startMailer(): void
     {
         if (!empty($this->mailerInstance)) {
@@ -365,7 +287,16 @@ final class Application
         return [
             'max_width' => intval($this->config['Avatar']['max_width'] ?? 4000),
             'max_height' => intval($this->config['Avatar']['max_height'] ?? 4000),
-            'max_filesize' => intval($this->config['Avatar']['max_filesize'] ?? 1000000),
+            'max_size' => intval($this->config['Avatar']['max_filesize'] ?? 1000000),
+        ];
+    }
+
+    public function getBackgroundProps(): array
+    {
+        return [
+            'max_width' => intval($this->config['Background']['max_width'] ?? 3840),
+            'max_height' => intval($this->config['Background']['max_height'] ?? 2160),
+            'max_size' => intval($this->config['Background']['max_filesize'] ?? 1000000),
         ];
     }
 
@@ -391,6 +322,16 @@ final class Application
             'embed_url' => $this->config['Site']['url'] ?? '',
             'embed_logo' => $this->config['Site']['external_logo'] ?? '',
             'embed_same_as' => explode(',', $this->config['Site']['social_media'] ?? '')
+        ];
+    }
+
+    public function getSiteInfo(): array
+    {
+        return [
+            'site_name' => $this->config['Site']['name'] ?? 'Flashii',
+            'site_description' => $this->config['Site']['description'] ?? '',
+            'site_twitter' => $this->config['Site']['twitter'] ?? '',
+            'site_url' => $this->config['Site']['url'] ?? '',
         ];
     }
 

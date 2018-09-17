@@ -126,6 +126,10 @@ function colour_from_hex(int &$colour, string $hex): bool
         return false;
     }
 
+    if (!ctype_xdigit($hex)) {
+        return false;
+    }
+
     colour_from_rgb(
         $colour,
         hexdec(mb_substr($hex, 0, 2)),
