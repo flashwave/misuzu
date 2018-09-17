@@ -37,6 +37,15 @@
 
         &__content {
             margin: 5px 10px;
+            flex: 1 1 auto;
+        }
+
+        &__relation {
+            font-variant: all-small-caps;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 2px;
+            line-height: 1.2em;
+            padding: 1px 5px 4px;
         }
     }
 
@@ -68,6 +77,15 @@
             color: #111;
             background-color: var(--accent-colour);
             text-shadow: initial;
+        }
+
+        &--destroy {
+            color: #c00;
+            border-color: #c00;
+
+            &:hover {
+                background-color: #c00;
+            }
         }
     }
 

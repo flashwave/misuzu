@@ -94,12 +94,19 @@
                         </div>
                     </div>
                 </div>
+
+                <!--div class="profile__header__details__relation">
+                    Follows you
+                </div-->
             </div>
 
             <div class="profile__header__options">
                 <div class="profile__header__actions">
                     {% if current_user.user_id|default(0) == profile.user_id %}
                         <a href="/settings.php" class="profile__header__action">Edit Profile</a>
+                    {# else %}
+                        <a href="#" class="profile__header__action">Add Friend</a>
+                        <a href="#" class="profile__header__action profile__header__action--destroy">Unfriend</a>#}
                     {% endif %}
                 </div>
 
