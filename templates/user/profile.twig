@@ -96,70 +96,78 @@
                 </div>
             </div>
 
-            <div class="profile__header__stats">
-                <div class="profile__header__stat" title="{{ profile.created_at|date('r') }}">
-                    <div class="profile__header__stat__name">
-                        Joined
-                    </div>
-                    <time class="profile__header__stat__value" datetime="{{ profile.created_at|date('c') }}">
-                        {{ profile.created_at|time_diff }}
-                    </time>
+            <div class="profile__header__options">
+                <div class="profile__header__actions">
+                    {% if current_user.user_id|default(0) == profile.user_id %}
+                        <a href="/settings.php" class="profile__header__action">Edit Profile</a>
+                    {% endif %}
                 </div>
 
-                {% if profile.last_seen is not null %}
-                    <div class="profile__header__stat" title="{{ profile.last_seen|date('r') }}">
+                <div class="profile__header__stats">
+                    <div class="profile__header__stat profile__header__stat--date" title="{{ profile.created_at|date('r') }}">
                         <div class="profile__header__stat__name">
-                            Last seen
+                            Joined
                         </div>
-                        <time class="profile__header__stat__value" datetime="{{ profile.last_seen|date('c') }}">
-                            {{ profile.last_seen|date('U') + 10 >= ''|date('U') ? 'just now' : profile.last_seen|time_diff }}
+                        <time class="profile__header__stat__value" datetime="{{ profile.created_at|date('c') }}">
+                            {{ profile.created_at|time_diff }}
                         </time>
                     </div>
-                {% endif %}
 
-                {% if profile.forum_topic_count > 0 %}
-                    <div class="profile__header__stat">
-                        <div class="profile__header__stat__name">
-                            Topics
+                    {% if profile.last_seen is not null %}
+                        <div class="profile__header__stat profile__header__stat--date" title="{{ profile.last_seen|date('r') }}">
+                            <div class="profile__header__stat__name">
+                                Last seen
+                            </div>
+                            <time class="profile__header__stat__value" datetime="{{ profile.last_seen|date('c') }}">
+                                {{ profile.last_seen|date('U') + 10 >= ''|date('U') ? 'just now' : profile.last_seen|time_diff }}
+                            </time>
                         </div>
-                        <div class="profile__header__stat__value">
-                            {{ profile.forum_topic_count|number_format }}
-                        </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
 
-                {% if profile.forum_post_count > 0 %}
-                    <div class="profile__header__stat">
-                        <div class="profile__header__stat__name">
-                            Posts
+                    {% if profile.forum_topic_count > 0 %}
+                        <div class="profile__header__stat">
+                            <div class="profile__header__stat__name">
+                                Topics
+                            </div>
+                            <div class="profile__header__stat__value">
+                                {{ profile.forum_topic_count|number_format }}
+                            </div>
                         </div>
-                        <div class="profile__header__stat__value">
-                            {{ profile.forum_post_count|number_format }}
-                        </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
 
-                {% if profile.comments_count > 0 %}
-                    <div class="profile__header__stat">
-                        <div class="profile__header__stat__name">
-                            Comments
+                    {% if profile.forum_post_count > 0 %}
+                        <div class="profile__header__stat">
+                            <div class="profile__header__stat__name">
+                                Posts
+                            </div>
+                            <div class="profile__header__stat__value">
+                                {{ profile.forum_post_count|number_format }}
+                            </div>
                         </div>
-                        <div class="profile__header__stat__value">
-                            {{ profile.comments_count|number_format }}
-                        </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
 
-                {% if profile.changelog_count > 0 %}
-                    <a class="profile__header__stat" href="/changelog.php?u={{ profile.user_id }}">
-                        <div class="profile__header__stat__name">
-                            Changes
+                    {% if profile.comments_count > 0 %}
+                        <div class="profile__header__stat">
+                            <div class="profile__header__stat__name">
+                                Comments
+                            </div>
+                            <div class="profile__header__stat__value">
+                                {{ profile.comments_count|number_format }}
+                            </div>
                         </div>
-                        <div class="profile__header__stat__value">
-                            {{ profile.changelog_count|number_format }}
-                        </div>
-                    </a>
-                {% endif %}
+                    {% endif %}
+
+                    {% if profile.changelog_count > 0 %}
+                        <a class="profile__header__stat" href="/changelog.php?u={{ profile.user_id }}">
+                            <div class="profile__header__stat__name">
+                                Changes
+                            </div>
+                            <div class="profile__header__stat__value">
+                                {{ profile.changelog_count|number_format }}
+                            </div>
+                        </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
 

@@ -40,11 +40,31 @@
         }
     }
 
-    &__stats {
+    &__options {
         background-color: rgba(0, 0, 0, .9);
         padding: 0 20px;
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
+    }
+
+    &__actions {
+        display: flex;
+        align-items: center;
+    }
+
+    &__action {
+        border-radius: 2px;
+        color: var(--accent-colour);
+        text-decoration: none;
+        border: 1px solid var(--accent-colour);
+        margin-right: 10px;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 1.2em;
+    }
+
+    &__stats {
+        display: flex;
     }
 
     &__stat {
@@ -52,6 +72,10 @@
         color: inherit;
         text-decoration: none;
         padding: 10px;
+
+        &--date {
+            min-width: 130px;
+        }
 
         &__name {
             font-size: .9em;
