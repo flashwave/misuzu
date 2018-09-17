@@ -77,29 +77,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $settingsErrors[] = $csrfErrorString;
     } else {
         if (!empty($_POST['profile']) && is_array($_POST['profile'])) {
-            $setUserFieldErrors = user_profile_fields_set($app->getUserId(), $_POST['profile']);
+            if (!$perms['edit_profile']) {
+                $settingsErrors[] = "You're not allowed to edit your profile.";
+            } else {
+                $setUserFieldErrors = user_profile_fields_set($app->getUserId(), $_POST['profile']);
 
-            if (count($setUserFieldErrors) > 0) {
-                foreach ($setUserFieldErrors as $name => $error) {
-                    switch ($error) {
-                        case MSZ_USER_PROFILE_INVALID_FIELD:
-                            $settingsErrors[] = sprintf("Field '%s' does not exist!", $name);
-                            break;
+                if (count($setUserFieldErrors) > 0) {
+                    foreach ($setUserFieldErrors as $name => $error) {
+                        switch ($error) {
+                            case MSZ_USER_PROFILE_INVALID_FIELD:
+                                $settingsErrors[] = sprintf("Field '%s' does not exist!", $name);
+                                break;
 
-                        case MSZ_USER_PROFILE_FILTER_FAILED:
-                            $settingsErrors[] = sprintf(
-                                '%s field was invalid!',
-                                user_profile_field_get_display_name($name)
-                            );
-                            break;
+                            case MSZ_USER_PROFILE_FILTER_FAILED:
+                                $settingsErrors[] = sprintf(
+                                    '%s field was invalid!',
+                                    user_profile_field_get_display_name($name)
+                                );
+                                break;
 
-                        case MSZ_USER_PROFILE_UPDATE_FAILED:
-                            $settingsErrors[] = 'Failed to update values, contact an administator.';
-                            break;
+                            case MSZ_USER_PROFILE_UPDATE_FAILED:
+                                $settingsErrors[] = 'Failed to update values, contact an administator.';
+                                break;
 
-                        default:
-                            $settingsErrors[] = 'An unexpected error occurred, contact an administator.';
-                            break;
+                            default:
+                                $settingsErrors[] = 'An unexpected error occurred, contact an administator.';
+                                break;
+                        }
                     }
                 }
             }
