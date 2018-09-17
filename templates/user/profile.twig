@@ -6,66 +6,9 @@
 {% set title = 'Profile of ' ~ profile.username %}
 {% set manage_link = '/manage/users.php?v=view&u=' ~ profile.user_id %}
 
-{% set youtube_is_channel_id = profile.user_youtube|slice(0, 2) == 'UC' and profile.user_youtube|length == 24 %}
-
 {% if has_background %}
     {% set site_background_url = '/profile.php?m=background&u=' ~ profile.user_id %}
 {% endif %}
-
-{% set profile_fields = {
-    'twitter': {
-        'title': 'Twitter',
-        'value': profile.user_twitter|escape,
-        'link': 'https://twitter.com/%s',
-        'format': '@%s',
-    },
-    'osu': {
-        'title': 'osu!',
-        'value': profile.user_osu|escape,
-        'link': 'https://osu.ppy.sh/users/%s',
-    },
-    'website': {
-        'title': 'Website',
-        'value': profile.user_website|escape,
-        'link': '%s',
-        'tooltip': '%s',
-    },
-    'youtube': {
-        'title': 'Youtube',
-        'value': profile.user_youtube|escape,
-        'link': 'https://youtube.com/' ~ (youtube_is_channel_id ? 'channel/' : '') ~ '%s',
-        'format': youtube_is_channel_id ? 'Channel' : '%s',
-    },
-    'steam': {
-        'title': 'Steam',
-        'value': profile.user_steam|escape,
-        'link': 'https://steamcommunity.com/id/%s',
-    },
-    'twitchtv': {
-        'title': 'Twitch.tv',
-        'value': profile.user_twitchtv|escape,
-        'link': 'https://twitch.tv/%s',
-    },
-    'lastfm': {
-        'title': 'Last.fm',
-        'value': profile.user_lastfm|escape,
-        'link': 'http://last.fm/user/%s',
-    },
-    'github': {
-        'title': 'Github',
-        'value': profile.user_github|escape,
-        'link': 'https://github.com/%s',
-    },
-    'skype': {
-        'title': 'Skype',
-        'value': profile.user_skype|escape,
-        'link': 'skype:%s?userinfo',
-    },
-    'discord': {
-        'title': 'Discord',
-        'value': profile.user_discord|escape,
-    },
-} %}
 
 {% block content %}
     <div class="profile" id="profile">
@@ -178,36 +121,44 @@
             </div>
         </div>
 
+        <div class="profile__container__placeholder">
+            <div class="profile__container__placeholder__content">
+                The profile pages are still under much construction, more things will eventually populate the area where this container current exists.
+            </div>
+        </div>
 
-            <div class="profile__info">
-                {% if current_user is defined %}
-                {% spaceless %}
-                <div class="profile__info__section">
-                    <div class="profile__info__block profile__info__block--links">
-                        {% autoescape false %}
-                        {% for name, data in profile_fields %}
-                            {% if (data.display is defined ? data.display : true) and data.value|length > 0 %}
-                                <div class="profile__info__row profile__info__row--field-{{ name }}">
-                                    <div class="profile__info__column profile__info__column--heading">
-                                        {{ data.title }}
-                                    </div>
-                                    <div class="profile__info__column"
-                                        {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>
-                                        {% set profile_field_value = (data.format is defined ? data.format : '%s')|format(data.value) %}
-                                        {% if data.link is defined %}
-                                            {{ data.link|format(data.value)|html_link(profile_field_value, 'profile__account-link') }}
-                                        {% else %}
-                                            {{ profile_field_value }}
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                        {% endautoescape %}
+        <div class="profile__container">
+            <div class="profile__container__side">
+                {% if current_user is not defined %}
+                    <div class="profile__accounts">
+                        <div class="profile__accounts__notice">
+                            You must <a href="/auth.php?m=login" class="profile__accounts__link">log in</a> to view full profiles!
+                        </div>
                     </div>
-                </div>
-                {% endspaceless %}
+                {% elseif profile_fields|default([])|length > 0 %}
+                    <div class="profile__accounts">
+                        {% for name, data in profile_fields %}
+                            <div class="profile__accounts__item">
+                                <div class="profile__accounts__title">
+                                    {{ data.name }}
+                                </div>
+                                <div class="profile__accounts__value"
+                                    {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>
+                                    {% set profile_field_value = (data.format is defined ? data.format : '%s')|format(data.value) %}
+                                    {% if data.link is defined %}
+                                        {{ data.link|format(data.value)|html_link(profile_field_value, 'profile__accounts__link')|raw }}
+                                    {% else %}
+                                        {{ profile_field_value }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
                 {% endif %}
             </div>
+
+            <div class="profile__container__main">
+            </div>
+        </div>
     </div>
 {% endblock %}

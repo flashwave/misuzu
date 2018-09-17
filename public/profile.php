@@ -96,6 +96,7 @@ switch ($mode) {
 
         tpl_vars([
             'profile' => $profile,
+            'profile_fields' => $app->hasActiveSession() ? user_profile_fields_display($profile) : [],
             'has_background' => is_file(build_path($app->getStoragePath(), 'backgrounds/original', "{$profile['user_id']}.msz")),
         ]);
         echo tpl_render('user.profile');
