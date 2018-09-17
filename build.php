@@ -44,6 +44,8 @@ define('NODE_MODULES_DIR', __DIR__ . '/node_modules');
 define('NODE_DEST_CSS', CSS_DIR . '/libraries.css');
 define('NODE_DEST_JS', JS_DIR . '/libraries.js');
 
+define('TWIG_DIRECTORY', sys_get_temp_dir() . '/msz-tpl-cache-' . md5(__DIR__));
+
 /**
  * FUNCTIONS
  */
@@ -71,8 +73,14 @@ function deleteAllFilesInDir(string $dir, string $pattern): void
     $files = globDir($dir, $pattern);
 
     foreach ($files as $file) {
-        unlink($file);
-        misuzu_log("Deleted '{$file}'");
+        if (is_dir($file)) {
+            misuzu_log("'{$file}' is a directory, entering...");
+            deleteAllFilesInDir($file, $pattern);
+            rmdir($file);
+        } else {
+            unlink($file);
+            misuzu_log("Deleted '{$file}'");
+        }
     }
 }
 
@@ -148,4 +156,12 @@ foreach (IMPORT_SEQ as $sequence) {
     }
 
     file_put_contents($sequence['destination'], $contents);
+}
+
+// no need to do this in debug mode, auto reload is enabled and cache is disabled
+if (!file_exists(__DIR__ . '/.debug')) {
+    // Clear Twig cache
+    misuzu_log();
+    misuzu_log('Deleting template cache');
+    deleteAllFilesInDir(TWIG_DIRECTORY, '*');
 }

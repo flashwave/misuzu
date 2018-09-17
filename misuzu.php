@@ -226,7 +226,11 @@ MIG;
 
     $app->startCache();
 
-    tpl_init(['debug' => MSZ_DEBUG]);
+    tpl_init([
+        'debug' => MSZ_DEBUG,
+        'auto_reload' => MSZ_DEBUG,
+        'cache' => MSZ_DEBUG ? false : create_directory(build_path(sys_get_temp_dir(), 'msz-tpl-cache-' . md5(__DIR__))),
+    ]);
 
     tpl_var('globals', $app->getSiteInfo());
 
