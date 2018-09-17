@@ -112,6 +112,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
 
                 case 'upload':
+                    if (!$perms['edit_avatar']) {
+                        $settingsErrors[] = "You aren't allow to change your avatar.";
+                        break;
+                    }
+
                     if (empty($_FILES['avatar'])
                         || !is_array($_FILES['avatar'])
                         || empty($_FILES['avatar']['name']['file'])) {
@@ -123,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $avatarErrorStrings['upload'][$_FILES['avatar']['error']['file']]
                             ?? $avatarErrorStrings['upload']['default'],
                             $_FILES['avatar']['error']['file'],
-                            byte_symbol($avatarProps['max_filesize'], true),
+                            byte_symbol($avatarProps['max_size'], true),
                             $avatarProps['max_width'],
                             $avatarProps['max_height']
                         );
@@ -141,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $avatarErrorStrings['set'][$setAvatar]
                             ?? $avatarErrorStrings['set']['default'],
                             $setAvatar,
-                            byte_symbol($avatarProps['max_filesize'], true),
+                            byte_symbol($avatarProps['max_size'], true),
                             $avatarProps['max_width'],
                             $avatarProps['max_height']
                         );
@@ -157,6 +162,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
 
                 case 'upload':
+                    if (!$perms['edit_background']) {
+                        $settingsErrors[] = "You aren't allow to change your background.";
+                        break;
+                    }
+
                     if (empty($_FILES['background'])
                         || !is_array($_FILES['background'])
                         || empty($_FILES['background']['name']['file'])) {
@@ -168,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $avatarErrorStrings['upload'][$_FILES['background']['error']['file']]
                             ?? $avatarErrorStrings['upload']['default'],
                             $_FILES['background']['error']['file'],
-                            byte_symbol($backgroundProps['max_filesize'], true),
+                            byte_symbol($backgroundProps['max_size'], true),
                             $backgroundProps['max_width'],
                             $backgroundProps['max_height']
                         );
@@ -186,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $avatarErrorStrings['set'][$setBackground]
                             ?? $avatarErrorStrings['set']['default'],
                             $setBackground,
-                            byte_symbol($backgroundProps['max_filesize'], true),
+                            byte_symbol($backgroundProps['max_size'], true),
                             $backgroundProps['max_width'],
                             $backgroundProps['max_height']
                         );
