@@ -6,7 +6,12 @@
     <div class="userlist">
         {% for user in manage_users %}
             <div class="userlist__item">
-                {{ user_card(user, '?v=view&u=%d', '?v=role&r=%d') }}
+                {{ user_card(user, '?v=view&u=%d', '?v=role&r=%d', [
+                    {
+                        'href': '/profile.php?u=%d'|format(user.user_id),
+                        'text': 'Profile',
+                    }
+                ]) }}
             </div>
         {% endfor %}
     </div>
