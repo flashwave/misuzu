@@ -20,7 +20,7 @@
     --text-colour-header: @default-header-text-colour;
     --background-colour: @default-background-colour;
     --background-colour-translucent: fade(@default-background-colour, 90%);
-    --gradient-start: @default-gradient-start;
+    --gradient-start: @default-gradient-start; // deprecate this in favour of --accent-colour at some point
 }
 
 * {
@@ -81,6 +81,7 @@ body {
 @import "classes/profile/header";
 @import "classes/profile/container";
 @import "classes/profile/accounts";
+@import "classes/profile/about";
 
 // Changelog
 @import "classes/changelog";
