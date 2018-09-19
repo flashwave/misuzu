@@ -94,6 +94,36 @@ switch ($mode) {
             break;
         }
 
+        if ($app->hasActiveSession()) {
+            $getFriendInfo = Database::prepare('
+                SELECT
+                    :visitor as `visitor`, :profile as `profile`,
+                    (
+                        SELECT `relation_type`
+                        FROM `msz_user_relations`
+                        WHERE `user_id` = `visitor`
+                        AND `subject_id` = `profile`
+                    ) as `visitor_relation`,
+                    (
+                        SELECT `relation_type`
+                        FROM `msz_user_relations`
+                        WHERE `subject_id` = `visitor`
+                        AND `user_id` = `profile`
+                    ) as `profile_relation`,
+                    (
+                        SELECT MAX(`relation_created`)
+                        FROM `msz_user_relations`
+                        WHERE (`user_id` = `visitor` AND `subject_id` = `profile`)
+                        OR (`user_id` = `profile` AND `subject_id` = `visitor`)
+                    ) as `relation_created`
+            ');
+            $getFriendInfo->bindValue('visitor', $app->getUserId());
+            $getFriendInfo->bindValue('profile', $profile['user_id']);
+            $friendInfo = $getFriendInfo->execute() ? $getFriendInfo->fetch(PDO::FETCH_ASSOC) : [];
+
+            tpl_var('friend_info', $friendInfo);
+        }
+
         tpl_vars([
             'profile' => $profile,
             'profile_fields' => $app->hasActiveSession() ? user_profile_fields_display($profile) : [],

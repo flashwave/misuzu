@@ -1,13 +1,14 @@
 .usercard {
-    box-shadow: 0 1px 2px var(--accent-colour);
     width: 300px;
-    height: 70px;
+    max-height: 100px;
     transition: box-shadow .5s;
     z-index: 1;
     color: #fff;
+    text-shadow: 0 1px 4px #111;
+    box-shadow: 0 1px 4px #111;
 
     &:hover {
-        box-shadow: 0 1px 1em var(--accent-colour);
+        box-shadow: 0 1px 8px #111;
         z-index: 2;
     }
 
@@ -24,27 +25,70 @@
     }
 
     &__container {
-        padding: 4px;
         height: 100%;
         width: 100%;
         //border: 1px solid var(--accent-colour);
         pointer-events: none;
         display: flex;
-        background-color: rgba(0, 0, 0, .7);
+        flex-direction: column;
+    }
+
+    &__details {
+        margin: 5px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
     }
 
     &__avatar {
-        width: 60px;
-        height: 60px;
+        width: 50px;
+        height: 50px;
         flex: 0 0 auto;
-        margin-right: 5px;
+        margin: 10px;
     }
 
-    &__content {
+    &__main {
         display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex: 1 1 auto;
+        height: 70px;
+        background-image: linear-gradient(0deg, rgba(0, 0, 0, .9), transparent);
+    }
+
+    &__actions {
+        height: 30px;
+        padding: 0 10px;
+        background-color: rgba(0, 0, 0, .9);
+        display: flex;
+        align-items: center;
+    }
+
+    &__action {
+        border-radius: 2px;
+        color: var(--accent-colour);
+        background-color: #111;
+        text-decoration: none;
+        border: 1px solid var(--accent-colour);
+        margin-right: 4px;
+        padding: 2px 5px;
+        cursor: pointer;
+        pointer-events: initial;
+        font-size: .9em;
+        line-height: 1.5em;
+        transition: color .2s, background-color .2s;
+
+        &:hover {
+            color: #111;
+            background-color: var(--accent-colour);
+            text-shadow: initial;
+        }
+
+        &--destroy {
+            color: #c00;
+            border-color: #c00;
+
+            &:hover {
+                background-color: #c00;
+            }
+        }
     }
 
     &__name {

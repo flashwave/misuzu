@@ -14,7 +14,7 @@
     <div class="profile" id="profile">
         <div class="profile__header">
             <div class="profile__header__details">
-                <div class="avatar profile__header__avatar" style="background-image:url('{{ image }}')"></div>
+                <div class="avatar avatar--new profile__header__avatar" style="background-image:url('{{ image }}')"></div>
 
                 <div class="profile__header__details__content">
                     <div class="profile__header__username" style="{{ profile.user_colour|html_colour({
@@ -38,18 +38,29 @@
                     </div>
                 </div>
 
-                <!--div class="profile__header__details__relation">
-                    Follows you
-                </div-->
+                {% if friend_info is defined and (friend_info.profile_relation is not null or friend_info.visitor_relation is not null) %}
+                    <div class="profile__header__details__relation" title="Since {{ friend_info.relation_created|date('r') }}">
+                        {% if friend_info.profile_relation and friend_info.visitor_relation %}
+                            Mutual Friends
+                        {% elseif friend_info.visitor_relation %}
+                            You Follow
+                        {% elseif friend_info.profile_relation %}
+                            Follows You
+                        {% endif %}
+                    </div>
+                {% endif %}
             </div>
 
             <div class="profile__header__options">
                 <div class="profile__header__actions">
                     {% if current_user.user_id|default(0) == profile.user_id %}
                         <a href="/settings.php" class="profile__header__action">Edit Profile</a>
-                    {# else %}
-                        <a href="#" class="profile__header__action">Add Friend</a>
-                        <a href="#" class="profile__header__action profile__header__action--destroy">Unfriend</a>#}
+                    {% elseif current_user is defined %}
+                        {% if friend_info.visitor_relation == constant('MSZ_USER_RELATION_FOLLOW') %}
+                            <a href="/relations.php?u={{ profile.user_id }}&amp;m=remove" class="profile__header__action profile__header__action--destroy">{{ friend_info.profile_relation == constant('MSZ_USER_RELATION_FOLLOW') ? 'Unfriend' : 'Unfollow' }}</a>
+                        {% else %}
+                            <a href="/relations.php?u={{ profile.user_id }}&amp;m=add&amp;t=follow" class="profile__header__action">{{ friend_info.profile_relation == constant('MSZ_USER_RELATION_FOLLOW') ? 'Add as Friend' : 'Follow' }}</a>
+                        {% endif %}
                     {% endif %}
                 </div>
 

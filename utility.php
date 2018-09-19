@@ -423,3 +423,8 @@ function snake_to_camel(string $snake): string
 {
     return str_replace('_', '', ucwords($snake, '_'));
 }
+
+function is_user_int($value): bool
+{
+    return ctype_digit(strval($value));
+}

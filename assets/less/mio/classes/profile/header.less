@@ -8,7 +8,7 @@
 
     --profile-header: initial; //url('/profile.php?u=1&m=background');
 
-    background-color: var(--background-colour);
+    background-color: var(--accent-colour);
     background-image: var(--profile-header);
     background-size: cover;
     background-repeat: no-repeat;
@@ -23,9 +23,6 @@
     &__avatar {
         width: 120px;
         height: 120px;
-        border-radius: 2px;
-        border: initial;
-        box-shadow: 0 1px 4px #111;
     }
 
     &__details {
@@ -46,6 +43,7 @@
             border-radius: 2px;
             line-height: 1.2em;
             padding: 1px 5px 4px;
+            cursor: default;
         }
     }
 
@@ -98,6 +96,7 @@
         color: inherit;
         text-decoration: none;
         padding: 10px;
+        cursor: default;
 
         &--date {
             min-width: 130px;
@@ -106,11 +105,13 @@
         &__name {
             font-size: .9em;
             font-variant: small-caps;
+            cursor: inherit;
         }
 
         &__value {
             font-size: 1.3em;
             text-align: right;
+            cursor: inherit;
         }
     }
 
