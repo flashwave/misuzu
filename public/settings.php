@@ -12,6 +12,7 @@ $perms = [
     'edit_profile' => perms_check($userPerms, MSZ_PERM_USER_EDIT_PROFILE),
     'edit_avatar' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_AVATAR),
     'edit_background' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_BACKGROUND),
+    'edit_about' => perms_check($userPerms, MSZ_PERM_USER_EDIT_ABOUT),
 ];
 
 if (!$app->hasActiveSession()) {
@@ -105,6 +106,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 break;
                         }
                     }
+                }
+            }
+        }
+
+        if (!empty($_POST['about']) && is_array($_POST['about'])) {
+            if (!$perms['edit_about']) {
+                $settingsErrors[] = "You're not allowed to edit your about page.";
+            } else {
+                $aboutParser = (int)($_POST['about']['parser'] ?? MSZ_FORUM_POST_PARSER_PLAIN);
+                $aboutText = $_POST['about']['text'] ?? '';
+
+                // TODO: this is disgusting (move this into a user_set_about function or some shit)
+                while (true) {
+                    // TODO: take parser shit out of forum_post
+                    if (!forum_post_is_valid_parser($aboutParser)) {
+                        $settingsErrors[] = 'Invalid parser specified.';
+                        break;
+                    }
+
+                    if (strlen($aboutText) > 0xFFFF) {
+                        $settingsErrors[] = 'Please keep the length of your about page to at most ' . 0xFFFF . '.';
+                        break;
+                    }
+
+                    $setAbout = Database::prepare('
+                        UPDATE `msz_users`
+                        SET `user_about_content` = :content,
+                            `user_about_parser` = :parser
+                        WHERE `user_id` = :user
+                    ');
+                    $setAbout->bindValue('user', $app->getUserId());
+                    $setAbout->bindValue('content', strlen($aboutText) < 1 ? null : $aboutText);
+                    $setAbout->bindValue('parser', $aboutParser);
+                    $setAbout->execute();
+                    break;
                 }
             }
         }
@@ -348,7 +384,7 @@ tpl_vars([
 ]);
 
 switch ($settingsMode) {
-    case 'account':
+    case 'account': // TODO: FIX THIS GARBAGE HOLY HELL
         $profileFields = user_profile_fields_get();
         $getUserFields = Database::prepare('
             SELECT ' . pdo_prepare_array($profileFields, true, '`user_%s`') . '
@@ -368,6 +404,14 @@ switch ($settingsMode) {
         $userHasAvatar = is_file(build_path($app->getStoragePath(), 'avatars/original', $avatarFileName));
         $userHasBackground = is_file(build_path($app->getStoragePath(), 'backgrounds/original', $avatarFileName));
 
+        $getAboutInfo = Database::prepare('
+            SELECT `user_about_content`, `user_about_parser`
+            FROM `msz_users`
+            WHERE `user_id` = :user_id
+        ');
+        $getAboutInfo->bindValue('user_id', $app->getUserId());
+        $aboutInfo = $getAboutInfo->execute() ? $getAboutInfo->fetch(PDO::FETCH_ASSOC) : [];
+
         tpl_vars([
             'avatar' => $avatarProps,
             'background' => $backgroundProps,
@@ -377,6 +421,7 @@ switch ($settingsMode) {
             'settings_profile_values' => $userFields,
             'settings_disable_account_options' => $disableAccountOptions,
             'settings_email' => $currentEmail,
+            'about_info' => $aboutInfo,
         ]);
         break;
 
