@@ -221,6 +221,16 @@ function manage_perms_list(array $rawPerms): array
                     ),
                 ],
                 [
+                    'section' => 'edit-about',
+                    'title' => 'Can change own about section.',
+                    'perm' => MSZ_PERM_USER_EDIT_ABOUT,
+                    'value' => manage_perms_value(
+                        MSZ_PERM_USER_EDIT_ABOUT,
+                        $rawPerms['user_perms_allow'],
+                        $rawPerms['user_perms_deny']
+                    ),
+                ],
+                [
                     'section' => 'manage-users',
                     'title' => 'Can manage other users.',
                     'perm' => MSZ_PERM_USER_MANAGE_USERS,
