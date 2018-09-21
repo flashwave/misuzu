@@ -132,8 +132,8 @@
             </div>
         </div>
 
-        <div class="profile__container__placeholder">
-            <div class="profile__container__placeholder__content">
+        <div class="warning">
+            <div class="warning__content">
                 The profile pages are still under much construction, more things will eventually populate the area where this container current exists.
             </div>
         </div>
@@ -147,28 +147,45 @@
                         </div>
                     </div>
                 {% elseif profile_fields|default([])|length > 0 %}
-                    <div class="profile__accounts">
-                        {% for name, data in profile_fields %}
-                            <div class="profile__accounts__item">
-                                <div class="profile__accounts__title">
-                                    {{ data.name }}
+                    <div class="container container--new">
+                        <div class="container__title">
+                            Elsewhere
+                        </div>
+                        <div class="profile__accounts">
+                            {% for name, data in profile_fields %}
+                                <div class="profile__accounts__item">
+                                    <div class="profile__accounts__title">
+                                        {{ data.name }}
+                                    </div>
+                                    <div class="profile__accounts__value"
+                                        {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>
+                                        {% set profile_field_value = (data.format is defined ? data.format : '%s')|format(data.value) %}
+                                        {% if data.link is defined %}
+                                            {{ data.link|format(data.value)|html_link(profile_field_value, 'profile__accounts__link')|raw }}
+                                        {% else %}
+                                            {{ profile_field_value }}
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                <div class="profile__accounts__value"
-                                    {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>
-                                    {% set profile_field_value = (data.format is defined ? data.format : '%s')|format(data.value) %}
-                                    {% if data.link is defined %}
-                                        {{ data.link|format(data.value)|html_link(profile_field_value, 'profile__accounts__link')|raw }}
-                                    {% else %}
-                                        {{ profile_field_value }}
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
+                            {% endfor %}
+                        </div>
                     </div>
                 {% endif %}
             </div>
 
             <div class="profile__container__main">
+
+                {% if profile.user_about_content|length > 0 %}
+                    <div class="container container--new profile__about" id="about">
+                        <div class="container__title profile__about__title">
+                            About {{ profile.username }}
+                        </div>
+                        <div class="container__content profile__about__content">
+                            {{ profile.user_about_content|escape|parse_text(profile.user_about_parser)|raw }}
+                        </div>
+                    </div>
+                {% endif %}
+
             </div>
         </div>
     </div>

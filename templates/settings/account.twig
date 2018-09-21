@@ -5,7 +5,7 @@
 {% endif %}
 
 {% block settings_content %}
-    <div class="container">
+    <div class="container container--translucent">
         <div class="container__title">Account</div>
         <form action="" method="post" class="settings__account">
             <input type="hidden" name="csrf" value="{{ csrf_token() }}">
@@ -21,7 +21,7 @@
                                 {{ props.name }}
                             </div>
                             <div class="settings__account__input__value">
-                                <input type="{{ props.type|default('text') }}" name="profile[{{ name }}]" value="{{ settings_profile_values['user_' ~ name] }}" class="input__text settings__account__input__value__text">
+                                <input type="{{ props.type|default('text') }}" name="profile[{{ name }}]" value="{{ account_info['user_' ~ name] }}" class="input__text settings__account__input__value__text">
                             </div>
                         </label>
                         {% endfor %}
@@ -50,7 +50,7 @@
                                         Current e-mail address
                                     </div>
                                     <div class="settings__account__input__value">
-                                        <input type="text" class="input__text input__text--readonly settings__account__input__value__text" readonly value="{{ settings_email }}">
+                                        <input type="text" class="input__text input__text--readonly settings__account__input__value__text" readonly value="{{ account_info.email }}">
                                     </div>
                                 </label>
 
@@ -126,7 +126,7 @@
     </div>
 
     {% if settings_perms.edit_avatar %}
-        <div class="container">
+        <div class="container container--translucent">
             <div class="container__title">Avatar</div>
             <form action="" method="post" class="settings__images" enctype="multipart/form-data">
                 <input type="hidden" name="MAX_FILE_SIZE" value="{{ background.max_size }}">
@@ -197,7 +197,7 @@
     {% endif %}
 
     {% if settings_perms.edit_background %}
-        <div class="container">
+        <div class="container container--translucent">
             <div class="container__title">Background</div>
             <form action="" method="post" class="settings__images" enctype="multipart/form-data">
                 <input type="hidden" name="MAX_FILE_SIZE" value="{{ background.max_size }}">
@@ -259,6 +259,40 @@
             document.getElementById('background-selection').addEventListener('change', function (ev) {
                 updateBackgroundPreview(ev.target.files[0].name, URL.createObjectURL(ev.target.files[0]));
             });
+        </script>
+    {% endif %}
+
+    {% if settings_perms.edit_about %}
+        <div class="container">
+            <div class="container__title">
+                About
+            </div>
+
+            <form method="post" action="" enctype="multipart/form-data" class="settings__about">
+                <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+
+                <textarea name="about[text]" class="input__textarea settings__about__text" id="about-textarea">{{ account_info.user_about_content }}</textarea>
+
+                <div class="settings__about__options">
+                    <select name="about[parser]" class="input__select">
+                        {% for parser, name in constant('MSZ_PARSERS_NAMES') %}
+                            <option value="{{ parser }}"{% if parser == account_info.user_about_parser %} selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <div>
+                        <span id="about-character-count"></span>
+                        <button class="input__button">Update</button>
+                        <button class="input__button" type="reset">Reset</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            /*document.getElementById('about-textarea').addEventListener('change', function (ev) {
+                document.getElementById('about-character-count').textContent = ' / ' . ;
+            });*/
         </script>
     {% endif %}
 {% endblock %}

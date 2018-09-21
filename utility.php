@@ -20,6 +20,15 @@ function array_test(array $array, callable $func): bool
     return true;
 }
 
+function array_apply(array $array, callable $func): array
+{
+    for ($i = 0; $i < count($array); $i++) {
+        $array[$i] = $func($array[$i]);
+    }
+
+    return $array;
+}
+
 function set_cookie_m(string $name, string $value, int $expires): void
 {
     setcookie(
@@ -255,16 +264,6 @@ function pdo_prepare_array(array $keys, bool $useKeys = false, string $format = 
     return implode(', ', $parts);
 }
 
-function parse_markdown(string $text): string
-{
-    return \Misuzu\Parsers\MarkdownParser::instance()->parseText($text);
-}
-
-function parse_bbcode(string $text): string
-{
-    return \Misuzu\Parsers\BBCode\BBCodeParser::instance()->parseText($text);
-}
-
 function is_local_url(string $url): bool
 {
     $length = mb_strlen($url);
@@ -279,38 +278,6 @@ function is_local_url(string $url): bool
 
     $prefix = 'http' . (empty($_SERVER['HTTPS']) ? '' : 's') . '://' . $_SERVER['HTTP_HOST'] . '/';
     return starts_with($url, $prefix);
-}
-
-function parse_text(string $text, string $parser): string
-{
-    switch (mb_strtolower($parser)) {
-        case 'md':
-        case 'markdown':
-            return \Misuzu\Parsers\MarkdownParser::instance()->parseText($text);
-
-        case 'bb':
-        case 'bbcode':
-            return \Misuzu\Parsers\BBCode\BBCodeParser::instance()->parseText($text);
-
-        default:
-            return $text;
-    }
-}
-
-function parse_line(string $line, string $parser): string
-{
-    switch (mb_strtolower($parser)) {
-        case 'md':
-        case 'markdown':
-            return \Misuzu\Parsers\MarkdownParser::instance()->parseLine($line);
-
-        case 'bb':
-        case 'bbcode':
-            return \Misuzu\Parsers\BBCode\BBCodeParser::instance()->parseLine($line);
-
-        default:
-            return $line;
-    }
 }
 
 function render_error(int $code, string $template = 'errors.%d'): string

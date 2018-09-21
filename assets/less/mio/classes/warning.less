@@ -1,0 +1,16 @@
+.warning {
+    --start-colour: yellow;
+    --end-colour: black;
+
+    background-image: repeating-linear-gradient(-45deg, var(--start-colour), var(--start-colour) 10px, var(--end-colour) 10px, var(--end-colour) 20px);
+    box-shadow: 0 1px 4px #111;
+    margin: 2px 0;
+    padding: 2px;
+    color: #fff;
+    text-align: center;
+
+    &__content {
+        background-color: rgba(17, 17, 17, .9);
+        padding: 2px 5px;
+    }
+}

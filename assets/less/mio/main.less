@@ -11,7 +11,7 @@
 
 :root {
     --site-max-width: @site-max-width;
-    --site-background-meta: no-repeat center / cover;
+    --site-background-meta: no-repeat center / cover fixed;
     --site-background-image: initial;
 
     --accent-colour: @default-accent-colour;
@@ -19,7 +19,8 @@
     --text-colour-inverted: color(#fff - @default-text-colour);
     --text-colour-header: @default-header-text-colour;
     --background-colour: @default-background-colour;
-    --gradient-start: @default-gradient-start;
+    --background-colour-translucent: fade(@default-background-colour, 90%);
+    --gradient-start: @default-gradient-start; // deprecate this in favour of --accent-colour at some point
 }
 
 * {
@@ -74,12 +75,13 @@ body {
 @import "classes/header";
 @import "classes/index";
 @import "classes/permissions";
+@import "classes/warning";
 
 // Profile
 @import "classes/profile/profile";
 @import "classes/profile/header";
-@import "classes/profile/container";
 @import "classes/profile/accounts";
+@import "classes/profile/about";
 
 // Changelog
 @import "classes/changelog";
@@ -95,6 +97,7 @@ body {
 @import "classes/settings/log";
 @import "classes/settings/login-history";
 @import "classes/settings/sessions";
+@import "classes/settings/about";
 
 // News
 @import "classes/news/container";

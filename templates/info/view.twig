@@ -1,0 +1,14 @@
+{% extends 'info/master.twig' %}
+
+{% set title = document.title %}
+
+{% block content %}
+    <div class="container">
+        <div class="container__title">
+            {{ document.title }}
+        </div>
+        <div class="container__content">
+            {{ document.content|parse_text(constant('MSZ_PARSER_MARKDOWN'))|raw }}
+        </div>
+    </div>
+{% endblock %}
