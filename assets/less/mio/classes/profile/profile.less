@@ -1,3 +1,20 @@
 .profile {
     margin-top: 10px;
+
+    &__container {
+        display: flex;
+
+        &__main {
+            flex: 1 1 auto;
+            word-wrap: break-word;
+            overflow: hidden;
+        }
+
+        &__side {
+            flex: 0 0 auto;
+            width: 100%;
+            max-width: 300px;
+            margin-right: 2px;
+        }
+    }
 }

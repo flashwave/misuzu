@@ -11,9 +11,20 @@ define('MSZ_PARSERS', [
     MSZ_PARSER_MARKDOWN,
 ]);
 
+define('MSZ_PARSERS_NAMES', [
+    MSZ_PARSER_PLAIN => 'Plain text',
+    MSZ_PARSER_BBCODE => 'BB Code',
+    MSZ_PARSER_MARKDOWN => 'Markdown',
+]);
+
 function parser_is_valid(int $parser): bool
 {
     return in_array($parser, MSZ_PARSERS, true);
+}
+
+function parser_name(int $parser): string
+{
+    return parser_is_valid($parser) ? MSZ_PARSERS_NAMES[$parser] : '';
 }
 
 function parse_text(string $text, int $parser): string

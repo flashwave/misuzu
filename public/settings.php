@@ -386,31 +386,20 @@ tpl_vars([
 switch ($settingsMode) {
     case 'account': // TODO: FIX THIS GARBAGE HOLY HELL
         $profileFields = user_profile_fields_get();
-        $getUserFields = Database::prepare('
-            SELECT ' . pdo_prepare_array($profileFields, true, '`user_%s`') . '
-            FROM `msz_users`
-            WHERE `user_id` = :user_id
-        ');
-        $getUserFields->bindValue('user_id', $app->getUserId());
-        $userFields = $getUserFields->execute() ? $getUserFields->fetch() : [];
 
-        $getMail = Database::prepare('
-            SELECT `email`
-            FROM `msz_users`
-            WHERE `user_id` = :user_id
-        ');
-        $getMail->bindValue('user_id', $app->getUserId());
-        $currentEmail = $getMail->execute() ? $getMail->fetchColumn() : 'Failed to fetch e-mail address.';
+        $getAccountInfo = Database::prepare(sprintf(
+            '
+                SELECT %s, `email`, `user_about_content`, `user_about_parser`
+                FROM `msz_users`
+                WHERE `user_id` = :user_id
+            ',
+            pdo_prepare_array($profileFields, true, '`user_%s`')
+        ));
+        $getAccountInfo->bindValue('user_id', $app->getUserId());
+        $accountInfo = $getAccountInfo->execute() ? $getAccountInfo->fetch(PDO::FETCH_ASSOC) : [];
+
         $userHasAvatar = is_file(build_path($app->getStoragePath(), 'avatars/original', $avatarFileName));
         $userHasBackground = is_file(build_path($app->getStoragePath(), 'backgrounds/original', $avatarFileName));
-
-        $getAboutInfo = Database::prepare('
-            SELECT `user_about_content`, `user_about_parser`
-            FROM `msz_users`
-            WHERE `user_id` = :user_id
-        ');
-        $getAboutInfo->bindValue('user_id', $app->getUserId());
-        $aboutInfo = $getAboutInfo->execute() ? $getAboutInfo->fetch(PDO::FETCH_ASSOC) : [];
 
         tpl_vars([
             'avatar' => $avatarProps,
@@ -418,10 +407,8 @@ switch ($settingsMode) {
             'user_has_avatar' => $userHasAvatar,
             'user_has_background' => $userHasBackground,
             'settings_profile_fields' => $profileFields,
-            'settings_profile_values' => $userFields,
             'settings_disable_account_options' => $disableAccountOptions,
-            'settings_email' => $currentEmail,
-            'about_info' => $aboutInfo,
+            'account_info' => $accountInfo,
         ]);
         break;
 
