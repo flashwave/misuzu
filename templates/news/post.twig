@@ -13,7 +13,7 @@
 
         <div class="news__post__content">
             <div class="news__post__text">
-                {{ post.post_text|parse_text('md')|raw }}
+                {{ post.post_text|parse_text(constant('MSZ_PARSER_MARKDOWN'))|raw }}
             </div>
 
             <div class="news__sidebar news__post__details">

@@ -292,13 +292,7 @@
                 </a>
             </div>
             <div class="forum__post__content__text">
-                {% if post.post_parse == 2 %}
-                    {{ post.post_text|escape|parse_text('md')|raw }}
-                {% elseif post.post_parse == 1 %}
-                    {{ post.post_text|escape|parse_text('bb')|raw }}
-                {% else %}
-                    {{ post.post_text|escape }}
-                {% endif %}
+                {{ post.post_text|escape|parse_text(post.post_parse)|raw }}
             </div>
         </div>
     </div>

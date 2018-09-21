@@ -114,13 +114,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$perms['edit_about']) {
                 $settingsErrors[] = "You're not allowed to edit your about page.";
             } else {
-                $aboutParser = (int)($_POST['about']['parser'] ?? MSZ_FORUM_POST_PARSER_PLAIN);
+                $aboutParser = (int)($_POST['about']['parser'] ?? MSZ_PARSER_PLAIN);
                 $aboutText = $_POST['about']['text'] ?? '';
 
                 // TODO: this is disgusting (move this into a user_set_about function or some shit)
                 while (true) {
                     // TODO: take parser shit out of forum_post
-                    if (!forum_post_is_valid_parser($aboutParser)) {
+                    if (!parser_is_valid($aboutParser)) {
                         $settingsErrors[] = 'Invalid parser specified.';
                         break;
                     }

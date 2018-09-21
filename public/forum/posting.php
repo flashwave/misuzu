@@ -126,7 +126,7 @@ if ($postRequest) {
         $app->getUserId(),
         IPAddress::remote()->getString(),
         $postText,
-        MSZ_FORUM_POST_PARSER_BBCODE
+        MSZ_PARSER_BBCODE
     );
     forum_topic_mark_read($app->getUserId(), $topicId, $forum['forum_id']);
 

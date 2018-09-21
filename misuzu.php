@@ -40,6 +40,7 @@ require_once __DIR__ . '/src/Forum/perms.php';
 require_once __DIR__ . '/src/Forum/post.php';
 require_once __DIR__ . '/src/Forum/topic.php';
 require_once __DIR__ . '/src/Forum/validate.php';
+require_once __DIR__ . '/src/Parsers/parse.php';
 require_once __DIR__ . '/src/Users/login_attempt.php';
 require_once __DIR__ . '/src/Users/profile.php';
 require_once __DIR__ . '/src/Users/relations.php';

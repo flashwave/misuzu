@@ -181,13 +181,7 @@
                             About {{ profile.username }}
                         </div>
                         <div class="container__content profile__about__content">
-                            {% if profile.user_about_parser == 2 %}
-                                {{ profile.user_about_content|escape|parse_text('md')|raw }}
-                            {% elseif profile.user_about_parser == 1 %}
-                                {{ profile.user_about_content|escape|parse_text('bb')|raw }}
-                            {% else %}
-                                {{ profile.user_about_content|escape }}
-                            {% endif %}
+                            {{ profile.user_about_content|escape|parse_text(profile.user_about_parser)|raw }}
                         </div>
                     </div>
                 {% endif %}

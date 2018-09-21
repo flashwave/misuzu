@@ -1,27 +1,13 @@
 <?php
 use Misuzu\Database;
 
-define('MSZ_FORUM_POST_PARSER_PLAIN', 0);
-define('MSZ_FORUM_POST_PARSER_BBCODE', 1);
-define('MSZ_FORUM_POST_PARSER_MARKDOWN', 2);
-define('MSZ_FORUM_POST_PARSERS', [
-    MSZ_FORUM_POST_PARSER_PLAIN,
-    MSZ_FORUM_POST_PARSER_BBCODE,
-    MSZ_FORUM_POST_PARSER_MARKDOWN,
-]);
-
-function forum_post_is_valid_parser(int $parser): bool
-{
-    return in_array($parser, MSZ_FORUM_POST_PARSERS);
-}
-
 function forum_post_create(
     int $topicId,
     int $forumId,
     int $userId,
     string $ipAddress,
     string $text,
-    int $parser = MSZ_FORUM_POST_PARSER_PLAIN
+    int $parser = MSZ_PARSER_PLAIN
 ): int {
     $createPost = Database::prepare('
         INSERT INTO `msz_forum_posts`

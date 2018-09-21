@@ -8,7 +8,7 @@
             {{ document.title }}
         </div>
         <div class="container__content">
-            {{ document.content|parse_text('md')|raw }}
+            {{ document.content|parse_text(constant('MSZ_PARSER_MARKDOWN'))|raw }}
         </div>
     </div>
 {% endblock %}
