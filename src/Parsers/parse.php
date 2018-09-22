@@ -41,7 +41,7 @@ function parse_text(string $text, int $parser): string
             return BBCodeParser::instance()->parseText($text);
 
         case MSZ_PARSER_PLAIN:
-            return $text;
+            return nl2br($text);
     }
 }
 
