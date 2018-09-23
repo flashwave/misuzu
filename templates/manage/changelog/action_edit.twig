@@ -5,7 +5,7 @@
         <form action="?v=action{{ edit_action is defined ? '&a=' ~ edit_action.action_id : '' }}" method="post">
             <h1 class="container__title">
                 {% if edit_action is defined %}
-                    Editing <span style="{{ edit_action.action_colour|html_colour }}">{{ edit_action.action_name }}</span> ({{ edit_action.action_id }})
+                    Editing <span style="{{ edit_action.action_colour|html_colour }};color:var(--user-colour)">{{ edit_action.action_name }}</span> ({{ edit_action.action_id }})
                 {% else %}
                     Adding a new action
                 {% endif %}

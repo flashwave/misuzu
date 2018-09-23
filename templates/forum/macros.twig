@@ -98,8 +98,7 @@
                             </div>
                             <div class="forum__listing__entry__activity__info">
                                 {% if forum.recent_post_user_id is not null %}
-                                    by <a
-                                        href="/profile.php?u={{ forum.recent_post_user_id }}"
+                                    by <a href="/profile.php?u={{ forum.recent_post_user_id }}"
                                         style="{{ forum.recent_post_user_colour|html_colour }}"
                                         class="forum__listing__entry__activity__user">{{ forum.recent_post_username }}</a>,
                                 {% endif %}

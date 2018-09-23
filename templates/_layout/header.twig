@@ -50,17 +50,12 @@
 
             <div class="header__user__info">
                 {% if current_user is defined %}
-                    <a  href="/profile.php?u={{ current_user.user_id }}"
-                        class="header__user__name"
-                        style="{{ current_user.user_colour|html_colour({
-                            'color': '%s',
-                            'text-shadow': '0 0 5px %s',
-                        }) }}" title="{{ current_user.username }}">
+                    <a  href="/profile.php?u={{ current_user.user_id }}" class="header__user__name"
+                        style="{{ current_user.user_colour|html_colour }}" title="{{ current_user.username }}">
                         {{ current_user.username }}
                     </a>
                 {% else %}
-                    <a  href="/auth.php?m=login"
-                        class="header__user__name">
+                    <a href="/auth.php?m=login" class="header__user__name">
                         Guest
                     </a>
                 {% endif %}

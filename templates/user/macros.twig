@@ -11,10 +11,7 @@
 
                 <div class="usercard__details">
                     <div class="usercard__name"
-                        {% if user.user_colour is defined %}style="{{ user.user_colour|html_colour({
-                            'color': '%s',
-                            'text-shadow': '0 0 5px %s',
-                        }) }}"{% endif %}>
+                        {% if user.user_colour is defined %}style="{{ user.user_colour|html_colour }}"{% endif %}>
                         {{ user.username }}
                     </div>
 
