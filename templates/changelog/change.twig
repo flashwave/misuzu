@@ -19,7 +19,7 @@
             {% if is_valid %}
                 <div class="changelog__change" id="#c{{ change.change_id }}">
                     <div class="changelog__change__line"
-                        style="{{ change.action_colour|html_colour('--accent-colour'}) }}">
+                        style="{{ change.action_colour|html_colour('--accent-colour') }}">
                         <div class="changelog__change__action {{ change.action_class is defined and change.action_class is not null ? ' changelog__change__action--' ~ change.action_class : '' }} changelog__change__action--{{ change.action_colour|colour_get_css_contrast }}"
                             style="{{ change.action_colour|html_colour('--accent-colour') }}">
                             {{ change.action_name }}

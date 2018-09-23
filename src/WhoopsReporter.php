@@ -45,7 +45,7 @@ final class WhoopsReporter extends Handler
         <meta charset="utf-8">
         <title>Something broke!</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="/css/mio.css" rel="stylesheet">
+        <link href="/css/style.css" rel="stylesheet">
     </head>
     <body class="main" style="justify-content: center; --site-max-width: 400px">
         <div class="main__wrapper" style="flex: 0 0 auto">
