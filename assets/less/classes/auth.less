@@ -1,0 +1,37 @@
+.auth {
+    max-width: 400px;
+    margin: 0 auto;
+    margin-bottom: 2px;
+
+    &__header {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        background-image: linear-gradient(0deg, #111, var(--accent-colour));
+    }
+
+    &__warning {
+        margin: 2px 5px 0;
+
+        &--welcome {
+            --start-colour: var(--accent-colour);
+            --end-colour: #222;
+        }
+    }
+
+    &__avatar {
+        width: 100px;
+        height: 100px;
+    }
+
+    &__paragraph,
+    &__input {
+        margin-bottom: 5px;
+    }
+
+    &__form {
+        padding: 5px;
+        display: flex;
+        flex-direction: column;
+    }
+}

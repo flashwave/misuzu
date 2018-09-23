@@ -36,7 +36,7 @@ define('PUBLIC_DIR', __DIR__ . '/public');
 define('CSS_DIR', PUBLIC_DIR . '/css');
 define('JS_DIR', PUBLIC_DIR . '/js');
 
-define('LESS_DEST', CSS_DIR . '/%s.css');
+define('LESS_DEST', CSS_DIR . '/style.css');
 define('TS_DEST', JS_DIR . '/%s.js');
 define('DTS_DEST', TS_DIR . '/%s.d.ts');
 
@@ -94,21 +94,10 @@ deleteAllFilesInDir(TS_DIR, '*.d.ts');
 misuzu_log();
 misuzu_log('Compiling LESS');
 
-$styles = globDir(LESS_DIR, '*', GLOB_ONLYDIR);
-
-foreach ($styles as $style) {
-    $basename = basename($style);
-    $destination = sprintf(LESS_DEST, $basename);
-    $entryPoint = $style . LESS_ENTRY_POINT;
-    misuzu_log("=> {$basename}");
-
-    if (!file_exists($entryPoint)) {
-        misuzu_log('==> ERR: Entry point for this style does not exist (' . basename(LESS_ENTRY_POINT) . ')');
-        continue;
-    }
-
-    $compileCmd = sprintf(LESS_CMD, escapeshellarg($entryPoint), escapeshellarg($destination));
-    system($compileCmd);
+if (!is_file(LESS_DIR . LESS_ENTRY_POINT)) {
+    misuzu_log('==> ERR: Entry point for this style does not exist (' . basename(LESS_ENTRY_POINT) . ')');
+} else {
+    system(sprintf(LESS_CMD, escapeshellarg(LESS_DIR . LESS_ENTRY_POINT), LESS_DEST));
 }
 
 // figure this out
