@@ -4,13 +4,13 @@ use Misuzu\IO\File;
 
 require_once __DIR__ . '/../misuzu.php';
 
-$user_id = (int)($_GET['u'] ?? 0);
+$userId = (int)($_GET['u'] ?? 0);
 $mode = (string)($_GET['m'] ?? null);
 
 switch ($mode) {
     case 'avatar':
         $avatar_filename = $app->getDefaultAvatar();
-        $user_avatar = "{$user_id}.msz";
+        $user_avatar = "{$userId}.msz";
         $cropped_avatar = build_path(
             create_directory(build_path($app->getStoragePath(), 'avatars/200x200')),
             $user_avatar
@@ -42,7 +42,7 @@ switch ($mode) {
     case 'background':
         $user_background = build_path(
             create_directory(build_path($app->getStoragePath(), 'backgrounds/original')),
-            "{$user_id}.msz"
+            "{$userId}.msz"
         );
 
         if (!is_file($user_background)) {
@@ -85,7 +85,7 @@ switch ($mode) {
             ON r.`role_id` = u.`display_role`
             WHERE `user_id` = :user_id
         ');
-        $getProfile->bindValue('user_id', $user_id);
+        $getProfile->bindValue('user_id', $userId);
         $profile = $getProfile->execute() ? $getProfile->fetch() : [];
 
         if (!$profile) {
@@ -94,7 +94,19 @@ switch ($mode) {
             break;
         }
 
+        $userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
+        $perms = [
+            'edit_profile' => perms_check($userPerms, MSZ_PERM_USER_EDIT_PROFILE),
+            'edit_avatar' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_AVATAR),
+            'edit_background' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_BACKGROUND),
+            'edit_about' => perms_check($userPerms, MSZ_PERM_USER_EDIT_ABOUT),
+        ];
+
         if ($app->hasActiveSession()) {
+            $canEdit = $app->getUserId() === $profile['user_id']
+                || perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS);
+            $isEditing = $canEdit && $mode === 'edit';
+
             $getFriendInfo = Database::prepare('
                 SELECT
                     :visitor as `visitor`, :profile as `profile`,
@@ -121,12 +133,17 @@ switch ($mode) {
             $getFriendInfo->bindValue('profile', $profile['user_id']);
             $friendInfo = $getFriendInfo->execute() ? $getFriendInfo->fetch(PDO::FETCH_ASSOC) : [];
 
-            tpl_var('friend_info', $friendInfo);
+            tpl_vars([
+                'friend_info' => $friendInfo,
+            ]);
         }
 
         tpl_vars([
             'profile' => $profile,
-            'profile_fields' => $app->hasActiveSession() ? user_profile_fields_display($profile) : [],
+            'can_edit' => $canEdit ?? false,
+            'is_editing' => $isEditing ?? false,
+            'perms' => $perms,
+            'profile_fields' => $app->hasActiveSession() ? user_profile_fields_display($profile, !$isEditing) : [],
             'has_background' => is_file(build_path($app->getStoragePath(), 'backgrounds/original', "{$profile['user_id']}.msz")),
         ]);
         echo tpl_render('user.profile');

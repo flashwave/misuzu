@@ -13,10 +13,7 @@
                 {% if post.user_id is not null %}
                     <a class="news__preview__user" href="/profile.php?u={{ post.user_id }}">
                         <div class="avatar news__preview__user__avatar" style="background-image:url('/profile.php?u={{ post.user_id }}&amp;m=avatar')"></div>
-                        <div class="news__preview__user__name" style="{{ post.user_colour|html_colour({
-                            'color': '%s',
-                            'text-shadow': '0 0 5px %s',
-                        }) }}">
+                        <div class="news__preview__user__name" style="{{ post.user_colour|html_colour }}">
                             {{ post.username }}
                         </div>
                     </a>

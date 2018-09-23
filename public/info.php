@@ -37,7 +37,7 @@ if ($filename !== 'LICENSE') {
     $filename .= '.md';
 }
 
-$filename = __DIR__ . '/../' . ($isMisuzuDoc ? '' : 'docs/site/') . $filename;
+$filename = __DIR__ . '/../' . ($isMisuzuDoc ? '' : 'docs/') . $filename;
 $document['content'] = is_file($filename) ? file_get_contents($filename) : '';
 
 if (empty($document['content'])) {

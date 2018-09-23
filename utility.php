@@ -346,12 +346,21 @@ function html_link(string $url, ?string $content = null, $attributes = []): stri
     return $html;
 }
 
-function html_colour(?int $colour, array $attribs = []): string
+function html_colour(?int $colour, $attribs = '--user-colour'): string
 {
     $colour = $colour ?? colour_none();
 
+    if (is_string($attribs)) {
+        $attribs = [
+            $attribs => '%s',
+        ];
+    }
+
     if (!$attribs) {
-        $attribs['color'] = '%s';
+        $attribs = [
+            'color' => '%s',
+            '--user-colour' => '%s',
+        ];
     }
 
     $css = '';

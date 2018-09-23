@@ -163,19 +163,20 @@ function user_profile_fields_set(int $userId, array $fields): array
     return $errors;
 }
 
-function user_profile_fields_display(array $user): array
+function user_profile_fields_display(array $user, bool $hideEmpty = true): array
 {
     $output = [];
 
     foreach (MSZ_USER_PROFILE_FIELDS as $name => $field) {
         $dbn = user_profile_field_get_database_name($name);
 
-        if (!array_key_exists($dbn, $user) || empty($user[$dbn])) {
+        if ($hideEmpty && (!array_key_exists($dbn, $user) || empty($user[$dbn]))) {
             continue;
         }
 
+        $value = $user[$dbn] ?? '';
         $output[$name] = $field;
-        $output[$name]['value'] = htmlentities($user[$dbn]);
+        $output[$name]['value'] = htmlentities($value);
 
         foreach (['link', 'format'] as $multipath) {
             if (empty($output[$name][$multipath]) || !is_array($output[$name][$multipath])) {
@@ -183,7 +184,7 @@ function user_profile_fields_display(array $user): array
             }
 
             foreach (array_reverse($output[$name][$multipath], true) as $regex => $string) {
-                if ($regex === '_' || !preg_match("#{$regex}#", $user[$dbn])) {
+                if ($regex === '_' || !preg_match("#{$regex}#", $value)) {
                     continue;
                 }
 

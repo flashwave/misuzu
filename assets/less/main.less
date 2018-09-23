@@ -15,6 +15,7 @@
     --site-background-meta: no-repeat center / cover fixed;
     --site-background-image: initial;
 
+    --user-colour: inherit;
     --accent-colour: @default-accent-colour;
     --text-colour: @default-text-colour;
     --text-colour-inverted: color(#fff - @default-text-colour);
@@ -68,8 +69,6 @@ body {
 @import "classes/flag";
 @import "classes/navigation";
 @import "classes/pagination";
-@import "classes/management";
-@import "classes/side-navigation";
 @import "classes/warning";
 
 // Specific styles
@@ -78,6 +77,10 @@ body {
 @import "classes/index";
 @import "classes/permissions";
 @import "classes/auth";
+
+// Manage
+@import "classes/manage/manage";
+@import "classes/manage/navigation";
 
 // Profile
 @import "classes/profile/profile";

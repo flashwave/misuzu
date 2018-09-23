@@ -20,6 +20,15 @@ if (!$app->hasActiveSession()) {
     return;
 }
 
+$settingsUserId = !empty($_REQUEST['user']) && perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS)
+    ? (int)$_REQUEST['user']
+    : $app->getUserId();
+
+if ($settingsUserId !== $app->getUserId() && !user_exists($settingsUserId)) {
+    echo render_error(400);
+    return;
+}
+
 $settingsModes = [
     'account' => 'Account',
     'sessions' => 'Sessions',
@@ -54,6 +63,7 @@ $avatarErrorStrings = [
 ];
 
 tpl_vars([
+    'settings_user_id' => $settingsUserId,
     'settings_perms' => $perms,
     'settings_mode' => $settingsMode,
     'settings_modes' => $settingsModes,
@@ -69,7 +79,7 @@ if (!array_key_exists($settingsMode, $settingsModes)) {
 $settingsErrors = [];
 
 $disableAccountOptions = !MSZ_DEBUG && $app->disableRegistration();
-$avatarFileName = "{$app->getUserId()}.msz";
+$avatarFileName = "{$settingsUserId}.msz";
 $avatarProps = $app->getAvatarProps();
 $backgroundProps = $app->getBackgroundProps();
 
@@ -81,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$perms['edit_profile']) {
                 $settingsErrors[] = "You're not allowed to edit your profile.";
             } else {
-                $setUserFieldErrors = user_profile_fields_set($app->getUserId(), $_POST['profile']);
+                $setUserFieldErrors = user_profile_fields_set($settingsUserId, $_POST['profile']);
 
                 if (count($setUserFieldErrors) > 0) {
                     foreach ($setUserFieldErrors as $name => $error) {
@@ -136,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             `user_about_parser` = :parser
                         WHERE `user_id` = :user
                     ');
-                    $setAbout->bindValue('user', $app->getUserId());
+                    $setAbout->bindValue('user', $settingsUserId);
                     $setAbout->bindValue('content', strlen($aboutText) < 1 ? null : $aboutText);
                     $setAbout->bindValue('parser', $aboutParser);
                     $setAbout->execute();
@@ -148,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!empty($_POST['avatar']) && is_array($_POST['avatar'])) {
             switch ($_POST['avatar']['mode'] ?? '') {
                 case 'delete':
-                    user_avatar_delete($app->getUserId());
+                    user_avatar_delete($settingsUserId);
                     break;
 
                 case 'upload':
@@ -176,7 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     $setAvatar = user_avatar_set_from_path(
-                        $app->getUserId(),
+                        $settingsUserId,
                         $_FILES['avatar']['tmp_name']['file'],
                         $avatarProps
                     );
@@ -198,7 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!empty($_POST['background']) && is_array($_POST['background'])) {
             switch ($_POST['background']['mode'] ?? '') {
                 case 'delete':
-                    user_background_delete($app->getUserId());
+                    user_background_delete($settingsUserId);
                     break;
 
                 case 'upload':
@@ -226,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     $setBackground = user_background_set_from_path(
-                        $app->getUserId(),
+                        $settingsUserId,
                         $_FILES['background']['tmp_name']['file'],
                         $backgroundProps
                     );
@@ -252,9 +262,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         DELETE FROM `msz_sessions`
                         WHERE `user_id` = :user_id
                     ')->execute([
-                        'user_id' => $app->getUserId(),
+                        'user_id' => $settingsUserId,
                     ]);
-                    audit_log('PERSONAL_SESSION_DESTROY_ALL', $app->getUserId());
+                    audit_log('PERSONAL_SESSION_DESTROY_ALL', $settingsUserId);
                     header('Location: /');
                     return;
             }
@@ -274,7 +284,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $findSession->bindValue('session_id', $session_id);
                 $session = $findSession->execute() ? $findSession->fetch() : null;
 
-                if (!$session || (int)$session['user_id'] !== $app->getUserId()) {
+                if (!$session || (int)$session['user_id'] !== $settingsUserId) {
                     $settingsErrors[] = 'You may only end your own sessions.';
                 } else {
                     if ((int)$session['session_id'] === $app->getSessionId()) {
@@ -283,7 +293,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     user_session_delete($session['session_id']);
-                    audit_log('PERSONAL_SESSION_DESTROY', $app->getUserId(), [
+                    audit_log('PERSONAL_SESSION_DESTROY', $settingsUserId, [
                         $session['session_id'],
                     ]);
                 }
@@ -304,7 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 FROM `msz_users`
                 WHERE `user_id` = :user_id
             ');
-                $fetchPassword->bindValue('user_id', $app->getUserId());
+                $fetchPassword->bindValue('user_id', $settingsUserId);
                 $currentPassword = $fetchPassword->execute() ? $fetchPassword->fetchColumn() : null;
 
                 if (empty($currentPassword)) {
@@ -339,7 +349,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     }
                                 } else {
                                     $updateAccountFields['email'] = mb_strtolower($_POST['email']['new']);
-                                    audit_log('PERSONAL_EMAIL_CHANGE', $app->getUserId(), [
+                                    audit_log('PERSONAL_EMAIL_CHANGE', $settingsUserId, [
                                         $updateAccountFields['email'],
                                     ]);
                                 }
@@ -357,7 +367,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     $settingsErrors[] = "The given passwords was too weak.";
                                 } else {
                                     $updateAccountFields['password'] = user_password_hash($_POST['password']['new']);
-                                    audit_log('PERSONAL_PASSWORD_CHANGE', $app->getUserId());
+                                    audit_log('PERSONAL_PASSWORD_CHANGE', $settingsUserId);
                                 }
                             }
                         }
@@ -368,13 +378,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 SET ' . pdo_prepare_array_update($updateAccountFields, true) . '
                                 WHERE `user_id` = :user_id
                             ');
-                            $updateAccountFields['user_id'] = $app->getUserId();
+                            $updateAccountFields['user_id'] = $settingsUserId;
                             $updateUser->execute($updateAccountFields);
                         }
                     }
                 }
             }
         }
+    }
+
+    if (!empty($_POST['user']) && !empty($_SERVER['HTTP_REFERER'])) {
+        header('Location: /profile.php?u=' . ((int)($_POST['user'] ?? 0)));
+        return;
     }
 }
 
@@ -384,7 +399,7 @@ tpl_vars([
 ]);
 
 switch ($settingsMode) {
-    case 'account': // TODO: FIX THIS GARBAGE HOLY HELL
+    case 'account':
         $profileFields = user_profile_fields_get();
 
         $getAccountInfo = Database::prepare(sprintf(
@@ -395,7 +410,7 @@ switch ($settingsMode) {
             ',
             pdo_prepare_array($profileFields, true, '`user_%s`')
         ));
-        $getAccountInfo->bindValue('user_id', $app->getUserId());
+        $getAccountInfo->bindValue('user_id', $settingsUserId);
         $accountInfo = $getAccountInfo->execute() ? $getAccountInfo->fetch(PDO::FETCH_ASSOC) : [];
 
         $userHasAvatar = is_file(build_path($app->getStoragePath(), 'avatars/original', $avatarFileName));
@@ -418,7 +433,7 @@ switch ($settingsMode) {
             FROM `msz_sessions`
             WHERE `user_id` = :user_id
         ');
-        $getSessionCount->bindValue('user_id', $app->getUserId());
+        $getSessionCount->bindValue('user_id', $settingsUserId);
         $sessionCount = $getSessionCount->execute() ? $getSessionCount->fetchColumn() : 0;
 
         $getSessions = Database::prepare('
@@ -432,7 +447,7 @@ switch ($settingsMode) {
         ');
         $getSessions->bindValue('offset', $queryOffset);
         $getSessions->bindValue('take', $queryTake);
-        $getSessions->bindValue('user_id', $app->getUserId());
+        $getSessions->bindValue('user_id', $settingsUserId);
         $sessions = $getSessions->execute() ? $getSessions->fetchAll() : [];
 
         tpl_vars([
@@ -453,7 +468,7 @@ switch ($settingsMode) {
             FROM `msz_login_attempts`
             WHERE `user_id` = :user_id
         ');
-        $getLoginAttemptsCount->bindValue('user_id', $app->getUserId());
+        $getLoginAttemptsCount->bindValue('user_id', $settingsUserId);
         $loginAttemptsCount = $getLoginAttemptsCount->execute() ? $getLoginAttemptsCount->fetchColumn() : 0;
 
         $getLoginAttempts = Database::prepare('
@@ -467,14 +482,14 @@ switch ($settingsMode) {
         ');
         $getLoginAttempts->bindValue('offset', $loginAttemptsOffset);
         $getLoginAttempts->bindValue('take', min(20, max(5, $queryTake)));
-        $getLoginAttempts->bindValue('user_id', $app->getUserId());
+        $getLoginAttempts->bindValue('user_id', $settingsUserId);
         $loginAttempts = $getLoginAttempts->execute() ? $getLoginAttempts->fetchAll() : [];
 
-        $auditLogCount = audit_log_count($app->getUserId());
+        $auditLogCount = audit_log_count($settingsUserId);
         $auditLog = audit_log_list(
             $auditLogOffset,
             min(20, max(5, $queryTake)),
-            $app->getUserId()
+            $settingsUserId
         );
 
         tpl_vars([

@@ -49,7 +49,10 @@
     &__datetime,
     &__user,
     &__action {
-        color: inherit;
+        --action-colour: inherit;
+
+        background-color: var(--action-colour);
+        color: var(--user-colour);
         flex: 0 0 auto;
         margin-right: 1px;
         text-decoration: none;
@@ -170,6 +173,7 @@
         &__action {
             display: block;
             padding: 6px 2px;
+            background-color: var(--accent-colour);
             border-right: 1px solid var(--accent-colour);
             writing-mode: sideways-lr;
             text-orientation: sideways;
@@ -234,6 +238,7 @@
             }
 
             &__name {
+                color: var(--user-colour);
                 font-size: 1.5em;
                 line-height: 1.2em;
             }
