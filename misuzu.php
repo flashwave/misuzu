@@ -268,7 +268,7 @@ MIG;
 
     if ($app->underLockdown()) {
         http_response_code(503);
-        echo tpl_render('auth/lockdown');
+        echo tpl_render('auth.lockdown');
         exit;
     }
 

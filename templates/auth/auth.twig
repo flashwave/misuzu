@@ -1,87 +1,126 @@
 {% extends 'auth/master.twig' %}
 
 {% block content %}
-    <div class="auth-container">
-        <div class="form__wrapper">
-            <input class="form__toggle" id="_authmode_login" type="radio" name="_authmode"{% if auth_mode == 'login' %} checked{% endif %}>
-            <div class="form form--login">
-                <label class="form__title" for="_authmode_login">Login</label>
-                <form class="form__content" method="post" action="?m=login">
-                    <label class="form__row">
-                        <input class="text text--username" type="text" name="username" placeholder="username" value="{{ auth_username|default('') }}" required>
-                    </label>
+    <form class="container container--new auth" method="post" action="">
+        <input type="hidden" name="auth[mode]" value="login">
 
-                    <label class="form__row">
-                        <input class="text text--password" type="password" name="password" placeholder="password" required>
-                    </label>
-
-                    <div class="form__row form__row--columns">
-                        <div class="form__column form__column--message{% if auth_login_error is defined %} form__column--error{% endif %}">
-                            {{ auth_login_message|default(auth_login_error|default('')) }}
-                        </div>
-
-                        <div class="form__column">
-                            <button class="button button--login">Login</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+        <div class="auth__header">
+            <div class="avatar avatar--new auth__avatar" id="login-avatar"
+                style="background-image:url('/profile.php?u=0&amp;m=avatar');"></div>
         </div>
 
-        <div class="form__wrapper">
-            <input class="form__toggle" id="_authmode_register" type="radio" name="_authmode"{% if auth_mode == 'register' %} checked{% endif %}>
-            <div class="form form-register">
-                <label class="form__title" for="_authmode_register">Create an account</label>
-                {% if prevent_registration|default(false) %}
-                    <div class="form__content form__content--no-registration">
-                        <p>You're currently using the site via the public testing website, if you want to create an account please do so from the <a class="form__link" href="https://flashii.net/auth.php?m=register" rel="noopener noreferrer">main website</a>.</p>
-                    </div>
-                {% else %}
-                    <form class="form__content" method="post" action="?m=register">
-                        <label class="form__row">
-                            <input class="text text--username" type="text" name="username" placeholder="username" value="{{ auth_username|default('') }}" required>
-                        </label>
-
-                        <label class="form__row">
-                            <input class="text text--password" type="password" name="password" placeholder="password" required>
-                        </label>
-
-                        <label class="form__row">
-                            <input class="text text--email" type="text" name="email" placeholder="e-mail" value="{{ auth_email|default('') }}" required>
-                        </label>
-
-                        <div class="form__row form__row--columns">
-                            <div class="form__column form__column--message{% if auth_register_error is defined %} form__column--error{% endif %}">
-                                {{ auth_register_message|default(auth_register_error|default('')) }}
-                            </div>
-                            <div class="form__column">
-                                <button class="button button--register">Sign up</button>
-                            </div>
-                        </div>
-                    </form>
-                {% endif %}
+        {% if auth_register_message is defined %}
+            <div class="warning auth__warning auth__warning--welcome">
+                <div class="warning__content">
+                    {{ auth_register_message }}
+                </div>
             </div>
-        </div>
-
-        <div class="form__wrapper">
-            <input class="form__toggle" id="_authmode_forgot" type="radio" name="_authmode"{% if auth_mode == 'forgot' %} checked{% endif %}>
-            <div class="form form--forgot">
-                <label class="form__title" for="_authmode_forgot">Forgot your password</label>
-                <form class="form__content" method="post" action="?m=forgot">
-                    <label class="form__row">
-                        <input class="text text--email" type="text" name="email" placeholder="e-mail" value="{{ auth_email|default('') }}" required>
-                    </label>
-
-                    <div class="form__row form__row--columns">
-                        <div class="form__column form__column--message{% if auth_forgot_error is defined %} form__column--error{% endif %}">
-                            {{ auth_forgot_message|default(auth_forgot_error|default('')) }}
-                        </div>
-                        <div class="form__column">
-                            <button class="button button--forgot">Send reminder</button>
-                        </div>
-                    </div>
-                </form>
+        {% elseif auth_login_error is defined %}
+            <div class="warning auth__warning">
+                <div class="warning__content">
+                    {{ auth_login_error }}
+                </div>
             </div>
+        {% endif %}
+
+        <div class="auth__form">
+            <input class="input__text input__text--new auth__input" type="text"
+                name="auth[username]" placeholder="Username" id="login-username"
+                value="{{ auth_username|default('') }}" required>
+
+            <input class="input__text input__text--new auth__input" type="password"
+                name="auth[password]" placeholder="Password" required>
+
+            <button class="input__button input__button--new">Login</button>
         </div>
-    </div>
+    </form>
+
+    <form class="container container--new auth" method="post" action="">
+        <input type="hidden" name="auth[mode]" value="register">
+        <div class="container__title">Register</div>
+
+        {% if auth_register_error is defined %}
+            <div class="warning auth__warning">
+                <div class="warning__content">
+                    {{ auth_register_error }}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="auth__form">
+            <input class="input__text input__text--new auth__input" type="text"
+                name="auth[username]" placeholder="Username"
+                value="{{ auth_username|default('') }}" required>
+
+            <input class="input__text input__text--new auth__input" type="password"
+                name="auth[password]" placeholder="Password" required>
+
+            <input class="input__text input__text--new auth__input" type="text"
+                name="auth[email]" placeholder="E-mail"
+                value="{{ auth_email|default('') }}" required>
+
+            <button class="input__button input__button--new">Sign up</button>
+        </div>
+    </form>
+
+    <form class="container container--new auth" method="post" action="">
+        <input type="hidden" name="auth[mode]" value="forgot">
+        <div class="container__title">Forgot password</div>
+
+        {% if auth_forgot_error is defined %}
+            <div class="warning auth__warning">
+                <div class="warning__content">
+                    {{ auth_forgot_error }}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="auth__form">
+            <input class="input__text input__text--new auth__input" type="text"
+                name="auth[email]" placeholder="E-mail"
+                value="{{ auth_email|default('') }}" required>
+
+            <button class="input__button input__button--new">Send reminder</button>
+        </div>
+    </form>
+
+    <script>
+        let avatarTimeout = 0;
+
+        function updateLoginAvatar(avatar, username, force) {
+            if (!force) {
+                if (avatarTimeout)
+                    return;
+                console.log(avatarTimeout);
+
+                avatarTimeout = setTimeout(() => {
+                    updateLoginAvatar(avatar, username, true);
+                    clearTimeout(avatarTimeout);
+                    avatarTimeout = 0;
+                }, 750);
+                return;
+            }
+
+            const request = new XMLHttpRequest;
+            request.addEventListener('readystatechange', () => {
+                if (request.readyState !== 4)
+                    return;
+
+                avatar.style.backgroundImage = 'url(\'/profile.php?u=%d&m=avatar\')'.replace('%d', request.responseText);
+            });
+            request.open('GET', '/auth.php?m=get_user&u=' + encodeURI(username.value));
+            request.send();
+        }
+
+        window.addEventListener('load', () => {
+            const avatar = document.getElementById('login-avatar'),
+                username = document.getElementById('login-username');
+
+            updateLoginAvatar(avatar, username, true); // in case there's anything prefilled
+
+            username.addEventListener('keyup', function (ev) {
+                updateLoginAvatar(avatar, username);
+            });
+        });
+    </script>
 {% endblock %}

@@ -15,17 +15,27 @@ $usernameValidationErrors = [
     'in-use' => 'This username is already taken!',
 ];
 
-$authMode = $_GET['m'] ?? 'login';
 $preventRegistration = $app->disableRegistration();
+
+$isSubmission = !empty($_POST['auth']) && is_array($_POST['auth']);
+$authMode = $isSubmission ? ($_POST['auth']['mode'] ?? '') : ($_GET['m'] ?? 'login');
+$authUsername = $isSubmission ? ($_POST['auth']['username'] ?? '') : ($_GET['username'] ?? '');
+$authEmail = $isSubmission ? ($_POST['auth']['email'] ?? '') : ($_GET['email'] ?? '');
+$authPassword = $_POST['auth']['password'] ?? '';
+$authVerification = $_POST['auth']['verification'] ?? '';
 
 tpl_vars([
     'prevent_registration' => $preventRegistration,
     'auth_mode' => $authMode,
-    'auth_username' => $_REQUEST['username'] ?? '',
-    'auth_email' => $_REQUEST['email'] ?? '',
+    'auth_username' => $authUsername,
+    'auth_email' => $authEmail,
 ]);
 
 switch ($authMode) {
+    case 'get_user':
+        echo user_id_from_username($_GET['u'] ?? '');
+        break;
+
     case 'logout':
         if (!$app->hasActiveSession()) {
             header('Location: /');
@@ -63,9 +73,9 @@ switch ($authMode) {
             break;
         }
 
-        tpl_var('auth_reset_message', 'A verification code should\'ve been sent to your e-mail address.');
+        tpl_var('auth_reset_message', "A verification code should've been sent to your e-mail address.");
 
-        while ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        while ($isSubmission) {
             $validateRequest = Database::prepare('
                 SELECT COUNT(`user_id`) > 0
                 FROM `msz_users_password_resets`
@@ -75,7 +85,7 @@ switch ($authMode) {
                 AND `reset_requested` > NOW() - INTERVAL 1 HOUR
             ');
             $validateRequest->bindValue('user', $resetUser['user_id']);
-            $validateRequest->bindValue('code', $_POST['verification'] ?? '');
+            $validateRequest->bindValue('code', $authVerification);
             $validateRequest = $validateRequest->execute()
                 ? (bool)$validateRequest->fetchColumn()
                 : false;
@@ -85,16 +95,16 @@ switch ($authMode) {
                 break;
             }
 
-            tpl_var('reset_verify', $_POST['verification']);
+            tpl_var('reset_verify', $authVerification);
 
-            if (empty($_POST['password']['new'])
-                || empty($_POST['password']['confirm'])
-                || $_POST['password']['new'] !== $_POST['password']['confirm']) {
+            if (empty($authPassword['new'])
+                || empty($authPassword['confirm'])
+                || $authPassword['new'] !== $authPassword['confirm']) {
                 tpl_var('auth_reset_error', 'Your passwords didn\'t match!');
                 break;
             }
 
-            if (user_validate_password($_POST['password']['new']) !== '') {
+            if (user_validate_password($authPassword['new']) !== '') {
                 tpl_var('auth_reset_error', 'Your password is too weak!');
                 break;
             }
@@ -105,7 +115,7 @@ switch ($authMode) {
                 WHERE `user_id` = :user
             ');
             $updatePassword->bindValue('user', $resetUser['user_id']);
-            $updatePassword->bindValue('password', user_password_hash($_POST['password']['new']));
+            $updatePassword->bindValue('password', user_password_hash($authPassword['new']));
 
             if ($updatePassword->execute()) {
                 audit_log('PASSWORD_RESET', $resetUser['user_id']);
@@ -120,13 +130,13 @@ switch ($authMode) {
                 AND `user_id` = :user
             ');
             $invalidateCode->bindValue('user', $resetUser['user_id']);
-            $invalidateCode->bindValue('code', $_POST['verification']);
+            $invalidateCode->bindValue('code', $authVerification);
 
             if (!$invalidateCode->execute()) {
                 throw new UnexpectedValueException('Verification code invalidation failed.');
             }
 
-            header('Location: /auth.php?m=login');
+            header('Location: /auth.php?m=login&u=' . $resetUser['username']);
             break;
         }
 
@@ -141,8 +151,8 @@ switch ($authMode) {
             break;
         }
 
-        while ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (empty($_POST['email'])) {
+        while ($isSubmission) {
+            if (empty($authEmail)) {
                 tpl_var('auth_forgot_error', 'Please enter an e-mail address.');
                 break;
             }
@@ -152,10 +162,11 @@ switch ($authMode) {
                 FROM `msz_users`
                 WHERE LOWER(`email`) = LOWER(:email)
             ');
-            $forgotUser->bindValue('email', $_POST['email']);
+            $forgotUser->bindValue('email', $authEmail);
             $forgotUser = $forgotUser->execute() ? $forgotUser->fetch(PDO::FETCH_ASSOC) : [];
 
             if (empty($forgotUser)) {
+                tpl_var('auth_forgot_error', 'This user is not registered with us.');
                 break;
             }
 
@@ -208,7 +219,7 @@ MSG;
                 Application::mailer()->send($message);
             }
 
-            header("Location: ?m=reset&u={$forgotUser['user_id']}");
+            header("Location: ?m=reset&username={$forgotUser['user_id']}");
             break;
         }
 
@@ -224,10 +235,10 @@ MSG;
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         $authLoginError = '';
 
-        while ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        while ($isSubmission) {
             $ipAddress = IPAddress::remote()->getString();
 
-            if (!isset($_POST['username'], $_POST['password'])) {
+            if (!isset($authUsername, $authPassword)) {
                 $authLoginError = "You didn't fill all the forms!";
                 break;
             }
@@ -239,17 +250,14 @@ MSG;
                 break;
             }
 
-            $username = $_POST['username'] ?? '';
-            $password = $_POST['password'] ?? '';
-
             $getUser = Database::prepare('
                 SELECT `user_id`, `password`
                 FROM `msz_users`
                 WHERE LOWER(`email`) = LOWER(:email)
                 OR LOWER(`username`) = LOWER(:username)
             ');
-            $getUser->bindValue('email', $username);
-            $getUser->bindValue('username', $username);
+            $getUser->bindValue('email', $authUsername);
+            $getUser->bindValue('username', $authUsername);
             $userData = $getUser->execute() ? $getUser->fetch() : [];
             $userId = (int)($userData['user_id'] ?? 0);
 
@@ -265,7 +273,7 @@ MSG;
                 break;
             }
 
-            if (!password_verify($password, $userData['password'])) {
+            if (!password_verify($authPassword, $userData['password'])) {
                 user_login_attempt_record(false, $userId, $ipAddress, $userAgent);
                 $authLoginError = $loginFailedError;
                 break;
@@ -302,28 +310,24 @@ MSG;
 
         $authRegistrationError = '';
 
-        while ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        while ($isSubmission) {
             if ($preventRegistration) {
                 $authRegistrationError = 'Registration is not allowed on this instance.';
                 break;
             }
 
-            if (!isset($_POST['username'], $_POST['password'], $_POST['email'])) {
+            if (!isset($authUsername, $authPassword, $authEmail)) {
                 $authRegistrationError = "You didn't fill all the forms!";
                 break;
             }
 
-            $username = $_POST['username'] ?? '';
-            $password = $_POST['password'] ?? '';
-            $email = $_POST['email'] ?? '';
-
-            $usernameValidation = user_validate_username($username, true);
+            $usernameValidation = user_validate_username($authUsername, true);
             if ($usernameValidation !== '') {
                 $authRegistrationError = $usernameValidationErrors[$usernameValidation];
                 break;
             }
 
-            $emailValidation = user_validate_email($email, true);
+            $emailValidation = user_validate_email($authEmail, true);
             if ($emailValidation !== '') {
                 $authRegistrationError = $emailValidation === 'in-use'
                     ? 'This e-mail address has already been used!'
@@ -331,15 +335,15 @@ MSG;
                 break;
             }
 
-            if (user_validate_password($password) !== '') {
+            if (user_validate_password($authPassword) !== '') {
                 $authRegistrationError = 'Your password is too weak!';
                 break;
             }
 
             $createUser = user_create(
-                $username,
-                $password,
-                $email,
+                $authUsername,
+                $authPassword,
+                $authEmail,
                 IPAddress::remote()->getString()
             );
 

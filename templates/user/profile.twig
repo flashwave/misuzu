@@ -54,12 +54,12 @@
             <div class="profile__header__options">
                 <div class="profile__header__actions">
                     {% if current_user.user_id|default(0) == profile.user_id %}
-                        <a href="/settings.php" class="profile__header__action">Edit Profile</a>
+                        <a href="/settings.php" class="input__button input__button--new">Edit Profile</a>
                     {% elseif current_user is defined %}
                         {% if friend_info.visitor_relation == constant('MSZ_USER_RELATION_FOLLOW') %}
-                            <a href="/relations.php?u={{ profile.user_id }}&amp;m=remove" class="profile__header__action profile__header__action--destroy">{{ friend_info.profile_relation == constant('MSZ_USER_RELATION_FOLLOW') ? 'Unfriend' : 'Unfollow' }}</a>
+                            <a href="/relations.php?u={{ profile.user_id }}&amp;m=remove" class="input__button input__button--new input__button--destroy">{{ friend_info.profile_relation == constant('MSZ_USER_RELATION_FOLLOW') ? 'Unfriend' : 'Unfollow' }}</a>
                         {% else %}
-                            <a href="/relations.php?u={{ profile.user_id }}&amp;m=add&amp;t=follow" class="profile__header__action">{{ friend_info.profile_relation == constant('MSZ_USER_RELATION_FOLLOW') ? 'Add as Friend' : 'Follow' }}</a>
+                            <a href="/relations.php?u={{ profile.user_id }}&amp;m=add&amp;t=follow" class="input__button input__button--new">{{ friend_info.profile_relation == constant('MSZ_USER_RELATION_FOLLOW') ? 'Add as Friend' : 'Follow' }}</a>
                         {% endif %}
                     {% endif %}
                 </div>
@@ -141,7 +141,7 @@
         <div class="profile__container">
             <div class="profile__container__side">
                 {% if current_user is not defined %}
-                    <div class="profile__accounts">
+                    <div class="container container--new">
                         <div class="profile__accounts__notice">
                             You must <a href="/auth.php?m=login" class="profile__accounts__link">log in</a> to view full profiles!
                         </div>
