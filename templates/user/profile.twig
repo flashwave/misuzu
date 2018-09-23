@@ -40,64 +40,91 @@
 ] %}
 
 {% block content %}
-    <div class="profile" id="profile">
-        {% include 'user/_layout/header.twig' %}
+    {% if is_editing %}
+        <form class="profile" method="post" action="/settings.php">
+    {% else %}
+        <div class="profile">
+    {% endif %}
+        {% if is_editing %}
+            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+            <input type="hidden" name="user" value="{{ profile.user_id }}">
+        {% endif %}
 
-        <div class="warning">
-            <div class="warning__content">
-                The profile pages are still under much construction, more things will eventually populate the area where this container current exists.
+            {% include 'user/_layout/header.twig' %}
+
+            <div class="warning">
+                <div class="warning__content">
+                    The profile pages are still under much construction, more things will eventually populate the area where this container current exists.
+                </div>
             </div>
-        </div>
 
-        <div class="profile__container">
-            <div class="profile__container__side">
-                {% if current_user is not defined %}
-                    <div class="container container--new">
-                        <div class="profile__accounts__notice">
-                            You must <a href="/auth.php?m=login" class="profile__accounts__link">log in</a> to view full profiles!
+            <div class="profile__container">
+                <div class="profile__container__side">
+                    {% if current_user is not defined %}
+                        <div class="container container--new">
+                            <div class="profile__accounts__notice">
+                                You must <a href="/auth.php?m=login" class="profile__accounts__link">log in</a> to view full profiles!
+                            </div>
                         </div>
-                    </div>
-                {% elseif profile_fields|default([])|length > 0 %}
-                    <div class="container container--new">
-                        <div class="container__title">
-                            Elsewhere
-                        </div>
-                        <div class="profile__accounts">
-                            {% for name, data in profile_fields %}
-                                <div class="profile__accounts__item">
-                                    <div class="profile__accounts__title">
-                                        {{ data.name }}
-                                    </div>
-                                    <div class="profile__accounts__value"
-                                        {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>
-                                        {% set profile_field_value = (data.format is defined ? data.format : '%s')|format(data.value) %}
-                                        {% if data.link is defined %}
-                                            {{ data.link|format(data.value)|html_link(profile_field_value, 'profile__accounts__link')|raw }}
+                    {% elseif is_editing ? perms.edit_profile : profile_fields|default([])|length > 0 %}
+                        <div class="container container--new">
+                            <div class="container__title">
+                                Elsewhere
+                            </div>
+                            <div class="profile__accounts">
+                                {% for name, data in profile_fields %}
+                                    <label class="profile__accounts__item">
+                                        <div class="profile__accounts__title">
+                                            {{ data.name }}
+                                        </div>
+
+                                        {% if is_editing %}
+                                            <input type="{{ data.type|default('text') }}" name="profile[{{ name }}]" value="{{ profile['user_' ~ name] }}" class="input__text input__text--new profile__accounts__input">
                                         {% else %}
-                                            {{ profile_field_value }}
+                                            <div class="profile__accounts__value"
+                                                {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>
+                                                {% set profile_field_value = (data.format is defined ? data.format : '%s')|format(data.value) %}
+                                                {% if data.link is defined %}
+                                                    {{ data.link|format(data.value)|html_link(profile_field_value, 'profile__accounts__link')|raw }}
+                                                {% else %}
+                                                    {{ profile_field_value }}
+                                                {% endif %}
+                                            </div>
                                         {% endif %}
-                                    </div>
-                                </div>
-                            {% endfor %}
+                                    </label>
+                                {% endfor %}
+                            </div>
                         </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                </div>
+
+                <div class="profile__container__main">
+
+                    {% if is_editing ? perms.edit_about : profile.user_about_content|length > 0 %}
+                        <div class="container container--new profile__about" id="about">
+                            <div class="container__title profile__about__title">
+                                About {{ profile.username }}
+                            </div>
+                            <div class="profile__about__content{% if is_editing %} profile__about__content--edit{% endif %}">
+                                {% if is_editing %}
+                                    <select name="about[parser]" class="input__select input__select--new profile__about__select">
+                                        {% for parser, name in constant('MSZ_PARSERS_NAMES') %}
+                                            <option value="{{ parser }}"{% if parser == profile.user_about_parser %} selected{% endif %}>{{ name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <textarea name="about[text]" class="input__textarea input__textarea--new profile__about__editor" id="about-textarea">{{ profile.user_about_content|escape }}</textarea>
+                                {% else %}
+                                    {{ profile.user_about_content|escape|parse_text(profile.user_about_parser)|raw }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                </div>
             </div>
-
-            <div class="profile__container__main">
-
-                {% if profile.user_about_content|length > 0 %}
-                    <div class="container container--new profile__about" id="about">
-                        <div class="container__title profile__about__title">
-                            About {{ profile.username }}
-                        </div>
-                        <div class="container__content profile__about__content">
-                            {{ profile.user_about_content|escape|parse_text(profile.user_about_parser)|raw }}
-                        </div>
-                    </div>
-                {% endif %}
-
-            </div>
+    {% if is_editing %}
+        </form>
+    {% else %}
         </div>
-    </div>
+    {% endif %}
 {% endblock %}

@@ -1,10 +1,16 @@
 {% extends 'settings/master.twig' %}
 
 {% if user_has_background %}
-    {% set site_background_url = '/profile.php?m=background&u=' ~ current_user.user_id %}
+    {% set site_background_url = '/profile.php?m=background&u=' ~ settings_user_id %}
 {% endif %}
 
 {% block settings_content %}
+    {#<div class="warning">
+        <div class="warning__content">
+            A few of the elements on this page have been moved to the on-profile editor. To find them, go to your profile and hit the "Edit Profile" button below your avatar.
+        </div>
+    </div>#}
+
     <div class="container container--translucent">
         <div class="container__title">Account</div>
         <form action="" method="post" class="settings__account">
@@ -150,7 +156,7 @@
                         <div
                             class="avatar settings__avatar__preview"
                             id="avatar-preview"
-                            style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar')"></div>
+                            style="background-image:url('/profile.php?u={{ settings_user_id }}&amp;m=avatar')"></div>
                         <input
                             class="settings__avatar__input"
                             accept="image/png,image/jpeg,image/gif"
@@ -183,7 +189,7 @@
 
         <script>
             function updateAvatarPreview(name, url, previewEl, nameEl) {
-                url = url || "/profile.php?u={{ current_user.user_id }}&m=avatar";
+                url = url || "/profile.php?u={{ settings_user_id }}&m=avatar";
                 previewEl = previewEl || document.getElementById('avatar-preview');
                 nameEl = nameEl || document.getElementById('avatar-name');
                 previewEl.style.backgroundImage = 'url(\'{0}\')'.replace('{0}', url);
@@ -249,7 +255,7 @@
 
         <script>
             function updateBackgroundPreview(name, url, previewEl, nameEl) {
-                url = url || "/profile.php?u={{ current_user.user_id }}&m=background";
+                url = url || "/profile.php?u={{ settings_user_id }}&m=background";
                 previewEl = previewEl || document.body;
                 nameEl = nameEl || document.getElementById('background-name');
                 previewEl.style.setProperty('--site-background-image', 'url(\'{0}\')'.replace('{0}', url));
@@ -271,7 +277,7 @@
             <form method="post" action="" enctype="multipart/form-data" class="settings__about">
                 <input type="hidden" name="csrf" value="{{ csrf_token() }}">
 
-                <textarea name="about[text]" class="input__textarea settings__about__text" id="about-textarea">{{ account_info.user_about_content }}</textarea>
+                <textarea name="about[text]" class="input__textarea settings__about__text" id="about-textarea">{{ account_info.user_about_content|escape }}</textarea>
 
                 <div class="settings__about__options">
                     <select name="about[parser]" class="input__select">

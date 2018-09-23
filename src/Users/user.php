@@ -51,6 +51,18 @@ function user_password_hash(string $password): string
     return password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO);
 }
 
+// function of the century, only use this if it doesn't make sense to grab data otherwise
+function user_exists(int $userId): bool
+{
+    $check = Database::prepare('
+        SELECT COUNT(`user_id`) > 0
+        FROM `msz_users`
+        WHERE `user_id` = :user_id
+    ');
+    $check->bindValue('user_id', $userId);
+    return $check->execute() ? (bool)$check->fetchColumn() : false;
+}
+
 function user_id_from_username(string $username): int
 {
     $getId = Database::prepare('SELECT `user_id` FROM `msz_users` WHERE LOWER(`username`) = LOWER(:username)');
