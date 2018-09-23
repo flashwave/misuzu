@@ -1,19 +1,16 @@
-{% macro manage_navigation(navi, level) %}
-    {% from _self import manage_navigation %}
-    {% set level = level|default(0) %}
+{% macro manage_navigation(nav) %}
 
-    <ul class="side-navigation side-navigation--layer-{{ level }}">
-        {% for name, value in navi %}
-            <li class="side-navigation__item">
-                {% if value is iterable %}
-                    <span class="side-navigation__title">{{ name }}</span>
-                    {{ manage_navigation(value, level + 1) }}
-                {% else %}
-                    <a href="{{ value }}" class="side-navigation__link">{{ name }}</a>
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+    {% for name, value in nav %}
+        <div class="container container--new manage__navigation">
+            <div class="container__title">{{ name }}</div>
+
+            <div class="manage__navigation__links">
+                {% for title, link in value %}
+                    <a href="{{ link }}" class="manage__navigation__link">{{ title }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
 {% endmacro %}
 
 {% macro permissions_table(permissions) %}

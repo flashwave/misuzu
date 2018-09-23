@@ -24,11 +24,11 @@
         </div>
         <div class="userlist__selection">
             <select class="input__select" name="r"
-                style="{{ role.role_colour|html_colour }}">
+                style="{{ role.role_colour|html_colour('color') }}">
                 {% for r in roles %}
                     <option
                         value="{{ r.role_id }}"
-                        style="{{ r.role_colour|html_colour }}"
+                        style="{{ r.role_colour|html_colour('color') }}"
                         {% if r.role_id == role.role_id %} selected{% endif %}>
                         {{ r.role_name }}
                     </option>

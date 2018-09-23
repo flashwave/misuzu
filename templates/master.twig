@@ -6,13 +6,6 @@
         {% include '_layout/meta.twig' %}
         <link href="{{ '/css/style.css'|asset_url }}" rel="stylesheet">
         <link href="{{ '/css/libraries.css'|asset_url }}" rel="stylesheet">
-        {% if manage_menu is defined %}
-            <style>
-                :root {
-                    --site-max-width: 1500px;
-                }
-            </style>
-        {% endif %}
         {% if site_background_url is defined %}
             <style>
                 :root {

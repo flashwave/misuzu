@@ -3,21 +3,14 @@
 {% set title = 'Broom Closet' %}
 
 {% block content %}
-    <div class="management">
-        <nav class="management__navigation">
-            <div class="container">
-                <div class="container__title">
-                    The Broom Closet
-                </div>
-                <div class="side-navigation__wrapper">
-                    {{ manage_navigation(manage_menu) }}
-                </div>
-            </div>
+    <div class="manage">
+        <nav class="manage__sidebar">
+            {{ manage_navigation(manage_menu) }}
         </nav>
 
-        <div class="management__content">
+        <div class="manage__content">
             {% block manage_content %}
-                <div class="container">
+                <div class="container container--new">
                     <div class="container__title">No brooms</div>
                     <div class="container__content">
                         This broom closet is empty.
