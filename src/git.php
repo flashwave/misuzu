@@ -22,3 +22,8 @@ function git_branch(): string
 {
     return trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
 }
+
+function git_tag(): string
+{
+    return trim(shell_exec('git describe --abbrev=0 --tags'));
+}
