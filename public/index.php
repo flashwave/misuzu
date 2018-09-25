@@ -61,9 +61,23 @@ $changelog = Cache::instance()->get('index:changelog:v1', function () {
     ')->fetchAll(PDO::FETCH_ASSOC);
 }, 1800);
 
+$onlineUsers = Cache::instance()->get('index:online:v1', function () {
+    return Database::query('
+        SELECT
+            u.`user_id`, u.`username`,
+            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+        FROM `msz_users` as u
+        LEFT JOIN `msz_roles` as r
+        ON r.`role_id` = u.`display_role`
+        WHERE u.`last_seen` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
+        ORDER BY u.`last_seen` DESC
+    ')->fetchAll(PDO::FETCH_ASSOC);
+}, 30);
+
 echo tpl_render('home.index', [
     'users_count' => $statistics['users'],
     'last_user' => $statistics['lastUser'],
+    'online_users' => $onlineUsers,
     'featured_changelog' => $changelog,
     'featured_news' => $news,
 ]);
