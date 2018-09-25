@@ -54,6 +54,19 @@ body {
         margin: 0 auto;
         flex: 1 0 auto;
     }
+
+    &--default {
+        --site-background-meta: repeat;
+        --site-background-image: url('https://mikoto.misaka.nl/i/cloudss.png');
+        background-blend-mode: multiply;
+
+        background-color: var(--accent-colour);
+        --gradient-start: var(--accent-colour);
+    }
+
+    &--legacy {
+        --background-color: #fbeeff;
+    }
 }
 
 // Input elements
