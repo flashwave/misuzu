@@ -1,19 +1,20 @@
 {% macro forum_category_listing(forums, title) %}
     {% from _self import forum_category_entry %}
 
-    <div class="container forum__listing">
+    <div class="container container--new forum__categories">
         <div class="container__title">{{ title }}</div>
-        <div class="forum__listing__forums">
-            {% if forums|length > 0 %}
+
+        {% if forums|length > 0 %}
+            <div class="forum__categories__list">
                 {% for forum in forums %}
                     {{ forum_category_entry(forum) }}
                 {% endfor %}
-            {% else %}
-                <div class="forum__listing__none">
-                    This category is empty.
-                </div>
-            {% endif %}
-        </div>
+            </div>
+        {% else %}
+            <div class="forum__categories__empty">
+                This category is empty.
+            </div>
+        {% endif %}
     </div>
 {% endmacro %}
 
