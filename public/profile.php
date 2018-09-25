@@ -84,8 +84,11 @@ switch ($mode) {
             LEFT JOIN `msz_roles` as r
             ON r.`role_id` = u.`display_role`
             WHERE `user_id` = :user_id
+            OR LOWER(`username`) = LOWER(:username)
+            LIMIT 1
         ');
         $getProfile->bindValue('user_id', $userId);
+        $getProfile->bindValue('username', $_GET['u'] ?? '');
         $profile = $getProfile->execute() ? $getProfile->fetch() : [];
 
         if (!$profile) {
