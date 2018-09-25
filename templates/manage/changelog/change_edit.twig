@@ -1,5 +1,9 @@
 {% extends 'manage/changelog/master.twig' %}
 
+{% if edit_change is defined %}
+    {% set site_link = '/changelog.php?c=' ~ edit_change.change_id %}
+{% endif %}
+
 {% block manage_content %}
     <div class="container">
         <form action="?v=change{{ edit_change is defined ? '&c=' ~ edit_change.change_id : '' }}" method="post">

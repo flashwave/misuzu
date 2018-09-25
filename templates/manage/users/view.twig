@@ -1,6 +1,8 @@
 {% extends 'manage/users/master.twig' %}
 {% from 'manage/macros.twig' import permissions_table %}
 
+{% set site_link = '/profile.php?u=' ~ view_user.user_id %}
+
 {% block manage_content %}
     {% if can_manage_users %}
         <form method="post" enctype="multipart/form-data" action="">
@@ -100,19 +102,6 @@
                         <input class="input__text" type="password" name="password[confirm]">
                     </div>
                 </label>
-            </div>
-
-            <div class="container">
-                <div class="container__title">Profile fields</div>
-
-                {% for name, props in profile_fields %}
-                    <label class="form__label">
-                        <div class="form__label__text">{{ props.name }}</div>
-                        <div class="form__label__input">
-                            <input class="input__text" type="{{ props.type|default('text') }}" value="{{ view_user['user_' ~ name] }}" name="profile[{{ name }}]">
-                        </div>
-                    </label>
-                {% endfor %}
             </div>
 
             <div class="container">
