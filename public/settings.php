@@ -155,7 +155,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if (!empty($_POST['avatar']) && is_array($_POST['avatar'])) {
+        if (!empty($_FILES['avatar'])) {
+            if (empty($_POST['avatar']['mode'])) {
+                // cool monkey patch
+                $_POST['avatar']['mode'] = empty($_POST['avatar']['delete']) ? 'upload' : 'delete';
+            }
+
             switch ($_POST['avatar']['mode'] ?? '') {
                 case 'delete':
                     user_avatar_delete($settingsUserId);
@@ -205,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if (!empty($_POST['background']) && is_array($_POST['background'])) {
+        if (!empty($_FILES['background'])) {
             switch ($_POST['background']['mode'] ?? '') {
                 case 'delete':
                     user_background_delete($settingsUserId);

@@ -41,14 +41,33 @@
 
 {% block content %}
     {% if is_editing %}
-        <form class="profile" method="post" action="/settings.php">
+        <form class="profile" method="post" action="/settings.php" enctype="multipart/form-data">
+            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+            <input type="hidden" name="user" value="{{ profile.user_id }}">
+
+            {% if perms.edit_avatar %}
+                <input class="settings__avatar__input"
+                    accept="image/png,image/jpeg,image/gif"
+                    type="file"
+                    name="avatar[file]"
+                    id="avatar-selection">
+
+                <script>
+                    function updateAvatarPreview(name, url, preview) {
+                        url = url || "/profile.php?u={{ profile.user_id }}&m=avatar";
+                        preview = preview || document.getElementById('avatar-preview');
+                        preview.style.backgroundImage = 'url(\'{0}\')'.replace('{0}', url);
+                        preview.title = name;
+                    }
+
+                    document.getElementById('avatar-selection').addEventListener('change', function (ev) {
+                        updateAvatarPreview(ev.target.files[0].name, URL.createObjectURL(ev.target.files[0]));
+                    });
+                </script>
+            {% endif %}
     {% else %}
         <div class="profile">
     {% endif %}
-        {% if is_editing %}
-            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
-            <input type="hidden" name="user" value="{{ profile.user_id }}">
-        {% endif %}
 
             {% include 'user/_layout/header.twig' %}
 
@@ -100,7 +119,7 @@
 
                 <div class="profile__container__main">
 
-                    {% if is_editing ? perms.edit_about : profile.user_about_content|length > 0 %}
+                    {% if is_editing or profile.user_about_content|length > 0 %}
                         <div class="container container--new profile__about" id="about">
                             <div class="container__title profile__about__title">
                                 About {{ profile.username }}
