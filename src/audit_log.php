@@ -1,6 +1,5 @@
 <?php
 use Misuzu\Database;
-use Misuzu\Net\IPAddress;
 
 function audit_log(
     string $action,
@@ -8,7 +7,7 @@ function audit_log(
     array $params = [],
     ?string $ipAddress = null
 ): void {
-    $ipAddress = $ipAddress ?? remote_address();
+    $ipAddress = $ipAddress ?? ip_remote_address();
 
     for ($i = 0; $i < count($params); $i++) {
         if (preg_match('#^(-?[0-9]+)$#', $params[$i])) {
@@ -26,7 +25,7 @@ function audit_log(
     $addLog->bindValue('user', $userId < 1 ? null : $userId);
     $addLog->bindValue('params', json_encode($params));
     $addLog->bindValue('ip', $ipAddress);
-    $addLog->bindValue('country', get_country_code($ipAddress));
+    $addLog->bindValue('country', ip_country_code($ipAddress));
     $addLog->execute();
 }
 

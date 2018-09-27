@@ -2,7 +2,6 @@
 use Carbon\Carbon;
 use Misuzu\Application;
 use Misuzu\Database;
-use Misuzu\Net\IPAddress;
 
 require_once __DIR__ . '/../misuzu.php';
 
@@ -169,7 +168,7 @@ switch ($authMode) {
                 break;
             }
 
-            $ipAddress = remote_address();
+            $ipAddress = ip_remote_address();
             $emailSent = Database::prepare('
                 SELECT COUNT(`verification_code`) > 0
                 FROM `msz_users_password_resets`
@@ -235,7 +234,7 @@ MSG;
         $authLoginError = '';
 
         while ($isSubmission) {
-            $ipAddress = remote_address();
+            $ipAddress = ip_remote_address();
 
             if (!isset($authUsername, $authPassword)) {
                 $authLoginError = "You didn't fill all the forms!";
@@ -343,7 +342,7 @@ MSG;
                 $authUsername,
                 $authPassword,
                 $authEmail,
-                remote_address()
+                ip_remote_address()
             );
 
             if ($createUser < 1) {

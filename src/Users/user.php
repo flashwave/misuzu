@@ -40,7 +40,7 @@ function user_create(
     $createUser->bindValue('email', $email);
     $createUser->bindValue('register_ip', $ipAddress);
     $createUser->bindValue('last_ip', $ipAddress);
-    $createUser->bindValue('user_country', get_country_code($ipAddress));
+    $createUser->bindValue('user_country', ip_country_code($ipAddress));
 
     return $createUser->execute() ? (int)Database::lastInsertId() : 0;
 }
@@ -77,7 +77,7 @@ function user_bump_last_active(int $userId, string $ipAddress = null): void
             `last_ip` = INET6_ATON(:last_ip)
         WHERE `user_id` = :user_id
     ');
-    $bumpUserLast->bindValue('last_ip', $ipAddress ?? remote_address());
+    $bumpUserLast->bindValue('last_ip', $ipAddress ?? ip_remote_address());
     $bumpUserLast->bindValue('user_id', $userId);
     $bumpUserLast->execute();
 }

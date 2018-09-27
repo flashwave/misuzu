@@ -29,11 +29,6 @@ function array_apply(array $array, callable $func): array
     return $array;
 }
 
-function remote_address(string $fallback = '::1'): string
-{
-    return $_SERVER['REMOTE_ADDR'] ?? $fallback;
-}
-
 function set_cookie_m(string $name, string $value, int $expires): void
 {
     setcookie(
@@ -149,17 +144,6 @@ function byte_symbol($bytes, $decimal = false)
     $symbol = $symbols[$exp];
 
     return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
-}
-
-function get_country_code(string $ipAddr, string $fallback = 'XX'): string
-{
-    try {
-        return \Misuzu\Application::geoip()->country($ipAddr)->country->isoCode ?? $fallback;
-    } catch (\Exception $e) {
-        // report error?
-    }
-
-    return $fallback;
 }
 
 function get_country_name(string $code): string

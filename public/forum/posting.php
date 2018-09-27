@@ -123,7 +123,7 @@ if ($postRequest) {
         $topicId,
         $forum['forum_id'],
         $app->getUserId(),
-        remote_address(),
+        ip_remote_address(),
         $postText,
         MSZ_PARSER_BBCODE
     );

@@ -24,7 +24,7 @@ function user_session_create(
     ');
     $createSession->bindValue('user_id', $userId);
     $createSession->bindValue('session_ip', $ipAddress);
-    $createSession->bindValue('session_country', get_country_code($ipAddress));
+    $createSession->bindValue('session_country', ip_country_code($ipAddress));
     $createSession->bindValue('user_agent', $userAgent);
     $createSession->bindValue('session_key', $sessionKey);
 

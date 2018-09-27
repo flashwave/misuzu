@@ -30,6 +30,7 @@ require_once __DIR__ . '/src/colour.php';
 require_once __DIR__ . '/src/comments.php';
 require_once __DIR__ . '/src/general.php';
 require_once __DIR__ . '/src/git.php';
+require_once __DIR__ . '/src/ip.php';
 require_once __DIR__ . '/src/manage.php';
 require_once __DIR__ . '/src/news.php';
 require_once __DIR__ . '/src/perms.php';
