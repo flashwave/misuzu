@@ -139,6 +139,15 @@ switch ($mode) {
             tpl_vars([
                 'friend_info' => $friendInfo,
             ]);
+
+            if ($isEditing) {
+                tpl_vars([
+                    'guidelines' => [
+                        'avatar' => $app->getAvatarProps(),
+                        'background' => $app->getBackgroundProps(),
+                    ],
+                ]);
+            }
         }
 
         tpl_vars([

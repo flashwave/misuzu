@@ -71,11 +71,46 @@
 
             {% include 'user/_layout/header.twig' %}
 
-            <div class="warning">
-                <div class="warning__content">
-                    The profile pages are still under much construction, more things will eventually populate the area where this container current exists.
+            {% if is_editing %}
+                <div class="container container--new profile__guidelines">
+                    <div class="container__title">
+                        Guidelines
+                    </div>
+
+                    <div class="profile__guidelines__content">
+                        <ul class="profile__guidelines__section">
+                            <li class="profile__guidelines__line profile__guidelines__line--header">General</li>
+                            <li class="profile__guidelines__line">Keep things sane and generally suitable for all ages.</li>
+                            <li class="profile__guidelines__line">Make sure to adhere to the <a href="/info.php/rules" class="profile__guidelines__link">rules</a>.</li>
+                        </ul>
+
+                        {% if perms.edit_avatar %}
+                            <ul class="profile__guidelines__section">
+                                <li class="profile__guidelines__line profile__guidelines__line--header">Avatar</li>
+                                <li class="profile__guidelines__line">May not exceed the <span class="profile__guidelines__emphasis">{{ guidelines.avatar.max_size|byte_symbol(true) }}</span> file size limit.</li>
+                                <li class="profile__guidelines__line">May not be larger than <span class="profile__guidelines__emphasis">{{ guidelines.avatar.max_width }}x{{ guidelines.avatar.max_height }}</span>.</li>
+                                <li class="profile__guidelines__line">Will be centre cropped and scaled to <span class="profile__guidelines__emphasis">200x200</span>.</li>
+                                <li class="profile__guidelines__line">Animated gif images are allowed.</li>
+                            </ul>
+                        {% endif %}
+
+                        {% if perms.edit_background %}
+                            <ul class="profile__guidelines__section">
+                                <li class="profile__guidelines__line profile__guidelines__line--header">Background</li>
+                                <li class="profile__guidelines__line">May not exceed the <span class="profile__guidelines__emphasis">{{ guidelines.background.max_size|byte_symbol(true) }}</span> file size limit.</li>
+                                <li class="profile__guidelines__line">May not be larger than <span class="profile__guidelines__emphasis">{{ guidelines.background.max_width }}x{{ guidelines.background.max_height }}</span>.</li>
+                                <li class="profile__guidelines__line">Gif images, in general, are only allowed when tiling.</li>
+                            </ul>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
+            {% else %}
+                <div class="warning">
+                    <div class="warning__content">
+                        The profile pages are still under much construction, more things will eventually populate the area where this container current exists.
+                    </div>
+                </div>
+            {% endif %}
 
             <div class="profile__container">
                 <div class="profile__container__side">
