@@ -392,7 +392,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    if (!empty($_POST['user']) && !empty($_SERVER['HTTP_REFERER'])) {
+    if (empty($settingsErrors) && !empty($_POST['user']) && !empty($_SERVER['HTTP_REFERER'])) {
         header('Location: /profile.php?u=' . ((int)($_POST['user'] ?? 0)));
         return;
     }
