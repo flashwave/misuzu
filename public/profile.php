@@ -96,6 +96,7 @@ switch ($mode) {
             break;
         }
 
+        $isEditing = false;
         $userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
         $perms = [
             'edit_profile' => perms_check($userPerms, MSZ_PERM_USER_EDIT_PROFILE),
@@ -149,10 +150,14 @@ switch ($mode) {
             }
         }
 
+        if (!$isEditing) {
+            tpl_var('profile_notices', ['The profile pages are still under much construction, more things will eventually populate the area where this container current exists.']);
+        }
+
         tpl_vars([
             'profile' => $profile,
             'can_edit' => $canEdit ?? false,
-            'is_editing' => $isEditing ?? false,
+            'is_editing' => $isEditing,
             'perms' => $perms,
             'profile_fields' => $app->hasActiveSession() ? user_profile_fields_display($profile, !$isEditing) : [],
             'has_background' => is_file(build_path($app->getStoragePath(), 'backgrounds/original', "{$profile['user_id']}.msz")),

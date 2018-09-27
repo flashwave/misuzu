@@ -53,6 +53,10 @@ function user_password_hash(string $password): string
 // function of the century, only use this if it doesn't make sense to grab data otherwise
 function user_exists(int $userId): bool
 {
+    if ($userId < 1) {
+        return false;
+    }
+
     $check = Database::prepare('
         SELECT COUNT(`user_id`) > 0
         FROM `msz_users`
@@ -80,6 +84,43 @@ function user_bump_last_active(int $userId, string $ipAddress = null): void
     $bumpUserLast->bindValue('last_ip', $ipAddress ?? ip_remote_address());
     $bumpUserLast->bindValue('user_id', $userId);
     $bumpUserLast->execute();
+}
+
+define('MSZ_USER_ABOUT_MAX_LENGTH', 0xFFFF);
+
+define('MSZ_USER_ABOUT_OK', 0);
+define('MSZ_USER_ABOUT_INVALID_USER', 1);
+define('MSZ_USER_ABOUT_INVALID_PARSER', 2);
+define('MSZ_USER_ABOUT_TOO_LONG', 3);
+define('MSZ_USER_ABOUT_UPDATE_FAILED', 4);
+
+function user_set_about_page(int $userId, string $content, int $parser = MSZ_PARSER_PLAIN): int
+{
+    if ($userId < 1) {
+        return MSZ_USER_ABOUT_INVALID_USER;
+    }
+
+    if (!parser_is_valid($parser)) {
+        return MSZ_USER_ABOUT_INVALID_PARSER;
+    }
+
+    $length = strlen($content);
+
+    if ($length > MSZ_USER_ABOUT_MAX_LENGTH) {
+        return MSZ_USER_ABOUT_TOO_LONG;
+    }
+
+    $setAbout = Database::prepare('
+        UPDATE `msz_users`
+        SET `user_about_content` = :content,
+            `user_about_parser` = :parser
+        WHERE `user_id` = :user
+    ');
+    $setAbout->bindValue('user', $userId);
+    $setAbout->bindValue('content', $length < 1 ? null : $content);
+    $setAbout->bindValue('parser', $parser);
+
+    return $setAbout->execute() ? MSZ_USER_ABOUT_OK : MSZ_USER_ABOUT_UPDATE_FAILED;
 }
 
 define('MSZ_USER_AVATAR_FORMAT', '%d.msz');
@@ -287,3 +328,44 @@ function user_background_set_from_data(int $userId, string $data, array $options
 
     return $result;
 }
+
+// all the way down here bc of defines, this define is temporary
+define('MSZ_TMP_USER_ERROR_STRINGS', [
+    'csrf' => "Couldn't verify you, please refresh the page and retry.",
+    'avatar' => [
+        'upload' => [
+            '_' => 'Something happened? (UP:%1$d)',
+            UPLOAD_ERR_OK => '',
+            UPLOAD_ERR_NO_FILE => 'Select a file before hitting upload!',
+            UPLOAD_ERR_PARTIAL => 'The upload was interrupted, please try again!',
+            UPLOAD_ERR_INI_SIZE => 'Your avatar is not allowed to be larger in file size than %2$s!',
+            UPLOAD_ERR_FORM_SIZE => 'Your avatar is not allowed to be larger in file size than %2$s!',
+            UPLOAD_ERR_NO_TMP_DIR => 'Unable to save your avatar, contact an administator!',
+            UPLOAD_ERR_CANT_WRITE => 'Unable to save your avatar, contact an administator!',
+        ],
+        'set' => [
+            '_' => 'Something happened? (SET:%1$d)',
+            MSZ_USER_AVATAR_NO_ERRORS => '',
+            MSZ_USER_AVATAR_ERROR_INVALID_IMAGE => 'The file you uploaded was not an image!',
+            MSZ_USER_AVATAR_ERROR_PROHIBITED_TYPE => 'This type of image is not supported, keep to PNG, JPG or GIF!',
+            MSZ_USER_AVATAR_ERROR_DIMENSIONS_TOO_LARGE => 'Your avatar can\'t be larger than %3$dx%4$d!',
+            MSZ_USER_AVATAR_ERROR_DATA_TOO_LARGE => 'Your avatar is not allowed to be larger in file size than %2$s!',
+            MSZ_USER_AVATAR_ERROR_TMP_FAILED => 'Unable to save your avatar, contact an administator!',
+            MSZ_USER_AVATAR_ERROR_STORE_FAILED => 'Unable to save your avatar, contact an administator!',
+            MSZ_USER_AVATAR_ERROR_FILE_NOT_FOUND => 'Unable to save your avatar, contact an administator!',
+        ],
+    ],
+    'profile' => [
+        '_' => 'An unexpected error occurred, contact an administator.',
+        MSZ_USER_PROFILE_INVALID_FIELD => "Field '%1\$s' does not exist!",
+        MSZ_USER_PROFILE_FILTER_FAILED => '%2$s field was invalid!',
+        MSZ_USER_PROFILE_UPDATE_FAILED => 'Failed to update values, contact an administator.',
+    ],
+    'about' => [
+        '_' => 'An unexpected error occurred, contact an administator.',
+        MSZ_USER_ABOUT_INVALID_USER => 'The requested user does not exist.',
+        MSZ_USER_ABOUT_INVALID_PARSER => 'The selected parser is invalid.',
+        MSZ_USER_ABOUT_TOO_LONG => 'Please keep the length of your about section below %1$d characters.',
+        MSZ_USER_ABOUT_UPDATE_FAILED => 'Failed to update values, contact an administator.',
+    ],
+]);

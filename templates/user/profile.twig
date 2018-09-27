@@ -98,10 +98,14 @@
                         </ul>
                     {% endif %}
                 </div>
-            {% else %}
+            {% endif %}
+
+            {% if profile_notices is defined %}
                 <div class="warning">
                     <div class="warning__content">
-                        The profile pages are still under much construction, more things will eventually populate the area where this container current exists.
+                        {% for notice in profile_notices %}
+                            {{ notice }}
+                        {% endfor %}
                     </div>
                 </div>
             {% endif %}
