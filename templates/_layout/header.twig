@@ -1,9 +1,11 @@
+{% set in_manage = manage_menu is defined %}
+
 <nav class="header">
     <div class="header__wrapper">
         <div class="header__icons">
             <label class="header__icon header__icon--menu" for="toggle-mobile-header-menu"></label>
 
-            <a class="header__logo{% if manage_menu is defined %} header__logo--manage{% endif %}" href="/">
+            <a class="header__logo{% if in_manage %} header__logo--manage{% endif %}" href="/">
                 {{ globals.site_name }}
             </a>
 
@@ -70,8 +72,12 @@
                         </li>
                         {% if has_manage_access %}
                             <li class="header__user__action">
-                                <a class="header__user__link" href="{{ manage_link|default('/manage/index.php') }}">Manage</a>
-                        </li>
+                                {% if in_manage %}
+                                    <a class="header__user__link" href="{{ site_link|default('/') }}">Return</a>
+                                {% else %}
+                                    <a class="header__user__link" href="{{ manage_link|default('/manage/index.php') }}">Manage</a>
+                                {% endif %}
+                            </li>
                         {% endif %}
                         <li class="header__user__action">
                             <a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Log out</a>

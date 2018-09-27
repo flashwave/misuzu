@@ -1,0 +1,71 @@
+{% macro auth_login(username, message, is_welcome) %} {# please only use this once per page, it has script shit rn #}
+    {% set is_welcome = is_welcome|default(false) %}
+
+    <form class="container container--new auth" method="post" action="/auth.php">
+        <input type="hidden" name="auth[mode]" value="login">
+
+        <div class="auth__header">
+            <div class="avatar avatar--new auth__avatar" id="login-avatar"
+                style="background-image:url('/profile.php?u=0&amp;m=avatar');"></div>
+        </div>
+
+        {% if message|length > 0 %}
+            <div class="warning auth__warning{% if is_welcome %} auth__warning--welcome{% endif %}">
+                <div class="warning__content">
+                    {{ message }}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="auth__form">
+            <input class="input__text input__text--new auth__input" type="text"
+                name="auth[username]" placeholder="Username" id="login-username"
+                value="{{ username|default('') }}" required>
+
+            <input class="input__text input__text--new auth__input" type="password"
+                name="auth[password]" placeholder="Password" required>
+
+            <button class="input__button input__button--new">Login</button>
+        </div>
+    </form>
+
+    <script>
+        let avatarTimeout = 0;
+
+        function updateLoginAvatar(avatar, username, force) {
+            if (!force) {
+                if (avatarTimeout)
+                    return;
+                console.log(avatarTimeout);
+
+                avatarTimeout = setTimeout(() => {
+                    updateLoginAvatar(avatar, username, true);
+                    clearTimeout(avatarTimeout);
+                    avatarTimeout = 0;
+                }, 750);
+                return;
+            }
+
+            const request = new XMLHttpRequest;
+            request.addEventListener('readystatechange', () => {
+                if (request.readyState !== 4)
+                    return;
+
+                avatar.style.backgroundImage = 'url(\'/profile.php?u=%d&m=avatar\')'.replace('%d', request.responseText);
+            });
+            request.open('GET', '/auth.php?m=get_user&u=' + encodeURI(username.value));
+            request.send();
+        }
+
+        window.addEventListener('load', () => {
+            const avatar = document.getElementById('login-avatar'),
+                username = document.getElementById('login-username');
+
+            updateLoginAvatar(avatar, username, true); // in case there's anything prefilled
+
+            username.addEventListener('keyup', function (ev) {
+                updateLoginAvatar(avatar, username);
+            });
+        });
+    </script>
+{% endmacro %}

@@ -194,10 +194,6 @@ switch ($_GET['v'] ?? null) {
                 $updatePassword->execute();
             }
 
-            if (!empty($_POST['profile']) && is_array($_POST['profile'])) {
-                user_profile_fields_set($userId, $_POST['profile']);
-            }
-
             if (isset($_POST['add_role'])) {
                 user_role_add($manageUser['user_id'], $_POST['add_role']['role']);
             }

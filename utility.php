@@ -146,17 +146,6 @@ function byte_symbol($bytes, $decimal = false)
     return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
 }
 
-function get_country_code(string $ipAddr, string $fallback = 'XX'): string
-{
-    try {
-        return \Misuzu\Application::geoip()->country($ipAddr)->country->isoCode ?? $fallback;
-    } catch (\Exception $e) {
-        // report error?
-    }
-
-    return $fallback;
-}
-
 function get_country_name(string $code): string
 {
     switch (strtolower($code)) {

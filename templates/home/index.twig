@@ -21,6 +21,20 @@
             </div>
 
             <div class="container">
+                <div class="container__title">Online users</div>
+                <div class="container__content">
+                    {% if online_users < 1 %}
+                        No one was online in the last 5 minutes.
+                    {% else %}
+                        Online users in the last 5 minutes:<br>
+                        {% for user in online_users %}
+                            <a href="/profile.php?u={{ user.user_id }}" class="index__stats__emphasis index__stats__link" style="{{ user.user_colour|html_colour }}">{{ user.username }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="container">
                 <a class="container__title container__title--link" href="/changelog.php">Changelog</a>
                 <div class="changelog__content">
                     {{ changelog_listing(featured_changelog) }}

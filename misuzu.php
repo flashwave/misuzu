@@ -30,6 +30,7 @@ require_once __DIR__ . '/src/colour.php';
 require_once __DIR__ . '/src/comments.php';
 require_once __DIR__ . '/src/general.php';
 require_once __DIR__ . '/src/git.php';
+require_once __DIR__ . '/src/ip.php';
 require_once __DIR__ . '/src/manage.php';
 require_once __DIR__ . '/src/news.php';
 require_once __DIR__ . '/src/perms.php';
@@ -266,7 +267,9 @@ MIG;
 
     tpl_add_path(__DIR__ . '/templates');
 
-    if ($app->underLockdown()) {
+    $misuzuBypassLockdown = !empty($misuzuBypassLockdown);
+
+    if (!$misuzuBypassLockdown && $app->underLockdown()) {
         http_response_code(503);
         echo tpl_render('auth.lockdown');
         exit;
@@ -276,15 +279,7 @@ MIG;
         $app->startSession((int)$_COOKIE['msz_uid'], $_COOKIE['msz_sid']);
 
         if ($app->hasActiveSession()) {
-            $bumpUserLast = Database::prepare('
-                UPDATE `msz_users` SET
-                `last_seen` = NOW(),
-                `last_ip` = INET6_ATON(:last_ip)
-                WHERE `user_id` = :user_id
-            ');
-            $bumpUserLast->bindValue('last_ip', Net\IPAddress::remote()->getString());
-            $bumpUserLast->bindValue('user_id', $app->getUserId());
-            $bumpUserLast->execute();
+            user_bump_last_active($app->getUserId());
 
             $getUserDisplayInfo = Database::prepare('
                 SELECT
@@ -299,6 +294,12 @@ MIG;
             $userDisplayInfo = $getUserDisplayInfo->execute() ? $getUserDisplayInfo->fetch() : [];
             tpl_var('current_user', $userDisplayInfo);
         }
+    }
+
+    if (!$misuzuBypassLockdown && $app->isStagingSite() && !$app->hasActiveSession()) {
+        http_response_code(401);
+        echo tpl_render('auth.private');
+        exit;
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');

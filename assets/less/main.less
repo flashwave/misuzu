@@ -54,6 +54,19 @@ body {
         margin: 0 auto;
         flex: 1 0 auto;
     }
+
+    &--default {
+        --site-background-meta: repeat;
+        --site-background-image: url('https://mikoto.misaka.nl/i/cloudss.png');
+        background-blend-mode: multiply;
+
+        background-color: var(--accent-colour);
+        --gradient-start: var(--accent-colour);
+    }
+
+    &--legacy {
+        --background-color: #fbeeff;
+    }
 }
 
 // Input elements
@@ -87,6 +100,7 @@ body {
 @import "classes/profile/header";
 @import "classes/profile/accounts";
 @import "classes/profile/about";
+@import "classes/profile/guidelines";
 
 // Changelog
 @import "classes/changelog";
@@ -113,6 +127,7 @@ body {
 
 // Forums
 @import "classes/forum/actions";
+@import "classes/forum/categories";
 @import "classes/forum/listing";
 @import "classes/forum/pagination";
 @import "classes/forum/post";

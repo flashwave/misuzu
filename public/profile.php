@@ -1,11 +1,12 @@
 <?php
 use Misuzu\Database;
-use Misuzu\IO\File;
+
+$mode = (string)($_GET['m'] ?? null);
+$misuzuBypassLockdown = $mode === 'avatar';
 
 require_once __DIR__ . '/../misuzu.php';
 
 $userId = (int)($_GET['u'] ?? 0);
-$mode = (string)($_GET['m'] ?? null);
 
 switch ($mode) {
     case 'avatar':
@@ -84,8 +85,11 @@ switch ($mode) {
             LEFT JOIN `msz_roles` as r
             ON r.`role_id` = u.`display_role`
             WHERE `user_id` = :user_id
+            OR LOWER(`username`) = LOWER(:username)
+            LIMIT 1
         ');
         $getProfile->bindValue('user_id', $userId);
+        $getProfile->bindValue('username', $_GET['u'] ?? '');
         $profile = $getProfile->execute() ? $getProfile->fetch() : [];
 
         if (!$profile) {
@@ -94,6 +98,7 @@ switch ($mode) {
             break;
         }
 
+        $isEditing = false;
         $userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
         $perms = [
             'edit_profile' => perms_check($userPerms, MSZ_PERM_USER_EDIT_PROFILE),
@@ -136,12 +141,25 @@ switch ($mode) {
             tpl_vars([
                 'friend_info' => $friendInfo,
             ]);
+
+            if ($isEditing) {
+                tpl_vars([
+                    'guidelines' => [
+                        'avatar' => $app->getAvatarProps(),
+                        'background' => $app->getBackgroundProps(),
+                    ],
+                ]);
+            }
+        }
+
+        if (!$isEditing) {
+            tpl_var('profile_notices', ['The profile pages are still under much construction, more things will eventually populate the area where this container current exists.']);
         }
 
         tpl_vars([
             'profile' => $profile,
             'can_edit' => $canEdit ?? false,
-            'is_editing' => $isEditing ?? false,
+            'is_editing' => $isEditing,
             'perms' => $perms,
             'profile_fields' => $app->hasActiveSession() ? user_profile_fields_display($profile, !$isEditing) : [],
             'has_background' => is_file(build_path($app->getStoragePath(), 'backgrounds/original', "{$profile['user_id']}.msz")),

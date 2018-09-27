@@ -1,6 +1,5 @@
 <?php
 use Misuzu\Database;
-use Misuzu\Net\IPAddress;
 
 require_once __DIR__ . '/../../misuzu.php';
 
@@ -124,7 +123,7 @@ if ($postRequest) {
         $topicId,
         $forum['forum_id'],
         $app->getUserId(),
-        IPAddress::remote()->getString(),
+        ip_remote_address(),
         $postText,
         MSZ_PARSER_BBCODE
     );

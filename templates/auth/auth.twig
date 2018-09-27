@@ -1,126 +1,63 @@
 {% extends 'auth/master.twig' %}
+{% from 'auth/macros.twig' import auth_login %}
 
 {% block content %}
-    <form class="container container--new auth" method="post" action="">
-        <input type="hidden" name="auth[mode]" value="login">
+    {{ auth_login(
+        auth_username|default(''),
+        auth_register_message|default(auth_login_error|default('')),
+        auth_register_message is defined
+    ) }}
 
-        <div class="auth__header">
-            <div class="avatar avatar--new auth__avatar" id="login-avatar"
-                style="background-image:url('/profile.php?u=0&amp;m=avatar');"></div>
-        </div>
+    {% if not prevent_registration %}
+        <form class="container container--new auth" method="post" action="">
+            <input type="hidden" name="auth[mode]" value="register">
+            <div class="container__title">Register</div>
 
-        {% if auth_register_message is defined %}
-            <div class="warning auth__warning auth__warning--welcome">
-                <div class="warning__content">
-                    {{ auth_register_message }}
+            {% if auth_register_error is defined %}
+                <div class="warning auth__warning">
+                    <div class="warning__content">
+                        {{ auth_register_error }}
+                    </div>
                 </div>
+            {% endif %}
+
+            <div class="auth__form">
+                <input class="input__text input__text--new auth__input" type="text"
+                    name="auth[username]" placeholder="Username"
+                    value="{{ auth_username|default('') }}" required>
+
+                <input class="input__text input__text--new auth__input" type="password"
+                    name="auth[password]" placeholder="Password" required>
+
+                <input class="input__text input__text--new auth__input" type="text"
+                    name="auth[email]" placeholder="E-mail"
+                    value="{{ auth_email|default('') }}" required>
+
+                <button class="input__button input__button--new">Sign up</button>
             </div>
-        {% elseif auth_login_error is defined %}
-            <div class="warning auth__warning">
-                <div class="warning__content">
-                    {{ auth_login_error }}
+        </form>
+    {% endif %}
+
+    {% if not is_staging_site %}
+        <form class="container container--new auth" method="post" action="">
+            <input type="hidden" name="auth[mode]" value="forgot">
+            <div class="container__title">Forgot password</div>
+
+            {% if auth_forgot_error is defined %}
+                <div class="warning auth__warning">
+                    <div class="warning__content">
+                        {{ auth_forgot_error }}
+                    </div>
                 </div>
+            {% endif %}
+
+            <div class="auth__form">
+                <input class="input__text input__text--new auth__input" type="text"
+                    name="auth[email]" placeholder="E-mail"
+                    value="{{ auth_email|default('') }}" required>
+
+                <button class="input__button input__button--new">Send reminder</button>
             </div>
-        {% endif %}
-
-        <div class="auth__form">
-            <input class="input__text input__text--new auth__input" type="text"
-                name="auth[username]" placeholder="Username" id="login-username"
-                value="{{ auth_username|default('') }}" required>
-
-            <input class="input__text input__text--new auth__input" type="password"
-                name="auth[password]" placeholder="Password" required>
-
-            <button class="input__button input__button--new">Login</button>
-        </div>
-    </form>
-
-    <form class="container container--new auth" method="post" action="">
-        <input type="hidden" name="auth[mode]" value="register">
-        <div class="container__title">Register</div>
-
-        {% if auth_register_error is defined %}
-            <div class="warning auth__warning">
-                <div class="warning__content">
-                    {{ auth_register_error }}
-                </div>
-            </div>
-        {% endif %}
-
-        <div class="auth__form">
-            <input class="input__text input__text--new auth__input" type="text"
-                name="auth[username]" placeholder="Username"
-                value="{{ auth_username|default('') }}" required>
-
-            <input class="input__text input__text--new auth__input" type="password"
-                name="auth[password]" placeholder="Password" required>
-
-            <input class="input__text input__text--new auth__input" type="text"
-                name="auth[email]" placeholder="E-mail"
-                value="{{ auth_email|default('') }}" required>
-
-            <button class="input__button input__button--new">Sign up</button>
-        </div>
-    </form>
-
-    <form class="container container--new auth" method="post" action="">
-        <input type="hidden" name="auth[mode]" value="forgot">
-        <div class="container__title">Forgot password</div>
-
-        {% if auth_forgot_error is defined %}
-            <div class="warning auth__warning">
-                <div class="warning__content">
-                    {{ auth_forgot_error }}
-                </div>
-            </div>
-        {% endif %}
-
-        <div class="auth__form">
-            <input class="input__text input__text--new auth__input" type="text"
-                name="auth[email]" placeholder="E-mail"
-                value="{{ auth_email|default('') }}" required>
-
-            <button class="input__button input__button--new">Send reminder</button>
-        </div>
-    </form>
-
-    <script>
-        let avatarTimeout = 0;
-
-        function updateLoginAvatar(avatar, username, force) {
-            if (!force) {
-                if (avatarTimeout)
-                    return;
-                console.log(avatarTimeout);
-
-                avatarTimeout = setTimeout(() => {
-                    updateLoginAvatar(avatar, username, true);
-                    clearTimeout(avatarTimeout);
-                    avatarTimeout = 0;
-                }, 750);
-                return;
-            }
-
-            const request = new XMLHttpRequest;
-            request.addEventListener('readystatechange', () => {
-                if (request.readyState !== 4)
-                    return;
-
-                avatar.style.backgroundImage = 'url(\'/profile.php?u=%d&m=avatar\')'.replace('%d', request.responseText);
-            });
-            request.open('GET', '/auth.php?m=get_user&u=' + encodeURI(username.value));
-            request.send();
-        }
-
-        window.addEventListener('load', () => {
-            const avatar = document.getElementById('login-avatar'),
-                username = document.getElementById('login-username');
-
-            updateLoginAvatar(avatar, username, true); // in case there's anything prefilled
-
-            username.addEventListener('keyup', function (ev) {
-                updateLoginAvatar(avatar, username);
-            });
-        });
-    </script>
+        </form>
+    {% endif %}
 {% endblock %}

@@ -1,6 +1,5 @@
 <?php
 use Misuzu\Database;
-use Misuzu\IO\File;
 
 require_once __DIR__ . '/../misuzu.php';
 
@@ -36,32 +35,6 @@ $settingsModes = [
 ];
 $settingsMode = $_GET['m'] ?? key($settingsModes);
 
-$csrfErrorString = "Couldn't verify you, please refresh the page and retry.";
-
-$avatarErrorStrings = [
-    'upload' => [
-        'default' => 'Something happened? (UP:%1$d)',
-        UPLOAD_ERR_OK => '',
-        UPLOAD_ERR_NO_FILE => 'Select a file before hitting upload!',
-        UPLOAD_ERR_PARTIAL => 'The upload was interrupted, please try again!',
-        UPLOAD_ERR_INI_SIZE => 'Your avatar is not allowed to be larger in file size than %2$s!',
-        UPLOAD_ERR_FORM_SIZE => 'Your avatar is not allowed to be larger in file size than %2$s!',
-        UPLOAD_ERR_NO_TMP_DIR => 'Unable to save your avatar, contact an administator!',
-        UPLOAD_ERR_CANT_WRITE => 'Unable to save your avatar, contact an administator!',
-    ],
-    'set' => [
-        'default' => 'Something happened? (SET:%1$d)',
-        MSZ_USER_AVATAR_NO_ERRORS => '',
-        MSZ_USER_AVATAR_ERROR_INVALID_IMAGE => 'The file you uploaded was not an image!',
-        MSZ_USER_AVATAR_ERROR_PROHIBITED_TYPE => 'This type of image is not supported, keep to PNG, JPG or GIF!',
-        MSZ_USER_AVATAR_ERROR_DIMENSIONS_TOO_LARGE => 'Your avatar can\'t be larger than %3$dx%4$d!',
-        MSZ_USER_AVATAR_ERROR_DATA_TOO_LARGE => 'Your avatar is not allowed to be larger in file size than %2$s!',
-        MSZ_USER_AVATAR_ERROR_TMP_FAILED => 'Unable to save your avatar, contact an administator!',
-        MSZ_USER_AVATAR_ERROR_STORE_FAILED => 'Unable to save your avatar, contact an administator!',
-        MSZ_USER_AVATAR_ERROR_FILE_NOT_FOUND => 'Unable to save your avatar, contact an administator!',
-    ],
-];
-
 tpl_vars([
     'settings_user_id' => $settingsUserId,
     'settings_perms' => $perms,
@@ -85,7 +58,7 @@ $backgroundProps = $app->getBackgroundProps();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
-        $settingsErrors[] = $csrfErrorString;
+        $settingsErrors[] = MSZ_TMP_USER_ERROR_STRINGS['csrf'];
     } else {
         if (!empty($_POST['profile']) && is_array($_POST['profile'])) {
             if (!$perms['edit_profile']) {
@@ -95,26 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if (count($setUserFieldErrors) > 0) {
                     foreach ($setUserFieldErrors as $name => $error) {
-                        switch ($error) {
-                            case MSZ_USER_PROFILE_INVALID_FIELD:
-                                $settingsErrors[] = sprintf("Field '%s' does not exist!", $name);
-                                break;
-
-                            case MSZ_USER_PROFILE_FILTER_FAILED:
-                                $settingsErrors[] = sprintf(
-                                    '%s field was invalid!',
-                                    user_profile_field_get_display_name($name)
-                                );
-                                break;
-
-                            case MSZ_USER_PROFILE_UPDATE_FAILED:
-                                $settingsErrors[] = 'Failed to update values, contact an administator.';
-                                break;
-
-                            default:
-                                $settingsErrors[] = 'An unexpected error occurred, contact an administator.';
-                                break;
-                        }
+                        $settingsErrors[] = sprintf(
+                            MSZ_TMP_USER_ERROR_STRINGS['profile'][$error] ?? MSZ_TMP_USER_ERROR_STRINGS['profile']['_'],
+                            $name,
+                            user_profile_field_get_display_name($name)
+                        );
                     }
                 }
             }
@@ -124,38 +82,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$perms['edit_about']) {
                 $settingsErrors[] = "You're not allowed to edit your about page.";
             } else {
-                $aboutParser = (int)($_POST['about']['parser'] ?? MSZ_PARSER_PLAIN);
-                $aboutText = $_POST['about']['text'] ?? '';
+                $setAboutError = user_set_about_page(
+                    $settingsUserId,
+                    $_POST['about']['text'] ?? '',
+                    (int)($_POST['about']['parser'] ?? MSZ_PARSER_PLAIN)
+                );
 
-                // TODO: this is disgusting (move this into a user_set_about function or some shit)
-                while (true) {
-                    // TODO: take parser shit out of forum_post
-                    if (!parser_is_valid($aboutParser)) {
-                        $settingsErrors[] = 'Invalid parser specified.';
-                        break;
-                    }
-
-                    if (strlen($aboutText) > 0xFFFF) {
-                        $settingsErrors[] = 'Please keep the length of your about page to at most ' . 0xFFFF . '.';
-                        break;
-                    }
-
-                    $setAbout = Database::prepare('
-                        UPDATE `msz_users`
-                        SET `user_about_content` = :content,
-                            `user_about_parser` = :parser
-                        WHERE `user_id` = :user
-                    ');
-                    $setAbout->bindValue('user', $settingsUserId);
-                    $setAbout->bindValue('content', strlen($aboutText) < 1 ? null : $aboutText);
-                    $setAbout->bindValue('parser', $aboutParser);
-                    $setAbout->execute();
-                    break;
+                if ($setAboutError !== MSZ_USER_ABOUT_OK) {
+                    $settingsErrors[] = sprintf(
+                        MSZ_TMP_USER_ERROR_STRINGS['about'][$setAboutError] ?? MSZ_TMP_USER_ERROR_STRINGS['about']['_'],
+                        MSZ_USER_ABOUT_MAX_LENGTH
+                    );
                 }
             }
         }
 
-        if (!empty($_POST['avatar']) && is_array($_POST['avatar'])) {
+        if (!empty($_FILES['avatar'])) {
+            if (empty($_POST['avatar']['mode'])) {
+                // cool monkey patch
+                $_POST['avatar']['mode'] = empty($_POST['avatar']['delete']) ? 'upload' : 'delete';
+            }
+
             switch ($_POST['avatar']['mode'] ?? '') {
                 case 'delete':
                     user_avatar_delete($settingsUserId);
@@ -175,8 +122,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     if ($_FILES['avatar']['error']['file'] !== UPLOAD_ERR_OK) {
                         $settingsErrors[] = sprintf(
-                            $avatarErrorStrings['upload'][$_FILES['avatar']['error']['file']]
-                            ?? $avatarErrorStrings['upload']['default'],
+                            MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload'][$_FILES['avatar']['error']['file']]
+                            ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload']['_'],
                             $_FILES['avatar']['error']['file'],
                             byte_symbol($avatarProps['max_size'], true),
                             $avatarProps['max_width'],
@@ -193,8 +140,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     if ($setAvatar !== MSZ_USER_AVATAR_NO_ERRORS) {
                         $settingsErrors[] = sprintf(
-                            $avatarErrorStrings['set'][$setAvatar]
-                            ?? $avatarErrorStrings['set']['default'],
+                            MSZ_TMP_USER_ERROR_STRINGS['avatar']['set'][$setAvatar]
+                            ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['set']['_'],
                             $setAvatar,
                             byte_symbol($avatarProps['max_size'], true),
                             $avatarProps['max_width'],
@@ -205,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if (!empty($_POST['background']) && is_array($_POST['background'])) {
+        if (!empty($_FILES['background'])) {
             switch ($_POST['background']['mode'] ?? '') {
                 case 'delete':
                     user_background_delete($settingsUserId);
@@ -225,8 +172,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     if ($_FILES['background']['error']['file'] !== UPLOAD_ERR_OK) {
                         $settingsErrors[] = sprintf(
-                            $avatarErrorStrings['upload'][$_FILES['background']['error']['file']]
-                            ?? $avatarErrorStrings['upload']['default'],
+                            MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload'][$_FILES['background']['error']['file']]
+                            ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload']['_'],
                             $_FILES['background']['error']['file'],
                             byte_symbol($backgroundProps['max_size'], true),
                             $backgroundProps['max_width'],
@@ -243,8 +190,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     if ($setBackground !== MSZ_USER_BACKGROUND_NO_ERRORS) {
                         $settingsErrors[] = sprintf(
-                            $avatarErrorStrings['set'][$setBackground]
-                            ?? $avatarErrorStrings['set']['default'],
+                            MSZ_TMP_USER_ERROR_STRINGS['avatar']['set'][$setBackground]
+                            ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['set']['_'],
                             $setBackground,
                             byte_symbol($backgroundProps['max_size'], true),
                             $backgroundProps['max_width'],
@@ -258,12 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!empty($_POST['session_action'])) {
             switch ($_POST['session_action']) {
                 case 'kill-all':
-                    Database::prepare('
-                        DELETE FROM `msz_sessions`
-                        WHERE `user_id` = :user_id
-                    ')->execute([
-                        'user_id' => $settingsUserId,
-                    ]);
+                    user_session_purge_all($settingsUserId);
                     audit_log('PERSONAL_SESSION_DESTROY_ALL', $settingsUserId);
                     header('Location: /');
                     return;
@@ -271,32 +213,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (!empty($_POST['session']) && is_numeric($_POST['session'])) {
-            $session_id = (int)($_POST['session'] ?? 0);
+            $session = user_session_find((int)($_POST['session'] ?? 0));
 
-            if ($session_id < 1) {
+            if (!$session) {
                 $settingsErrors[] = 'Invalid session.';
+            } elseif ((int)$session['user_id'] !== $settingsUserId) {
+                $settingsErrors[] = 'You may only end your own sessions.';
+            } elseif ((int)$session['session_id'] === $app->getSessionId()) {
+                header('Location: /auth.php?m=logout&s=' . tmp_csrf_token());
+                return;
             } else {
-                $findSession = Database::prepare('
-                    SELECT `session_id`, `user_id`
-                    FROM `msz_sessions`
-                    WHERE `session_id` = :session_id
-                ');
-                $findSession->bindValue('session_id', $session_id);
-                $session = $findSession->execute() ? $findSession->fetch() : null;
-
-                if (!$session || (int)$session['user_id'] !== $settingsUserId) {
-                    $settingsErrors[] = 'You may only end your own sessions.';
-                } else {
-                    if ((int)$session['session_id'] === $app->getSessionId()) {
-                        header('Location: /auth.php?m=logout&s=' . tmp_csrf_token());
-                        return;
-                    }
-
-                    user_session_delete($session['session_id']);
-                    audit_log('PERSONAL_SESSION_DESTROY', $settingsUserId, [
-                        $session['session_id'],
-                    ]);
-                }
+                user_session_delete($session['session_id']);
+                audit_log('PERSONAL_SESSION_DESTROY', $settingsUserId, [
+                    $session['session_id'],
+                ]);
             }
         }
 
@@ -387,7 +317,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    if (!empty($_POST['user']) && !empty($_SERVER['HTTP_REFERER'])) {
+    if (empty($settingsErrors) && !empty($_POST['user']) && !empty($_SERVER['HTTP_REFERER'])) {
         header('Location: /profile.php?u=' . ((int)($_POST['user'] ?? 0)));
         return;
     }

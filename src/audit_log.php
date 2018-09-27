@@ -1,14 +1,13 @@
 <?php
 use Misuzu\Database;
-use Misuzu\Net\IPAddress;
 
 function audit_log(
     string $action,
     int $userId = 0,
     array $params = [],
-    IPAddress $ipAddress = null
+    ?string $ipAddress = null
 ): void {
-    $ipAddress = $ipAddress ?? IPAddress::remote();
+    $ipAddress = $ipAddress ?? ip_remote_address();
 
     for ($i = 0; $i < count($params); $i++) {
         if (preg_match('#^(-?[0-9]+)$#', $params[$i])) {
@@ -20,13 +19,13 @@ function audit_log(
         INSERT INTO `msz_audit_log`
             (`log_action`, `user_id`, `log_params`, `log_ip`, `log_country`)
         VALUES
-            (:action, :user, :params, :ip, :country)
+            (:action, :user, :params, INET6_ATON(:ip), :country)
     ');
     $addLog->bindValue('action', $action);
     $addLog->bindValue('user', $userId < 1 ? null : $userId);
     $addLog->bindValue('params', json_encode($params));
-    $addLog->bindValue('ip', $ipAddress->getRaw());
-    $addLog->bindValue('country', $ipAddress->getCountryCode());
+    $addLog->bindValue('ip', $ipAddress);
+    $addLog->bindValue('country', ip_country_code($ipAddress));
     $addLog->execute();
 }
 

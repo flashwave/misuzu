@@ -1,1 +1,5 @@
 {% extends 'manage/master.twig' %}
+
+{% if site_link is not defined %}
+    {% set site_link = '/members.php' %}
+{% endif %}

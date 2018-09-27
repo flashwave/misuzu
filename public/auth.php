@@ -2,8 +2,10 @@
 use Carbon\Carbon;
 use Misuzu\Application;
 use Misuzu\Database;
-use Misuzu\Net\IPAddress;
-use Misuzu\Users\Session;
+
+$isSubmission = !empty($_POST['auth']) && is_array($_POST['auth']);
+$authMode = $isSubmission ? ($_POST['auth']['mode'] ?? '') : ($_GET['m'] ?? 'login');
+$misuzuBypassLockdown = $authMode === 'login' || $authMode === 'get_user';
 
 require_once __DIR__ . '/../misuzu.php';
 
@@ -16,9 +18,8 @@ $usernameValidationErrors = [
 ];
 
 $preventRegistration = $app->disableRegistration();
+$isStagingSite = $app->isStagingSite();
 
-$isSubmission = !empty($_POST['auth']) && is_array($_POST['auth']);
-$authMode = $isSubmission ? ($_POST['auth']['mode'] ?? '') : ($_GET['m'] ?? 'login');
 $authUsername = $isSubmission ? ($_POST['auth']['username'] ?? '') : ($_GET['username'] ?? '');
 $authEmail = $isSubmission ? ($_POST['auth']['email'] ?? '') : ($_GET['email'] ?? '');
 $authPassword = $_POST['auth']['password'] ?? '';
@@ -26,6 +27,7 @@ $authVerification = $_POST['auth']['verification'] ?? '';
 
 tpl_vars([
     'prevent_registration' => $preventRegistration,
+    'is_staging_site' => $isStagingSite,
     'auth_mode' => $authMode,
     'auth_username' => $authUsername,
     'auth_email' => $authEmail,
@@ -57,6 +59,11 @@ switch ($authMode) {
         if ($app->hasActiveSession()) {
             header('Location: /settings.php');
             break;
+        }
+
+        if ($isStagingSite) {
+            header('Location: /');
+            return;
         }
 
         $resetUser = (int)($_POST['user'] ?? $_GET['u'] ?? 0);
@@ -146,7 +153,7 @@ switch ($authMode) {
         break;
 
     case 'forgot':
-        if ($app->hasActiveSession()) {
+        if ($app->hasActiveSession() || $isStagingSite) {
             header('Location: /');
             break;
         }
@@ -170,7 +177,7 @@ switch ($authMode) {
                 break;
             }
 
-            $ipAddress = IPAddress::remote()->getString();
+            $ipAddress = ip_remote_address();
             $emailSent = Database::prepare('
                 SELECT COUNT(`verification_code`) > 0
                 FROM `msz_users_password_resets`
@@ -236,7 +243,7 @@ MSG;
         $authLoginError = '';
 
         while ($isSubmission) {
-            $ipAddress = IPAddress::remote()->getString();
+            $ipAddress = ip_remote_address();
 
             if (!isset($authUsername, $authPassword)) {
                 $authLoginError = "You didn't fill all the forms!";
@@ -344,7 +351,7 @@ MSG;
                 $authUsername,
                 $authPassword,
                 $authEmail,
-                IPAddress::remote()->getString()
+                ip_remote_address()
             );
 
             if ($createUser < 1) {
