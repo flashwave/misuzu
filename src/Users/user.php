@@ -77,7 +77,7 @@ function user_bump_last_active(int $userId, string $ipAddress = null): void
             `last_ip` = INET6_ATON(:last_ip)
         WHERE `user_id` = :user_id
     ');
-    $bumpUserLast->bindValue('last_ip', $ipAddress ?? $_SERVER['REMOTE_ADDR'] ?? '::1');
+    $bumpUserLast->bindValue('last_ip', $ipAddress ?? remote_address());
     $bumpUserLast->bindValue('user_id', $userId);
     $bumpUserLast->execute();
 }

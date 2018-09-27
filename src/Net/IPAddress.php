@@ -141,7 +141,7 @@ final class IPAddress
     public static function remote(string $fallbackAddress = self::FALLBACK_ADDRESS): IPAddress
     {
         try {
-            return self::fromString($_SERVER['REMOTE_ADDR'] ?? $fallbackAddress);
+            return self::fromString(remote_address($fallbackAddress));
         } catch (InvalidArgumentException $ex) {
             return self::fromString($fallbackAddress);
         }

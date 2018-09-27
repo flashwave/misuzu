@@ -29,6 +29,11 @@ function array_apply(array $array, callable $func): array
     return $array;
 }
 
+function remote_address(string $fallback = '::1'): string
+{
+    return $_SERVER['REMOTE_ADDR'] ?? $fallback;
+}
+
 function set_cookie_m(string $name, string $value, int $expires): void
 {
     setcookie(

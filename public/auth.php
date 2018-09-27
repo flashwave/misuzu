@@ -169,7 +169,7 @@ switch ($authMode) {
                 break;
             }
 
-            $ipAddress = IPAddress::remote()->getString();
+            $ipAddress = remote_address();
             $emailSent = Database::prepare('
                 SELECT COUNT(`verification_code`) > 0
                 FROM `msz_users_password_resets`
@@ -235,7 +235,7 @@ MSG;
         $authLoginError = '';
 
         while ($isSubmission) {
-            $ipAddress = IPAddress::remote()->getString();
+            $ipAddress = remote_address();
 
             if (!isset($authUsername, $authPassword)) {
                 $authLoginError = "You didn't fill all the forms!";
@@ -343,7 +343,7 @@ MSG;
                 $authUsername,
                 $authPassword,
                 $authEmail,
-                IPAddress::remote()->getString()
+                remote_address()
             );
 
             if ($createUser < 1) {
