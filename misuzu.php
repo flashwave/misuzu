@@ -276,15 +276,7 @@ MIG;
         $app->startSession((int)$_COOKIE['msz_uid'], $_COOKIE['msz_sid']);
 
         if ($app->hasActiveSession()) {
-            $bumpUserLast = Database::prepare('
-                UPDATE `msz_users` SET
-                `last_seen` = NOW(),
-                `last_ip` = INET6_ATON(:last_ip)
-                WHERE `user_id` = :user_id
-            ');
-            $bumpUserLast->bindValue('last_ip', Net\IPAddress::remote()->getString());
-            $bumpUserLast->bindValue('user_id', $app->getUserId());
-            $bumpUserLast->execute();
+            user_bump_last_active($app->getUserId());
 
             $getUserDisplayInfo = Database::prepare('
                 SELECT

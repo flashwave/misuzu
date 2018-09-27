@@ -69,6 +69,19 @@ function user_id_from_username(string $username): int
     return $getId->execute() ? (int)$getId->fetchColumn() : 0;
 }
 
+function user_bump_last_active(int $userId, string $ipAddress = null): void
+{
+    $bumpUserLast = Database::prepare('
+        UPDATE `msz_users`
+        SET `last_seen` = NOW(),
+            `last_ip` = INET6_ATON(:last_ip)
+        WHERE `user_id` = :user_id
+    ');
+    $bumpUserLast->bindValue('last_ip', $ipAddress ?? $_SERVER['REMOTE_ADDR'] ?? '::1');
+    $bumpUserLast->bindValue('user_id', $userId);
+    $bumpUserLast->execute();
+}
+
 define('MSZ_USER_AVATAR_FORMAT', '%d.msz');
 
 function user_avatar_delete(int $userId): void
