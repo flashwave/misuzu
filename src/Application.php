@@ -2,7 +2,6 @@
 namespace Misuzu;
 
 use Carbon\Carbon;
-use Misuzu\Users\Session;
 use UnexpectedValueException;
 use InvalidArgumentException;
 use Swift_Mailer;

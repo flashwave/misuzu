@@ -3,7 +3,6 @@ use Carbon\Carbon;
 use Misuzu\Application;
 use Misuzu\Database;
 use Misuzu\Net\IPAddress;
-use Misuzu\Users\Session;
 
 require_once __DIR__ . '/../misuzu.php';
 

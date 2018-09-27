@@ -1,7 +1,6 @@
 <?php
 use Misuzu\Application;
 use Misuzu\Database;
-use Misuzu\IO\File;
 
 define('MSZ_PERM_USER_EDIT_PROFILE', 1);
 define('MSZ_PERM_USER_CHANGE_AVATAR', 1 << 1);

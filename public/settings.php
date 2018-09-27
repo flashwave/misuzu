@@ -1,6 +1,5 @@
 <?php
 use Misuzu\Database;
-use Misuzu\IO\File;
 
 require_once __DIR__ . '/../misuzu.php';
 
