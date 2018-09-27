@@ -267,7 +267,9 @@ MIG;
 
     tpl_add_path(__DIR__ . '/templates');
 
-    if ($app->underLockdown()) {
+    $misuzuBypassLockdown = !empty($misuzuBypassLockdown);
+
+    if (!$misuzuBypassLockdown && $app->underLockdown()) {
         http_response_code(503);
         echo tpl_render('auth.lockdown');
         exit;
@@ -292,6 +294,12 @@ MIG;
             $userDisplayInfo = $getUserDisplayInfo->execute() ? $getUserDisplayInfo->fetch() : [];
             tpl_var('current_user', $userDisplayInfo);
         }
+    }
+
+    if (!$misuzuBypassLockdown && $app->isStagingSite() && !$app->hasActiveSession()) {
+        http_response_code(401);
+        echo tpl_render('auth.private');
+        exit;
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');

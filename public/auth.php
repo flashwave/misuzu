@@ -3,6 +3,10 @@ use Carbon\Carbon;
 use Misuzu\Application;
 use Misuzu\Database;
 
+$isSubmission = !empty($_POST['auth']) && is_array($_POST['auth']);
+$authMode = $isSubmission ? ($_POST['auth']['mode'] ?? '') : ($_GET['m'] ?? 'login');
+$misuzuBypassLockdown = $authMode === 'login' || $authMode === 'get_user';
+
 require_once __DIR__ . '/../misuzu.php';
 
 $usernameValidationErrors = [
@@ -14,9 +18,8 @@ $usernameValidationErrors = [
 ];
 
 $preventRegistration = $app->disableRegistration();
+$isStagingSite = $app->isStagingSite();
 
-$isSubmission = !empty($_POST['auth']) && is_array($_POST['auth']);
-$authMode = $isSubmission ? ($_POST['auth']['mode'] ?? '') : ($_GET['m'] ?? 'login');
 $authUsername = $isSubmission ? ($_POST['auth']['username'] ?? '') : ($_GET['username'] ?? '');
 $authEmail = $isSubmission ? ($_POST['auth']['email'] ?? '') : ($_GET['email'] ?? '');
 $authPassword = $_POST['auth']['password'] ?? '';
@@ -24,6 +27,7 @@ $authVerification = $_POST['auth']['verification'] ?? '';
 
 tpl_vars([
     'prevent_registration' => $preventRegistration,
+    'is_staging_site' => $isStagingSite,
     'auth_mode' => $authMode,
     'auth_username' => $authUsername,
     'auth_email' => $authEmail,
@@ -55,6 +59,11 @@ switch ($authMode) {
         if ($app->hasActiveSession()) {
             header('Location: /settings.php');
             break;
+        }
+
+        if ($isStagingSite) {
+            header('Location: /');
+            return;
         }
 
         $resetUser = (int)($_POST['user'] ?? $_GET['u'] ?? 0);
@@ -144,7 +153,7 @@ switch ($authMode) {
         break;
 
     case 'forgot':
-        if ($app->hasActiveSession()) {
+        if ($app->hasActiveSession() || $isStagingSite) {
             header('Location: /');
             break;
         }

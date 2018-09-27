@@ -306,7 +306,14 @@ final class Application
 
     public function disableRegistration(): bool
     {
-        return $this->underLockdown() || boolval($this->config['Auth']['prevent_registration'] ?? false);
+        return $this->underLockdown()
+            || $this->isStagingSite()
+            || boolval($this->config['Auth']['prevent_registration'] ?? false);
+    }
+
+    public function isStagingSite(): bool
+    {
+        return boolval($this->config['Auth']['staging'] ?? false);
     }
 
     public function getLinkedData(): array

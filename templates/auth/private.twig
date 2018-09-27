@@ -1,0 +1,10 @@
+{% extends 'auth/master.twig' %}
+{% from 'auth/macros.twig' import auth_login %}
+
+{% block content %}
+    {{ auth_login(
+        auth_username|default(''),
+        auth_login_error|default('You must log in to access the testing site.'),
+        auth_login_error is not defined
+    ) }}
+{% endblock %}

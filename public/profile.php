@@ -1,10 +1,12 @@
 <?php
 use Misuzu\Database;
 
+$mode = (string)($_GET['m'] ?? null);
+$misuzuBypassLockdown = $mode === 'avatar';
+
 require_once __DIR__ . '/../misuzu.php';
 
 $userId = (int)($_GET['u'] ?? 0);
-$mode = (string)($_GET['m'] ?? null);
 
 switch ($mode) {
     case 'avatar':
