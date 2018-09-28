@@ -296,10 +296,22 @@ MIG;
         }
     }
 
-    if (!$misuzuBypassLockdown && $app->isStagingSite() && !$app->hasActiveSession()) {
-        http_response_code(401);
-        echo tpl_render('auth.private');
-        exit;
+    $privateInfo = $app->getPrivateInfo();
+
+    if (!$misuzuBypassLockdown && $privateInfo['enabled'] && !$app->hasActiveSession()) {
+        if ($app->hasActiveSession()) {
+            $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $app->getUserId());
+
+            if (!perms_check($generalPerms, $privateInfo['permission'])) {
+                $app->stopSession(); // au revoir
+            }
+        } else {
+            http_response_code(401);
+            echo tpl_render('auth.private', [
+                'private_info'=> $privateInfo,
+            ]);
+            exit;
+        }
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');

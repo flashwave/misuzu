@@ -38,7 +38,7 @@
         </form>
     {% endif %}
 
-    {% if not is_staging_site %}
+    {% if not prevent_password_reset %}
         <form class="container container--new auth" method="post" action="">
             <input type="hidden" name="auth[mode]" value="forgot">
             <div class="container__title">Forgot password</div>
