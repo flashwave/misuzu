@@ -9,8 +9,9 @@ ini_set('display_errors', MSZ_DEBUG ? 'On' : 'Off');
 
 date_default_timezone_set('UTC');
 mb_internal_encoding('UTF-8');
+set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__);
 
-require_once __DIR__ . '/vendor/autoload.php';
+require_once 'vendor/autoload.php';
 
 $errorHandler = new \Whoops\Run;
 $errorHandler->pushHandler(
@@ -24,31 +25,34 @@ $errorHandler->pushHandler(
 );
 $errorHandler->register();
 
-require_once __DIR__ . '/src/audit_log.php';
-require_once __DIR__ . '/src/changelog.php';
-require_once __DIR__ . '/src/colour.php';
-require_once __DIR__ . '/src/comments.php';
-require_once __DIR__ . '/src/general.php';
-require_once __DIR__ . '/src/git.php';
-require_once __DIR__ . '/src/ip.php';
-require_once __DIR__ . '/src/manage.php';
-require_once __DIR__ . '/src/news.php';
-require_once __DIR__ . '/src/perms.php';
-require_once __DIR__ . '/src/tpl.php';
-require_once __DIR__ . '/src/zalgo.php';
-require_once __DIR__ . '/src/Forum/forum.php';
-require_once __DIR__ . '/src/Forum/perms.php';
-require_once __DIR__ . '/src/Forum/post.php';
-require_once __DIR__ . '/src/Forum/topic.php';
-require_once __DIR__ . '/src/Forum/validate.php';
-require_once __DIR__ . '/src/Parsers/parse.php';
-require_once __DIR__ . '/src/Users/login_attempt.php';
-require_once __DIR__ . '/src/Users/profile.php';
-require_once __DIR__ . '/src/Users/relations.php';
-require_once __DIR__ . '/src/Users/role.php';
-require_once __DIR__ . '/src/Users/session.php';
-require_once __DIR__ . '/src/Users/user.php';
-require_once __DIR__ . '/src/Users/validation.php';
+require_once 'src/array.php';
+require_once 'src/audit_log.php';
+require_once 'src/changelog.php';
+require_once 'src/colour.php';
+require_once 'src/comments.php';
+require_once 'src/general.php';
+require_once 'src/git.php';
+require_once 'src/manage.php';
+require_once 'src/news.php';
+require_once 'src/perms.php';
+require_once 'src/string.php';
+require_once 'src/tpl.php';
+require_once 'src/zalgo.php';
+require_once 'src/Forum/forum.php';
+require_once 'src/Forum/perms.php';
+require_once 'src/Forum/post.php';
+require_once 'src/Forum/topic.php';
+require_once 'src/Forum/validate.php';
+require_once 'src/Net/cidr.php';
+require_once 'src/Net/ip.php';
+require_once 'src/Parsers/parse.php';
+require_once 'src/Users/login_attempt.php';
+require_once 'src/Users/profile.php';
+require_once 'src/Users/relations.php';
+require_once 'src/Users/role.php';
+require_once 'src/Users/session.php';
+require_once 'src/Users/user.php';
+require_once 'src/Users/validation.php';
 
 $app = new Application(__DIR__ . '/config/config.ini');
 
