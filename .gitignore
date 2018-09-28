@@ -23,4 +23,5 @@
 # Compiled/copied assets
 /public/js
 /public/css
+/public/webfonts
 /assets/typescript/*.d.ts
