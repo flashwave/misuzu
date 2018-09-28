@@ -152,7 +152,7 @@
 
                 <div class="profile__container__main">
 
-                    {% if is_editing or profile.user_about_content|length > 0 %}
+                    {% if (is_editing and perms.edit_about) or profile.user_about_content|length > 0 %}
                         <div class="container container--new profile__about" id="about">
                             <div class="container__title profile__about__title">
                                 About {{ profile.username }}
