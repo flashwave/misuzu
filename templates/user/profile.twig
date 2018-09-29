@@ -1,6 +1,8 @@
 {% extends 'user/master.twig' %}
 {% from 'macros.twig' import navigation %}
 
+{% set is_new_ready = true %}
+
 {% set image = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
 {% set canonical_url = '/profile.php?u=' ~ profile.user_id %}
 {% set title = 'Profile of ' ~ profile.username %}

@@ -1,15 +1,16 @@
 .input__text {
-    border: 1px solid #aaa;
+    border: 1px solid var(--accent-colour);
     padding: 1px;
     background: #fff;
-    color: #111;
+    background-color: var(--background-colour);
+    color: var(--text-colour);
 
     &:focus {
-        border-color: var(--accent-colour);
+        border-color: #aaa;
     }
 
     &--readonly {
-        color: #666;
+        color: #aaa;
     }
 
     &--monospace {
@@ -25,5 +26,9 @@
         box-shadow: inset 0 0 4px #111;
         border-color: #222;
         transition: border-color .2s;
+
+        &:focus {
+            border-color: var(--accent-colour);
+        }
     }
 }

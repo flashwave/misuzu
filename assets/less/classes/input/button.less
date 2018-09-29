@@ -1,5 +1,7 @@
 .input__button {
-    background-image: linear-gradient(0deg, transparent, var(--gradient-start));
+    background-image: linear-gradient(0deg, transparent 0%, #fff9 50%, #fff9 200%);
+    background-size: 100% 200%;
+    background-position: 0 100%;
     background-color: var(--accent-colour);
     font-family: @mio-font-regular;
     font-size: 1.1em;
@@ -8,7 +10,7 @@
     min-width: 80px;
     text-align: center;
     cursor: pointer;
-    transition: background-color .2s, box-shadow .2s;
+    transition: background-color .2s, box-shadow .2s, background-position .2s;
     color: var(--text-colour-header);
     border: 1px solid var(--text-colour-header);
     border-radius: 2px;
@@ -31,7 +33,8 @@
     }
 
     &:active {
-        background-color: var(--gradient-start);
+        background-color: var(--accent-colour);
+        background-position: 0 0;
     }
 
     &--new {

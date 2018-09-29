@@ -11,7 +11,7 @@
         </div>
     </div>#}
 
-    <div class="container container--translucent">
+    <div class="container">
         <div class="container__title">Account</div>
         <form action="" method="post" class="settings__account">
             <input type="hidden" name="csrf" value="{{ csrf_token() }}">
@@ -132,7 +132,7 @@
     </div>
 
     {% if settings_perms.edit_avatar %}
-        <div class="container container--translucent">
+        <div class="container">
             <div class="container__title">Avatar</div>
             <form action="" method="post" class="settings__images" enctype="multipart/form-data">
                 <input type="hidden" name="MAX_FILE_SIZE" value="{{ background.max_size }}">
@@ -203,7 +203,7 @@
     {% endif %}
 
     {% if settings_perms.edit_background %}
-        <div class="container container--translucent">
+        <div class="container">
             <div class="container__title">Background</div>
             <form action="" method="post" class="settings__images" enctype="multipart/form-data">
                 <input type="hidden" name="MAX_FILE_SIZE" value="{{ background.max_size }}">
@@ -269,7 +269,7 @@
     {% endif %}
 
     {% if settings_perms.edit_about %}
-        <div class="container container--translucent">
+        <div class="container">
             <div class="container__title">
                 About
             </div>
