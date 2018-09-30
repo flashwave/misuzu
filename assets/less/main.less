@@ -4,19 +4,25 @@
 @site-max-width: 1200px;
 @site-mobile-width: 800px;
 
+@default-accent-colour: #9475b2;
+@default-background-colour: #fbeeff;
+@default-text-colour: #000;
+@default-header-text-colour: #306;
+@default-gradient-start: #c2affe;
+
 :root {
     --site-max-width: @site-max-width;
     --site-background-meta: no-repeat center / cover fixed;
     --site-background-image: initial;
 
     --user-colour: inherit;
-    //--accent-colour: #9475b2;
-    --accent-colour: #452c4c;
-    --text-colour: #fff;
-    --text-colour-inverted: #000;
-    --text-colour-header: #ddd; // kill this too probably
-    --background-colour: #090909;
-    --global-menu-colour: var(--accent-colour);
+    --accent-colour: @default-accent-colour;
+    --text-colour: @default-text-colour;
+    --text-colour-inverted: color(#fff - @default-text-colour);
+    --text-colour-header: @default-header-text-colour;
+    --background-colour: @default-background-colour;
+    --background-colour-translucent: fade(@default-background-colour, 90%);
+    --gradient-start: @default-gradient-start; // deprecate this in favour of --accent-colour at some point
 }
 
 * {
@@ -51,14 +57,15 @@ body {
 
     &--default {
         --site-background-meta: repeat;
-        --site-background-image: url('/images/cloud-pattern.png');
-        --background-colour: var(--accent-colour);
+        --site-background-image: url('https://mikoto.misaka.nl/i/cloudss.png');
         background-blend-mode: multiply;
+
+        background-color: var(--accent-colour);
+        --gradient-start: var(--accent-colour);
     }
 
     &--legacy {
-        //--background-colour: #fbeeff;
-        --global-menu-colour: #3f154c;
+        --background-color: #fbeeff;
     }
 }
 
