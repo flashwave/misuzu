@@ -141,6 +141,12 @@ final class Application
         }
     }
 
+    public function stopSession(): void
+    {
+        $this->currentSessionId = 0;
+        $this->currentUserId = 0;
+    }
+
     public function hasActiveSession(): bool
     {
         return $this->getSessionId() > 0;
@@ -307,13 +313,15 @@ final class Application
     public function disableRegistration(): bool
     {
         return $this->underLockdown()
-            || $this->isStagingSite()
+            || $this->getPrivateInfo()['enabled']
             || boolval($this->config['Auth']['prevent_registration'] ?? false);
     }
 
-    public function isStagingSite(): bool
+    public function getPrivateInfo(): array
     {
-        return boolval($this->config['Auth']['staging'] ?? false);
+        return !empty($this->config['Private']) && boolval($this->config['Private']['enabled'])
+            ? $this->config['Private']
+            : ['enabled' => false];
     }
 
     public function getLinkedData(): array

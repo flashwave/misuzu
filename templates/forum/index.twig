@@ -12,14 +12,11 @@
             {% endif %}
         {% endfor %}
 
-        <div class="container forum__actions">
-            <div class="container__title">Actions</div>
-            <div class="forum__actions__content">
-                <a class="input__button forum__actions__button">Mark All Read</a>
-                <a class="input__button forum__actions__button">Unanswered Posts</a>
-                <a class="input__button forum__actions__button">New Posts</a>
-                <a class="input__button forum__actions__button">Your Posts</a>
-            </div>
+        <div class="container container--new forum__actions">
+            <a class="input__button input__button--new forum__actions__button">Mark All Read</a>
+            <a class="input__button input__button--new forum__actions__button">Unanswered Posts</a>
+            <a class="input__button input__button--new forum__actions__button">New Posts</a>
+            <a class="input__button input__button--new forum__actions__button">Your Posts</a>
         </div>
     {% else %}
         <div class="container">

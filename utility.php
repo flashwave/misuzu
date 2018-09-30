@@ -1,34 +1,4 @@
 <?php
-function starts_with(string $string, string $text): bool
-{
-    return mb_substr($string, 0, mb_strlen($text)) === $text;
-}
-
-function ends_with(string $string, string $text): bool
-{
-    return mb_substr($string, 0 - mb_strlen($text)) === $text;
-}
-
-function array_test(array $array, callable $func): bool
-{
-    foreach ($array as $value) {
-        if (!$func($value)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-function array_apply(array $array, callable $func): array
-{
-    for ($i = 0; $i < count($array); $i++) {
-        $array[$i] = $func($array[$i]);
-    }
-
-    return $array;
-}
-
 function set_cookie_m(string $name, string $value, int $expires): void
 {
     setcookie(
@@ -227,12 +197,6 @@ function running_on_windows(): bool
     return starts_with(mb_strtolower(PHP_OS), 'win');
 }
 
-function first_paragraph(string $text, string $delimiter = "\n"): string
-{
-    $index = mb_strpos($text, $delimiter);
-    return $index === false ? $text : mb_substr($text, 0, $index);
-}
-
 function pdo_prepare_array_update(array $keys, bool $useKeys = false, string $format = '%s'): string
 {
     return pdo_prepare_array($keys, $useKeys, sprintf($format, '`%1$s` = :%1$s'));
@@ -377,16 +341,6 @@ function url_construct(string $path, array $query = [], string $host = ''): stri
     }
 
     return mb_substr($url, 0, -1);
-}
-
-function camel_to_snake(string $camel): string
-{
-    return trim(mb_strtolower(preg_replace('#([A-Z][a-z]+)#', '$1_', $camel)), '_');
-}
-
-function snake_to_camel(string $snake): string
-{
-    return str_replace('_', '', ucwords($snake, '_'));
 }
 
 function is_user_int($value): bool

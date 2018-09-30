@@ -26,100 +26,104 @@
     </div>
 {% endmacro %}
 
-{% macro forum_category_entry(forum, forum_unread, forum_type, forum_icon) %}
+{% macro forum_category_entry(forum, forum_unread, forum_type) %}
     {% set forum_type = forum_type|default(null) %}
     {% set forum_unread = forum_unread|default(forum.forum_unread|default(false)) ? 'unread' : 'read' %}
-    {% set forum_icon = forum_icon|default('https://static.flash.moe/images/forum-icons/forum-%s-%s.png') %}
 
     {% if forum_type is null %}
         {% if forum.forum_archived is defined and forum.forum_archived %}
-            {% set forum_type = 'archive' %}
+            {% set forum_type = 'fas fa-archive' %}
         {% elseif forum.forum_type is defined and forum.forum_type != 0 %}
             {% if forum.forum_type == 2 %}
-                {% set forum_type = 'link' %}
+                {% set forum_type = 'fas fa-link' %}
             {% elseif forum.forum_type == 1 %}
-                {% set forum_type = 'category' %}
+                {% set forum_type = 'fas fa-folder' %}
             {% endif %}
         {% else %}
-            {% set forum_type = 'default' %}
+            {% set forum_type = 'fas fa-comments' %}
         {% endif %}
     {% endif %}
 
-    <div class="forum__listing__entry">
-        <img src="{{ forum_icon|format(forum_type, forum_unread) }}" alt="{{ forum_unread }}" class="forum__listing__entry__icon">
+    <div class="forum__category">
+        <a href="/forum/forum.php?f={{ forum.forum_id }}" class="forum__category__link"></a>
 
-        <div class="forum__listing__entry__info">
-            <div class="forum__listing__entry__title">
-                <a href="/forum/forum.php?f={{ forum.forum_id }}" class="forum__listing__entry__title__link">{{ forum.forum_name }}</a>
+        <div class="forum__category__container">
+            <div class="forum__category__icon forum__category__icon--{{ forum_unread }}">
+                <i class="{{ forum_type }}"></i>
             </div>
 
-            <div class="forum__listing__entry__description">
-                {{ forum.forum_description|nl2br }}
+            <div class="forum__category__details">
+                <div class="forum__category__title">
+                    {{ forum.forum_name }}
+                </div>
+
+                <div class="forum__category__description">
+                    {{ forum.forum_description|nl2br }}
+                </div>
+
+                {% if forum.forum_subforums is defined and forum.forum_subforums|length > 0 %}
+                    <div class="forum__category__subforums">
+                        {% for subforum in forum.forum_subforums %}
+                            <a href="/forum/forum.php?f={{ subforum.forum_id }}"
+                                class="forum__category__subforum{% if subforum.forum_unread %} forum__category__subforum--unread{% endif %}">
+                                {{ subforum.forum_name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
 
-            {% if forum.forum_subforums is defined and forum.forum_subforums|length > 0 %}
-                <div class="forum__listing__entry__subforums">
-                    {% for subforum in forum.forum_subforums %}
-                        <a  href="/forum/forum.php?f={{ subforum.forum_id }}"
-                            class="forum__listing__entry__subforum{% if subforum.forum_unread %} forum__listing__entry__subforum--unread{% endif %}">
-                            {{ subforum.forum_name }}
-                        </a>
-                    {% endfor %}
+            {% if forum.forum_type == 2 %}
+                {% if forum.forum_link_clicks is not null %}
+                    <div class="forum__category__stats">
+                        <div class="forum__category__stat" title="Clicks">{{ forum.forum_link_clicks|number_format }}</div>
+                    </div>
+                {% endif %}
+            {% elseif forum.forum_type != 1 %}
+                <div class="forum__category__stats">
+                    <div class="forum__category__stat" title="Topics">{{ forum.forum_topic_count|number_format }}</div>
+                    <div class="forum__category__stat" title="Posts">{{ forum.forum_post_count|number_format }}</div>
                 </div>
             {% endif %}
-        </div>
 
-        {% if forum.forum_type == 2 %}
-            {% if forum.forum_link_clicks is not null %}
-                <div class="forum__listing__entry__stats">
-                    <div class="forum__listing__entry__topics" title="Clicks">{{ forum.forum_link_clicks|number_format }}</div>
-                </div>
-            {% endif %}
-        {% elseif forum.forum_type != 1 %}
-            <div class="forum__listing__entry__stats">
-                <div class="forum__listing__entry__topics" title="Topics">{{ forum.forum_topic_count|number_format }}</div>
-                <div class="forum__listing__entry__posts" title="Posts">{{ forum.forum_post_count|number_format }}</div>
-            </div>
-        {% endif %}
-
-        {% if forum.forum_type == 0 or forum.forum_link_clicks is not null %}
-            <div class="forum__listing__entry__activity{% if forum.forum_link_clicks is not null %} forum__listing__entry__activity--empty{% endif %}">
-                {% if forum.forum_type != 2 %}
-                    {% if forum.recent_topic_id is null %}
-                        <div class="forum__listing__entry__activity__none">
-                            There are no posts in this forum yet.
-                        </div>
-                    {% else %}
-                        <div class="forum__listing__entry__activity__details">
-                            <div class="forum__listing__entry__activity__title">
-                                <a  class="forum__listing__entry__activity__title__link"
+            {% if forum.forum_type == 0 or forum.forum_link_clicks is not null %}
+                <div class="forum__category__activity{% if forum.forum_link_clicks is not null %} forum__category__activity--empty{% endif %}">
+                    {% if forum.forum_type != 2 %}
+                        {% if forum.recent_topic_id is null %}
+                            <div class="forum__category__activity__none">
+                                There are no posts in this forum yet.
+                            </div>
+                        {% else %}
+                            <div class="forum__category__activity__details">
+                                <a class="forum__category__activity__post"
                                     href="/forum/topic.php?p={{ forum.recent_post_id }}#p{{ forum.recent_post_id }}">
                                     {{ forum.recent_topic_title }}
                                 </a>
-                            </div>
-                            <div class="forum__listing__entry__activity__info">
-                                {% if forum.recent_post_user_id is not null %}
-                                    by <a href="/profile.php?u={{ forum.recent_post_user_id }}"
-                                        style="{{ forum.recent_post_user_colour|html_colour }}"
-                                        class="forum__listing__entry__activity__user">{{ forum.recent_post_username }}</a>,
-                                {% endif %}
-                                <time
-                                    datetime="{{ forum.recent_post_created|date('c') }}"
-                                    title="{{ forum.recent_post_created|date('r') }}">{{ forum.recent_post_created|time_diff }}</time>
-                            </div>
-                        </div>
 
-                        {% if forum.recent_post_user_id is not null %}
-                            <a
-                                href="/profile.php?u={{ forum.recent_post_user_id }}"
-                                class="avatar forum__listing__entry__activity__avatar"
-                                style="background-image:url('/profile.php?u={{ forum.recent_post_user_id }}&amp;m=avatar')">
-                            </a>
+                                <div class="forum__category__activity__info">
+                                    <time datetime="{{ forum.recent_post_created|date('c') }}"
+                                        title="{{ forum.recent_post_created|date('r') }}">{{ forum.recent_post_created|time_diff }}</time>
+                                    {% if forum.recent_post_user_id is not null %}
+                                        by
+                                        <a href="/profile.php?u={{ forum.recent_post_user_id }}" class="forum__category__username"
+                                            style="{{ forum.recent_post_user_colour|html_colour }}">
+                                            {{ forum.recent_post_username }}
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if forum.recent_post_user_id is not null %}
+                                <a href="/profile.php?u={{ forum.recent_post_user_id }}"
+                                    class="avatar avatar--new forum__category__avatar"
+                                    style="background-image:url('/profile.php?u={{ forum.recent_post_user_id }}&amp;m=avatar')">
+                                </a>
+                            {% endif %}
                         {% endif %}
                     {% endif %}
-                {% endif %}
-            </div>
-        {% endif %}
+                </div>
+            {% endif %}
+        </div>
     </div>
 {% endmacro %}
 

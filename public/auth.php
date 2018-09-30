@@ -18,7 +18,7 @@ $usernameValidationErrors = [
 ];
 
 $preventRegistration = $app->disableRegistration();
-$isStagingSite = $app->isStagingSite();
+$preventPasswordReset = !($privateInfo['password_reset'] ?? true);
 
 $authUsername = $isSubmission ? ($_POST['auth']['username'] ?? '') : ($_GET['username'] ?? '');
 $authEmail = $isSubmission ? ($_POST['auth']['email'] ?? '') : ($_GET['email'] ?? '');
@@ -27,7 +27,7 @@ $authVerification = $_POST['auth']['verification'] ?? '';
 
 tpl_vars([
     'prevent_registration' => $preventRegistration,
-    'is_staging_site' => $isStagingSite,
+    'prevent_password_reset' => $preventPasswordReset,
     'auth_mode' => $authMode,
     'auth_username' => $authUsername,
     'auth_email' => $authEmail,
@@ -61,7 +61,7 @@ switch ($authMode) {
             break;
         }
 
-        if ($isStagingSite) {
+        if ($preventPasswordReset) {
             header('Location: /');
             return;
         }
@@ -153,7 +153,7 @@ switch ($authMode) {
         break;
 
     case 'forgot':
-        if ($app->hasActiveSession() || $isStagingSite) {
+        if ($app->hasActiveSession() || $preventPasswordReset) {
             header('Location: /');
             break;
         }
@@ -287,6 +287,16 @@ MSG;
             }
 
             user_login_attempt_record(true, $userId, $ipAddress, $userAgent);
+
+            if (!empty($privateInfo['permission'])) {
+                $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $userId);
+
+                if (!perms_check($generalPerms, $privateInfo['permission'])) {
+                    $authLoginError = 'Your credentials were correct, but your account lacks the proper permissions to use this website.';
+                    break;
+                }
+            }
+
             $sessionKey = user_session_create($userId, $ipAddress, $userAgent);
 
             if ($sessionKey === '') {
@@ -305,6 +315,8 @@ MSG;
 
         if (!empty($authLoginError)) {
             tpl_var('auth_login_error', $authLoginError);
+        } elseif (!empty($privateInfo['enabled'])) {
+            tpl_var('auth_register_message', $privateInfo['message'] ?? '');
         }
 
         echo tpl_render('auth.auth');
@@ -325,6 +337,16 @@ MSG;
 
             if (!isset($authUsername, $authPassword, $authEmail)) {
                 $authRegistrationError = "You didn't fill all the forms!";
+                break;
+            }
+
+            $checkSpamBot = mb_strtolower($_POST['auth']['meow'] ?? '');
+            $spamBotValid = [
+                '19', '21', 'nineteen', 'nine-teen', 'nine teen', 'twentyone', 'twenty-one', 'twenty one',
+            ];
+
+            if (!in_array($checkSpamBot, $spamBotValid)) {
+                $authRegistrationError = 'Human only cool club, robots begone.';
                 break;
             }
 

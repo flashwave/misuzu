@@ -184,6 +184,16 @@ function manage_perms_list(array $rawPerms): array
                         $rawPerms['general_perms_deny']
                     )
                 ],
+                [
+                    'section' => 'tester',
+                    'title' => 'Can use experimental features.',
+                    'perm' => MSZ_PERM_GENERAL_TESTER,
+                    'value' => manage_perms_value(
+                        MSZ_PERM_GENERAL_TESTER,
+                        $rawPerms['general_perms_allow'],
+                        $rawPerms['general_perms_deny']
+                    )
+                ],
             ],
         ],
         [

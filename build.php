@@ -18,6 +18,14 @@ define('NODE_IMPORT_JS', [
 define('NODE_IMPORT_CSS', [
     'highlightjs/styles/default.css',
     'highlightjs/styles/tomorrow-night.css',
+    '@fortawesome/fontawesome-free/css/all.min.css',
+]);
+
+/**
+ * Directories to copy to the public folder
+ */
+define('NODE_COPY_DIRECTORY', [
+    '@fortawesome/fontawesome-free/webfonts' => 'webfonts',
 ]);
 
 /**
@@ -84,6 +92,34 @@ function deleteAllFilesInDir(string $dir, string $pattern): void
     }
 }
 
+function recursiveCopy(string $source, string $dest): bool
+{
+    if (is_link($source)) {
+        return symlink(readlink($source), $dest);
+    }
+
+    if (is_file($source)) {
+        return copy($source, $dest);
+    }
+
+    if (!is_dir($dest)) {
+        mkdir($dest);
+    }
+
+    $dir = dir($source);
+
+    while (($entry = $dir->read()) !== false) {
+        if ($entry === '.' || $entry === '..') {
+            continue;
+        }
+
+        recursiveCopy($source . DIRECTORY_SEPARATOR . $entry, $dest . DIRECTORY_SEPARATOR . $entry);
+    }
+
+    $dir->close();
+    return true;
+}
+
 misuzu_log('Cleanup');
 createDirIfNotExist(CSS_DIR);
 createDirIfNotExist(JS_DIR);
@@ -145,6 +181,17 @@ foreach (IMPORT_SEQ as $sequence) {
     }
 
     file_put_contents($sequence['destination'], $contents);
+}
+
+misuzu_log();
+misuzu_log('Copying data...');
+
+foreach (NODE_COPY_DIRECTORY as $source => $dest) {
+    misuzu_log("=> " . basename($dest));
+    $source = realpath(NODE_MODULES_DIR . DIRECTORY_SEPARATOR . $source);
+    $dest = PUBLIC_DIR . DIRECTORY_SEPARATOR . $dest;
+    deleteAllFilesInDir($dest, '*');
+    recursiveCopy($source, $dest);
 }
 
 // no need to do this in debug mode, auto reload is enabled and cache is disabled

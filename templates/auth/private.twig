@@ -4,7 +4,7 @@
 {% block content %}
     {{ auth_login(
         auth_username|default(''),
-        auth_login_error|default('You must log in to access the testing site.'),
+        auth_login_error|default(private_info.message|default('')),
         auth_login_error is not defined
     ) }}
 {% endblock %}
