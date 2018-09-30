@@ -340,6 +340,16 @@ MSG;
                 break;
             }
 
+            $checkSpamBot = mb_strtolower($_POST['auth']['meow'] ?? '');
+            $spamBotValid = [
+                '19', '21', 'nineteen', 'nine-teen', 'nine teen', 'twentyone', 'twenty-one', 'twenty one',
+            ];
+
+            if (!in_array($checkSpamBot, $spamBotValid)) {
+                $authRegistrationError = 'Human only cool club, robots begone.';
+                break;
+            }
+
             $usernameValidation = user_validate_username($authUsername, true);
             if ($usernameValidation !== '') {
                 $authRegistrationError = $usernameValidationErrors[$usernameValidation];
