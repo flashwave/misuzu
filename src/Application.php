@@ -354,6 +354,11 @@ final class Application
         return $this->getPath($this->config['Avatar']['default_path'] ?? 'public/images/no-avatar.png');
     }
 
+    public function getCsrfSecretKey(): string
+    {
+        return $this->config['CSRF']['secret_key'] ?? 'insecure';
+    }
+
     /**
      * Gets the currently active instance of Application
      * @return Application

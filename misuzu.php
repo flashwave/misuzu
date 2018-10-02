@@ -303,7 +303,7 @@ MIG;
         }
     }
 
-    csrf_init('soapsoapsoap', empty($userDisplayInfo) ? ip_remote_address() : $_COOKIE['msz_sid']);
+    csrf_init($app->getCsrfSecretKey(), empty($userDisplayInfo) ? ip_remote_address() : $_COOKIE['msz_sid']);
 
     $privateInfo = $app->getPrivateInfo();
 
