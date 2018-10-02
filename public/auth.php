@@ -1,5 +1,4 @@
 <?php
-use Carbon\Carbon;
 use Misuzu\Application;
 use Misuzu\Database;
 
@@ -315,7 +314,7 @@ MSG;
             }
 
             user_session_start($userId, $sessionKey);
-            $cookieLife = Carbon::now()->addMonth()->timestamp;
+            $cookieLife = strtotime(user_session_current('expires_on'));
             set_cookie_m('uid', $userId, $cookieLife);
             set_cookie_m('sid', $sessionKey, $cookieLife);
 

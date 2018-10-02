@@ -1,7 +1,6 @@
 <?php
 namespace Misuzu;
 
-use Carbon\Carbon;
 use UnexpectedValueException;
 use InvalidArgumentException;
 use Swift_Mailer;
