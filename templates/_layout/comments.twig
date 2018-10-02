@@ -105,7 +105,7 @@
                             {% endif %}
                             {% if perms.can_delete_any or (comment.user_id == user.user_id and perms.can_delete) %}
                                 <a class="comment__action comment__action--link comment__action--hide comment__action--delete"
-                                    href="/comments.php?m=delete&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token() }}">Delete</a>
+                                    href="/comments.php?m=delete&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token('comments') }}">Delete</a>
                             {% endif %}
                             {# if user is not null %}
                                 <a class="comment__action comment__action--link comment__action--hide" href="#">Report</a>
