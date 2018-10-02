@@ -299,18 +299,18 @@ MIG;
         ');
         $getUserDisplayInfo->bindValue('user_id', $mszUserId);
         $userDisplayInfo = $getUserDisplayInfo->execute() ? $getUserDisplayInfo->fetch() : [];
-        tpl_var('current_user', $userDisplayInfo);
     }
 
     csrf_init($app->getCsrfSecretKey(), empty($userDisplayInfo) ? ip_remote_address() : $_COOKIE['msz_sid']);
 
     $privateInfo = $app->getPrivateInfo();
 
-    if (!$misuzuBypassLockdown && $privateInfo['enabled'] && !empty($userDisplayInfo)) {
+    if (!$misuzuBypassLockdown && $privateInfo['enabled']) {
         if (user_session_active()) {
             $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
 
-            if (!perms_check($generalPerms, $privateInfo['permission'])) {
+            if ($privateInfo['permission'] && !perms_check($generalPerms, $privateInfo['permission'])) {
+                unset($userDisplayInfo);
                 user_session_stop(); // au revoir
             }
         } else {
@@ -320,6 +320,10 @@ MIG;
             ]);
             exit;
         }
+    }
+
+    if (!empty($userDisplayInfo)) {
+        tpl_var('current_user', $userDisplayInfo);
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
