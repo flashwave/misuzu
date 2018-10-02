@@ -20,12 +20,12 @@ if (!csrf_verify('comments', $_REQUEST['csrf'] ?? '')) {
     return;
 }
 
-if ($app->getUserId() < 1) {
+if (!user_session_active()) {
     echo render_info_or_json($isXHR, 'You must be logged in to manage comments.', 401);
     return;
 }
 
-$commentPerms = comments_get_perms($app->getUserId());
+$commentPerms = comments_get_perms(user_session_current('user_id', 0));
 
 switch ($_GET['m'] ?? null) {
     case 'vote':
@@ -46,7 +46,7 @@ switch ($_GET['m'] ?? null) {
         $vote = MSZ_COMMENTS_VOTE_TYPES[(int)($_GET['v'] ?? 0)];
         $voteResult = comments_vote_add(
             $comment,
-            $app->getUserId(),
+            user_session_current('user_id', 0),
             $vote
         );
 
@@ -72,7 +72,7 @@ switch ($_GET['m'] ?? null) {
         }
 
         if (!$commentPerms['can_delete_any']
-            && !comments_post_check_ownership($comment, $app->getUserId())) {
+            && !comments_post_check_ownership($comment, user_session_current('user_id', 0))) {
             echo render_info_or_json($isXHR, "You're not allowed to delete comments made by others.", 403);
             break;
         }
@@ -147,7 +147,7 @@ switch ($_GET['m'] ?? null) {
         }
 
         $commentId = comments_post_create(
-            $app->getUserId(),
+            user_session_current('user_id', 0),
             $categoryId,
             $commentText,
             $commentPin,

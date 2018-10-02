@@ -39,7 +39,7 @@ switch ($authMode) {
         break;
 
     case 'logout':
-        if (!$app->hasActiveSession()) {
+        if (!user_session_active()) {
             header('Location: /');
             return;
         }
@@ -47,7 +47,7 @@ switch ($authMode) {
         if (csrf_verify('logout', $_GET['s'] ?? '')) {
             set_cookie_m('uid', '', -3600);
             set_cookie_m('sid', '', -3600);
-            user_session_delete($app->getSessionId());
+            user_session_stop(true);
             header('Location: /');
             return;
         }
@@ -56,7 +56,7 @@ switch ($authMode) {
         break;
 
     case 'reset':
-        if ($app->hasActiveSession()) {
+        if (user_session_active()) {
             header('Location: /settings.php');
             break;
         }
@@ -153,7 +153,7 @@ switch ($authMode) {
         break;
 
     case 'forgot':
-        if ($app->hasActiveSession() || $preventPasswordReset) {
+        if (user_session_active() || $preventPasswordReset) {
             header('Location: /');
             break;
         }
@@ -239,7 +239,7 @@ MSG;
         break;
 
     case 'login':
-        if ($app->hasActiveSession()) {
+        if (user_session_active()) {
             header('Location: /');
             break;
         }
@@ -314,7 +314,7 @@ MSG;
                 break;
             }
 
-            $app->startSession($userId, $sessionKey);
+            user_session_start($userId, $sessionKey);
             $cookieLife = Carbon::now()->addMonth()->timestamp;
             set_cookie_m('uid', $userId, $cookieLife);
             set_cookie_m('sid', $sessionKey, $cookieLife);
@@ -333,7 +333,7 @@ MSG;
         break;
 
     case 'register':
-        if ($app->hasActiveSession()) {
+        if (user_session_active()) {
             header('Location: /');
         }
 

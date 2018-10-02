@@ -11,7 +11,7 @@ $changelogDate = $_GET['d'] ?? '';
 $changelogUser = (int)($_GET['u'] ?? 0);
 $changelogTags = $_GET['t'] ?? '';
 
-$commentPerms = comments_get_perms($app->getUserId());
+$commentPerms = comments_get_perms(user_session_current('user_id', 0));
 
 tpl_vars([
     'changelog_offset' => $changelogOffset,
@@ -62,7 +62,7 @@ if ($changelogChange > 0) {
             "changelog-date-{$change['change_date']}",
             true
         ),
-        'comments' => comments_category_get($commentsCategory['category_id'], $app->getUserId()),
+        'comments' => comments_category_get($commentsCategory['category_id'], user_session_current('user_id', 0)),
     ]);
     return;
 }
@@ -88,7 +88,7 @@ if (!$changes) {
 if (!empty($changelogDate) && count($changes) > 0) {
     tpl_vars([
         'comments_category' => $commentsCategory = comments_category_info("changelog-date-{$changelogDate}", true),
-        'comments' => comments_category_get($commentsCategory['category_id'], $app->getUserId()),
+        'comments' => comments_category_get($commentsCategory['category_id'], user_session_current('user_id', 0)),
     ]);
 }
 

@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../misuzu.php';
 
-$generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $app->getUserId());
+$generalPerms = perms_get_user(MSZ_PERMS_GENERAL, user_session_current('user_id', 0));
 
 switch ($_GET['v'] ?? null) {
     default:

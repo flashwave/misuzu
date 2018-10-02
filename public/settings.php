@@ -6,7 +6,7 @@ require_once __DIR__ . '/../misuzu.php';
 $queryOffset = (int)($_GET['o'] ?? 0);
 $queryTake = 15;
 
-$userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
+$userPerms = perms_get_user(MSZ_PERMS_USER, user_session_current('user_id', 0));
 $perms = [
     'edit_profile' => perms_check($userPerms, MSZ_PERM_USER_EDIT_PROFILE),
     'edit_avatar' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_AVATAR),
@@ -14,16 +14,16 @@ $perms = [
     'edit_about' => perms_check($userPerms, MSZ_PERM_USER_EDIT_ABOUT),
 ];
 
-if (!$app->hasActiveSession()) {
+if (!user_session_active()) {
     echo render_error(403);
     return;
 }
 
 $settingsUserId = !empty($_REQUEST['user']) && perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS)
     ? (int)$_REQUEST['user']
-    : $app->getUserId();
+    : user_session_current('user_id', 0);
 
-if ($settingsUserId !== $app->getUserId() && !user_exists($settingsUserId)) {
+if ($settingsUserId !== user_session_current('user_id', 0) && !user_exists($settingsUserId)) {
     echo render_error(400);
     return;
 }
@@ -235,7 +235,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $settingsErrors[] = 'Invalid session.';
             } elseif ((int)$session['user_id'] !== $settingsUserId) {
                 $settingsErrors[] = 'You may only end your own sessions.';
-            } elseif ((int)$session['session_id'] === $app->getSessionId()) {
+            } elseif ((int)$session['session_id'] === user_session_current('session_id')) {
                 header('Location: /auth.php?m=logout&s=' . csrf_token('logout'));
                 return;
             } else {
@@ -404,7 +404,7 @@ switch ($settingsMode) {
         $sessions = $getSessions->execute() ? $getSessions->fetchAll() : [];
 
         tpl_vars([
-            'active_session_id' => $app->getSessionId(),
+            'active_session_id' => user_session_current('session_id'),
             'user_sessions' => $sessions,
             'sessions_offset' => $queryOffset,
             'sessions_take' => $queryTake,

@@ -17,7 +17,7 @@ if (empty($forum) || ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK && empty($foru
     return;
 }
 
-$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], $app->getUserId());
+$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], user_session_current('user_id', 0));
 
 if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     echo render_error(403);
@@ -33,14 +33,14 @@ if ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK) {
 }
 
 $topics = forum_may_have_topics($forum['forum_type'])
-    ? forum_topic_listing($forum['forum_id'], $app->getUserId(), $topicsOffset, $topicsRange)
+    ? forum_topic_listing($forum['forum_id'], user_session_current('user_id', 0), $topicsOffset, $topicsRange)
     : [];
 
-$forum['forum_subforums'] = forum_get_children($forum['forum_id'], $app->getUserId());
+$forum['forum_subforums'] = forum_get_children($forum['forum_id'], user_session_current('user_id', 0));
 
 foreach ($forum['forum_subforums'] as $skey => $subforum) {
     $forum['forum_subforums'][$skey]['forum_subforums']
-        = forum_get_children($subforum['forum_id'], $app->getUserId(), true);
+        = forum_get_children($subforum['forum_id'], user_session_current('user_id', 0), true);
 }
 
 echo tpl_render('forum.forum', [

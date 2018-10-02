@@ -8,7 +8,7 @@ if (empty($_SERVER['HTTP_REFERER']) || !is_local_url($_SERVER['HTTP_REFERER'])) 
     return;
 }
 
-if (!$app->hasActiveSession()) {
+if (!user_session_active()) {
     echo render_error(403);
     return;
 }
@@ -24,14 +24,14 @@ switch ($_GET['m'] ?? null) {
                 break;
         }
 
-        if (user_relation_add($app->getUserId(), $subjectId, $type) !== MSZ_USER_RELATION_E_OK) {
+        if (user_relation_add(user_session_current('user_id', 0), $subjectId, $type) !== MSZ_USER_RELATION_E_OK) {
             echo render_error(500);
             return;
         }
         break;
 
     case 'remove':
-        if (!user_relation_remove($app->getUserId(), $subjectId)) {
+        if (!user_relation_remove(user_session_current('user_id', 0), $subjectId)) {
             echo render_error(500);
             return;
         }

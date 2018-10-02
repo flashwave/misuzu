@@ -22,7 +22,7 @@ if (!$topic) {
     return;
 }
 
-$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], $app->getUserId());
+$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], user_session_current('user_id', 0));
 
 if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     echo render_error(403);
@@ -36,7 +36,7 @@ if (!$posts) {
     return;
 }
 
-forum_topic_mark_read($app->getUserId(), $topic['topic_id'], $topic['forum_id']);
+forum_topic_mark_read(user_session_current('user_id', 0), $topic['topic_id'], $topic['forum_id']);
 
 echo tpl_render('forum.topic', [
     'topic_breadcrumbs' => forum_get_breadcrumbs($topic['forum_id']),

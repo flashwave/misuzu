@@ -99,7 +99,7 @@ switch ($mode) {
         }
 
         $isEditing = false;
-        $userPerms = perms_get_user(MSZ_PERMS_USER, $app->getUserId());
+        $userPerms = perms_get_user(MSZ_PERMS_USER, user_session_current('user_id', 0));
         $perms = [
             'edit_profile' => perms_check($userPerms, MSZ_PERM_USER_EDIT_PROFILE),
             'edit_avatar' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_AVATAR),
@@ -107,8 +107,8 @@ switch ($mode) {
             'edit_about' => perms_check($userPerms, MSZ_PERM_USER_EDIT_ABOUT),
         ];
 
-        if ($app->hasActiveSession()) {
-            $canEdit = $app->getUserId() === $profile['user_id']
+        if (user_session_active()) {
+            $canEdit = user_session_current('user_id', 0) === $profile['user_id']
                 || perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS);
             $isEditing = $canEdit && $mode === 'edit';
 
@@ -134,7 +134,7 @@ switch ($mode) {
                         OR (`user_id` = `profile` AND `subject_id` = `visitor`)
                     ) as `relation_created`
             ');
-            $getFriendInfo->bindValue('visitor', $app->getUserId());
+            $getFriendInfo->bindValue('visitor', user_session_current('user_id', 0));
             $getFriendInfo->bindValue('profile', $profile['user_id']);
             $friendInfo = $getFriendInfo->execute() ? $getFriendInfo->fetch(PDO::FETCH_ASSOC) : [];
 
@@ -161,7 +161,7 @@ switch ($mode) {
             'can_edit' => $canEdit ?? false,
             'is_editing' => $isEditing,
             'perms' => $perms,
-            'profile_fields' => $app->hasActiveSession() ? user_profile_fields_display($profile, !$isEditing) : [],
+            'profile_fields' => user_session_active() ? user_profile_fields_display($profile, !$isEditing) : [],
             'has_background' => is_file(build_path($app->getStoragePath(), 'backgrounds/original', "{$profile['user_id']}.msz")),
         ]);
         echo tpl_render('user.profile');

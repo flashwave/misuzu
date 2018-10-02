@@ -3,7 +3,7 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../../misuzu.php';
 
-if (!$app->hasActiveSession()) {
+if (!user_session_active()) {
     echo render_error(403);
     return;
 }
@@ -67,7 +67,7 @@ if (empty($forum)) {
     return;
 }
 
-$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], $app->getUserId());
+$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], user_session_current('user_id', 0));
 
 if ($forum['forum_archived']
     || !empty($topic['topic_locked'])
@@ -83,7 +83,7 @@ if (!forum_may_have_topics($forum['forum_type'])) {
 }
 
 if ($postRequest) {
-    if (!csrf_verify('settings', $_POST['csrf'] ?? '')) {
+    if (!csrf_verify('forum_post', $_POST['csrf'] ?? '')) {
         echo 'Could not verify request.';
         return;
     }
@@ -116,18 +116,18 @@ if ($postRequest) {
                 return;
         }
 
-        $topicId = forum_topic_create($forum['forum_id'], $app->getUserId(), $topicTitle);
+        $topicId = forum_topic_create($forum['forum_id'], user_session_current('user_id', 0), $topicTitle);
     }
 
     $postId = forum_post_create(
         $topicId,
         $forum['forum_id'],
-        $app->getUserId(),
+        user_session_current('user_id', 0),
         ip_remote_address(),
         $postText,
         MSZ_PARSER_BBCODE
     );
-    forum_topic_mark_read($app->getUserId(), $topicId, $forum['forum_id']);
+    forum_topic_mark_read(user_session_current('user_id', 0), $topicId, $forum['forum_id']);
 
     header("Location: /forum/topic.php?p={$postId}#p{$postId}");
     return;

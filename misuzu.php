@@ -282,37 +282,36 @@ MIG;
         exit;
     }
 
-    if (isset($_COOKIE['msz_uid'], $_COOKIE['msz_sid'])) {
-        $app->startSession((int)$_COOKIE['msz_uid'], $_COOKIE['msz_sid']);
+    if (isset($_COOKIE['msz_uid'], $_COOKIE['msz_sid'])
+        && user_session_start((int)$_COOKIE['msz_uid'], $_COOKIE['msz_sid'])) {
+        $mszUserId = (int)$_COOKIE['msz_uid'];
 
-        if ($app->hasActiveSession()) {
-            user_bump_last_active($app->getUserId());
+        user_bump_last_active($mszUserId);
 
-            $getUserDisplayInfo = Database::prepare('
-                SELECT
-                    u.`user_id`, u.`username`, u.`user_background_settings`,
-                    COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-                FROM `msz_users` as u
-                LEFT JOIN `msz_roles` as r
-                ON u.`display_role` = r.`role_id`
-                WHERE `user_id` = :user_id
-            ');
-            $getUserDisplayInfo->bindValue('user_id', $app->getUserId());
-            $userDisplayInfo = $getUserDisplayInfo->execute() ? $getUserDisplayInfo->fetch() : [];
-            tpl_var('current_user', $userDisplayInfo);
-        }
+        $getUserDisplayInfo = Database::prepare('
+            SELECT
+                u.`user_id`, u.`username`, u.`user_background_settings`,
+                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+            FROM `msz_users` as u
+            LEFT JOIN `msz_roles` as r
+            ON u.`display_role` = r.`role_id`
+            WHERE `user_id` = :user_id
+        ');
+        $getUserDisplayInfo->bindValue('user_id', $mszUserId);
+        $userDisplayInfo = $getUserDisplayInfo->execute() ? $getUserDisplayInfo->fetch() : [];
+        tpl_var('current_user', $userDisplayInfo);
     }
 
     csrf_init($app->getCsrfSecretKey(), empty($userDisplayInfo) ? ip_remote_address() : $_COOKIE['msz_sid']);
 
     $privateInfo = $app->getPrivateInfo();
 
-    if (!$misuzuBypassLockdown && $privateInfo['enabled'] && !$app->hasActiveSession()) {
-        if ($app->hasActiveSession()) {
-            $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $app->getUserId());
+    if (!$misuzuBypassLockdown && $privateInfo['enabled'] && !empty($userDisplayInfo)) {
+        if (user_session_active()) {
+            $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
 
             if (!perms_check($generalPerms, $privateInfo['permission'])) {
-                $app->stopSession(); // au revoir
+                user_session_stop(); // au revoir
             }
         } else {
             http_response_code(401);
@@ -324,7 +323,7 @@ MIG;
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
-    $hasManageAccess = perms_check(perms_get_user(MSZ_PERMS_GENERAL, $app->getUserId()), MSZ_PERM_GENERAL_CAN_MANAGE);
+    $hasManageAccess = perms_check(perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'] ?? 0), MSZ_PERM_GENERAL_CAN_MANAGE);
     tpl_var('has_manage_access', $hasManageAccess);
 
     if ($inManageMode) {
@@ -333,6 +332,6 @@ MIG;
             exit;
         }
 
-        tpl_var('manage_menu', manage_get_menu($app->getUserId()));
+        tpl_var('manage_menu', manage_get_menu($userDisplayInfo['user_id'] ?? 0));
     }
 }

@@ -31,18 +31,6 @@ final class Application
         'sendmail' => Swift_SendmailTransport::class,
     ];
 
-    /**
-     * Active Session ID.
-     * @var int
-     */
-    private $currentSessionId = 0;
-
-    /**
-     * Active User ID.
-     * @var int
-     */
-    private $currentUserId = 0;
-
     private $config = [];
 
     private $mailerInstance = null;
@@ -103,63 +91,6 @@ final class Application
     {
         $path = $this->getStoragePath();
         return is_readable($path) && is_writable($path);
-    }
-
-    /**
-     * Starts a user session.
-     * @param int $userId
-     * @param string $sessionKey
-     */
-    public function startSession(int $userId, string $sessionKey): void
-    {
-        $dbc = Database::connection();
-
-        $findSession = $dbc->prepare('
-            SELECT `session_id`, `expires_on`
-            FROM `msz_sessions`
-            WHERE `user_id` = :user_id
-            AND `session_key` = :session_key
-        ');
-        $findSession->bindValue('user_id', $userId);
-        $findSession->bindValue('session_key', $sessionKey);
-        $sessionData = $findSession->execute() ? $findSession->fetch() : false;
-
-        if ($sessionData) {
-            $expiresOn = new Carbon($sessionData['expires_on']);
-
-            if ($expiresOn->isPast()) {
-                $deleteSession = $dbc->prepare('
-                    DELETE FROM `msz_sessions`
-                    WHERE `session_id` = :session_id
-                ');
-                $deleteSession->bindValue('session_id', $sessionData['session_id']);
-                $deleteSession->execute();
-            } else {
-                $this->currentSessionId = (int)$sessionData['session_id'];
-                $this->currentUserId = $userId;
-            }
-        }
-    }
-
-    public function stopSession(): void
-    {
-        $this->currentSessionId = 0;
-        $this->currentUserId = 0;
-    }
-
-    public function hasActiveSession(): bool
-    {
-        return $this->getSessionId() > 0;
-    }
-
-    public function getSessionId(): int
-    {
-        return $this->currentSessionId;
-    }
-
-    public function getUserId(): int
-    {
-        return $this->currentUserId;
     }
 
     /**

@@ -3,7 +3,7 @@ use Misuzu\Database;
 
 require_once __DIR__ . '/../../misuzu.php';
 
-$changelogPerms = perms_get_user(MSZ_PERMS_CHANGELOG, $app->getUserId());
+$changelogPerms = perms_get_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id', 0));
 $queryOffset = (int)($_GET['o'] ?? 0);
 
 switch ($_GET['v'] ?? null) {
@@ -113,11 +113,11 @@ switch ($_GET['v'] ?? null) {
 
                 if ($changeId < 1) {
                     $changeId = Database::lastInsertId();
-                    audit_log('CHANGELOG_ENTRY_CREATE', $app->getUserId(), [$changeId]);
+                    audit_log('CHANGELOG_ENTRY_CREATE', user_session_current('user_id', 0), [$changeId]);
                     header('Location: ?v=change&c=' . $changeId);
                     return;
                 } else {
-                    audit_log('CHANGELOG_ENTRY_EDIT', $app->getUserId(), [$changeId]);
+                    audit_log('CHANGELOG_ENTRY_EDIT', user_session_current('user_id', 0), [$changeId]);
                 }
             }
 
@@ -127,7 +127,7 @@ switch ($_GET['v'] ?? null) {
                 $addTag->bindValue('tag_id', $_POST['add_tag']);
 
                 if ($addTag->execute()) {
-                    audit_log('CHANGELOG_TAG_ADD', $app->getUserId(), [
+                    audit_log('CHANGELOG_TAG_ADD', user_session_current('user_id', 0), [
                         $changeId,
                         $_POST['add_tag']
                     ]);
@@ -144,7 +144,7 @@ switch ($_GET['v'] ?? null) {
                 $removeTag->bindValue('tag_id', $_POST['remove_tag']);
 
                 if ($removeTag->execute()) {
-                    audit_log('CHANGELOG_TAG_REMOVE', $app->getUserId(), [
+                    audit_log('CHANGELOG_TAG_REMOVE', user_session_current('user_id', 0), [
                         $changeId,
                         $_POST['remove_tag']
                     ]);
@@ -288,11 +288,11 @@ switch ($_GET['v'] ?? null) {
 
                 if ($tagId < 1) {
                     $tagId = Database::lastInsertId();
-                    audit_log('CHANGELOG_TAG_EDIT', $app->getUserId(), [$tagId]);
+                    audit_log('CHANGELOG_TAG_EDIT', user_session_current('user_id', 0), [$tagId]);
                     header('Location: ?v=tag&t=' . $tagId);
                     return;
                 } else {
-                    audit_log('CHANGELOG_TAG_CREATE', $app->getUserId(), [$tagId]);
+                    audit_log('CHANGELOG_TAG_CREATE', user_session_current('user_id', 0), [$tagId]);
                 }
             }
         }
@@ -362,11 +362,11 @@ switch ($_GET['v'] ?? null) {
 
                 if ($actionId < 1) {
                     $actionId = Database::lastInsertId();
-                    audit_log('CHANGELOG_ACTION_CREATE', $app->getUserId(), [$actionId]);
+                    audit_log('CHANGELOG_ACTION_CREATE', user_session_current('user_id', 0), [$actionId]);
                     header('Location: ?v=action&a=' . $actionId);
                     return;
                 } else {
-                    audit_log('CHANGELOG_ACTION_EDIT', $app->getUserId(), [$actionId]);
+                    audit_log('CHANGELOG_ACTION_EDIT', user_session_current('user_id', 0), [$actionId]);
                 }
             }
         }

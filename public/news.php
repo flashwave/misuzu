@@ -57,9 +57,9 @@ if ($postId !== null) {
 
     echo tpl_render('news.post', [
         'post' => $post,
-        'comments_perms' => comments_get_perms($app->getUserId()),
+        'comments_perms' => comments_get_perms(user_session_current('user_id', 0)),
         'comments_category' => $commentsInfo,
-        'comments' => comments_category_get($commentsInfo['category_id'], $app->getUserId()),
+        'comments' => comments_category_get($commentsInfo['category_id'], user_session_current('user_id', 0)),
     ]);
     return;
 }

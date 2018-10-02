@@ -1,6 +1,7 @@
 <?php
 use Misuzu\Database;
 
+define('MSZ_SESSION_DATA_STORE', '_msz_user_session_data');
 define('MSZ_SESSION_KEY_SIZE', 64);
 
 function user_session_create(
@@ -31,32 +32,32 @@ function user_session_create(
     return $createSession->execute() ? $sessionKey : '';
 }
 
-function user_session_find(int $sessionId): array
+function user_session_find($sessionId, bool $byKey = false): array
 {
-    if ($sessionId < 1) {
+    if (!$byKey && $sessionId < 1) {
         return [];
     }
 
-    $findSession = Database::prepare('
+    $findSession = Database::prepare(sprintf('
         SELECT
             `session_id`, `user_id`, INET6_NTOA(`session_ip`) as `session_ip`,
             `session_country`, `user_agent`, `session_key`, `created_at`, `expires_on`
         FROM `msz_sessions`
-        WHERE `session_id` = :session_id
-    ');
+        WHERE `%s` = :session_id
+    ', $byKey ? 'session_key' : 'session_id'));
     $findSession->bindValue('session_id', $sessionId);
     $session = $findSession->execute() ? $findSession->fetch(PDO::FETCH_ASSOC) : false;
     return $session ? $session : [];
 }
 
-function user_session_delete(int $sessionId): bool
+function user_session_delete(int $sessionId): void
 {
     $deleteSession = Database::prepare('
         DELETE FROM `msz_sessions`
         WHERE `session_id` = :session_id
     ');
     $deleteSession->bindValue('session_id', $sessionId);
-    return $deleteSession->execute();
+    $deleteSession->execute();
 }
 
 function user_session_generate_key(): string
@@ -72,4 +73,52 @@ function user_session_purge_all(int $userId): void
     ')->execute([
         'user_id' => $userId,
     ]);
+}
+
+// the functions below this line are imperative
+
+function user_session_start(int $userId, string $sessionKey): bool
+{
+    $session = user_session_find($sessionKey, true);
+
+    if (!$session
+        || $session['user_id'] !== $userId) {
+        return false;
+    }
+
+    if (time() >= strtotime($session['expires_on'])) {
+        user_session_delete($session['session_id']);
+        return false;
+    }
+
+    $GLOBALS[MSZ_SESSION_DATA_STORE] = $session;
+    return true;
+}
+
+function user_session_stop(bool $delete = false): void
+{
+    if (empty($GLOBALS[MSZ_SESSION_DATA_STORE])) {
+        return;
+    }
+
+    if ($delete) {
+        user_session_delete($GLOBALS[MSZ_SESSION_DATA_STORE]['session_id']);
+    }
+
+    $GLOBALS[MSZ_SESSION_DATA_STORE] = [];
+}
+
+function user_session_current(?string $variable = null, $default = null)
+{
+    if (empty($variable)) {
+        return $GLOBALS[MSZ_SESSION_DATA_STORE] ?? [];
+    }
+
+    return $GLOBALS[MSZ_SESSION_DATA_STORE][$variable] ?? $default;
+}
+
+function user_session_active(): bool
+{
+    return !empty($GLOBALS[MSZ_SESSION_DATA_STORE])
+        && time() < strtotime($GLOBALS[MSZ_SESSION_DATA_STORE]['expires_on']);
 }
