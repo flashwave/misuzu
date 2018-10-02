@@ -156,6 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             switch ($_POST['background']['mode'] ?? '') {
                 case 'delete':
                     user_background_delete($settingsUserId);
+                    user_background_set_settings($settingsUserId, MSZ_USER_BACKGROUND_ATTACHMENT_NONE);
                     break;
 
                 case 'upload':
@@ -164,40 +165,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         break;
                     }
 
-                    if (empty($_FILES['background'])
-                        || !is_array($_FILES['background'])
-                        || empty($_FILES['background']['name']['file'])) {
+                    if (empty($_POST['background'])
+                        || !is_array($_POST['background'])) {
                         break;
                     }
 
-                    if ($_FILES['background']['error']['file'] !== UPLOAD_ERR_OK) {
-                        $settingsErrors[] = sprintf(
-                            MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload'][$_FILES['background']['error']['file']]
-                            ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload']['_'],
-                            $_FILES['background']['error']['file'],
-                            byte_symbol($backgroundProps['max_size'], true),
-                            $backgroundProps['max_width'],
-                            $backgroundProps['max_height']
+                    if (!empty($_FILES['background']['name']['file'])) {
+                        if ($_FILES['background']['error']['file'] !== UPLOAD_ERR_OK) {
+                            $settingsErrors[] = sprintf(
+                                MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload'][$_FILES['background']['error']['file']]
+                                ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload']['_'],
+                                $_FILES['background']['error']['file'],
+                                byte_symbol($backgroundProps['max_size'], true),
+                                $backgroundProps['max_width'],
+                                $backgroundProps['max_height']
+                            );
+                            break;
+                        }
+
+                        $setBackground = user_background_set_from_path(
+                            $settingsUserId,
+                            $_FILES['background']['tmp_name']['file'],
+                            $backgroundProps
                         );
-                        break;
+
+                        if ($setBackground !== MSZ_USER_BACKGROUND_NO_ERRORS) {
+                            $settingsErrors[] = sprintf(
+                                MSZ_TMP_USER_ERROR_STRINGS['avatar']['set'][$setBackground]
+                                ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['set']['_'],
+                                $setBackground,
+                                byte_symbol($backgroundProps['max_size'], true),
+                                $backgroundProps['max_width'],
+                                $backgroundProps['max_height']
+                            );
+                        }
                     }
 
-                    $setBackground = user_background_set_from_path(
-                        $settingsUserId,
-                        $_FILES['background']['tmp_name']['file'],
-                        $backgroundProps
-                    );
+                    $backgroundSettings = in_array($_POST['background']['attach'] ?? '', MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES)
+                        ? array_flip(MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES)[$_POST['background']['attach']]
+                        : MSZ_USER_BACKGROUND_ATTACHMENTS[0];
 
-                    if ($setBackground !== MSZ_USER_BACKGROUND_NO_ERRORS) {
-                        $settingsErrors[] = sprintf(
-                            MSZ_TMP_USER_ERROR_STRINGS['avatar']['set'][$setBackground]
-                            ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['set']['_'],
-                            $setBackground,
-                            byte_symbol($backgroundProps['max_size'], true),
-                            $backgroundProps['max_width'],
-                            $backgroundProps['max_height']
-                        );
+                    if (!empty($_POST['background']['attr']['blend'])) {
+                        $backgroundSettings |= MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND;
                     }
+
+                    if (!empty($_POST['background']['attr']['slide'])) {
+                        $backgroundSettings |= MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE;
+                    }
+
+                    user_background_set_settings($settingsUserId, $backgroundSettings);
                     break;
             }
         }
@@ -334,11 +350,17 @@ switch ($settingsMode) {
 
         $getAccountInfo = Database::prepare(sprintf(
             '
-                SELECT %s, `email`, `user_about_content`, `user_about_parser`
+                SELECT
+                    %1$s, `email`, `user_about_content`, `user_about_parser`,
+                    `user_background_settings` & 0x0F as `user_background_attachment`,
+                    (`user_background_settings` & %2$d) > 0 as `user_background_attr_blend`,
+                    (`user_background_settings` & %3$d) > 0 as `user_background_attr_slide`
                 FROM `msz_users`
                 WHERE `user_id` = :user_id
             ',
-            pdo_prepare_array($profileFields, true, '`user_%s`')
+            pdo_prepare_array($profileFields, true, '`user_%s`'),
+            MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND,
+            MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE
         ));
         $getAccountInfo->bindValue('user_id', $settingsUserId);
         $accountInfo = $getAccountInfo->execute() ? $getAccountInfo->fetch(PDO::FETCH_ASSOC) : [];
@@ -354,6 +376,7 @@ switch ($settingsMode) {
             'settings_profile_fields' => $profileFields,
             'settings_disable_account_options' => $disableAccountOptions,
             'account_info' => $accountInfo,
+            'background_attachments' => MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES,
         ]);
         break;
 

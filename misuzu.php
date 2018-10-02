@@ -260,6 +260,7 @@ MIG;
     tpl_add_function('asset_url', true);
     tpl_add_function('vsprintf', true);
     tpl_add_function('perms_check', true);
+    tpl_add_function('bg_settings', true, 'user_background_settings_strings');
 
     tpl_add_function('git_commit_hash');
     tpl_add_function('git_branch');
@@ -287,7 +288,7 @@ MIG;
 
             $getUserDisplayInfo = Database::prepare('
                 SELECT
-                    u.`user_id`, u.`username`,
+                    u.`user_id`, u.`username`, u.`user_background_settings`,
                     COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
                 FROM `msz_users` as u
                 LEFT JOIN `msz_roles` as r

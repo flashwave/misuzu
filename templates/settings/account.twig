@@ -218,6 +218,24 @@
                             <li class="settings__images__requirement">May not be larger than <strong>{{ background.max_width }}x{{ background.max_height }}</strong>.</li>
                             <li class="settings__images__requirement">Animated gif images are <strong>not</strong> allowed.</li>
                         </ul>
+
+                        <select name="background[attach]" class="input__select">
+                            {% for key, value in background_attachments %}
+                                <option value="{{ value }}"{% if account_info.user_background_attachment == key %} selected{% endif %}>
+                                    {{ value|capitalize }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <label>
+                            <input type="checkbox" name="background[attr][blend]"{% if account_info.user_background_attr_blend %} checked{% endif %}>
+                            Blend
+                        </label>
+
+                        <label>
+                            <input type="checkbox" name="background[attr][slide]"{% if account_info.user_background_attr_slide %} checked{% endif %}>
+                            Slide
+                        </label>
                     </div>
                 </div>
 
