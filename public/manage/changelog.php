@@ -73,7 +73,7 @@ switch ($_GET['v'] ?? null) {
 
         $changeId = (int)($_GET['c'] ?? 0);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && tmp_csrf_verify($_POST['csrf'] ?? '')) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify('changelog_add', $_POST['csrf'] ?? '')) {
             if (!empty($_POST['change']) && is_array($_POST['change'])) {
                 if ($changeId > 0) {
                     $postChange = Database::prepare('
@@ -260,7 +260,7 @@ switch ($_GET['v'] ?? null) {
 
         $tagId = (int)($_GET['t'] ?? 0);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && tmp_csrf_verify($_POST['csrf'] ?? '')) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify('changelog_tag', $_POST['csrf'] ?? '')) {
             if (!empty($_POST['tag']) && is_array($_POST['tag'])) {
                 if ($tagId > 0) {
                     $updateTag = Database::prepare('
@@ -325,7 +325,7 @@ switch ($_GET['v'] ?? null) {
 
         $actionId = (int)($_GET['a'] ?? 0);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && tmp_csrf_verify($_POST['csrf'] ?? '')) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify('changelog_action', $_POST['csrf'] ?? '')) {
             if (!empty($_POST['action']) && is_array($_POST['action'])) {
                 if ($actionId > 0) {
                     $updateAction = Database::prepare('

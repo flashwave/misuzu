@@ -3,6 +3,8 @@
 
 {% block manage_content %}
     <form action="?v=role{{ edit_role is defined ? '&r=' ~ edit_role.role_id : '' }}" method="post">
+        {{ 'users_role'|csrf|raw }}
+
         <div class="container">
             <h1 class="container__title">
                 {% if edit_role is defined %}
@@ -93,6 +95,6 @@
             </div>
         {% endif %}
 
-        <button class="input__button" name="csrf" value="{{ csrf_token() }}">{{ edit_role is defined ? 'Update role' : 'Create role' }}</button>
+        <button class="input__button">{{ edit_role is defined ? 'Update role' : 'Create role' }}</button>
     </form>
 {% endblock %}

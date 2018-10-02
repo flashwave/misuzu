@@ -6,6 +6,8 @@
 {% block manage_content %}
     {% if can_manage_users %}
         <form method="post" enctype="multipart/form-data" action="">
+            {{ 'users_edit'|csrf|raw }}
+
             <div class="container">
                 <div class="container__title">
                     Viewing <span style="{{ view_user.colour|html_colour }}">{{ view_user.username }}</span> ({{ view_user.user_id }})
@@ -145,7 +147,7 @@
                 </div>
             {% endif %}
 
-            <button class="input__button" name="csrf" value="{{ csrf_token() }}">Update</button>
+            <button class="input__button">Update</button>
         </form>
     {% endif %}
 
@@ -154,7 +156,7 @@
             <form method="post" action="" class="container">
                 <div class="container__title">Manage Roles</div>
                 <div class="container__content">
-                    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+                    {{ 'users_edit'|csrf|raw }}
 
                     <label class="form__label">
                         <div class="form__label__text">Has Roles</div>
@@ -192,7 +194,7 @@
                         </div>
                     </label>
 
-                    <button class="input__button" name="csrf" value="{{ csrf_token() }}">Add</button>
+                    <button class="input__button" name="csrf" value="{{ csrf_token('users_edit') }}">Add</button>
                 </div>
             </form>
         {% endif %}

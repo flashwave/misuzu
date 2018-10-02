@@ -42,8 +42,8 @@
 {% block content %}
     {% if is_editing %}
         <form class="profile" method="post" action="/settings.php" enctype="multipart/form-data">
-            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
             <input type="hidden" name="user" value="{{ profile.user_id }}">
+            {{ 'settings'|csrf|raw }}
 
             {% if perms.edit_avatar %}
                 <input class="settings__avatar__input"

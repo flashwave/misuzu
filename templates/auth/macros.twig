@@ -3,6 +3,7 @@
 
     <form class="container container--new auth" method="post" action="/auth.php">
         <input type="hidden" name="auth[mode]" value="login">
+        {{ 'login'|csrf|raw }}
 
         <div class="auth__header">
             <div class="avatar avatar--new auth__avatar" id="login-avatar"

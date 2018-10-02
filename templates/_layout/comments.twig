@@ -5,7 +5,7 @@
         method="post" action="/comments.php?m=create"
         id="comment-{{ reply_mode ? 'reply-' ~ reply_to.comment_id : 'create-' ~ category.category_id }}">
         <input type="hidden" name="comment[category]" value="{{ category.category_id }}">
-        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+        {{ 'comments'|csrf|raw }}
 
         {% if reply_mode %}
             <input type="hidden" name="comment[reply]" value="{{ reply_to.comment_id }}">
@@ -86,14 +86,14 @@
                         <div class="comment__actions">
                             {% if perms.can_vote %}
                                 <a class="comment__action comment__action--link comment__action--like{% if comment.comment_user_vote == 'Like' %} comment__action--voted{% endif %}"
-                                    href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Like' ? '0' : '1' }}&amp;csrf={{ csrf_token() }}">
+                                    href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Like' ? '0' : '1' }}&amp;csrf={{ csrf_token('comments') }}">
                                     Like
                                     {% if comment.comment_likes > 0 %}
                                         ({{ comment.comment_likes|number_format }})
                                     {% endif %}
                                 </a>
                                 <a class="comment__action comment__action--link comment__action--dislike{% if comment.comment_user_vote == 'Dislike' %} comment__action--voted{% endif %}"
-                                    href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Dislike' ? '0' : '-1' }}&amp;csrf={{ csrf_token() }}">
+                                    href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Dislike' ? '0' : '-1' }}&amp;csrf={{ csrf_token('comments') }}">
                                     Dislike
                                     {% if comment.comment_dislikes > 0 %}
                                         ({{ comment.comment_dislikes|number_format }})
@@ -431,7 +431,7 @@
 
                 var replyCsrf = document.createElement('input');
                 replyCsrf.name = 'csrf';
-                replyCsrf.value = '{{ csrf_token() }}';
+                replyCsrf.value = '{{ csrf_token("comments") }}';
                 replyCsrf.type = 'hidden';
                 commentReplyInput.appendChild(replyCsrf);
 
@@ -571,7 +571,7 @@
 
                     commentVoteLock = false;
                 };
-                xhr.open('GET', '/comments.php?m=vote&c={0}&v={1}&csrf={{ csrf_token() }}'.replace('{0}', id).replace('{1}', vote));
+                xhr.open('GET', '/comments.php?m=vote&c={0}&v={1}&csrf={{ csrf_token("comments") }}'.replace('{0}', id).replace('{1}', vote));
                 xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
                 xhr.send();
             }

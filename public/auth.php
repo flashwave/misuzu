@@ -44,7 +44,7 @@ switch ($authMode) {
             return;
         }
 
-        if (isset($_GET['s']) && tmp_csrf_verify($_GET['s'])) {
+        if (csrf_verify('logout', $_GET['s'] ?? '')) {
             set_cookie_m('uid', '', -3600);
             set_cookie_m('sid', '', -3600);
             user_session_delete($app->getSessionId());
@@ -159,6 +159,11 @@ switch ($authMode) {
         }
 
         while ($isSubmission) {
+            if (!csrf_verify('passforgot', $_POST['csrf'] ?? '')) {
+                tpl_var('auth_forgot_error', 'Possible request forgery detected, refresh and try again.');
+                break;
+            }
+
             if (empty($authEmail)) {
                 tpl_var('auth_forgot_error', 'Please enter an e-mail address.');
                 break;
@@ -257,6 +262,11 @@ MSG;
                 break;
             }
 
+            if (!csrf_verify('login', $_POST['csrf'] ?? '')) {
+                $authLoginError = 'Possible request forgery detected, refresh and try again.';
+                break;
+            }
+
             $getUser = Database::prepare('
                 SELECT `user_id`, `password`
                 FROM `msz_users`
@@ -337,6 +347,11 @@ MSG;
 
             if (!isset($authUsername, $authPassword, $authEmail)) {
                 $authRegistrationError = "You didn't fill all the forms!";
+                break;
+            }
+
+            if (!csrf_verify('register', $_POST['csrf'] ?? '')) {
+                $authRegistrationError = 'Possible request forgery detected, refresh and try again.';
                 break;
             }
 

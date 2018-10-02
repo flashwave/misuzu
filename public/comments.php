@@ -15,7 +15,7 @@ if ($isXHR) {
     return;
 }
 
-if (!tmp_csrf_verify($_REQUEST['csrf'] ?? '')) {
+if (!csrf_verify('comments', $_REQUEST['csrf'] ?? '')) {
     echo render_info_or_json($isXHR, "Couldn't verify this request, please refresh the page and try again.", 403);
     return;
 }

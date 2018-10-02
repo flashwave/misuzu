@@ -82,7 +82,7 @@
                             </li>
                         {% endif %}
                         <li class="header__user__action">
-                            <a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Log out</a>
+                            <a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token('logout') }}">Log out</a>
                         </li>
                     {% else %}
                         <li class="header__user__action">

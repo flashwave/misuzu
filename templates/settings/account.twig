@@ -14,7 +14,7 @@
     <div class="container container--translucent">
         <div class="container__title">Account</div>
         <form action="" method="post" class="settings__account">
-            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+            {{ 'settings'|csrf|raw }}
 
             <div class="settings__account__row">
                 {% if settings_perms.edit_profile %}
@@ -136,7 +136,7 @@
             <div class="container__title">Avatar</div>
             <form action="" method="post" class="settings__images" enctype="multipart/form-data">
                 <input type="hidden" name="MAX_FILE_SIZE" value="{{ background.max_size }}">
-                <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+                {{ 'settings'|csrf|raw }}
 
                 <div class="settings__images__sections">
                     <div class="settings__images__requirements">
@@ -207,7 +207,7 @@
             <div class="container__title">Background</div>
             <form action="" method="post" class="settings__images" enctype="multipart/form-data">
                 <input type="hidden" name="MAX_FILE_SIZE" value="{{ background.max_size }}">
-                <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+                {{ 'settings'|csrf|raw }}
 
                 <div class="settings__images__sections">
                     <div class="settings__images__requirements">
@@ -293,7 +293,7 @@
             </div>
 
             <form method="post" action="" enctype="multipart/form-data" class="settings__about">
-                <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+                {{ 'settings'|csrf|raw }}
 
                 <textarea name="about[text]" class="input__textarea settings__about__text" id="about-textarea">{{ account_info.user_about_content|escape }}</textarea>
 

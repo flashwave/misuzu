@@ -57,7 +57,7 @@ $avatarProps = $app->getAvatarProps();
 $backgroundProps = $app->getBackgroundProps();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
+    if (!csrf_verify('settings', $_POST['csrf'] ?? '')) {
         $settingsErrors[] = MSZ_TMP_USER_ERROR_STRINGS['csrf'];
     } else {
         if (!empty($_POST['profile']) && is_array($_POST['profile'])) {
@@ -236,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ((int)$session['user_id'] !== $settingsUserId) {
                 $settingsErrors[] = 'You may only end your own sessions.';
             } elseif ((int)$session['session_id'] === $app->getSessionId()) {
-                header('Location: /auth.php?m=logout&s=' . tmp_csrf_token());
+                header('Location: /auth.php?m=logout&s=' . csrf_token('logout'));
                 return;
             } else {
                 user_session_delete($session['session_id']);
