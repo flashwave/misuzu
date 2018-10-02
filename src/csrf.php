@@ -7,9 +7,9 @@ define('MSZ_CSRF_TOKEN_STORE', '_msz_csrf_tokens');
 define('MSZ_CSRF_HASH_ALGO', 'sha256');
 define('MSZ_CSRF_TOKEN_LENGTH', 76); // 8 + 4 + 64
 
-// the following two functions DO NOT depend on csrf_init().
+// the following three functions DO NOT depend on csrf_init().
 // $realm = Some kinda identifier for whatever's trying to do a validation.
-// $identity = When the user is logged in I recommend just using their ID, otherwise IP will be fine.
+// $identity = When the user is logged in I recommend just using their session key, otherwise IP will be fine.
 function csrf_token_create(
     string $realm,
     string $identity,
