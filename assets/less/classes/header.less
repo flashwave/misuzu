@@ -29,12 +29,13 @@
         height: 40px;
 
         &--menu {
-            background-image: url('https://static.flash.moe/images/mobile-menu.png');
-            background-size: 40px;
+            font-size: 3em;
+            justify-content: center;
+            align-items: center;
         }
 
         @media (max-width: @site-mobile-width) {
-            display: block;
+            display: inline-flex;
         }
     }
 
@@ -44,14 +45,14 @@
         text-decoration: none;
         cursor: pointer;
         display: block;
-        background: url('https://static.flash.moe/images/imouto-transparent.png') no-repeat center / cover;
-        background-image: url('https://static.flash.moe/images/imouto-halloween.png');
+        background: url('/images/logos/imouto-default.png') no-repeat center / cover;
+        background-image: url('/images/logos/imouto-halloween.png');
         width: 60px;
         height: 60px;
         font-size: 0;
 
         &--manage {
-            background-image: url('https://static.flash.moe/images/imouto-broom.png');
+            background-image: url('/images/logos/imouto-broom.png');
         }
 
         @media (max-width: @site-mobile-width) {
