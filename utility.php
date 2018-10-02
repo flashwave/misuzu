@@ -133,18 +133,6 @@ function get_country_name(string $code): string
     }
 }
 
-// this is temporary, don't scream at me for using md5
-// BIG TODO: make these functions not dependent on sessions so they can be used outside of those.
-function tmp_csrf_verify(string $token): bool
-{
-    return hash_equals(tmp_csrf_token(), $token);
-}
-
-function tmp_csrf_token(): string
-{
-    return md5($_COOKIE['msz_sid'] ?? 'this is very insecure lmao');
-}
-
 function crop_image_centred_path(string $filename, int $target_width, int $target_height): \Imagick
 {
     return crop_image_centred(new \Imagick($filename), $target_width, $target_height);

@@ -11,6 +11,8 @@
     {% if not prevent_registration %}
         <form class="container container--new auth" method="post" action="">
             <input type="hidden" name="auth[mode]" value="register">
+            {{ 'register'|csrf|raw }}
+
             <div class="container__title">Register</div>
 
             {% if auth_register_error is defined %}
@@ -44,6 +46,8 @@
     {% if not prevent_password_reset %}
         <form class="container container--new auth" method="post" action="">
             <input type="hidden" name="auth[mode]" value="forgot">
+            {{ 'passforgot'|csrf|raw }}
+
             <div class="container__title">Forgot password</div>
 
             {% if auth_forgot_error is defined %}

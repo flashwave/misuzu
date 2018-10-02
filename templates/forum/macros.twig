@@ -315,6 +315,7 @@
 
         <div class="forum__posting__content">
             <input type="hidden" name="post[{{ is_reply ? 'topic' : 'forum' }}]" value="{{ target_id }}">
+            {{ 'forum_post'|csrf|raw }}
 
             {#<div class="forum__posting__errors">
                 <p class="forum__posting__error">Error: Your post contained too much text, shorten it a bit or split it out in two posts.</p>
@@ -331,7 +332,7 @@
             </div>
 
             <div class="forum__posting__buttons">
-                <button class="input__button" name="csrf" value="{{ csrf_token() }}">Submit</button>
+                <button class="input__button">Submit</button>
             </div>
         </div>
     </form>

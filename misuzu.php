@@ -30,6 +30,7 @@ require_once 'src/audit_log.php';
 require_once 'src/changelog.php';
 require_once 'src/colour.php';
 require_once 'src/comments.php';
+require_once 'src/csrf.php';
 require_once 'src/general.php';
 require_once 'src/git.php';
 require_once 'src/manage.php';
@@ -260,10 +261,12 @@ MIG;
     tpl_add_function('asset_url', true);
     tpl_add_function('vsprintf', true);
     tpl_add_function('perms_check', true);
+    tpl_add_function('bg_settings', true, 'user_background_settings_strings');
+    tpl_add_function('csrf', true, 'csrf_html');
 
     tpl_add_function('git_commit_hash');
     tpl_add_function('git_branch');
-    tpl_add_function('csrf_token', false, 'tmp_csrf_token');
+    tpl_add_function('csrf_token');
     tpl_add_function('startup_time', false, function (float $time = MSZ_STARTUP) {
         return microtime(true) - $time;
     });
@@ -287,7 +290,7 @@ MIG;
 
             $getUserDisplayInfo = Database::prepare('
                 SELECT
-                    u.`user_id`, u.`username`,
+                    u.`user_id`, u.`username`, u.`user_background_settings`,
                     COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
                 FROM `msz_users` as u
                 LEFT JOIN `msz_roles` as r
@@ -299,6 +302,8 @@ MIG;
             tpl_var('current_user', $userDisplayInfo);
         }
     }
+
+    csrf_init($app->getCsrfSecretKey(), empty($userDisplayInfo) ? ip_remote_address() : $_COOKIE['msz_sid']);
 
     $privateInfo = $app->getPrivateInfo();
 

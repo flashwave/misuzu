@@ -233,6 +233,77 @@ function user_avatar_set_from_data(int $userId, string $data, array $options = [
 
 define('MSZ_USER_BACKGROUND_FORMAT', '%d.msz');
 
+// attachment and attributes are to be stored in the same byte
+// left half is for attributes, right half is for attachments
+// this makes for 16 possible attachments and 4 possible attributes
+// since attachments are just an incrementing number and attrs are flags
+
+define('MSZ_USER_BACKGROUND_ATTACHMENT_NONE', 0);
+define('MSZ_USER_BACKGROUND_ATTACHMENT_COVER', 1);
+define('MSZ_USER_BACKGROUND_ATTACHMENT_STRETCH', 2);
+define('MSZ_USER_BACKGROUND_ATTACHMENT_TILE', 3);
+
+define('MSZ_USER_BACKGROUND_ATTACHMENTS', [
+    MSZ_USER_BACKGROUND_ATTACHMENT_NONE,
+    MSZ_USER_BACKGROUND_ATTACHMENT_COVER,
+    MSZ_USER_BACKGROUND_ATTACHMENT_STRETCH,
+    MSZ_USER_BACKGROUND_ATTACHMENT_TILE,
+]);
+
+define('MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES', [
+    MSZ_USER_BACKGROUND_ATTACHMENT_COVER => 'cover',
+    MSZ_USER_BACKGROUND_ATTACHMENT_STRETCH => 'stretch',
+    MSZ_USER_BACKGROUND_ATTACHMENT_TILE => 'tile',
+]);
+
+define('MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND', 0x10);
+define('MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE', 0x20);
+
+define('MSZ_USER_BACKGROUND_ATTRIBUTES', [
+    MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND,
+    MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE,
+]);
+
+define('MSZ_USER_BACKGROUND_ATTRIBUTES_NAMES', [
+    MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND => 'blend',
+    MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE => 'slide',
+]);
+
+function user_background_settings_strings(int $settings, string $format = '%s'): array
+{
+    $arr = [];
+
+    $attachment = $settings & 0x0F;
+
+    if (array_key_exists($attachment, MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES)) {
+        $arr[] = sprintf($format, MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES[$attachment]);
+    }
+
+    foreach (MSZ_USER_BACKGROUND_ATTRIBUTES_NAMES as $flag => $name) {
+        if (($settings & $flag) > 0) {
+            $arr[] = sprintf($format, $name);
+        }
+    }
+
+    return $arr;
+}
+
+function user_background_set_settings(int $userId, int $settings): void
+{
+    if ($userId < 1) {
+        return;
+    }
+
+    $setAttrs = Database::prepare('
+        UPDATE `msz_users`
+        SET `user_background_settings` = :settings
+        WHERE `user_id` = :user
+    ');
+    $setAttrs->bindValue('settings', $settings & 0xFF);
+    $setAttrs->bindValue('user', $userId);
+    $setAttrs->execute();
+}
+
 function user_background_delete(int $userId): void
 {
     $backgroundFileName = sprintf(MSZ_USER_BACKGROUND_FORMAT, $userId);

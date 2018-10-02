@@ -113,7 +113,7 @@ switch ($_GET['v'] ?? null) {
         }
 
         if ($isPostRequest) {
-            if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
+            if (!csrf_verify('users_edit', $_POST['csrf'] ?? '')) {
                 echo 'csrf err';
                 break;
             }
@@ -303,7 +303,7 @@ switch ($_GET['v'] ?? null) {
         }
 
         if ($isPostRequest) {
-            if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
+            if (!csrf_verify('users_role', $_POST['csrf'] ?? '')) {
                 echo 'csrf err';
                 break;
             }

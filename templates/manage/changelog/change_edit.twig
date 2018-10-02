@@ -7,6 +7,8 @@
 {% block manage_content %}
     <div class="container">
         <form action="?v=change{{ edit_change is defined ? '&c=' ~ edit_change.change_id : '' }}" method="post">
+            {{ 'changelog_add'|csrf|raw }}
+
             <h1 class="container__title">
                 {% if edit_change is defined %}
                     Editing #{{ edit_change.change_id }}
@@ -57,7 +59,7 @@
             </label>
 
             <div>
-                <button class="input__button" name="csrf" value="{{ csrf_token() }}">Save</button>
+                <button class="input__button">Save</button>
             </div>
         </form>
 
@@ -82,7 +84,7 @@
                     </label>
 
                     <div>
-                        <button class="input__button" name="csrf" value="{{ csrf_token() }}">Remove</button>
+                        <button class="input__button" name="csrf" value="{{ csrf_token('changelog_add') }}">Remove</button>
                     </div>
                 </form>
             {% endif %}
@@ -103,7 +105,7 @@
                     </label>
 
                     <div>
-                        <button class="input__button" name="csrf" value="{{ csrf_token() }}">Add</button>
+                        <button class="input__button" name="csrf" value="{{ csrf_token('changelog_add') }}">Add</button>
                     </div>
                 </form>
             {% endif %}

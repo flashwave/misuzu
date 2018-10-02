@@ -83,7 +83,7 @@ if (!forum_may_have_topics($forum['forum_type'])) {
 }
 
 if ($postRequest) {
-    if (!tmp_csrf_verify($_POST['csrf'] ?? '')) {
+    if (!csrf_verify('settings', $_POST['csrf'] ?? '')) {
         echo 'Could not verify request.';
         return;
     }

@@ -3,7 +3,9 @@
 <nav class="header">
     <div class="header__wrapper">
         <div class="header__icons">
-            <label class="header__icon header__icon--menu" for="toggle-mobile-header-menu"></label>
+            <label class="header__icon header__icon--menu" for="toggle-mobile-header-menu">
+                <i class="fas fa-bars"></i>
+            </label>
 
             <a class="header__logo{% if in_manage %} header__logo--manage{% endif %}" href="/">
                 {{ globals.site_name }}
@@ -80,7 +82,7 @@
                             </li>
                         {% endif %}
                         <li class="header__user__action">
-                            <a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token() }}">Log out</a>
+                            <a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token('logout') }}">Log out</a>
                         </li>
                     {% else %}
                         <li class="header__user__action">

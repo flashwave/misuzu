@@ -3,6 +3,8 @@
 {% block manage_content %}
     <div class="container">
         <form action="?v=action{{ edit_action is defined ? '&a=' ~ edit_action.action_id : '' }}" method="post">
+            {{ 'changelog_action'|csrf|raw }}
+
             <h1 class="container__title">
                 {% if edit_action is defined %}
                     Editing <span style="{{ edit_action.action_colour|html_colour }};color:var(--user-colour)">{{ edit_action.action_name }}</span> ({{ edit_action.action_id }})
@@ -56,7 +58,7 @@
             </label>
 
             <div>
-                <button class="input__button" name="csrf" value="{{ csrf_token() }}">Save</button>
+                <button class="input__button">Save</button>
             </div>
         </form>
     </div>
