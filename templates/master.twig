@@ -33,7 +33,7 @@
             <div class="footer__copyright">
                 {{ 'https://flash.moe'|html_link('Flashwave', 'footer__link') }} 2013-{{
                 ''|date('Y') }} /
-                {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_branch())|html_link(git_branch(), 'footer__link') }}
+                {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_tag())|html_link(git_tag(), 'footer__link') }}
                 # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__link') }}
                 {% if constant('MSZ_DEBUG') or current_user.user_id|default(0) == 1 %}
                     / SQL Queries: {{ sql_query_count()|number_format }}
