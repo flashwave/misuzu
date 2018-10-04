@@ -2,10 +2,6 @@
 namespace Misuzu;
 
 use UnexpectedValueException;
-use Swift_Mailer;
-use Swift_NullTransport;
-use Swift_SmtpTransport;
-use Swift_SendmailTransport;
 use GeoIp2\Database\Reader as GeoIP;
 
 /**
