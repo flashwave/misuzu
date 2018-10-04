@@ -84,8 +84,7 @@
                     {% if stat.value|default(false) %}
                         {% set is_date = stat.is_date|default(false) %}
 
-                        <div class="profile__header__stat{% if is_date %} profile__header__stat--date{% endif %}"
-                            title="{{ stat.value|date('r') }}">
+                        <div class="profile__header__stat{% if is_date %} profile__header__stat--date" title="{{ stat.value|date('r') }}{% endif %}">
                             <div class="profile__header__stat__name">
                                 {{ stat.title }}
                             </div>
