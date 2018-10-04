@@ -58,16 +58,16 @@
         </div>
     </div>
 
-    {% if embed_linked_data is defined and embed_linked_data %}
+    {% if linked_data is defined and linked_data is iterable %}
         <script type="application/ld+json">
         {
             "@context": "http://schema.org",
             "@type": "Organization",
-            "name": "{{ embed_name }}",
-            "url": "{{ embed_url }}",
-            "logo": "{{ embed_logo }}",
+            "name": "{{ linked_data.name }}",
+            "url": "{{ linked_data.url }}",
+            "logo": "{{ linked_data.logo }}",
             "sameAs": [
-                "{{ embed_same_as|join('", "')|raw }}"
+                "{{ linked_data.same_as|join('", "')|raw }}"
             ]
         }
         </script>

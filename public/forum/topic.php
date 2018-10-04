@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../misuzu.php';
+require_once '../../misuzu.php';
 
 $postId = (int)($_GET['p'] ?? 0);
 $topicId = (int)($_GET['t'] ?? 0);

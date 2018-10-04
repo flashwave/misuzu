@@ -1,7 +1,7 @@
 <?php
 use Misuzu\Database;
 
-require_once __DIR__ . '/../misuzu.php';
+require_once '../misuzu.php';
 
 $pathInfo = $_SERVER['PATH_INFO'] ?? '';
 
@@ -37,7 +37,7 @@ if ($filename !== 'LICENSE') {
     $filename .= '.md';
 }
 
-$filename = __DIR__ . '/../' . ($isMisuzuDoc ? '' : 'docs/') . $filename;
+$filename = MSZ_ROOT . ($isMisuzuDoc ? '/' : '/docs/') . $filename;
 $document['content'] = is_file($filename) ? file_get_contents($filename) : '';
 
 if (empty($document['content'])) {

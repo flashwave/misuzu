@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../misuzu.php';
+require_once '../../misuzu.php';
 
 $categories = forum_get_root_categories(user_session_current('user_id', 0));
 $blankForum = count($categories) <= 1 && $categories[0]['forum_children'] < 1;

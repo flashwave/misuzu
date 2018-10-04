@@ -1,7 +1,7 @@
 <?php
 use Misuzu\Database;
 
-require_once __DIR__ . '/../misuzu.php';
+require_once '../misuzu.php';
 
 $usersOffset = max((int)($_GET['o'] ?? 0), 0);
 $usersTake = 30;

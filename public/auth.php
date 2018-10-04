@@ -6,7 +6,7 @@ $isSubmission = !empty($_POST['auth']) && is_array($_POST['auth']);
 $authMode = $isSubmission ? ($_POST['auth']['mode'] ?? '') : ($_GET['m'] ?? 'login');
 $misuzuBypassLockdown = $authMode === 'login' || $authMode === 'get_user';
 
-require_once __DIR__ . '/../misuzu.php';
+require_once '../misuzu.php';
 
 $usernameValidationErrors = [
     'trim' => 'Your username may not start or end with spaces!',

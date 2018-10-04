@@ -1,7 +1,7 @@
 <?php
 use Misuzu\Database;
 
-require_once __DIR__ . '/../misuzu.php';
+require_once '../misuzu.php';
 
 if (empty($_SERVER['HTTP_REFERER']) || !is_local_url($_SERVER['HTTP_REFERER'])) {
     header('Location: /');

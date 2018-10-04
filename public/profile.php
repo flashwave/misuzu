@@ -4,13 +4,16 @@ use Misuzu\Database;
 $mode = (string)($_GET['m'] ?? null);
 $misuzuBypassLockdown = $mode === 'avatar';
 
-require_once __DIR__ . '/../misuzu.php';
+require_once '../misuzu.php';
 
 $userId = (int)($_GET['u'] ?? 0);
 
 switch ($mode) {
     case 'avatar':
-        $avatar_filename = $app->getDefaultAvatar();
+        $avatar_filename = build_path(
+            MSZ_ROOT,
+            config_get_default('public/images/no-avatar.png', 'Avatar', 'default_path')
+        );
         $user_avatar = "{$userId}.msz";
         $cropped_avatar = build_path(
             create_directory(build_path($app->getStoragePath(), 'avatars/200x200')),

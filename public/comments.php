@@ -1,7 +1,7 @@
 <?php
 use Misuzu\Database;
 
-require_once __DIR__ . '/../misuzu.php';
+require_once '../misuzu.php';
 
 // basing whether or not this is an xhr request on whether a referrer header is present
 // this page is never directy accessed, under normal circumstances

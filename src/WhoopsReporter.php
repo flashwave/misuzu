@@ -74,7 +74,7 @@ HTML;
             ],
             'misuzu' => [
                 'trace_txt' => $this->getException()->getTraceAsString(),
-                'directory' => dirname(__DIR__, 1),
+                'directory' => MSZ_ROOT,
             ],
             'exception' => Formatter::formatExceptionAsDataArray(
                 $this->getInspector(),

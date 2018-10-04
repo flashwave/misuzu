@@ -1,7 +1,7 @@
 <?php
 use Misuzu\Database;
 
-require_once __DIR__ . '/../misuzu.php';
+require_once '../misuzu.php';
 
 $categoryId = isset($_GET['c']) ? (int)$_GET['c'] : null;
 $postId = isset($_GET['p']) ? (int)$_GET['p'] : (isset($_GET['n']) ? (int)$_GET['n'] : null);

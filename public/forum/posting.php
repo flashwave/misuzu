@@ -1,7 +1,7 @@
 <?php
 use Misuzu\Database;
 
-require_once __DIR__ . '/../../misuzu.php';
+require_once '../../misuzu.php';
 
 if (!user_session_active()) {
     echo render_error(403);

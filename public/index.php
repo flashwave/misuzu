@@ -3,9 +3,16 @@ use Misuzu\Application;
 use Misuzu\Cache;
 use Misuzu\Database;
 
-require_once __DIR__ . '/../misuzu.php';
+require_once '../misuzu.php';
 
-tpl_vars($app->getLinkedData());
+if (config_get_default(false, 'Site', 'embed_linked_data')) {
+    tpl_var('linked_data', [
+        'name' => config_get('Site', 'name'),
+        'url' => config_get('Site', 'url'),
+        'logo' => config_get('Site', 'external_logo'),
+        'same_as' => explode(',', config_get_default('', 'Site', 'social_media')),
+    ]);
+}
 
 $news = Database::query('
     SELECT

@@ -86,7 +86,7 @@ function check_mx_record(string $email): bool
 
 function asset_url(string $path): string
 {
-    $realPath = realpath(__DIR__ . '/public/' . $path);
+    $realPath = realpath(MSZ_ROOT . '/public/' . $path);
 
     if ($realPath === false || !file_exists($realPath)) {
         return $path;

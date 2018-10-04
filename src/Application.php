@@ -2,7 +2,6 @@
 namespace Misuzu;
 
 use UnexpectedValueException;
-use InvalidArgumentException;
 use Swift_Mailer;
 use Swift_NullTransport;
 use Swift_SmtpTransport;
@@ -30,51 +29,17 @@ final class Application
         'sendmail' => Swift_SendmailTransport::class,
     ];
 
-    private $config = [];
-
     private $mailerInstance = null;
 
     private $geoipInstance = null;
 
-    /**
-     * Constructor, called by ApplicationBase::start() which also passes the arguments through.
-     * @param null|string $configFile
-     * @param bool        $debug
-     */
-    public function __construct(?string $configFile = null)
+    public function __construct()
     {
         if (!empty(self::$instance)) {
             throw new UnexpectedValueException('An Application has already been set up.');
         }
 
         self::$instance = $this;
-        $this->config = is_file($configFile) ? parse_ini_file($configFile, true, INI_SCANNER_TYPED) : [];
-
-        if ($this->config === false) {
-            throw new UnexpectedValueException('Failed to parse configuration.');
-        }
-    }
-
-    public function getReportInfo(): array
-    {
-        return [
-            $this->config['Exceptions']['report_url'] ?? null,
-            $this->config['Exceptions']['hash_key'] ?? null,
-        ];
-    }
-
-    /**
-     * Gets a storage path.
-     * @param string $path
-     * @return string
-     */
-    public function getPath(string $path): string
-    {
-        if (!starts_with($path, '/') && mb_substr($path, 1, 2) !== ':\\') {
-            $path = __DIR__ . '/../' . $path;
-        }
-
-        return fix_path_separator(rtrim($path, '/'));
     }
 
     /**
@@ -83,13 +48,7 @@ final class Application
      */
     public function getStoragePath(): string
     {
-        return create_directory($this->config['Storage']['path'] ?? __DIR__ . '/../store');
-    }
-
-    public function canAccessStorage(): bool
-    {
-        $path = $this->getStoragePath();
-        return is_readable($path) && is_writable($path);
+        return create_directory(config_get_default(MSZ_ROOT . '/store', 'Storage', 'path'));
     }
 
     /**
@@ -104,7 +63,7 @@ final class Application
         $connections = [];
 
         foreach (self::DATABASE_CONNECTIONS as $name) {
-            $connections[$name] = $this->config["Database.{$name}"] ?? [];
+            $connections[$name] = config_get_default([], "Database.{$name}");
         }
 
         new Database($connections, self::DATABASE_CONNECTIONS[0]);
@@ -120,11 +79,11 @@ final class Application
         }
 
         new Cache(
-            $this->config['Cache']['host'] ?? null,
-            $this->config['Cache']['port'] ?? null,
-            $this->config['Cache']['database'] ?? null,
-            $this->config['Cache']['password'] ?? null,
-            $this->config['Cache']['prefix'] ?? ''
+            config_get('Cache', 'host'),
+            config_get('Cache', 'port'),
+            config_get('Cache', 'database'),
+            config_get('Cache', 'password'),
+            config_get_default('', 'Cache', 'prefix')
         );
     }
 
@@ -134,11 +93,9 @@ final class Application
             return;
         }
 
-        if (array_key_exists('Mail', $this->config) && array_key_exists('method', $this->config['Mail'])) {
-            $method = mb_strtolower($this->config['Mail']['method'] ?? '');
-        }
+        $method = mb_strtolower(config_get('Mail', 'method'));
 
-        if (empty($method) || !array_key_exists($method, self::MAIL_TRANSPORT)) {
+        if (!array_key_exists($method, self::MAIL_TRANSPORT)) {
             $method = 'null';
         }
 
@@ -147,25 +104,27 @@ final class Application
 
         switch ($method) {
             case 'sendmail':
-                if (array_key_exists('command', $this->config['Mail'])) {
-                    $transport->setCommand($this->config['Mail']['command']);
+                $command = config_get('Mail', 'command');
+
+                if (!empty($command)) {
+                    $transport->setCommand($command);
                 }
                 break;
 
             case 'smtp':
-                $transport->setHost($this->config['Mail']['host'] ?? '');
-                $transport->setPort(intval($this->config['Mail']['port'] ?? 25));
+                $transport->setHost(config_get_default('', 'Mail', 'host'));
+                $transport->setPort(intval(config_get_default(25, 'Mail', 'port')));
 
-                if (array_key_exists('encryption', $this->config['Mail'])) {
-                    $transport->setEncryption($this->config['Mail']['encryption']);
-                }
+                $extra = [
+                    'setEncryption' => config_get('Mail', 'encryption'),
+                    'setUsername' => config_get('Mail', 'username'),
+                    'setPassword' => config_get('Mail', 'password'),
+                ];
 
-                if (array_key_exists('username', $this->config['Mail'])) {
-                    $transport->setUsername($this->config['Mail']['username']);
-                }
-
-                if (array_key_exists('password', $this->config['Mail'])) {
-                    $transport->setPassword($this->config['Mail']['password']);
+                foreach ($extra as $method => $value) {
+                    if (!empty($value)) {
+                        $transport->{$method}($value);
+                    }
                 }
                 break;
         }
@@ -190,7 +149,7 @@ final class Application
     public function getMailSender(): array
     {
         return [
-            ($this->config['Mail']['sender_email'] ?? 'sys@msz.lh') => ($this->config['Mail']['sender_name'] ?? 'Misuzu System')
+            config_get_default('sys@msz.lh', 'Mail', 'sender_email') => config_get_default('Misuzu System', 'Mail', 'sender_name'),
         ];
     }
 
@@ -200,7 +159,7 @@ final class Application
             return;
         }
 
-        $this->geoipInstance = new GeoIP($this->config['GeoIP']['database_path'] ?? '');
+        $this->geoipInstance = new GeoIP(config_get_default('', 'GeoIP', 'database_path'));
     }
 
     public function getGeoIP(): GeoIP
@@ -220,79 +179,39 @@ final class Application
     public function getAvatarProps(): array
     {
         return [
-            'max_width' => intval($this->config['Avatar']['max_width'] ?? 4000),
-            'max_height' => intval($this->config['Avatar']['max_height'] ?? 4000),
-            'max_size' => intval($this->config['Avatar']['max_filesize'] ?? 1000000),
+            'max_width' => intval(config_get_default(1000, 'Avatar', 'max_width')),
+            'max_height' => intval(config_get_default(1000, 'Avatar', 'max_height')),
+            'max_size' => intval(config_get_default(500000, 'Avatar', 'max_filesize')),
         ];
     }
 
     public function getBackgroundProps(): array
     {
         return [
-            'max_width' => intval($this->config['Background']['max_width'] ?? 3840),
-            'max_height' => intval($this->config['Background']['max_height'] ?? 2160),
-            'max_size' => intval($this->config['Background']['max_filesize'] ?? 1000000),
+            'max_width' => intval(config_get_default(3840, 'Avatar', 'max_width')),
+            'max_height' => intval(config_get_default(2160, 'Avatar', 'max_height')),
+            'max_size' => intval(config_get_default(1000000, 'Avatar', 'max_filesize')),
         ];
     }
 
     public function underLockdown(): bool
     {
-        return boolval($this->config['Auth']['lockdown'] ?? false);
+        return boolval(config_get_default(false, 'Auth', 'lockdown'));
     }
 
     public function disableRegistration(): bool
     {
         return $this->underLockdown()
             || $this->getPrivateInfo()['enabled']
-            || boolval($this->config['Auth']['prevent_registration'] ?? false);
+            || boolval(config_get_default(false, 'Auth', 'prevent_registration'));
     }
 
     public function getPrivateInfo(): array
     {
-        return !empty($this->config['Private']) && boolval($this->config['Private']['enabled'])
-            ? $this->config['Private']
-            : ['enabled' => false];
+        return config_get_default(['enabled' => false], 'Private');
     }
 
-    public function getLinkedData(): array
-    {
-        if (!($this->config['Site']['embed_linked_data'] ?? false)) {
-            return ['embed_linked_data' => false];
-        }
-
-        return [
-            'embed_linked_data' => true,
-            'embed_name' => $this->config['Site']['name'] ?? 'Flashii',
-            'embed_url' => $this->config['Site']['url'] ?? '',
-            'embed_logo' => $this->config['Site']['external_logo'] ?? '',
-            'embed_same_as' => explode(',', $this->config['Site']['social_media'] ?? '')
-        ];
-    }
-
-    public function getSiteInfo(): array
-    {
-        return [
-            'site_name' => $this->config['Site']['name'] ?? 'Flashii',
-            'site_description' => $this->config['Site']['description'] ?? '',
-            'site_twitter' => $this->config['Site']['twitter'] ?? '',
-            'site_url' => $this->config['Site']['url'] ?? '',
-        ];
-    }
-
-    public function getDefaultAvatar(): string
-    {
-        return $this->getPath($this->config['Avatar']['default_path'] ?? 'public/images/no-avatar.png');
-    }
-
-    public function getCsrfSecretKey(): string
-    {
-        return $this->config['CSRF']['secret_key'] ?? 'insecure';
-    }
-
-    /**
-     * Gets the currently active instance of Application
-     * @return Application
-     */
+    // used in some of the user functions still, fix that
     public static function getInstance(): Application
     {
         if (empty(self::$instance)) {

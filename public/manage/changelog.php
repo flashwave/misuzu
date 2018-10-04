@@ -1,7 +1,7 @@
 <?php
 use Misuzu\Database;
 
-require_once __DIR__ . '/../../misuzu.php';
+require_once '../../misuzu.php';
 
 $changelogPerms = perms_get_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id', 0));
 $queryOffset = (int)($_GET['o'] ?? 0);

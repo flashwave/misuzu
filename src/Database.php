@@ -131,7 +131,7 @@ final class Database
                 if ($info['memory']) {
                     $dsn .= ':memory:';
                 } else {
-                    $databasePath = realpath($info['database'] ?? __DIR__ . '/../store/misuzu.db');
+                    $databasePath = realpath($info['database'] ?? MSZ_ROOT . '/store/misuzu.db');
 
                     if ($databasePath === false) {
                         throw new UnexpectedValueException("Database does not exist.");

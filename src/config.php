@@ -7,22 +7,29 @@ function config_load(string $path, bool $isText = false): void
         ? parse_ini_string($path, true, INI_SCANNER_TYPED)
         : parse_ini_file($path, true, INI_SCANNER_TYPED);
 
-    if (!is_array($GLOBALS[MSZ_CONFIG_STORE])) {
+    if (!is_array($GLOBALS[MSZ_CONFIG_STORE] ?? null)) {
         $GLOBALS[MSZ_CONFIG_STORE] = [];
     }
 
     $GLOBALS[MSZ_CONFIG_STORE] = array_merge_recursive($GLOBALS[MSZ_CONFIG_STORE], $config);
 }
 
-function config_get(string $key, $default = null)
+function config_get(string ...$key)
 {
-    $lastDot = strrpos($key, '.');
+    $value = $GLOBALS[MSZ_CONFIG_STORE];
 
-    if ($lastDot !== false) {
-        $section = substr($key, 0, $lastDot);
-        $key = substr($key, $lastDot + 1);
-        return $GLOBALS[MSZ_CONFIG_STORE][$section][$key] ?? $default;
+    for ($i = 0; $i < count($key); $i++) {
+        if (empty($value[$key[$i]])) {
+            return null;
+        }
+
+        $value = $value[$key[$i]];
     }
 
-    return $GLOBALS[MSZ_CONFIG_STORE][$key] ?? $default;
+    return $value;
+}
+
+function config_get_default($default, string ...$key)
+{
+    return config_get(...$key) ?? $default;
 }

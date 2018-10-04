@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../misuzu.php';
+require_once '../../misuzu.php';
 
 $forumId = max((int)($_GET['f'] ?? 0), 0);
 $topicsOffset = max((int)($_GET['o'] ?? 0), 0);

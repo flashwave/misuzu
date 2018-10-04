@@ -1,7 +1,7 @@
 <?php
 use Misuzu\Database;
 
-require_once __DIR__ . '/../misuzu.php';
+require_once '../misuzu.php';
 
 $queryOffset = (int)($_GET['o'] ?? 0);
 $queryTake = 15;

@@ -1,7 +1,7 @@
 <?php
 use Misuzu\Database;
 
-require_once __DIR__ . '/Users/validation.php';
+require_once 'Users/validation.php';
 
 define('MSZ_PERM_COMMENTS_CREATE', 1);
 define('MSZ_PERM_COMMENTS_EDIT_OWN', 1 << 1);

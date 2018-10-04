@@ -2,14 +2,15 @@
 namespace Misuzu;
 
 define('MSZ_STARTUP', microtime(true));
-define('MSZ_DEBUG', file_exists(__DIR__ . '/.debug'));
+define('MSZ_ROOT', __DIR__);
+define('MSZ_DEBUG', is_file(MSZ_ROOT . '/.debug'));
 
 error_reporting(MSZ_DEBUG ? -1 : 0);
 ini_set('display_errors', MSZ_DEBUG ? 'On' : 'Off');
 
 date_default_timezone_set('UTC');
 mb_internal_encoding('UTF-8');
-set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__);
+set_include_path(get_include_path() . PATH_SEPARATOR . MSZ_ROOT);
 
 require_once 'vendor/autoload.php';
 
@@ -30,6 +31,7 @@ require_once 'src/audit_log.php';
 require_once 'src/changelog.php';
 require_once 'src/colour.php';
 require_once 'src/comments.php';
+require_once 'src/config.php';
 require_once 'src/csrf.php';
 require_once 'src/general.php';
 require_once 'src/git.php';
@@ -55,10 +57,15 @@ require_once 'src/Users/session.php';
 require_once 'src/Users/user.php';
 require_once 'src/Users/validation.php';
 
-$app = new Application(__DIR__ . '/config/config.ini');
+config_load(MSZ_ROOT . '/config/config.ini');
+
+$app = new Application;
 
 if (!empty($errorReporter)) {
-    $errorReporter->setReportInfo(...$app->getReportInfo());
+    $errorReporter->setReportInfo(
+        config_get('Exceptions', 'report_url'),
+        config_get('Exceptions', 'hash_key')
+    );
 }
 
 $app->startDatabase();
@@ -135,7 +142,7 @@ if (PHP_SAPI === 'cli') {
 
             case 'migrate':
                 $migrationTargets = [
-                    'mysql-main' => __DIR__ . '/database',
+                    'mysql-main' => MSZ_ROOT . '/database',
                 ];
                 $doRollback = !empty($argv[2]) && $argv[2] === 'rollback';
                 $targetDb = isset($argv[$doRollback ? 3 : 2]) ? $argv[$doRollback ? 3 : 2] : null;
@@ -187,7 +194,7 @@ if (PHP_SAPI === 'cli') {
                 }
 
                 $filename = date('Y_m_d_His_') . trim($argv[2], '_') . '.php';
-                $filepath = __DIR__ . '/database/' . $filename;
+                $filepath = MSZ_ROOT . '/database/' . $filename;
                 $namespace = snake_to_camel($argv[2]);
                 $template = <<<MIG
 <?php
@@ -227,7 +234,8 @@ MIG;
     // we're running this again because ob_clean breaks gzip otherwise
     ob_start();
 
-    if (!$app->canAccessStorage()) {
+    $mszStoragePath = $app->getStoragePath();
+    if (!is_readable($mszStoragePath) || !is_writable($mszStoragePath)) {
         echo 'Cannot access storage directory.';
         exit;
     }
@@ -237,10 +245,15 @@ MIG;
     tpl_init([
         'debug' => MSZ_DEBUG,
         'auto_reload' => MSZ_DEBUG,
-        'cache' => MSZ_DEBUG ? false : create_directory(build_path(sys_get_temp_dir(), 'msz-tpl-cache-' . md5(__DIR__))),
+        'cache' => MSZ_DEBUG ? false : create_directory(build_path(sys_get_temp_dir(), 'msz-tpl-cache-' . md5(MSZ_ROOT))),
     ]);
 
-    tpl_var('globals', $app->getSiteInfo());
+    tpl_var('globals', [
+        'site_name' => config_get_default('Misuzu', 'Site', 'name'),
+        'site_description' => config_get('Site', 'description'),
+        'site_twitter' => config_get('Site', 'twitter'),
+        'site_url' => config_get('Site', 'url'),
+    ]);
 
     tpl_add_function('json_decode', true);
     tpl_add_function('byte_symbol', true);
@@ -273,7 +286,7 @@ MIG;
     });
     tpl_add_function('sql_query_count', false, [Database::class, 'queryCount']);
 
-    tpl_add_path(__DIR__ . '/templates');
+    tpl_add_path(MSZ_ROOT . '/templates');
 
     $misuzuBypassLockdown = !empty($misuzuBypassLockdown);
 
@@ -302,7 +315,10 @@ MIG;
         $userDisplayInfo = $getUserDisplayInfo->execute() ? $getUserDisplayInfo->fetch() : [];
     }
 
-    csrf_init($app->getCsrfSecretKey(), empty($userDisplayInfo) ? ip_remote_address() : $_COOKIE['msz_sid']);
+    csrf_init(
+        config_get_default('insecure', 'CSRF', 'secret_key'),
+        empty($userDisplayInfo) ? ip_remote_address() : $_COOKIE['msz_sid']
+    );
 
     $privateInfo = $app->getPrivateInfo();
 
