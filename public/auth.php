@@ -1,5 +1,4 @@
 <?php
-use Misuzu\Application;
 use Misuzu\Database;
 
 $isSubmission = !empty($_POST['auth']) && is_array($_POST['auth']);
@@ -17,7 +16,7 @@ $usernameValidationErrors = [
 ];
 
 $preventRegistration = $app->disableRegistration();
-$preventPasswordReset = !($privateInfo['password_reset'] ?? true);
+$preventPasswordReset = ($privateInfo['enabled'] ?? false) && !($privateInfo['password_reset'] ?? true);
 
 $authUsername = $isSubmission ? ($_POST['auth']['username'] ?? '') : ($_GET['username'] ?? '');
 $authEmail = $isSubmission ? ($_POST['auth']['email'] ?? '') : ($_GET['email'] ?? '');
@@ -222,15 +221,19 @@ Your verification code is: {$verificationCode}
 If you weren't the person who requested this reset, please send a reply to this e-mail.
 MSG;
 
-                $message = (new Swift_Message('Flashii Password Reset'))
-                    ->setFrom($app->getMailSender())
-                    ->setTo([$forgotUser['email'] => $forgotUser['username']])
-                    ->setBody($messageBody);
+                $message = mail_compose(
+                    [$forgotUser['email'] => $forgotUser['username']],
+                    'Flashii Password Reset',
+                    $messageBody
+                );
 
-                Application::mailer()->send($message);
+                if (!mail_send($message)) {
+                    tpl_var('auth_forgot_error', 'Failed to send reset email, please contact the administrator.');
+                    break;
+                }
             }
 
-            header("Location: ?m=reset&username={$forgotUser['user_id']}");
+            header("Location: ?m=reset&u={$forgotUser['user_id']}");
             break;
         }
 

@@ -23,14 +23,6 @@ final class Application
         'mysql-main',
     ];
 
-    private const MAIL_TRANSPORT = [
-        'null' => Swift_NullTransport::class,
-        'smtp' => Swift_SmtpTransport::class,
-        'sendmail' => Swift_SendmailTransport::class,
-    ];
-
-    private $mailerInstance = null;
-
     private $geoipInstance = null;
 
     public function __construct()
@@ -85,72 +77,6 @@ final class Application
             config_get('Cache', 'password'),
             config_get_default('', 'Cache', 'prefix')
         );
-    }
-
-    public function startMailer(): void
-    {
-        if (!empty($this->mailerInstance)) {
-            return;
-        }
-
-        $method = mb_strtolower(config_get('Mail', 'method'));
-
-        if (!array_key_exists($method, self::MAIL_TRANSPORT)) {
-            $method = 'null';
-        }
-
-        $class = self::MAIL_TRANSPORT[$method];
-        $transport = new $class;
-
-        switch ($method) {
-            case 'sendmail':
-                $command = config_get('Mail', 'command');
-
-                if (!empty($command)) {
-                    $transport->setCommand($command);
-                }
-                break;
-
-            case 'smtp':
-                $transport->setHost(config_get_default('', 'Mail', 'host'));
-                $transport->setPort(intval(config_get_default(25, 'Mail', 'port')));
-
-                $extra = [
-                    'setEncryption' => config_get('Mail', 'encryption'),
-                    'setUsername' => config_get('Mail', 'username'),
-                    'setPassword' => config_get('Mail', 'password'),
-                ];
-
-                foreach ($extra as $method => $value) {
-                    if (!empty($value)) {
-                        $transport->{$method}($value);
-                    }
-                }
-                break;
-        }
-
-        $this->mailerInstance = new Swift_Mailer($transport);
-    }
-
-    public function getMailer(): Swift_Mailer
-    {
-        if (empty($this->mailerInstance)) {
-            $this->startMailer();
-        }
-
-        return $this->mailerInstance;
-    }
-
-    public static function mailer(): Swift_Mailer
-    {
-        return self::getInstance()->getMailer();
-    }
-
-    public function getMailSender(): array
-    {
-        return [
-            config_get_default('sys@msz.lh', 'Mail', 'sender_email') => config_get_default('Misuzu System', 'Mail', 'sender_name'),
-        ];
     }
 
     public function startGeoIP(): void

@@ -35,6 +35,7 @@ require_once 'src/config.php';
 require_once 'src/csrf.php';
 require_once 'src/general.php';
 require_once 'src/git.php';
+require_once 'src/mail.php';
 require_once 'src/manage.php';
 require_once 'src/news.php';
 require_once 'src/perms.php';
@@ -58,6 +59,7 @@ require_once 'src/Users/user.php';
 require_once 'src/Users/validation.php';
 
 config_load(MSZ_ROOT . '/config/config.ini');
+mail_prepare(config_get_default([], 'Mail'));
 
 $app = new Application;
 
