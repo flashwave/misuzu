@@ -1,5 +1,4 @@
 <?php
-use Misuzu\Application;
 use Misuzu\Database;
 
 define('MSZ_PERM_USER_EDIT_PROFILE', 1);
@@ -136,11 +135,10 @@ define('MSZ_USER_AVATAR_FORMAT', '%d.msz');
 function user_avatar_delete(int $userId): void
 {
     $avatarFileName = sprintf(MSZ_USER_AVATAR_FORMAT, $userId);
-    $storePath = Application::getInstance()->getStoragePath();
 
     $deleteThis = [
-        build_path($storePath, 'avatars/original', $avatarFileName),
-        build_path($storePath, 'avatars/200x200', $avatarFileName),
+        build_path(MSZ_STORAGE, 'avatars/original', $avatarFileName),
+        build_path(MSZ_STORAGE, 'avatars/200x200', $avatarFileName),
     ];
 
     foreach ($deleteThis as $deleteAvatar) {
@@ -217,7 +215,7 @@ function user_avatar_set_from_path(int $userId, string $path, array $options = [
 
     $fileName = sprintf(MSZ_USER_AVATAR_FORMAT, $userId);
     $avatarPath = build_path(
-        create_directory(build_path(Application::getInstance()->getStoragePath(), 'avatars/original')),
+        create_directory(build_path(MSZ_STORAGE, 'avatars/original')),
         $fileName
     );
 
@@ -320,8 +318,7 @@ function user_background_set_settings(int $userId, int $settings): void
 function user_background_delete(int $userId): void
 {
     $backgroundFileName = sprintf(MSZ_USER_BACKGROUND_FORMAT, $userId);
-    $storePath = Application::getInstance()->getStoragePath();
-    safe_delete(build_path($storePath, 'backgrounds/original', $backgroundFileName));
+    safe_delete(build_path(MSZ_STORAGE, 'backgrounds/original', $backgroundFileName));
 }
 
 define('MSZ_USER_BACKGROUND_TYPE_PNG', IMAGETYPE_PNG);
@@ -391,7 +388,7 @@ function user_background_set_from_path(int $userId, string $path, array $options
 
     $fileName = sprintf(MSZ_USER_BACKGROUND_FORMAT, $userId);
     $backgroundPath = build_path(
-        create_directory(build_path(Application::getInstance()->getStoragePath(), 'backgrounds/original')),
+        create_directory(build_path(MSZ_STORAGE, 'backgrounds/original')),
         $fileName
     );
 

@@ -73,6 +73,9 @@ if (!empty($errorReporter)) {
 
 db_setup(MSZ_DATABASE_NAMES[0], config_get_default([], 'Database.' . MSZ_DATABASE_NAMES[0]));
 
+// replace this with a better storage mechanism
+define('MSZ_STORAGE', create_directory(config_get_default(MSZ_ROOT . '/store', 'Storage', 'path')));
+
 if (PHP_SAPI === 'cli') {
     if ($argv[0] === basename(__FILE__)) {
         switch ($argv[1] ?? null) {
@@ -237,8 +240,7 @@ MIG;
     // we're running this again because ob_clean breaks gzip otherwise
     ob_start();
 
-    $mszStoragePath = $app->getStoragePath();
-    if (!is_readable($mszStoragePath) || !is_writable($mszStoragePath)) {
+    if (!is_readable(MSZ_STORAGE) || !is_writable(MSZ_STORAGE)) {
         echo 'Cannot access storage directory.';
         exit;
     }

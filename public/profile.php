@@ -16,14 +16,14 @@ switch ($mode) {
         );
         $user_avatar = "{$userId}.msz";
         $cropped_avatar = build_path(
-            create_directory(build_path($app->getStoragePath(), 'avatars/200x200')),
+            create_directory(build_path(MSZ_STORAGE, 'avatars/200x200')),
             $user_avatar
         );
 
         if (is_file($cropped_avatar)) {
             $avatar_filename = $cropped_avatar;
         } else {
-            $original_avatar = build_path($app->getStoragePath(), 'avatars/original', $user_avatar);
+            $original_avatar = build_path(MSZ_STORAGE, 'avatars/original', $user_avatar);
 
             if (is_file($original_avatar)) {
                 try {
@@ -45,7 +45,7 @@ switch ($mode) {
 
     case 'background':
         $user_background = build_path(
-            create_directory(build_path($app->getStoragePath(), 'backgrounds/original')),
+            create_directory(build_path(MSZ_STORAGE, 'backgrounds/original')),
             "{$userId}.msz"
         );
 
@@ -165,7 +165,7 @@ switch ($mode) {
             'is_editing' => $isEditing,
             'perms' => $perms,
             'profile_fields' => user_session_active() ? user_profile_fields_display($profile, !$isEditing) : [],
-            'has_background' => is_file(build_path($app->getStoragePath(), 'backgrounds/original', "{$profile['user_id']}.msz")),
+            'has_background' => is_file(build_path(MSZ_STORAGE, 'backgrounds/original', "{$profile['user_id']}.msz")),
         ]);
         echo tpl_render('user.profile');
         break;

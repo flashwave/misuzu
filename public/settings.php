@@ -367,8 +367,8 @@ switch ($settingsMode) {
         $getAccountInfo->bindValue('user_id', $settingsUserId);
         $accountInfo = $getAccountInfo->execute() ? $getAccountInfo->fetch(PDO::FETCH_ASSOC) : [];
 
-        $userHasAvatar = is_file(build_path($app->getStoragePath(), 'avatars/original', $avatarFileName));
-        $userHasBackground = is_file(build_path($app->getStoragePath(), 'backgrounds/original', $avatarFileName));
+        $userHasAvatar = is_file(build_path(MSZ_STORAGE, 'avatars/original', $avatarFileName));
+        $userHasBackground = is_file(build_path(MSZ_STORAGE, 'backgrounds/original', $avatarFileName));
 
         tpl_vars([
             'avatar' => $avatarProps,

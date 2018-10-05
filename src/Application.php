@@ -23,15 +23,6 @@ final class Application
         self::$instance = $this;
     }
 
-    /**
-     * Gets a data storage path.
-     * @return string
-     */
-    public function getStoragePath(): string
-    {
-        return create_directory(config_get_default(MSZ_ROOT . '/store', 'Storage', 'path'));
-    }
-
     public function startGeoIP(): void
     {
         if (!empty($this->geoipInstance)) {
