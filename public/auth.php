@@ -18,9 +18,7 @@ $usernameValidationErrors = [
 $siteIsPrivate = boolval(config_get_default(false, 'Private', 'enabled'));
 $loginPermission = $siteIsPrivate ? intval(config_get_default(0, 'Private', 'permission')) : 0;
 $canResetPassword = $siteIsPrivate ? boolval(config_get_default(false, 'Private', 'password_reset')) : true;
-$canCreateAccount = !$siteIsPrivate
-    && !boolval(config_get_default(false, 'Auth', 'lockdown'))
-    && !boolval(config_get_default(false, 'Auth', 'prevent_registration'));
+$canCreateAccount = !$siteIsPrivate && !boolval(config_get_default(false, 'Auth', 'lockdown'));
 
 $authUsername = $isSubmission ? ($_POST['auth']['username'] ?? '') : ($_GET['username'] ?? '');
 $authEmail = $isSubmission ? ($_POST['auth']['email'] ?? '') : ($_GET['email'] ?? '');

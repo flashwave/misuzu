@@ -124,8 +124,7 @@ final class Application
     public function disableRegistration(): bool
     {
         return $this->underLockdown()
-            || boolval(config_get_default(false, 'Private', 'enabled'))
-            || boolval(config_get_default(false, 'Auth', 'prevent_registration'));
+            || boolval(config_get_default(false, 'Private', 'enabled'));
     }
 
     // used in some of the user functions still, fix that
