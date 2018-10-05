@@ -24,14 +24,7 @@ function geoip_cache(string $section, string $ipAddress, callable $value)
 
 function geoip_country(string $ipAddress)
 {
-    return geoip_cache('country', $ipAddress, function () {
+    return geoip_cache('country', $ipAddress, function () use ($ipAddress) {
         return $GLOBALS[MSZ_GEOIP_INSTANCE_STORE]->country($ipAddress);
-    });
-}
-
-function geoip_anonymous(string $ipAddress)
-{
-    return geoip_cache('anonymous', $ipAddress, function () {
-        return $GLOBALS[MSZ_GEOIP_INSTANCE_STORE]->anonymousIp($ipAddress);
     });
 }
