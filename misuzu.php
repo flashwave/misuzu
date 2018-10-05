@@ -63,8 +63,6 @@ require_once 'src/Users/validation.php';
 config_load(MSZ_ROOT . '/config/config.ini');
 mail_prepare(config_get_default([], 'Mail'));
 
-$app = new Application;
-
 if (!empty($errorReporter)) {
     $errorReporter->setReportInfo(
         config_get('Exceptions', 'report_url'),
