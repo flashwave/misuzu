@@ -33,6 +33,7 @@ require_once 'src/colour.php';
 require_once 'src/comments.php';
 require_once 'src/config.php';
 require_once 'src/csrf.php';
+require_once 'src/db.php';
 require_once 'src/general.php';
 require_once 'src/git.php';
 require_once 'src/mail.php';
@@ -70,7 +71,7 @@ if (!empty($errorReporter)) {
     );
 }
 
-$app->startDatabase();
+db_setup(MSZ_DATABASE_NAMES[0], config_get_default([], 'Database.' . MSZ_DATABASE_NAMES[0]));
 
 if (PHP_SAPI === 'cli') {
     if ($argv[0] === basename(__FILE__)) {
@@ -242,7 +243,13 @@ MIG;
         exit;
     }
 
-    $app->startCache();
+    new Cache(
+        config_get('Cache', 'host'),
+        config_get('Cache', 'port'),
+        config_get('Cache', 'database'),
+        config_get('Cache', 'password'),
+        config_get_default('', 'Cache', 'prefix')
+    );
 
     tpl_init([
         'debug' => MSZ_DEBUG,

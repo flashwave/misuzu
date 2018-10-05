@@ -148,8 +148,8 @@ switch ($mode) {
             if ($isEditing) {
                 tpl_vars([
                     'guidelines' => [
-                        'avatar' => $app->getAvatarProps(),
-                        'background' => $app->getBackgroundProps(),
+                        'avatar' => user_avatar_default_options(),
+                        'background' => user_background_default_options(),
                     ],
                 ]);
             }

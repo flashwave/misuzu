@@ -55,8 +55,8 @@ $disableAccountOptions = !MSZ_DEBUG
     && boolval(config_get_default(false, 'Private', 'enabled'))
     && boolval(config_get_default(false, 'Private', 'disable_account_settings'));
 $avatarFileName = "{$settingsUserId}.msz";
-$avatarProps = $app->getAvatarProps();
-$backgroundProps = $app->getBackgroundProps();
+$avatarProps = user_avatar_default_options();
+$backgroundProps = user_background_default_options();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_verify('settings', $_POST['csrf'] ?? '')) {

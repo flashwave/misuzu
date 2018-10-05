@@ -163,10 +163,15 @@ function user_avatar_is_allowed_type(int $type): bool
 }
 
 define('MSZ_USER_AVATAR_OPTIONS', [
-    'max_width' => 4000,
-    'max_height' => 4000,
-    'max_size' => 1000000,
+    'max_width' => 1000,
+    'max_height' => 1000,
+    'max_size' => 500000,
 ]);
+
+function user_avatar_default_options(): array
+{
+    return array_merge(MSZ_USER_AVATAR_OPTIONS, config_get_default([], 'Avatar'));
+}
 
 define('MSZ_USER_AVATAR_NO_ERRORS', 0);
 define('MSZ_USER_AVATAR_ERROR_INVALID_IMAGE', 1);
@@ -336,6 +341,11 @@ define('MSZ_USER_BACKGROUND_OPTIONS', [
     'max_height' => 2160,
     'max_size' => 1000000,
 ]);
+
+function user_background_default_options(): array
+{
+    return array_merge(MSZ_USER_BACKGROUND_OPTIONS, config_get_default([], 'Background'));
+}
 
 define('MSZ_USER_BACKGROUND_NO_ERRORS', 0);
 define('MSZ_USER_BACKGROUND_ERROR_INVALID_IMAGE', 1);
