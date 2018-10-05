@@ -14,8 +14,16 @@ define('MSZ_PERM_USER_MANAGE_REPORTS', 1 << 23);
 define('MSZ_PERM_USER_MANAGE_RESTRICTIONS', 1 << 24);
 define('MSZ_PERM_USER_MANAGE_BLACKLISTS', 1 << 25);
 
-// falls back to bcrypt if argon2i isn't available, thanks travis ci
-define('MSZ_USERS_PASSWORD_HASH_ALGO', defined('PASSWORD_ARGON2I') ? PASSWORD_ARGON2I : PASSWORD_BCRYPT);
+define(
+    'MSZ_USERS_PASSWORD_HASH_ALGO',
+    defined('PASSWORD_ARGON2ID')
+    ? PASSWORD_ARGON2ID
+    : (
+        defined('PASSWORD_ARGON2I')
+        ? PASSWORD_ARGON2I
+        : PASSWORD_BCRYPT
+    )
+);
 
 function user_create(
     string $username,
