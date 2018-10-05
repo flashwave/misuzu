@@ -1,5 +1,4 @@
 <?php
-use Misuzu\Application;
 use Misuzu\Cache;
 use Misuzu\Database;
 

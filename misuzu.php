@@ -49,6 +49,7 @@ require_once 'src/Forum/post.php';
 require_once 'src/Forum/topic.php';
 require_once 'src/Forum/validate.php';
 require_once 'src/Net/cidr.php';
+require_once 'src/Net/geoip.php';
 require_once 'src/Net/ip.php';
 require_once 'src/Parsers/parse.php';
 require_once 'src/Users/login_attempt.php';
@@ -252,6 +253,8 @@ MIG;
         config_get('Cache', 'password'),
         config_get_default('', 'Cache', 'prefix')
     );
+
+    geoip_init(config_get_default('', 'GeoIP', 'database_path'));
 
     tpl_init([
         'debug' => MSZ_DEBUG,

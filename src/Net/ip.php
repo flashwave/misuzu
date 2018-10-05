@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Application;
-
 define('MSZ_IP_UNKNOWN', 0);
 define('MSZ_IP_V4', 4);
 define('MSZ_IP_V6', 6);
@@ -18,7 +16,7 @@ function ip_remote_address(string $fallback = '::1'): string
 function ip_country_code(string $ipAddr, string $fallback = 'XX'): string
 {
     try {
-        return Application::geoip()->country($ipAddr)->country->isoCode ?? $fallback;
+        return geoip_country($ipAddr)->country->isoCode ?? $fallback;
     } catch (Exception $e) {
     }
 
