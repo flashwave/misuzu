@@ -322,20 +322,22 @@ MIG;
         empty($userDisplayInfo) ? ip_remote_address() : $_COOKIE['msz_sid']
     );
 
-    $privateInfo = $app->getPrivateInfo();
-
-    if (!$misuzuBypassLockdown && $privateInfo['enabled']) {
+    if (!$misuzuBypassLockdown && boolval(config_get_default(false, 'Private', 'enabled'))) {
         if (user_session_active()) {
-            $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
+            $privatePermission = intval(config_get_default(0, 'Private', 'permission'));
 
-            if ($privateInfo['permission'] && !perms_check($generalPerms, $privateInfo['permission'])) {
-                unset($userDisplayInfo);
-                user_session_stop(); // au revoir
+            if ($privatePermission > 0) {
+                $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
+
+                if (!perms_check($generalPerms, $privatePermission)) {
+                    unset($userDisplayInfo);
+                    user_session_stop(); // au revoir
+                }
             }
         } else {
             http_response_code(401);
             echo tpl_render('auth.private', [
-                'private_info'=> $privateInfo,
+                'private_message'=> config_get_default('', 'Private', 'message'),
             ]);
             exit;
         }

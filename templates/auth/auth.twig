@@ -8,7 +8,7 @@
         auth_register_message is defined
     ) }}
 
-    {% if not prevent_registration %}
+    {% if can_create_account %}
         <form class="container container--new auth" method="post" action="">
             <input type="hidden" name="auth[mode]" value="register">
             {{ 'register'|csrf|raw }}
@@ -43,7 +43,7 @@
         </form>
     {% endif %}
 
-    {% if not prevent_password_reset %}
+    {% if can_reset_password %}
         <form class="container container--new auth" method="post" action="">
             <input type="hidden" name="auth[mode]" value="forgot">
             {{ 'passforgot'|csrf|raw }}

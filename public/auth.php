@@ -15,8 +15,12 @@ $usernameValidationErrors = [
     'in-use' => 'This username is already taken!',
 ];
 
-$preventRegistration = $app->disableRegistration();
-$preventPasswordReset = ($privateInfo['enabled'] ?? false) && !($privateInfo['password_reset'] ?? true);
+$siteIsPrivate = boolval(config_get_default(false, 'Private', 'enabled'));
+$loginPermission = $siteIsPrivate ? intval(config_get_default(0, 'Private', 'permission')) : 0;
+$canResetPassword = $siteIsPrivate ? boolval(config_get_default(false, 'Private', 'password_reset')) : true;
+$canCreateAccount = !$siteIsPrivate
+    && !boolval(config_get_default(false, 'Auth', 'lockdown'))
+    && !boolval(config_get_default(false, 'Auth', 'prevent_registration'));
 
 $authUsername = $isSubmission ? ($_POST['auth']['username'] ?? '') : ($_GET['username'] ?? '');
 $authEmail = $isSubmission ? ($_POST['auth']['email'] ?? '') : ($_GET['email'] ?? '');
@@ -24,8 +28,8 @@ $authPassword = $_POST['auth']['password'] ?? '';
 $authVerification = $_POST['auth']['verification'] ?? '';
 
 tpl_vars([
-    'prevent_registration' => $preventRegistration,
-    'prevent_password_reset' => $preventPasswordReset,
+    'can_create_account' => $canCreateAccount,
+    'can_reset_password' => $canResetPassword,
     'auth_mode' => $authMode,
     'auth_username' => $authUsername,
     'auth_email' => $authEmail,
@@ -59,7 +63,7 @@ switch ($authMode) {
             break;
         }
 
-        if ($preventPasswordReset) {
+        if (!$canResetPassword) {
             header('Location: /');
             return;
         }
@@ -151,7 +155,7 @@ switch ($authMode) {
         break;
 
     case 'forgot':
-        if (user_session_active() || $preventPasswordReset) {
+        if (user_session_active() || !$canResetPassword) {
             header('Location: /');
             break;
         }
@@ -300,10 +304,10 @@ MSG;
 
             user_login_attempt_record(true, $userId, $ipAddress, $userAgent);
 
-            if (!empty($privateInfo['permission'])) {
+            if ($loginPermission > 0) {
                 $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $userId);
 
-                if (!perms_check($generalPerms, $privateInfo['permission'])) {
+                if (!perms_check($generalPerms, $loginPermission)) {
                     $authLoginError = 'Your credentials were correct, but your account lacks the proper permissions to use this website.';
                     break;
                 }
@@ -327,8 +331,8 @@ MSG;
 
         if (!empty($authLoginError)) {
             tpl_var('auth_login_error', $authLoginError);
-        } elseif (!empty($privateInfo['enabled'])) {
-            tpl_var('auth_register_message', $privateInfo['message'] ?? '');
+        } elseif ($siteIsPrivate) {
+            tpl_var('auth_register_message', config_get_default('', 'Private', 'message'));
         }
 
         echo tpl_render('auth.auth');
@@ -342,8 +346,8 @@ MSG;
         $authRegistrationError = '';
 
         while ($isSubmission) {
-            if ($preventRegistration) {
-                $authRegistrationError = 'Registration is not allowed on this instance.';
+            if (!$canCreateAccount) {
+                $authRegistrationError = 'You may not create an account right now.';
                 break;
             }
 
