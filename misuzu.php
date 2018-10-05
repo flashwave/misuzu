@@ -292,7 +292,7 @@ MIG;
 
     $misuzuBypassLockdown = !empty($misuzuBypassLockdown);
 
-    if (!$misuzuBypassLockdown && $app->underLockdown()) {
+    if (!$misuzuBypassLockdown && boolval(config_get_default(false, 'Auth', 'lockdown'))) {
         http_response_code(503);
         echo tpl_render('auth.lockdown');
         exit;
