@@ -33,7 +33,7 @@ $news = Database::query('
     LIMIT 5
 ')->fetchAll(PDO::FETCH_ASSOC);
 
-$statistics = Cache::instance()->get('index:stats:v1', function () {
+$statistics = cache_get('index:stats:v1', function () {
     return [
         'users' => (int)Database::query('
             SELECT COUNT(`user_id`)
@@ -52,7 +52,7 @@ $statistics = Cache::instance()->get('index:stats:v1', function () {
     ];
 }, 10800);
 
-$changelog = Cache::instance()->get('index:changelog:v1', function () {
+$changelog = cache_get('index:changelog:v1', function () {
     return Database::query('
         SELECT
             c.`change_id`, c.`change_log`,
@@ -67,7 +67,7 @@ $changelog = Cache::instance()->get('index:changelog:v1', function () {
     ')->fetchAll(PDO::FETCH_ASSOC);
 }, 1800);
 
-$onlineUsers = Cache::instance()->get('index:online:v1', function () {
+$onlineUsers = cache_get('index:online:v1', function () {
     return Database::query('
         SELECT
             u.`user_id`, u.`username`,

@@ -28,6 +28,7 @@ $errorHandler->register();
 
 require_once 'src/array.php';
 require_once 'src/audit_log.php';
+require_once 'src/cache.php';
 require_once 'src/changelog.php';
 require_once 'src/colour.php';
 require_once 'src/comments.php';
@@ -244,14 +245,7 @@ MIG;
         exit;
     }
 
-    new Cache(
-        config_get('Cache', 'host'),
-        config_get('Cache', 'port'),
-        config_get('Cache', 'database'),
-        config_get('Cache', 'password'),
-        config_get_default('', 'Cache', 'prefix')
-    );
-
+    cache_init(config_get_default([], 'Cache'));
     geoip_init(config_get_default('', 'GeoIP', 'database_path'));
 
     tpl_init([
