@@ -25,7 +25,7 @@ if (empty($postId) && empty($topicId) && empty($forumId)) {
 }
 
 if (!empty($postId)) {
-    $getPost = Database::prepare('
+    $getPost = db_prepare('
         SELECT `post_id`, `topic_id`
         FROM `msz_forum_posts`
         WHERE `post_id` = :post_id
@@ -39,7 +39,7 @@ if (!empty($postId)) {
 }
 
 if (!empty($topicId)) {
-    $getTopic = Database::prepare('
+    $getTopic = db_prepare('
         SELECT `topic_id`, `forum_id`, `topic_title`, `topic_locked`
         FROM `msz_forum_topics`
         WHERE `topic_id` = :topic_id
@@ -53,7 +53,7 @@ if (!empty($topicId)) {
 }
 
 if (!empty($forumId)) {
-    $getForum = Database::prepare('
+    $getForum = db_prepare('
         SELECT `forum_id`, `forum_name`, `forum_type`, `forum_archived`
         FROM `msz_forum_categories`
         WHERE `forum_id` = :forum_id

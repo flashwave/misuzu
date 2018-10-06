@@ -13,7 +13,7 @@ if (config_get_default(false, 'Site', 'embed_linked_data')) {
     ]);
 }
 
-$news = Database::query('
+$news = db_query('
     SELECT
         p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
         u.`user_id`, u.`username`,
@@ -35,11 +35,11 @@ $news = Database::query('
 
 $statistics = cache_get('index:stats:v1', function () {
     return [
-        'users' => (int)Database::query('
+        'users' => (int)db_query('
             SELECT COUNT(`user_id`)
             FROM `msz_users`
         ')->fetchColumn(),
-        'lastUser' => Database::query('
+        'lastUser' => db_query('
             SELECT
                 u.`user_id`, u.`username`, u.`created_at`,
                 COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
@@ -53,7 +53,7 @@ $statistics = cache_get('index:stats:v1', function () {
 }, 10800);
 
 $changelog = cache_get('index:changelog:v1', function () {
-    return Database::query('
+    return db_query('
         SELECT
             c.`change_id`, c.`change_log`,
             a.`action_name`, a.`action_colour`, a.`action_class`,
@@ -68,7 +68,7 @@ $changelog = cache_get('index:changelog:v1', function () {
 }, 1800);
 
 $onlineUsers = cache_get('index:online:v1', function () {
-    return Database::query('
+    return db_query('
         SELECT
             u.`user_id`, u.`username`,
             COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`

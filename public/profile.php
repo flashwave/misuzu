@@ -59,7 +59,7 @@ switch ($mode) {
         break;
 
     default:
-        $getProfile = Database::prepare('
+        $getProfile = db_prepare('
             SELECT
                 u.*,
                 COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
@@ -115,7 +115,7 @@ switch ($mode) {
                 || perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS);
             $isEditing = $canEdit && $mode === 'edit';
 
-            $getFriendInfo = Database::prepare('
+            $getFriendInfo = db_prepare('
                 SELECT
                     :visitor as `visitor`, :profile as `profile`,
                     (

@@ -20,7 +20,7 @@ tpl_vars([
 ]);
 
 if ($changelogChange > 0) {
-    $getChange = Database::prepare('
+    $getChange = db_prepare('
         SELECT
             c.`change_id`, c.`change_created`, c.`change_log`, c.`change_text`,
             a.`action_name`, a.`action_colour`, a.`action_class`,
@@ -43,7 +43,7 @@ if ($changelogChange > 0) {
     if (!$change) {
         http_response_code(404);
     } else {
-        $getTags = Database::prepare('
+        $getTags = db_prepare('
             SELECT
                 t.`tag_id`, t.`tag_name`, t.`tag_description`
             FROM `msz_changelog_tags` as t

@@ -67,7 +67,7 @@ switch ($authMode) {
         }
 
         $resetUser = (int)($_POST['user'] ?? $_GET['u'] ?? 0);
-        $getResetUser = Database::prepare('
+        $getResetUser = db_prepare('
             SELECT `user_id`, `username`
             FROM `msz_users`
             WHERE `user_id` = :user_id
@@ -83,7 +83,7 @@ switch ($authMode) {
         tpl_var('auth_reset_message', "A verification code should've been sent to your e-mail address.");
 
         while ($isSubmission) {
-            $validateRequest = Database::prepare('
+            $validateRequest = db_prepare('
                 SELECT COUNT(`user_id`) > 0
                 FROM `msz_users_password_resets`
                 WHERE `user_id` = :user
@@ -116,7 +116,7 @@ switch ($authMode) {
                 break;
             }
 
-            $updatePassword = Database::prepare('
+            $updatePassword = db_prepare('
                 UPDATE `msz_users`
                 SET `password` = :password
                 WHERE `user_id` = :user
@@ -130,7 +130,7 @@ switch ($authMode) {
                 throw new UnexpectedValueException('Password reset failed.');
             }
 
-            $invalidateCode = Database::prepare('
+            $invalidateCode = db_prepare('
                 UPDATE `msz_users_password_resets`
                 SET `verification_code` = NULL
                 WHERE `verification_code` = :code
@@ -169,7 +169,7 @@ switch ($authMode) {
                 break;
             }
 
-            $forgotUser = Database::prepare('
+            $forgotUser = db_prepare('
                 SELECT `user_id`, `username`, `email`
                 FROM `msz_users`
                 WHERE LOWER(`email`) = LOWER(:email)
@@ -183,7 +183,7 @@ switch ($authMode) {
             }
 
             $ipAddress = ip_remote_address();
-            $emailSent = Database::prepare('
+            $emailSent = db_prepare('
                 SELECT COUNT(`verification_code`) > 0
                 FROM `msz_users_password_resets`
                 WHERE `user_id` = :user
@@ -199,7 +199,7 @@ switch ($authMode) {
 
             if (!$emailSent) {
                 $verificationCode = bin2hex(random_bytes(6));
-                $insertResetKey = Database::prepare('
+                $insertResetKey = db_prepare('
                     REPLACE INTO `msz_users_password_resets`
                         (`user_id`, `reset_ip`, `verification_code`)
                     VALUES
@@ -271,7 +271,7 @@ MSG;
                 break;
             }
 
-            $getUser = Database::prepare('
+            $getUser = db_prepare('
                 SELECT `user_id`, `password`
                 FROM `msz_users`
                 WHERE LOWER(`email`) = LOWER(:email)

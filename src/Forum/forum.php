@@ -61,7 +61,7 @@ function forum_may_have_topics(int $forumType): bool
 
 function forum_fetch(int $forumId): array
 {
-    $getForum = Database::prepare('
+    $getForum = db_prepare('
         SELECT
             `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_link_clicks`, `forum_parent`,
             (
@@ -87,7 +87,7 @@ function forum_get_root_categories(int $userId): array
         MSZ_FORUM_PERM_CAN_LIST_FORUM
     );
 
-    $getCategories = Database::prepare("
+    $getCategories = db_prepare("
         SELECT
             f.`forum_id`, f.`forum_name`, f.`forum_type`,
             (
@@ -112,7 +112,7 @@ function forum_get_root_categories(int $userId): array
         forum_perms_get_user_sql('forum', '`forum_id`'),
         MSZ_FORUM_PERM_CAN_LIST_FORUM
     );
-    $getRootForumCount = Database::prepare(sprintf("
+    $getRootForumCount = db_prepare(sprintf("
         SELECT COUNT(`forum_id`)
         FROM `msz_forum_categories`
         WHERE `forum_parent` = %d
@@ -134,7 +134,7 @@ function forum_get_breadcrumbs(
     array $indexLink = ['Forums' => '/forum/']
 ): array {
     $breadcrumbs = [];
-    $getBreadcrumbs = Database::prepare('
+    $getBreadcrumbs = db_prepare('
         WITH RECURSIVE breadcrumbs(forum_id, forum_name, forum_parent) as (
             SELECT c.`forum_id`, c.`forum_name`, c.`forum_parent`
             FROM `msz_forum_categories` as c
@@ -163,7 +163,7 @@ function forum_get_breadcrumbs(
 
 function forum_increment_clicks(int $forumId): void
 {
-    $incrementLinkClicks = Database::prepare(sprintf('
+    $incrementLinkClicks = db_prepare(sprintf('
         UPDATE `msz_forum_categories`
         SET `forum_link_clicks` = `forum_link_clicks` + 1
         WHERE `forum_id` = :forum_id
@@ -308,7 +308,7 @@ function forum_get_children_query(bool $small = false): string
 
 function forum_get_children(int $parentId, int $userId, bool $small = false): array
 {
-    $getListing = Database::prepare(forum_get_children_query($small));
+    $getListing = db_prepare(forum_get_children_query($small));
     $getListing->bindValue('user_id', $userId);
     $getListing->bindValue('perm_user_id_user', $userId);
     $getListing->bindValue('perm_user_id_role', $userId);

@@ -13,7 +13,7 @@ function changelog_action_add(string $name, ?int $colour = null, ?string $class 
 
     $class = preg_replace('#[^a-z]#', '', mb_strtolower($class ?? $name));
 
-    $addAction = Database::prepare('
+    $addAction = db_prepare('
         INSERT INTO `msz_changelog_actions`
             (`action_name`, `action_colour`, `action_class`)
         VALUES
@@ -23,12 +23,12 @@ function changelog_action_add(string $name, ?int $colour = null, ?string $class 
     $addAction->bindValue('action_colour', $colour);
     $addAction->bindValue('action_class', $class);
 
-    return $addAction->execute() ? (int)Database::lastInsertId() : 0;
+    return $addAction->execute() ? (int)db_last_insert_id() : 0;
 }
 
 function changelog_entry_create(int $userId, int $actionId, string $log, string $text = null): int
 {
-    $createChange = Database::prepare('
+    $createChange = db_prepare('
         INSERT INTO `msz_changelog_changes`
             (`user_id`, `action_id`, `change_log`, `change_text`)
         VALUES
@@ -39,7 +39,7 @@ function changelog_entry_create(int $userId, int $actionId, string $log, string 
     $createChange->bindValue('change_log', $log);
     $createChange->bindValue('change_text', $text);
 
-    return $createChange->execute() ? (int)Database::lastInsertId() : 0;
+    return $createChange->execute() ? (int)db_last_insert_id() : 0;
 }
 
 define('MSZ_CHANGELOG_GET_QUERY', '
@@ -76,7 +76,7 @@ function changelog_get_changes(string $date, int $user, int $offset, int $take):
         !$hasDate ? 'LIMIT :offset, :take' : ''
     );
 
-    $prep = Database::prepare($query);
+    $prep = db_prepare($query);
 
     if (!$hasDate) {
         $prep->bindValue('offset', $offset);
@@ -110,7 +110,7 @@ function changelog_count_changes(string $date, int $user): int
         $hasUser ? '`user_id` = :user' : '1'
     );
 
-    $prep = Database::prepare($query);
+    $prep = db_prepare($query);
 
     if ($hasDate) {
         $prep->bindValue('date', $date);

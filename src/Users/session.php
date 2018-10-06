@@ -11,7 +11,7 @@ function user_session_create(
 ): string {
     $sessionKey = user_session_generate_key();
 
-    $createSession = Database::prepare('
+    $createSession = db_prepare('
         INSERT INTO `msz_sessions`
             (
                 `user_id`, `session_ip`, `session_country`,
@@ -38,7 +38,7 @@ function user_session_find($sessionId, bool $byKey = false): array
         return [];
     }
 
-    $findSession = Database::prepare(sprintf('
+    $findSession = db_prepare(sprintf('
         SELECT
             `session_id`, `user_id`, INET6_NTOA(`session_ip`) as `session_ip`,
             `session_country`, `user_agent`, `session_key`, `created_at`, `expires_on`
@@ -52,7 +52,7 @@ function user_session_find($sessionId, bool $byKey = false): array
 
 function user_session_delete(int $sessionId): void
 {
-    $deleteSession = Database::prepare('
+    $deleteSession = db_prepare('
         DELETE FROM `msz_sessions`
         WHERE `session_id` = :session_id
     ');
@@ -67,7 +67,7 @@ function user_session_generate_key(): string
 
 function user_session_purge_all(int $userId): void
 {
-    Database::prepare('
+    db_prepare('
         DELETE FROM `msz_sessions`
         WHERE `user_id` = :user_id
     ')->execute([
