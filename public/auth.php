@@ -143,7 +143,7 @@ switch ($authMode) {
                 throw new UnexpectedValueException('Verification code invalidation failed.');
             }
 
-            header('Location: /auth.php?m=login&u=' . $resetUser['username']);
+            header('Location: /auth.php?m=login&u=' . $resetUser['user_id']);
             break;
         }
 
