@@ -151,7 +151,7 @@ switch ($authMode) {
 
             $ipAddress = ip_remote_address();
 
-            if (!user_recovery_emaiL_sent($forgotUser['user_id'], $ipAddress)) {
+            if (!user_recovery_token_sent($forgotUser['user_id'], $ipAddress)) {
                 $verificationCode = user_recovery_token_create($forgotUser['user_id'], $ipAddress);
 
                 if (empty($verificationCode)) {
