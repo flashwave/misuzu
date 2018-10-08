@@ -175,7 +175,7 @@
                     {{ comments_entry(comment, 1, category, user, perms) }}
                 {% endfor %}
             {% else %}
-                <div class="comments__none">
+                <div class="comments__none" id="_no_comments_notice_{{ category.category_id }}">
                     There are no comments yet.
                 </div>
             {% endif %}
@@ -489,6 +489,9 @@
                     parent.insertBefore(commentElement, parent.firstElementChild);
 
                 timeago().render(commentTime);
+
+                var placeholder = document.getElementById('_no_comments_notice_' + comment.category_id);
+                placeholder.parentNode.removeChild(placeholder);
             }
         </script>
     {% endif %}
