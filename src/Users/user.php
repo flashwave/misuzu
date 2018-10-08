@@ -57,6 +57,18 @@ function user_password_hash(string $password): string
     return password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO);
 }
 
+function user_password_set(int $userId, string $password): bool
+{
+    $updatePassword = db_prepare('
+        UPDATE `msz_users`
+        SET `password` = :password
+        WHERE `user_id` = :user
+    ');
+    $updatePassword->bindValue('user', $userId);
+    $updatePassword->bindValue('password', user_password_hash($password));
+    return $updatePassword->execute();
+}
+
 // function of the century, only use this if it doesn't make sense to grab data otherwise
 function user_exists(int $userId): bool
 {
