@@ -53,6 +53,8 @@ require_once 'src/Net/cidr.php';
 require_once 'src/Net/geoip.php';
 require_once 'src/Net/ip.php';
 require_once 'src/Parsers/parse.php';
+require_once 'src/Users/avatar.php';
+require_once 'src/Users/background.php';
 require_once 'src/Users/login_attempt.php';
 require_once 'src/Users/profile.php';
 require_once 'src/Users/relations.php';
