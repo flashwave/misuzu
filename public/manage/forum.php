@@ -5,13 +5,13 @@ require_once '../../misuzu.php';
 
 switch ($_GET['v'] ?? null) {
     case 'listing':
-        $forums = Database::query('SELECT * FROM `msz_forum_categories`');
+        $forums = db_query('SELECT * FROM `msz_forum_categories`');
 
         echo tpl_render('manage.forum.listing', compact('forums'));
         break;
 
     case 'forum':
-        $getForum = Database::prepare('
+        $getForum = db_prepare('
             SELECT *
             FROM `msz_forum_categories`
             WHERE `forum_id` = :forum_id
@@ -24,14 +24,14 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $roles = Database::query('SELECT `role_id`, `role_name` FROM `msz_roles`')->fetchAll(PDO::FETCH_ASSOC);
+        $roles = db_query('SELECT `role_id`, `role_name` FROM `msz_roles`')->fetchAll(PDO::FETCH_ASSOC);
         $perms = manage_forum_perms_list(forum_perms_get_role_raw($forum['forum_id'], null));
 
         echo tpl_render('manage.forum.forum', compact('forum', 'roles', 'perms'));
         break;
 
     case 'forumperms':
-        $getRole = Database::prepare('
+        $getRole = db_prepare('
             SELECT `role_id`, `role_name`
             FROM `msz_roles`
             WHERE `role_id` = :role_id
@@ -47,7 +47,7 @@ switch ($_GET['v'] ?? null) {
         $forumId = empty($_GET['f']) ? null : (int)($_GET['f'] ?? 0);
 
         if ($forumId) {
-            $getForum = Database::prepare('
+            $getForum = db_prepare('
                 SELECT `forum_name`
                 FROM `msz_forum_categories`
                 WHERE `forum_id` = :forum_id

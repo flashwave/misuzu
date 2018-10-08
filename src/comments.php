@@ -39,7 +39,7 @@ function comments_parse_for_store(string $text): string
 function comments_parse_for_display(string $text): string
 {
     return preg_replace_callback(MSZ_COMMENTS_MARKUP_USER_ID, function ($matches) {
-        $getInfo = Database::prepare('
+        $getInfo = db_prepare('
             SELECT
                 u.`user_id`, u.`username`,
                 COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
@@ -88,7 +88,7 @@ function comments_vote_add(int $comment, int $user, ?string $vote): bool
         return false;
     }
 
-    $setVote = Database::prepare('
+    $setVote = db_prepare('
         REPLACE INTO `msz_comments_votes`
             (`comment_id`, `user_id`, `comment_vote`)
         VALUES
@@ -102,7 +102,7 @@ function comments_vote_add(int $comment, int $user, ?string $vote): bool
 
 function comments_votes_get(int $commentId): array
 {
-    $getVotes = Database::prepare('
+    $getVotes = db_prepare('
         SELECT :id as `id`,
         (
             SELECT COUNT(`user_id`)
@@ -124,7 +124,7 @@ function comments_votes_get(int $commentId): array
 
 function comments_category_create(string $name): array
 {
-    $create = Database::prepare('
+    $create = db_prepare('
         INSERT INTO `msz_comments_categories`
             (`category_name`)
         VALUES
@@ -132,13 +132,13 @@ function comments_category_create(string $name): array
     ');
     $create->bindValue('name', $name);
     return $create->execute()
-        ? comments_category_info((int)Database::lastInsertId(), false)
+        ? comments_category_info((int)db_last_insert_id(), false)
         : [];
 }
 
 function comments_category_lock(int $category, bool $lock): void
 {
-    $setLock = Database::prepare('
+    $setLock = db_prepare('
         UPDATE `msz_comments_categories`
         SET `category_locked` = IF(:lock, NOW(), NULL)
         WHERE `category_id` = :category
@@ -168,10 +168,10 @@ define('MSZ_COMMENTS_CATEGORY_INFO_NAME', sprintf(
 function comments_category_info($category, bool $createIfNone = false): array
 {
     if (is_int($category)) {
-        $getCategory = Database::prepare(MSZ_COMMENTS_CATEGORY_INFO_ID);
+        $getCategory = db_prepare(MSZ_COMMENTS_CATEGORY_INFO_ID);
         $createIfNone = false;
     } elseif (is_string($category)) {
-        $getCategory = Database::prepare(MSZ_COMMENTS_CATEGORY_INFO_NAME);
+        $getCategory = db_prepare(MSZ_COMMENTS_CATEGORY_INFO_NAME);
     } else {
         return [];
     }
@@ -235,10 +235,10 @@ define('MSZ_COMMENTS_CATEGORY_QUERY_REPLIES', sprintf(
 function comments_category_get(int $category, int $user, ?int $parent = null): array
 {
     if ($parent !== null) {
-        $getComments = Database::prepare(MSZ_COMMENTS_CATEGORY_QUERY_REPLIES);
+        $getComments = db_prepare(MSZ_COMMENTS_CATEGORY_QUERY_REPLIES);
         $getComments->bindValue('parent', $parent);
     } else {
-        $getComments = Database::prepare(MSZ_COMMENTS_CATEGORY_QUERY_ROOT);
+        $getComments = db_prepare(MSZ_COMMENTS_CATEGORY_QUERY_ROOT);
     }
 
     $getComments->bindValue('user', $user);
@@ -266,7 +266,7 @@ function comments_post_create(
         $text = comments_parse_for_store($text);
     }
 
-    $create = Database::prepare('
+    $create = db_prepare('
         INSERT INTO `msz_comments_posts`
             (`user_id`, `category_id`, `comment_text`, `comment_pinned`, `comment_reply_to`)
         VALUES
@@ -277,12 +277,12 @@ function comments_post_create(
     $create->bindValue('text', $text);
     $create->bindValue('pin', $pinned ? 1 : 0);
     $create->bindValue('reply', $reply < 1 ? null : $reply);
-    return $create->execute() ? Database::lastInsertId() : 0;
+    return $create->execute() ? db_last_insert_id() : 0;
 }
 
 function comments_post_delete(int $commentId, bool $delete = true): bool
 {
-    $deleteComment = Database::prepare('
+    $deleteComment = db_prepare('
         UPDATE `msz_comments_posts`
         SET `comment_deleted` = IF(:del, NOW(), NULL)
         WHERE `comment_id` = :id
@@ -294,7 +294,7 @@ function comments_post_delete(int $commentId, bool $delete = true): bool
 
 function comments_post_get(int $commentId, bool $parse = true): array
 {
-    $fetch = Database::prepare('
+    $fetch = db_prepare('
         SELECT
             p.`comment_id`, p.`category_id`, p.`comment_text`,
             p.`comment_created`, p.`comment_edited`, p.`comment_deleted`,
@@ -321,7 +321,7 @@ function comments_post_get(int $commentId, bool $parse = true): array
 
 function comments_post_exists(int $commentId): bool
 {
-    $fetch = Database::prepare('
+    $fetch = db_prepare('
         SELECT COUNT(`comment_id`) > 0
         FROM `msz_comments_posts`
         WHERE `comment_id` = :id
@@ -332,7 +332,7 @@ function comments_post_exists(int $commentId): bool
 
 function comments_post_replies(int $commentId): array
 {
-    $getComments = Database::prepare('
+    $getComments = db_prepare('
         SELECT
             p.`comment_id`, p.`category_id`, p.`comment_text`,
             p.`comment_created`, p.`comment_edited`, p.`comment_deleted`,
@@ -352,7 +352,7 @@ function comments_post_replies(int $commentId): array
 
 function comments_post_check_ownership(int $commentId, int $userId): bool
 {
-    $checkUser = Database::prepare('
+    $checkUser = db_prepare('
         SELECT COUNT(`comment_id`) > 0
         FROM `msz_comments_posts`
         WHERE `comment_id` = :comment

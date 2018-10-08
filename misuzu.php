@@ -71,7 +71,9 @@ if (!empty($errorReporter)) {
     );
 }
 
-db_setup(MSZ_DATABASE_NAMES[0], config_get_default([], 'Database.' . MSZ_DATABASE_NAMES[0]));
+db_setup([
+    'mysql-main' => config_get_default([], 'Database.mysql-main')
+]);
 
 // replace this with a better storage mechanism
 define('MSZ_STORAGE', create_directory(config_get_default(MSZ_ROOT . '/store', 'Storage', 'path')));
@@ -81,7 +83,7 @@ if (PHP_SAPI === 'cli') {
         switch ($argv[1] ?? null) {
             case 'cron':
                 // Ensure main role exists.
-                Database::exec("
+                db_exec("
                     INSERT IGNORE INTO `msz_roles`
                         (`role_id`, `role_name`, `role_hierarchy`, `role_colour`, `role_description`, `created_at`)
                     VALUES
@@ -89,7 +91,7 @@ if (PHP_SAPI === 'cli') {
                 ");
 
                 // Ensures all users are in the main role.
-                Database::exec('
+                db_exec('
                     INSERT INTO `msz_user_roles`
                         (`user_id`, `role_id`)
                     SELECT `user_id`, 1 FROM `msz_users` as u
@@ -102,7 +104,7 @@ if (PHP_SAPI === 'cli') {
                 ');
 
                 // Ensures all display_role values are correct with `msz_user_roles`
-                Database::exec('
+                db_exec('
                     UPDATE `msz_users` as u
                     SET `display_role` = (
                          SELECT ur.`role_id`
@@ -122,25 +124,25 @@ if (PHP_SAPI === 'cli') {
                 ');
 
                 // Deletes expired sessions
-                Database::exec('
+                db_exec('
                     DELETE FROM `msz_sessions`
                     WHERE `expires_on` < NOW()
                 ');
 
                 // Remove old password reset records, left for a week for possible review
-                Database::exec('
+                db_exec('
                     DELETE FROM `msz_users_password_resets`
                     WHERE `reset_requested` < NOW() - INTERVAL 1 WEEK
                 ');
 
                 // Cleans up the login history table
-                Database::exec('
+                db_exec('
                     DELETE FROM `msz_login_attempts`
                     WHERE `created_at` < NOW() - INTERVAL 1 YEAR
                 ');
 
                 // Cleans up the audit log table
-                Database::exec('
+                db_exec('
                     DELETE FROM `msz_audit_log`
                     WHERE `log_created` < NOW() - INTERVAL 1 YEAR
                 ');
@@ -160,7 +162,7 @@ if (PHP_SAPI === 'cli') {
 
                 foreach ($migrationTargets as $db => $path) {
                     echo "Creating migration manager for '{$db}'..." . PHP_EOL;
-                    $migrationManager = new DatabaseMigrationManager(Database::connection($db), $path);
+                    $migrationManager = new DatabaseMigrationManager(db_connection($db), $path);
                     $migrationManager->setLogger(function ($log) {
                         echo $log . PHP_EOL;
                     });
@@ -290,7 +292,7 @@ MIG;
     tpl_add_function('startup_time', false, function (float $time = MSZ_STARTUP) {
         return microtime(true) - $time;
     });
-    tpl_add_function('sql_query_count', false, [Database::class, 'queryCount']);
+    tpl_add_function('sql_query_count', false, 'db_query_count');
 
     tpl_add_path(MSZ_ROOT . '/templates');
 
@@ -308,7 +310,7 @@ MIG;
 
         user_bump_last_active($mszUserId);
 
-        $getUserDisplayInfo = Database::prepare('
+        $getUserDisplayInfo = db_prepare('
             SELECT
                 u.`user_id`, u.`username`, u.`user_background_settings`,
                 COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`

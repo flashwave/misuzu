@@ -58,7 +58,7 @@ if (empty($orderDir)) {
     return;
 }
 
-$getRole = Database::prepare('
+$getRole = db_prepare('
     SELECT
         `role_id`, `role_name`, `role_colour`, `role_description`, `created_at`,
         (
@@ -77,14 +77,14 @@ if (!$role) {
     return;
 }
 
-$roles = Database::query('
+$roles = db_query('
     SELECT `role_id`, `role_name`, `role_colour`
     FROM `msz_roles`
     WHERE `role_secret` = 0
     ORDER BY `role_id`
 ')->fetchAll(PDO::FETCH_ASSOC);
 
-$getUsers = Database::prepare("
+$getUsers = db_prepare("
     SELECT
         u.`user_id`, u.`username`, u.`user_country`, r.`role_id`,
         COALESCE(u.`user_title`, r.`role_title`, r.`role_name`) as `user_title`,

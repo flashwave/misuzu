@@ -22,7 +22,7 @@ function user_relation_add(int $userId, int $subjectId, int $type = MSZ_USER_REL
         return MSZ_USER_RELATION_E_INVALID_TYPE;
     }
 
-    $addRelation = Database::prepare('
+    $addRelation = db_prepare('
         REPLACE INTO `msz_user_relations`
             (`user_id`, `subject_id`, `relation_type`)
         VALUES
@@ -44,7 +44,7 @@ function user_relation_remove(int $userId, int $subjectId): bool
         return false;
     }
 
-    $removeRelation = Database::prepare('
+    $removeRelation = db_prepare('
         DELETE FROM `msz_user_relations`
         WHERE `user_id` = :user_id
         AND `subject_id` = :subject_id

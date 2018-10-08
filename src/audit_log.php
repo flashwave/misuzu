@@ -15,7 +15,7 @@ function audit_log(
         }
     }
 
-    $addLog = Database::prepare('
+    $addLog = db_prepare('
         INSERT INTO `msz_audit_log`
             (`log_action`, `user_id`, `log_params`, `log_ip`, `log_country`)
         VALUES
@@ -31,7 +31,7 @@ function audit_log(
 
 function audit_log_count($userId = 0): int
 {
-    $getCount = Database::prepare(sprintf('
+    $getCount = db_prepare(sprintf('
         SELECT COUNT(`log_id`)
         FROM `msz_audit_log`
         WHERE %s
@@ -49,7 +49,7 @@ function audit_log_list(int $offset, int $take, int $userId = 0): array
     $offset = max(0, $offset);
     $take = max(1, $take);
 
-    $getLogs = Database::prepare(sprintf('
+    $getLogs = db_prepare(sprintf('
         SELECT
             l.`log_id`, l.`log_action`, l.`log_params`, l.`log_created`, l.`log_country`,
             u.`user_id`, u.`username`,

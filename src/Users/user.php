@@ -30,7 +30,7 @@ function user_create(
     string $email,
     string $ipAddress
 ): int {
-    $createUser = Database::prepare('
+    $createUser = db_prepare('
         INSERT INTO `msz_users`
             (
                 `username`, `password`, `email`, `register_ip`,
@@ -49,7 +49,7 @@ function user_create(
     $createUser->bindValue('last_ip', $ipAddress);
     $createUser->bindValue('user_country', ip_country_code($ipAddress));
 
-    return $createUser->execute() ? (int)Database::lastInsertId() : 0;
+    return $createUser->execute() ? (int)db_last_insert_id() : 0;
 }
 
 function user_password_hash(string $password): string
@@ -64,7 +64,7 @@ function user_exists(int $userId): bool
         return false;
     }
 
-    $check = Database::prepare('
+    $check = db_prepare('
         SELECT COUNT(`user_id`) > 0
         FROM `msz_users`
         WHERE `user_id` = :user_id
@@ -75,14 +75,14 @@ function user_exists(int $userId): bool
 
 function user_id_from_username(string $username): int
 {
-    $getId = Database::prepare('SELECT `user_id` FROM `msz_users` WHERE LOWER(`username`) = LOWER(:username)');
+    $getId = db_prepare('SELECT `user_id` FROM `msz_users` WHERE LOWER(`username`) = LOWER(:username)');
     $getId->bindValue('username', $username);
     return $getId->execute() ? (int)$getId->fetchColumn() : 0;
 }
 
 function user_bump_last_active(int $userId, string $ipAddress = null): void
 {
-    $bumpUserLast = Database::prepare('
+    $bumpUserLast = db_prepare('
         UPDATE `msz_users`
         SET `last_seen` = NOW(),
             `last_ip` = INET6_ATON(:last_ip)
@@ -117,7 +117,7 @@ function user_set_about_page(int $userId, string $content, int $parser = MSZ_PAR
         return MSZ_USER_ABOUT_TOO_LONG;
     }
 
-    $setAbout = Database::prepare('
+    $setAbout = db_prepare('
         UPDATE `msz_users`
         SET `user_about_content` = :content,
             `user_about_parser` = :parser
@@ -305,7 +305,7 @@ function user_background_set_settings(int $userId, int $settings): void
         return;
     }
 
-    $setAttrs = Database::prepare('
+    $setAttrs = db_prepare('
         UPDATE `msz_users`
         SET `user_background_settings` = :settings
         WHERE `user_id` = :user

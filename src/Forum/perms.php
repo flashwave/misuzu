@@ -70,7 +70,7 @@ function forum_perms_get_user(string $prefix, int $forum, int $user): int
         //return 0x7FFFFFFF;
     }
 
-    $getPerms = Database::prepare(forum_perms_get_user_sql($prefix));
+    $getPerms = db_prepare(forum_perms_get_user_sql($prefix));
     $getPerms->bindValue('perm_forum_id', $forum);
     $getPerms->bindValue('perm_user_id_user', $user);
     $getPerms->bindValue('perm_user_id_role', $user);
@@ -83,7 +83,7 @@ function forum_perms_get_role(string $prefix, int $forum, int $role): int
         return 0;
     }
 
-    $getPerms = Database::prepare("
+    $getPerms = db_prepare("
         SELECT BIT_OR(`{$prefix}_perms`)
         FROM `msz_forum_permissions_view`
         WHERE (`forum_id` = :forum_id OR `forum_id` IS NULL)
@@ -103,7 +103,7 @@ function forum_perms_get_user_raw(?int $forum, int $user): array
         return $emptyPerms;
     }
 
-    $getPerms = Database::prepare(sprintf('
+    $getPerms = db_prepare(sprintf('
         SELECT
             `' . implode('`, `', forum_perms_get_keys()) . '`
         FROM `msz_forum_permissions`
@@ -139,7 +139,7 @@ function forum_perms_get_role_raw(?int $forum, ?int $role): array
         return $emptyPerms;
     }
 
-    $getPerms = Database::prepare(sprintf(
+    $getPerms = db_prepare(sprintf(
         '
             SELECT
                 `' . implode('`, `', forum_perms_get_keys()) . '`

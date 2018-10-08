@@ -15,12 +15,12 @@ switch ($_GET['v'] ?? null) {
         }
 
         $changesTake = 30;
-        $changesCount = (int)Database::query('
+        $changesCount = (int)db_query('
             SELECT COUNT(`change_id`)
             FROM `msz_changelog_changes`
         ')->fetchColumn();
 
-        $getChanges = Database::prepare('
+        $getChanges = db_prepare('
             SELECT
                 c.`change_id`, c.`change_log`, c.`change_created`,
                 a.`action_name`, a.`action_colour`, a.`action_class`,
@@ -42,7 +42,7 @@ switch ($_GET['v'] ?? null) {
         $getChanges->bindValue('offset', $queryOffset);
         $changes = $getChanges->execute() ? $getChanges->fetchAll(PDO::FETCH_ASSOC) : [];
 
-        $getTags = Database::prepare('
+        $getTags = db_prepare('
             SELECT
                 t.`tag_id`, t.`tag_name`, t.`tag_description`
             FROM `msz_changelog_change_tags` as ct
@@ -76,7 +76,7 @@ switch ($_GET['v'] ?? null) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify('changelog_add', $_POST['csrf'] ?? '')) {
             if (!empty($_POST['change']) && is_array($_POST['change'])) {
                 if ($changeId > 0) {
-                    $postChange = Database::prepare('
+                    $postChange = db_prepare('
                         UPDATE `msz_changelog_changes`
                         SET `change_log` = :log,
                             `change_text` = :text,
@@ -87,7 +87,7 @@ switch ($_GET['v'] ?? null) {
                     ');
                     $postChange->bindValue('change_id', $changeId);
                 } else {
-                    $postChange = Database::prepare('
+                    $postChange = db_prepare('
                         INSERT INTO `msz_changelog_changes`
                             (
                                 `change_log`, `change_text`, `action_id`,
@@ -112,7 +112,7 @@ switch ($_GET['v'] ?? null) {
                 $postChange->execute();
 
                 if ($changeId < 1) {
-                    $changeId = Database::lastInsertId();
+                    $changeId = db_last_insert_id();
                     audit_log('CHANGELOG_ENTRY_CREATE', user_session_current('user_id', 0), [$changeId]);
                     header('Location: ?v=change&c=' . $changeId);
                     return;
@@ -122,7 +122,7 @@ switch ($_GET['v'] ?? null) {
             }
 
             if (!empty($_POST['add_tag']) && is_numeric($_POST['add_tag'])) {
-                $addTag = Database::prepare('REPLACE INTO `msz_changelog_change_tags` VALUES (:change_id, :tag_id)');
+                $addTag = db_prepare('REPLACE INTO `msz_changelog_change_tags` VALUES (:change_id, :tag_id)');
                 $addTag->bindValue('change_id', $changeId);
                 $addTag->bindValue('tag_id', $_POST['add_tag']);
 
@@ -135,7 +135,7 @@ switch ($_GET['v'] ?? null) {
             }
 
             if (!empty($_POST['remove_tag']) && is_numeric($_POST['remove_tag'])) {
-                $removeTag = Database::prepare('
+                $removeTag = db_prepare('
                     DELETE FROM `msz_changelog_change_tags`
                     WHERE `change_id` = :change_id
                     AND `tag_id` = :tag_id
@@ -152,14 +152,14 @@ switch ($_GET['v'] ?? null) {
             }
         }
 
-        $actions = Database::query('
+        $actions = db_query('
             SELECT `action_id`, `action_name`
             FROM `msz_changelog_actions`
         ')->fetchAll(PDO::FETCH_ASSOC);
         tpl_var('changelog_actions', $actions);
 
         if ($changeId > 0) {
-            $getChange = Database::prepare('
+            $getChange = db_prepare('
                 SELECT
                     `change_id`, `change_log`, `change_text`, `user_id`,
                     `action_id`, `change_created`
@@ -172,7 +172,7 @@ switch ($_GET['v'] ?? null) {
             if ($change) {
                 tpl_var('edit_change', $change);
 
-                $assignedTags = Database::prepare('
+                $assignedTags = db_prepare('
                     SELECT `tag_id`, `tag_name`
                     FROM `msz_changelog_tags`
                     WHERE `tag_id` IN (
@@ -184,7 +184,7 @@ switch ($_GET['v'] ?? null) {
                 $assignedTags->bindValue('change_id', $change['change_id']);
                 $assignedTags = $assignedTags->execute() ? $assignedTags->fetchAll(PDO::FETCH_ASSOC) : [];
 
-                $availableTags = Database::prepare('
+                $availableTags = db_prepare('
                     SELECT `tag_id`, `tag_name`
                     FROM `msz_changelog_tags`
                     WHERE `tag_archived` IS NULL
@@ -220,7 +220,7 @@ switch ($_GET['v'] ?? null) {
         }
 
         if ($canManageActions) {
-            $getActions = Database::prepare('
+            $getActions = db_prepare('
                 SELECT
                     a.`action_id`, a.`action_name`, a.`action_colour`,
                     (
@@ -235,7 +235,7 @@ switch ($_GET['v'] ?? null) {
         }
 
         if ($canManageTags) {
-            $getTags = Database::prepare('
+            $getTags = db_prepare('
                 SELECT
                     t.`tag_id`, t.`tag_name`, t.`tag_description`, t.`tag_created`,
                     (
@@ -263,7 +263,7 @@ switch ($_GET['v'] ?? null) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify('changelog_tag', $_POST['csrf'] ?? '')) {
             if (!empty($_POST['tag']) && is_array($_POST['tag'])) {
                 if ($tagId > 0) {
-                    $updateTag = Database::prepare('
+                    $updateTag = db_prepare('
                         UPDATE `msz_changelog_tags`
                         SET `tag_name` = :name,
                             `tag_description` = :description,
@@ -272,7 +272,7 @@ switch ($_GET['v'] ?? null) {
                     ');
                     $updateTag->bindValue('id', $tagId);
                 } else {
-                    $updateTag = Database::prepare('
+                    $updateTag = db_prepare('
                         INSERT INTO `msz_changelog_tags`
                             (`tag_name`, `tag_description`, `tag_archived`)
                         VALUES
@@ -287,7 +287,7 @@ switch ($_GET['v'] ?? null) {
                 $updateTag->execute();
 
                 if ($tagId < 1) {
-                    $tagId = Database::lastInsertId();
+                    $tagId = db_last_insert_id();
                     audit_log('CHANGELOG_TAG_EDIT', user_session_current('user_id', 0), [$tagId]);
                     header('Location: ?v=tag&t=' . $tagId);
                     return;
@@ -298,7 +298,7 @@ switch ($_GET['v'] ?? null) {
         }
 
         if ($tagId > 0) {
-            $getTag = Database::prepare('
+            $getTag = db_prepare('
                 SELECT `tag_id`, `tag_name`, `tag_description`, `tag_archived`, `tag_created`
                 FROM `msz_changelog_tags`
                 WHERE `tag_id` = :tag_id
@@ -328,7 +328,7 @@ switch ($_GET['v'] ?? null) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify('changelog_action', $_POST['csrf'] ?? '')) {
             if (!empty($_POST['action']) && is_array($_POST['action'])) {
                 if ($actionId > 0) {
-                    $updateAction = Database::prepare('
+                    $updateAction = db_prepare('
                         UPDATE `msz_changelog_actions`
                         SET `action_name` = :name,
                             `action_colour` = :colour,
@@ -337,7 +337,7 @@ switch ($_GET['v'] ?? null) {
                     ');
                     $updateAction->bindValue('id', $actionId);
                 } else {
-                    $updateAction = Database::prepare('
+                    $updateAction = db_prepare('
                         INSERT INTO `msz_changelog_actions`
                             (`action_name`, `action_colour`, `action_class`)
                         VALUES
@@ -361,7 +361,7 @@ switch ($_GET['v'] ?? null) {
                 $updateAction->execute();
 
                 if ($actionId < 1) {
-                    $actionId = Database::lastInsertId();
+                    $actionId = db_last_insert_id();
                     audit_log('CHANGELOG_ACTION_CREATE', user_session_current('user_id', 0), [$actionId]);
                     header('Location: ?v=action&a=' . $actionId);
                     return;
@@ -372,7 +372,7 @@ switch ($_GET['v'] ?? null) {
         }
 
         if ($actionId > 0) {
-            $getAction = Database::prepare('
+            $getAction = db_prepare('
                 SELECT `action_id`, `action_name`, `action_colour`, `action_class`
                 FROM `msz_changelog_actions`
                 WHERE `action_id` = :action_id

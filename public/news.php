@@ -14,7 +14,7 @@ tpl_vars([
 ]);
 
 if ($postId !== null) {
-    $getPost = Database::prepare('
+    $getPost = db_prepare('
         SELECT
             p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`, p.`comment_section_id`,
             c.`category_id`, c.`category_name`,
@@ -42,7 +42,7 @@ if ($postId !== null) {
 
         if ($commentsInfo) {
             $post['comment_section_id'] = $commentsInfo['category_id'];
-            Database::prepare('
+            db_prepare('
                 UPDATE `msz_news_posts`
                 SET `comment_section_id` = :comment_section_id
                 WHERE `post_id` = :post_id
@@ -65,7 +65,7 @@ if ($postId !== null) {
 }
 
 if ($categoryId !== null) {
-    $getCategory = Database::prepare('
+    $getCategory = db_prepare('
         SELECT
             c.`category_id`, c.`category_name`, c.`category_description`,
             COUNT(p.`post_id`) AS `posts_count`
@@ -83,7 +83,7 @@ if ($categoryId !== null) {
         return;
     }
 
-    $getPosts = Database::prepare('
+    $getPosts = db_prepare('
         SELECT
             p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
             c.`category_id`, c.`category_name`,
@@ -110,7 +110,7 @@ if ($categoryId !== null) {
     $getPosts->bindValue('category_id', $category['category_id'], PDO::PARAM_INT);
     $posts = $getPosts->execute() ? $getPosts->fetchAll() : false;
 
-    $getFeatured = Database::prepare('
+    $getFeatured = db_prepare('
         SELECT `post_id`, `post_title`
         FROM `msz_news_posts`
         WHERE `category_id` = :category_id
@@ -125,7 +125,7 @@ if ($categoryId !== null) {
     return;
 }
 
-$getCategories = Database::prepare('
+$getCategories = db_prepare('
     SELECT
         c.`category_id`, c.`category_name`,
         COUNT(p.`post_id`) AS count
@@ -138,7 +138,7 @@ $getCategories = Database::prepare('
 ');
 $categories = $getCategories->execute() ? $getCategories->fetchAll() : [];
 
-$postsCount = (int)Database::query('
+$postsCount = (int)db_query('
     SELECT COUNT(p.`post_id`) as `posts_count`
     FROM `msz_news_posts` as p
     LEFT JOIN `msz_news_categories` as c
@@ -154,7 +154,7 @@ if ($postsOffset < 0 || $postsOffset >= $postsCount) {
     return;
 }
 
-$getPosts = Database::prepare('
+$getPosts = db_prepare('
     SELECT
         p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
         c.`category_id`, c.`category_name`,

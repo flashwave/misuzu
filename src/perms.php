@@ -57,7 +57,7 @@ function perms_get_user(string $prefix, int $user): int
         return 0x7FFFFFFF;
     }
 
-    $getPerms = Database::prepare("
+    $getPerms = db_prepare("
         SELECT BIT_OR(`{$prefix}_perms_allow`) &~ BIT_OR(`{$prefix}_perms_deny`)
         FROM `msz_permissions`
         WHERE (`user_id` = :user_id_1 AND `role_id` IS NULL)
@@ -81,7 +81,7 @@ function perms_get_role(string $prefix, int $role): int
         return 0;
     }
 
-    $getPerms = Database::prepare("
+    $getPerms = db_prepare("
         SELECT `{$prefix}_perms_allow` &~ `{$prefix}_perms_deny`
         FROM `msz_permissions`
         WHERE `role_id` = :role_id
@@ -99,7 +99,7 @@ function perms_get_user_raw(int $user): array
         return $emptyPerms;
     }
 
-    $getPerms = Database::prepare('
+    $getPerms = db_prepare('
         SELECT
             `' . implode('`, `', perms_get_keys()) . '`
         FROM `msz_permissions`
@@ -129,7 +129,7 @@ function perms_get_role_raw(int $role): array
         return $emptyPerms;
     }
 
-    $getPerms = Database::prepare('
+    $getPerms = db_prepare('
         SELECT
             `' . implode('`, `', perms_get_keys()) . '`
         FROM `msz_permissions`

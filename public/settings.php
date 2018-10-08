@@ -257,7 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ) {
                 $updateAccountFields = [];
 
-                $fetchPassword = Database::prepare('
+                $fetchPassword = db_prepare('
                 SELECT `password`
                 FROM `msz_users`
                 WHERE `user_id` = :user_id
@@ -321,7 +321,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
 
                         if (count($updateAccountFields) > 0) {
-                            $updateUser = Database::prepare('
+                            $updateUser = db_prepare('
                                 UPDATE `msz_users`
                                 SET ' . pdo_prepare_array_update($updateAccountFields, true) . '
                                 WHERE `user_id` = :user_id
@@ -350,7 +350,7 @@ switch ($settingsMode) {
     case 'account':
         $profileFields = user_profile_fields_get();
 
-        $getAccountInfo = Database::prepare(sprintf(
+        $getAccountInfo = db_prepare(sprintf(
             '
                 SELECT
                     %1$s, `email`, `user_about_content`, `user_about_parser`,
@@ -383,7 +383,7 @@ switch ($settingsMode) {
         break;
 
     case 'sessions':
-        $getSessionCount = Database::prepare('
+        $getSessionCount = db_prepare('
             SELECT COUNT(`session_id`)
             FROM `msz_sessions`
             WHERE `user_id` = :user_id
@@ -391,7 +391,7 @@ switch ($settingsMode) {
         $getSessionCount->bindValue('user_id', $settingsUserId);
         $sessionCount = $getSessionCount->execute() ? $getSessionCount->fetchColumn() : 0;
 
-        $getSessions = Database::prepare('
+        $getSessions = db_prepare('
             SELECT
                 `session_id`, `session_country`, `user_agent`, `created_at`, `expires_on`,
                 INET6_NTOA(`session_ip`) as `session_ip_decoded`
@@ -418,7 +418,7 @@ switch ($settingsMode) {
         $loginAttemptsOffset = max(0, $_GET['lo'] ?? 0);
         $auditLogOffset = max(0, $_GET['ao'] ?? 0);
 
-        $getLoginAttemptsCount = Database::prepare('
+        $getLoginAttemptsCount = db_prepare('
             SELECT COUNT(`attempt_id`)
             FROM `msz_login_attempts`
             WHERE `user_id` = :user_id
@@ -426,7 +426,7 @@ switch ($settingsMode) {
         $getLoginAttemptsCount->bindValue('user_id', $settingsUserId);
         $loginAttemptsCount = $getLoginAttemptsCount->execute() ? $getLoginAttemptsCount->fetchColumn() : 0;
 
-        $getLoginAttempts = Database::prepare('
+        $getLoginAttempts = db_prepare('
             SELECT
                 `attempt_id`, `attempt_country`, `was_successful`, `user_agent`, `created_at`,
                 INET6_NTOA(`attempt_ip`) as `attempt_ip_decoded`

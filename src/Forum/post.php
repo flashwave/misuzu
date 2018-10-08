@@ -9,7 +9,7 @@ function forum_post_create(
     string $text,
     int $parser = MSZ_PARSER_PLAIN
 ): int {
-    $createPost = Database::prepare('
+    $createPost = db_prepare('
         INSERT INTO `msz_forum_posts`
             (`topic_id`, `forum_id`, `user_id`, `post_ip`, `post_text`, `post_parse`)
         VALUES
@@ -22,12 +22,12 @@ function forum_post_create(
     $createPost->bindValue('post_text', $text);
     $createPost->bindValue('post_parse', $parser);
 
-    return $createPost->execute() ? Database::lastInsertId() : 0;
+    return $createPost->execute() ? db_last_insert_id() : 0;
 }
 
 function forum_post_find(int $postId): array
 {
-    $getPostInfo = Database::prepare('
+    $getPostInfo = db_prepare('
         SELECT
         :post_id as `target_post_id`,
         (
@@ -70,7 +70,7 @@ define('MSZ_FORUM_POST_LISTING_QUERY_PAGINATED', MSZ_FORUM_POST_LISTING_QUERY_ST
 function forum_post_listing(int $topicId, int $offset = 0, int $take = 0): array
 {
     $hasPagination = $offset >= 0 && $take > 0;
-    $getPosts = Database::prepare(
+    $getPosts = db_prepare(
         $hasPagination
         ? MSZ_FORUM_POST_LISTING_QUERY_PAGINATED
         : MSZ_FORUM_POST_LISTING_QUERY_STANDARD
