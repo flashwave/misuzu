@@ -1,0 +1,37 @@
+.chat-quote {
+    display: block;
+    background-color: #212121;
+    border: 1px solid #808080;
+    color: #fff;
+    margin: 1px;
+
+    &__line {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 1px 4px;
+
+        &:nth-child(odd) {
+            background-color: #0009;
+        }
+    }
+
+    &__time {
+        font-size: .8em;
+        margin: 0 4px 0 2px;
+    }
+
+    &__username {
+        color: var(--user-colour);
+        font-weight: 700;
+        text-decoration: none;
+
+        &[href]:hover {
+            text-decoration: underline;
+        }
+    }
+
+    &__text {
+        width: 100%;
+        flex: 1 0 auto;
+    }
+}

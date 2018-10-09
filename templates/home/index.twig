@@ -1,12 +1,20 @@
 {% extends 'home/master.twig' %}
 {% from 'news/macros.twig' import news_preview %}
 {% from 'changelog/macros.twig' import changelog_listing %}
+{% from 'home/macros.twig' import chat_quote_display %}
 
 {% set canonical_url = '/' %}
 
 {% block content %}
     <div class="index">
         <div class="index__sidebar">
+            {% if chat_quote is defined and chat_quote is iterable and chat_quote|length > 0 %}
+                <div class="container">
+                    <div class="container__title">Chat quote from {{ chat_quote[0].quote_timestamp|date('Y-m-d') }}</div>
+                    {{ chat_quote_display(chat_quote) }}
+                </div>
+            {% endif %}
+
             <div class="container">
                 <div class="container__title">Statistics</div>
                 <div class="container__content">

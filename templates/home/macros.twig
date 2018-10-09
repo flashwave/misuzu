@@ -1,0 +1,18 @@
+{# the HTML looks a bit odd, but it's to make copying the text work as expected #}
+{% macro chat_quote_display(lines) %}
+    <div class="chat-quote">{% spaceless %}
+        {% for line in lines %}
+            <div class="chat-quote__line">
+                <span class="chat-quote__time">({{ line.quote_timestamp|date('H:i:s') }}) </span>
+                <span><a class="chat-quote__username" style="{{ line.quote_user_colour|html_colour }}"
+                    {% if line.quote_user_id is not null %}href="/profile.php?u={{ line.quote_user_id }}"{% endif %}>{% spaceless %}
+                    {{ line.quote_username }}
+                {% endspaceless %}</a></span>
+                <span class="chat-quote__separator">: </span>
+                <span class="chat-quote__text">{% spaceless %}
+                    {{ line.quote_text }}
+                {% endspaceless %}</span>
+            </div>
+        {% endfor %}
+    {% endspaceless %}</div>
+{% endmacro %}

@@ -84,6 +84,7 @@ echo tpl_render('home.index', [
     'users_count' => $statistics['users'],
     'last_user' => $statistics['lastUser'],
     'online_users' => $onlineUsers,
+    'chat_quote' => chat_quotes_random(),
     'featured_changelog' => $changelog,
     'featured_news' => $news,
 ]);

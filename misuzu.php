@@ -30,6 +30,7 @@ require_once 'src/array.php';
 require_once 'src/audit_log.php';
 require_once 'src/cache.php';
 require_once 'src/changelog.php';
+require_once 'src/chat_quotes.php';
 require_once 'src/colour.php';
 require_once 'src/comments.php';
 require_once 'src/config.php';
