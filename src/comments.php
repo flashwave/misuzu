@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 require_once 'Users/validation.php';
 
 define('MSZ_PERM_COMMENTS_CREATE', 1);

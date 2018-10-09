@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 // Minimum username length.
 define('MSZ_USERNAME_MIN_LENGTH', 3);
 

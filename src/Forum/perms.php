@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 define('MSZ_FORUM_PERMS_GENERAL', 'forum');
 
 define('MSZ_FORUM_PERM_MODES', [

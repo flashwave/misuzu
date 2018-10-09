@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 require_once '../misuzu.php';
 
 if (empty($_SERVER['HTTP_REFERER']) || !is_local_url($_SERVER['HTTP_REFERER'])) {

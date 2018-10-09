@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 define('MSZ_ROLE_MAIN', 1);
 
 function user_role_add(int $userId, int $roleId): bool

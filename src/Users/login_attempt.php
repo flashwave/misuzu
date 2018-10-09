@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 function user_login_attempt_record(bool $success, ?int $userId, string $ipAddress, string $userAgent): void
 {
     $storeAttempt = db_prepare('

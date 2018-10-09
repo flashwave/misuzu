@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 define('MSZ_USER_RELATION_FOLLOW', 1);
 
 define('MSZ_USER_RELATION_TYPES', [

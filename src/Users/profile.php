@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 define('MSZ_USER_PROFILE_SET_ERROR', '_err');
 define('MSZ_USER_PROFILE_INVALID_FIELD', 1);
 define('MSZ_USER_PROFILE_FILTER_FAILED', 2);

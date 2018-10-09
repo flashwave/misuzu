@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 define('MSZ_TOPIC_TYPE_DISCUSSION', 0);
 define('MSZ_TOPIC_TYPE_STICKY', 1);
 define('MSZ_TOPIC_TYPE_ANNOUNCEMENT', 2);

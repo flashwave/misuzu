@@ -1,7 +1,4 @@
 <?php
-use Misuzu\Cache;
-use Misuzu\Database;
-
 require_once '../misuzu.php';
 
 if (config_get_default(false, 'Site', 'embed_linked_data')) {

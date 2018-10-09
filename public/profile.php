@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 $mode = (string)($_GET['m'] ?? null);
 $misuzuBypassLockdown = $mode === 'avatar';
 

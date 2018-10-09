@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 require_once '../misuzu.php';
 
 $categoryId = isset($_GET['c']) ? (int)$_GET['c'] : null;

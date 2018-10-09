@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 define('MSZ_PERMS_GENERAL', 'general');
 define('MSZ_PERMS_USER', 'user');
 define('MSZ_PERMS_CHANGELOG', 'changelog');

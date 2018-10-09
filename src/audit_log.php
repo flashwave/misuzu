@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 function audit_log(
     string $action,
     int $userId = 0,
