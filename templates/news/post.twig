@@ -3,6 +3,7 @@
 
 {% set title = post.post_title ~ ' :: News' %}
 {% set canonical_url = '/news.php?p=' ~ post.post_id %}
+{% set manage_link = '/manage/news.php?v=post&p=' ~ post.post_id %}
 
 {% block content %}
     <div class="container news__post">

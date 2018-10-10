@@ -3,6 +3,7 @@
 {% from 'news/macros.twig' import news_preview %}
 
 {% set title = category.category_name ~ ' :: News' %}
+{% set manage_link = '/manage/news.php?v=category&c=' ~ category.category_id %}
 {% set canonical_url = '/news.php'|url_construct({
     'c': category.category_id,
     'o': posts_offset,

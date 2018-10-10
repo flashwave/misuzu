@@ -4,6 +4,9 @@ require_once '../../misuzu.php';
 $newsPerms = perms_get_user(MSZ_PERMS_NEWS, user_session_current('user_id', 0));
 
 switch ($_GET['v'] ?? null) {
+    case 'index':
+        break;
+
     case 'posts':
         if (!perms_check($newsPerms, MSZ_PERM_NEWS_MANAGE_POSTS)) {
             echo render_error(403);
