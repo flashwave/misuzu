@@ -12,25 +12,9 @@ tpl_vars([
 ]);
 
 if ($postId !== null) {
-    $getPost = db_prepare('
-        SELECT
-            p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`, p.`comment_section_id`,
-            c.`category_id`, c.`category_name`,
-            u.`user_id`, u.`username`,
-            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-        FROM `msz_news_posts` as p
-        LEFT JOIN `msz_news_categories` as c
-        ON p.`category_id` = c.`category_id`
-        LEFT JOIN `msz_users` as u
-        ON p.`user_id` = u.`user_id`
-        LEFT JOIN `msz_roles` as r
-        ON u.`display_role` = r.`role_id`
-        WHERE `post_id` = :post_id
-    ');
-    $getPost->bindValue(':post_id', $postId, PDO::PARAM_INT);
-    $post = $getPost->execute() ? $getPost->fetch() : false;
+    $post = news_post_get($postId);
 
-    if ($post === false) {
+    if (!$post) {
         echo render_error(404);
         return;
     }
@@ -40,14 +24,10 @@ if ($postId !== null) {
 
         if ($commentsInfo) {
             $post['comment_section_id'] = $commentsInfo['category_id'];
-            db_prepare('
-                UPDATE `msz_news_posts`
-                SET `comment_section_id` = :comment_section_id
-                WHERE `post_id` = :post_id
-            ')->execute([
-                'comment_section_id' => $post['comment_section_id'],
-                'post_id' => $post['post_id'],
-            ]);
+            news_post_comments_set(
+                $post['post_id'],
+                $post['comment_section_id'] = $commentsInfo['category_id']
+            );
         }
     } else {
         $commentsInfo = comments_category_info($post['comment_section_id']);
@@ -63,87 +43,27 @@ if ($postId !== null) {
 }
 
 if ($categoryId !== null) {
-    $getCategory = db_prepare('
-        SELECT
-            c.`category_id`, c.`category_name`, c.`category_description`,
-            COUNT(p.`post_id`) AS `posts_count`
-        FROM `msz_news_categories` as c
-        LEFT JOIN `msz_news_posts` as p
-        ON c.`category_id` = p.`category_id`
-        WHERE c.`category_id` = :category_id
-        GROUP BY c.`category_id`
-    ');
-    $getCategory->bindValue(':category_id', $categoryId, PDO::PARAM_INT);
-    $category = $getCategory->execute() ? $getCategory->fetch() : false;
+    $category = news_categories_single($categoryId, true);
 
-    if ($category === false || $postsOffset < 0 || $postsOffset >= $category['posts_count']) {
+    if (!$category || $postsOffset < 0 || $postsOffset >= $category['posts_count']) {
         echo render_error(404);
         return;
     }
 
-    $getPosts = db_prepare('
-        SELECT
-            p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
-            c.`category_id`, c.`category_name`,
-            u.`user_id`, u.`username`,
-            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
-            (
-                SELECT COUNT(`comment_id`)
-                FROM `msz_comments_posts`
-                WHERE `category_id` = `comment_section_id`
-            ) as `post_comments`
-        FROM `msz_news_posts` as p
-        LEFT JOIN `msz_news_categories` as c
-        ON p.`category_id` = c.`category_id`
-        LEFT JOIN `msz_users` as u
-        ON p.`user_id` = u.`user_id`
-        LEFT JOIN `msz_roles` as r
-        ON u.`display_role` = r.`role_id`
-        WHERE p.`category_id` = :category_id
-        ORDER BY `created_at` DESC
-        LIMIT :offset, :take
-    ');
-    $getPosts->bindValue('offset', $postsOffset);
-    $getPosts->bindValue('take', $postsTake);
-    $getPosts->bindValue('category_id', $category['category_id'], PDO::PARAM_INT);
-    $posts = $getPosts->execute() ? $getPosts->fetchAll() : false;
+    $posts = news_posts_get(
+        $postsOffset,
+        $postsTake,
+        $category['category_id']
+    );
 
-    $getFeatured = db_prepare('
-        SELECT `post_id`, `post_title`
-        FROM `msz_news_posts`
-        WHERE `category_id` = :category_id
-        AND `is_featured` = true
-        ORDER BY `created_at` DESC
-        LIMIT 10
-    ');
-    $getFeatured->bindValue('category_id', $category['category_id'], PDO::PARAM_INT);
-    $featured = $getFeatured->execute() ? $getFeatured->fetchAll() : [];
+    $featured = news_posts_get(0, 10, $category['category_id'], true);
 
     echo tpl_render('news.category', compact('category', 'posts', 'featured'));
     return;
 }
 
-$getCategories = db_prepare('
-    SELECT
-        c.`category_id`, c.`category_name`,
-        COUNT(p.`post_id`) AS count
-    FROM `msz_news_categories` as c
-    LEFT JOIN `msz_news_posts` as p
-    ON c.`category_id` = p.`category_id`
-    WHERE `is_hidden` = false
-    GROUP BY c.`category_id`
-    HAVING count > 0
-');
-$categories = $getCategories->execute() ? $getCategories->fetchAll() : [];
-
-$postsCount = (int)db_query('
-    SELECT COUNT(p.`post_id`) as `posts_count`
-    FROM `msz_news_posts` as p
-    LEFT JOIN `msz_news_categories` as c
-    ON p.`category_id` = c.`category_id`
-    WHERE p.`is_featured` = true
-    AND c.`is_hidden` = false
-')->fetchColumn();
+$categories = news_categories_get(0, 0, true);
+$postsCount = news_posts_count(null, true);
 
 tpl_var('posts_count', $postsCount);
 
@@ -152,32 +72,12 @@ if ($postsOffset < 0 || $postsOffset >= $postsCount) {
     return;
 }
 
-$getPosts = db_prepare('
-    SELECT
-        p.`post_id`, p.`post_title`, p.`post_text`, p.`created_at`,
-        c.`category_id`, c.`category_name`,
-        u.`user_id`, u.`username`,
-        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
-        (
-            SELECT COUNT(`comment_id`)
-            FROM `msz_comments_posts`
-            WHERE `category_id` = `comment_section_id`
-        ) as `post_comments`
-    FROM `msz_news_posts` as p
-    LEFT JOIN `msz_news_categories` as c
-    ON p.`category_id` = c.`category_id`
-    LEFT JOIN `msz_users` as u
-    ON p.`user_id` = u.`user_id`
-    LEFT JOIN `msz_roles` as r
-    ON u.`display_role` = r.`role_id`
-    WHERE p.`is_featured` = true
-    AND c.`is_hidden` = false
-    ORDER BY p.`created_at` DESC
-    LIMIT :offset, :take
-');
-$getPosts->bindValue('offset', $postsOffset);
-$getPosts->bindValue('take', $postsTake);
-$posts = $getPosts->execute() ? $getPosts->fetchAll() : [];
+$posts = news_posts_get(
+    $postsOffset,
+    $postsTake,
+    null,
+    true
+);
 
 if (!$posts) {
     echo render_error(404);
