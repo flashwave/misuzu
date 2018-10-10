@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 define('MSZ_PERM_FORUM_MANAGE_FORUMS', 1);
 
 define('MSZ_FORUM_PERM_LIST_FORUM', 1); // can see stats, but will get error when trying to view

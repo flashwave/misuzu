@@ -13,6 +13,7 @@ function manage_get_menu(int $userId): array
 
     $menu = [];
     $menu['General']['Overview'] = '/manage/index.php?v=overview';
+    $menu['General']['Quotes'] = '/manage/index.php?v=quotes';
 
     if (perms_check($perms['general'], MSZ_PERM_GENERAL_VIEW_LOGS)) {
         $menu['General']['Logs'] = '/manage/index.php?v=logs';

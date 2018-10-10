@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 define('MSZ_PERM_CHANGELOG_MANAGE_CHANGES', 1);
 define('MSZ_PERM_CHANGELOG_MANAGE_TAGS', 1 << 1);
 define('MSZ_PERM_CHANGELOG_MANAGE_ACTIONS', 1 << 2);

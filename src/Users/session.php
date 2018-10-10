@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 define('MSZ_SESSION_DATA_STORE', '_msz_user_session_data');
 define('MSZ_SESSION_KEY_SIZE', 64);
 

@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 $isSubmission = !empty($_POST['auth']) && is_array($_POST['auth']);
 $authMode = $isSubmission ? ($_POST['auth']['mode'] ?? '') : ($_GET['m'] ?? 'login');
 $misuzuBypassLockdown = $authMode === 'login' || $authMode === 'get_user';
@@ -83,21 +81,7 @@ switch ($authMode) {
         tpl_var('auth_reset_message', "A verification code should've been sent to your e-mail address.");
 
         while ($isSubmission) {
-            $validateRequest = db_prepare('
-                SELECT COUNT(`user_id`) > 0
-                FROM `msz_users_password_resets`
-                WHERE `user_id` = :user
-                AND `verification_code` = :code
-                AND `verification_code` IS NOT NULL
-                AND `reset_requested` > NOW() - INTERVAL 1 HOUR
-            ');
-            $validateRequest->bindValue('user', $resetUser['user_id']);
-            $validateRequest->bindValue('code', $authVerification);
-            $validateRequest = $validateRequest->execute()
-                ? (bool)$validateRequest->fetchColumn()
-                : false;
-
-            if (!$validateRequest) {
+            if (!user_recovery_token_validate($resetUser['user_id'], $authVerification)) {
                 tpl_var('auth_reset_error', 'Invalid verification code!');
                 break;
             }
@@ -116,32 +100,13 @@ switch ($authMode) {
                 break;
             }
 
-            $updatePassword = db_prepare('
-                UPDATE `msz_users`
-                SET `password` = :password
-                WHERE `user_id` = :user
-            ');
-            $updatePassword->bindValue('user', $resetUser['user_id']);
-            $updatePassword->bindValue('password', user_password_hash($authPassword['new']));
-
-            if ($updatePassword->execute()) {
+            if (user_password_set($resetUser['user_id'], $authPassword['new'])) {
                 audit_log('PASSWORD_RESET', $resetUser['user_id']);
             } else {
                 throw new UnexpectedValueException('Password reset failed.');
             }
 
-            $invalidateCode = db_prepare('
-                UPDATE `msz_users_password_resets`
-                SET `verification_code` = NULL
-                WHERE `verification_code` = :code
-                AND `user_id` = :user
-            ');
-            $invalidateCode->bindValue('user', $resetUser['user_id']);
-            $invalidateCode->bindValue('code', $authVerification);
-
-            if (!$invalidateCode->execute()) {
-                throw new UnexpectedValueException('Verification code invalidation failed.');
-            }
+            user_recovery_token_invalidate($resetUser['user_id'], $authVerification);
 
             header('Location: /auth.php?m=login&u=' . $resetUser['user_id']);
             break;
@@ -183,33 +148,11 @@ switch ($authMode) {
             }
 
             $ipAddress = ip_remote_address();
-            $emailSent = db_prepare('
-                SELECT COUNT(`verification_code`) > 0
-                FROM `msz_users_password_resets`
-                WHERE `user_id` = :user
-                AND `reset_ip` = INET6_ATON(:ip)
-                AND `reset_requested` > NOW() - INTERVAL 1 HOUR
-                AND `verification_code` IS NOT NULL
-            ');
-            $emailSent->bindValue('user', $forgotUser['user_id']);
-            $emailSent->bindValue('ip', $ipAddress);
-            $emailSent = $emailSent->execute()
-                ? (bool)$emailSent->fetchColumn()
-                : false;
 
-            if (!$emailSent) {
-                $verificationCode = bin2hex(random_bytes(6));
-                $insertResetKey = db_prepare('
-                    REPLACE INTO `msz_users_password_resets`
-                        (`user_id`, `reset_ip`, `verification_code`)
-                    VALUES
-                        (:user, INET6_ATON(:ip), :code)
-                ');
-                $insertResetKey->bindValue('user', $forgotUser['user_id']);
-                $insertResetKey->bindValue('ip', $ipAddress);
-                $insertResetKey->bindValue('code', $verificationCode);
+            if (!user_recovery_token_sent($forgotUser['user_id'], $ipAddress)) {
+                $verificationCode = user_recovery_token_create($forgotUser['user_id'], $ipAddress);
 
-                if (!$insertResetKey->execute()) {
+                if (empty($verificationCode)) {
                     throw new UnexpectedValueException('A verification code failed to insert.');
                 }
 
@@ -231,6 +174,7 @@ MSG;
 
                 if (!mail_send($message)) {
                     tpl_var('auth_forgot_error', 'Failed to send reset email, please contact the administrator.');
+                    user_recovery_token_invalidate($forgotUser['user_id'], $verificationCode);
                     break;
                 }
             }

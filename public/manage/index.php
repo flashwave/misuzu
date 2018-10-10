@@ -19,6 +19,47 @@ switch ($_GET['v'] ?? null) {
         echo tpl_render('manage.general.logs');
         break;
 
+    case 'quotes':
+        $setId = (int)($_GET['s'] ?? '');
+        $quoteId = (int)($_GET['q'] ?? '');
+
+        if (!empty($_POST['quote']) && csrf_verify('add_quote', $_POST['csrf'] ?? '')) {
+            $quoteTime = strtotime($_POST['quote']['time'] ?? '');
+            $parentId = empty($_POST['quote']['parent']) ? null : (int)($_POST['quote']['parent']);
+
+            $quoteId = chat_quotes_add(
+                $_POST['quote']['text'] ?? null,
+                $_POST['quote']['user']['name'] ?? null,
+                empty($_POST['quote']['user']['colour']) ? MSZ_COLOUR_INHERIT : (int)($_POST['quote']['user']['colour']),
+                empty($_POST['quote']['user']['id']) ? null : (int)($_POST['quote']['user']['id']),
+                empty($_POST['quote']['parent']) || $_POST['quote']['id'] == $parentId ? null : (int)($_POST['quote']['parent']),
+                $quoteTime ? $quoteTime : null,
+                empty($_POST['quote']['id']) ? null : (int)($_POST['quote']['id'])
+            );
+
+            header('Location: ?v=quotes' . ($setId ? '&s=' . $setId : '&q=' . $quoteId));
+            break;
+        }
+
+        if ($quoteId) {
+            tpl_vars([
+                'current_quote' => chat_quotes_single($quoteId),
+                'quote_parent' => $setId,
+            ]);
+        } elseif ($setId > 0) {
+            tpl_var('quote_set', chat_quotes_set($setId));
+        }
+
+        $quoteCount = chat_quotes_count(true);
+        $quotes = chat_quotes_parents($_GET['o'] ?? 0);
+
+        echo tpl_render('manage.general.quotes', [
+            'quote_count' => $quoteCount,
+            'quote_offset' => (int)($_GET['o'] ?? 0),
+            'quote_parents' => $quotes,
+        ]);
+        break;
+
     case 'emoticons':
         if (!perms_check($generalPerms, MSZ_PERM_GENERAL_MANAGE_EMOTICONS)) {
             echo render_error(403);

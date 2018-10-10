@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 require_once '../misuzu.php';
 
 $queryOffset = (int)($_GET['o'] ?? 0);

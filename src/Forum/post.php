@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 function forum_post_create(
     int $topicId,
     int $forumId,

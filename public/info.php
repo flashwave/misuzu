@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Database;
-
 require_once '../misuzu.php';
 
 $pathInfo = $_SERVER['PATH_INFO'] ?? '';
