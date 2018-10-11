@@ -22,8 +22,8 @@
 
             <div class="news__preview__info">
                 <a href="/news.php?p={{ post.post_id }}" class="news__preview__link">
-                    <time class="news__preview__date" datetime="{{ post.created_at|date('c') }}" title="{{ post.created_at|date('r') }}">
-                        {{ post.created_at|time_diff }}
+                    <time class="news__preview__date" datetime="{{ post.post_created|date('c') }}" title="{{ post.post_created|date('r') }}">
+                        {{ post.post_created|time_diff }}
                     </time>
                 </a>
 

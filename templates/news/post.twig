@@ -36,22 +36,21 @@
                     <div class="news__post__info__name">
                         Posted
                     </div>
-                    <time class="news__post__info__value" datetime="{{ post.created_at|date('c') }}" title="{{ post.created_at|date('r') }}">
-                        {{ post.created_at|time_diff }}
+                    <time class="news__post__info__value" datetime="{{ post.post_created|date('c') }}" title="{{ post.post_created|date('r') }}">
+                        {{ post.post_created|time_diff }}
                     </time>
                 </div>
 
-                {# TODO: make this work
-                {% if post.updated_at is defined %}
+                {% if post.post_updated|date('U') > post.post_created|date('U') %}
                     <div class="news__post__detail news__post__info">
                         <div class="news__post__info__name">
                             Updated
                         </div>
-                        <div class="news__post__info__value">
-                            {{ post.updated_at }}
-                        </div>
+                        <time class="news__post__info__value" datetime="{{ post.post_updated|date('c') }}" title="{{ post.post_updated|date('r') }}">
+                            {{ post.post_updated|time_diff }}
+                        </time>
                     </div>
-                {% endif %} #}
+                {% endif %}
             </div>
         </div>
     </div>

@@ -43,7 +43,7 @@ if ($postId !== null) {
 }
 
 if ($categoryId !== null) {
-    $category = news_categories_single($categoryId, true);
+    $category = news_category_get($categoryId, true);
 
     if (!$category || $postsOffset < 0 || $postsOffset >= $category['posts_count']) {
         echo render_error(404);

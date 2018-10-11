@@ -1,0 +1,41 @@
+{% extends 'manage/news/master.twig' %}
+
+{% set is_new = post|length < 1 %}
+
+{% block manage_content %}
+    <form method="post" action="" class="container container--new">
+        <div class="container__title">{{ is_new ? 'New Post' : 'Editing ' ~ post.post_title }}</div>
+
+        {{ 'news_post'|csrf|raw }}
+        <input type="hidden" name="post[id]" value="{{ post.post_id|default(0) }}">
+
+        <table style="color:inherit">
+            <tr>
+                <td>Name</td>
+                <td><input type="text" required name="post[title]" class="input__text input__text--new" value="{{ post.post_title|default() }}"></td>
+            </tr>
+
+            <tr>
+                <td>Category</td>
+                <td>
+                    <select name="post[category]" class="input__select input__select--new">
+                        {% for category in categories %}
+                            <option value="{{ category.category_id }}" {% if category.category_id == post.category_id|default(0) %}selected{% endif %}>{{ category.category_name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Is Featured</td>
+                <td><input type="checkbox" name="post[featured]" {% if post.post_is_featured|default(false) %}checked{% endif %}></td>
+            </tr>
+
+            <tr>
+                <td colspan="2"><textarea name="post[text]" required class="input__textarea input__textarea--new">{{ post.post_text|default() }}</textarea></td>
+            </tr>
+        </table>
+
+        <button class="input__button input__button--new">Save</button>
+    </form>
+{% endblock %}

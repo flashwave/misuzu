@@ -1,0 +1,21 @@
+{% extends 'manage/news/master.twig' %}
+{% from 'macros.twig' import pagination %}
+
+{% block manage_content %}
+    <div class="container container--new">
+        <div class="container__title">Categories</div>
+
+        <a href="?v=category" class="input__button input__button--new">New Category</a>
+
+        {% for cat in news_categories %}
+            <p>
+                <a href="?v=category&amp;c={{ cat.category_id }}" class="input__button input__button--new">{{ cat.category_id }}</a>
+                {{ cat.category_name }},
+                {{ cat.category_is_hidden }},
+                {{ cat.category_created }}
+            </p>
+        {% endfor %}
+
+        {{ pagination(categories_count, categories_take, categories_offset, '?v=categories') }}
+    </div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'manage/news/master.twig' %}
+
+{% set is_new = category|length < 1 %}
+
+{% block manage_content %}
+    <form method="post" action="" class="container container--new">
+        <div class="container__title">{{ is_new ? 'New Category' : 'Editing ' ~ category.category_name }}</div>
+
+        {{ 'news_category'|csrf|raw }}
+        <input type="hidden" name="category[id]" value="{{ category.category_id|default(0) }}">
+
+        <table style="color:inherit">
+            <tr>
+                <td>Name</td>
+                <td><input type="text" required name="category[name]" class="input__text input__text--new" value="{{ category.category_name|default() }}"></td>
+            </tr>
+
+            <tr>
+                <td>Description</td>
+                <td><textarea name="category[description]" required class="input__textarea input__textarea--new">{{ category.category_description|default() }}</textarea></td>
+            </tr>
+
+            <tr>
+                <td>Is Hidden</td>
+                <td><input type="checkbox" name="category[hidden]" {% if category.category_is_hidden|default(false) %}checked{% endif %}></td>
+            </tr>
+        </table>
+
+        <button class="input__button input__button--new">Save</button>
+    </form>
+{% endblock %}
