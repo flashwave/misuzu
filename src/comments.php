@@ -215,6 +215,7 @@ define('MSZ_COMMENTS_CATEGORY_QUERY', '
     LEFT JOIN `msz_roles` as r
     ON r.`role_id` = u.`display_role`
     WHERE p.`category_id` = :category
+    AND p.`comment_deleted` IS NULL
     %s
     ORDER BY p.`comment_pinned` DESC, p.`comment_id` %s
 ');
