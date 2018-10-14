@@ -229,6 +229,7 @@ function news_posts_get(
                     SELECT COUNT(`comment_id`)
                     FROM `msz_comments_posts`
                     WHERE `category_id` = `comment_section_id`
+                    AND `comment_deleted` IS NULL
                 ) as `post_comments`
             FROM `msz_news_posts` as p
             LEFT JOIN `msz_news_categories` as c
