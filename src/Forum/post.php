@@ -53,7 +53,14 @@ define('MSZ_FORUM_POST_LISTING_QUERY_STANDARD', '
         u.`user_id` as `poster_id`,
         u.`username` as `poster_name`,
         u.`created_at` as `poster_joined`,
-        COALESCE(u.`user_colour`, r.`role_colour`) as `poster_colour`
+        u.`user_country` as `poster_country`,
+        COALESCE(u.`user_colour`, r.`role_colour`) as `poster_colour`,
+        (
+            SELECT COUNT(`post_id`)
+            FROM `msz_forum_posts`
+            WHERE `user_id` = p.`user_id`
+            AND `post_deleted` IS NULL
+        ) as `poster_post_count`
     FROM `msz_forum_posts` as p
     LEFT JOIN `msz_users` as u
     ON u.`user_id` = p.`user_id`

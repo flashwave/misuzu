@@ -130,7 +130,7 @@
 {% macro forum_topic_buttons(topic) %}
     <div class="forum__actions forum__actions__content">
         <a  href="#reply"
-            class="input__button forum__actions__button"
+            class="input__button input__button--new forum__actions__button"
             onclick="openContainer('reply')">Reply</a>
     </div>
 {% endmacro %}
@@ -263,40 +263,41 @@
     {% set is_original_post = is_original_post|default(false) %}
     {% set is_original_poster = is_original_poster|default(false) %}
 
-    <div class="forum__post" id="p{{ post.post_id }}">
-        {% if post.poster_id is not null %}
-            <div class="forum__post__author">
-                <a class="forum__post__author__link" href="/profile.php?u={{ post.poster_id }}">
-                    <div
-                        class="avatar forum__post__author__avatar"
-                        style="background-image:url('/profile.php?u={{ post.poster_id }}&amp;m=avatar');">
-                    </div>
-                    <div
-                        class="forum__post__author__username"
-                        style="{{ post.poster_colour|html_colour }}">{{ post.poster_name }}</div>
+    <div class="container container--new forum__post" id="p{{ post.post_id }}">
+        <div class="forum__post__info" style="{{ post.poster_colour|html_colour }}">
+            {% if post.poster_id is not null %}
+                <a class="avatar avatar--new forum__post__avatar"
+                    style="background-image:url('/profile.php?u={{ post.poster_id }}&amp;m=avatar');"
+                    href="/profile.php?u={{ post.poster_id }}">
                 </a>
-                <div class="forum__post__author__joined">
+
+                <a class="forum__post__username" href="/profile.php?u={{ post.poster_id }}">{{ post.poster_name }}</a>
+
+                <div class="forum__post__icons">
+                    <div class="flag flag--{{ post.poster_country|lower }}" title="{{ post.poster_country|country_name }}"></div>
+                    <div class="forum__post__posts-count">{{ post.poster_post_count|number_format }} posts</div>
+                </div>
+
+                <div class="forum__post__joined">
                     joined <time datetime="{{ post.poster_joined|date('c') }}" title="{{ post.poster_joined|date('r') }}">{{ post.poster_joined|time_diff }}</time>
                 </div>
-            </div>
-        {% else %}
-            <div class="forum__post__author forum__post__author--deleted">
-                <div class="forum__post__author__link">
-                    <div class="forum__post__author__username">Deleted User</div>
-                </div>
-            </div>
-        {% endif %}
+            {% else %}
+                <div class="forum__post__username">Deleted User</div>
+            {% endif %}
+        </div>
 
         <div class="forum__post__content">
-            <div class="forum__post__content__info">
-                <a class="forum__post__content__info__link" href="/forum/topic.php?t={{ post.topic_id }}#p{{ post.post_id }}">
+            <div class="forum__post__details">
+                <a class="forum__post__datetime" href="/forum/topic.php?t={{ post.topic_id }}#p{{ post.post_id }}">
                     <time datetime="{{ post.post_created|date('c') }}" title="{{ post.post_created|date('r') }}">{{ post.post_created|time_diff }}</time>
                 </a>
-                <a class="forum__post__content__info__link" href="/forum/topic.php?p={{ post.post_id }}#p{{ post.post_id }}">
+
+                <a class="forum__post__id" href="/forum/topic.php?p={{ post.post_id }}#p{{ post.post_id }}">
                     #{{ post.post_id }}
                 </a>
             </div>
-            <div class="forum__post__content__text">
+
+            <div class="forum__post__text">
                 {{ post.post_text|escape|parse_text(post.post_parse)|raw }}
             </div>
         </div>
