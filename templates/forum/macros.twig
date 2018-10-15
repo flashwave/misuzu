@@ -21,7 +21,7 @@
 {% macro forum_category_buttons(forum, perms) %}
     <div class="forum__actions forum__actions__content">
         {% if perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
-            <a href="/forum/posting.php?f={{ forum.forum_id }}" class="input__button forum__actions__button">New Topic</a>
+            <a href="/forum/posting.php?f={{ forum.forum_id }}" class="input__button input__button--new forum__actions__button">New Topic</a>
         {% endif %}
     </div>
 {% endmacro %}
@@ -137,14 +137,14 @@
 
 {% macro forum_topic_locked(locked, archived) %}
     {% if locked is not null or archived %}
-        <div class="forum__topic__locked">
-            <div class="forum__topic__locked__icon"></div>
-            <div class="forum__topic__locked__text">
+        <div class="forum__status">
+            <div class="forum__status__icon"></div>
+            <div class="forum__status__text">
                 {% if archived %}
-                    This topic has been <span class="forum__topic__locked__time">archived</span>.
+                    This topic has been <span class="forum__status__emphasis">archived</span>.
                 {% else %}
                     This topic was locked <time
-                        class="forum__topic__locked__time"
+                        class="forum__status__emphasis"
                         datetime="{{ locked|date('c') }}"
                         title="{{ locked|date('r') }}">{{ locked|time_diff }}</time>.
                 {% endif %}
@@ -172,29 +172,30 @@
     </div>
 {% endmacro %}
 
-{% macro forum_topic_entry(topic, topic_type, topic_unread, topic_icon) %}
+{% macro forum_topic_entry(topic, topic_type, topic_unread) %}
     {% set topic_type = topic_type|default(null) %}
     {% set topic_unread = topic_unread|default(topic.topic_unread|default(false)) ? 'unread' : 'read' %}
-    {% set topic_icon = topic_icon|default('https://static.flash.moe/images/topic-icons/topic-%s-%s.png') %}
 
     {% if topic_type is null %}
         {% if topic.topic_deleted is defined and topic.topic_deleted is not null %}
-            {% set topic_type = 'deleted' %}
+            {% set topic_type = 'fas fa-trash-alt' %}
         {% elseif topic.topic_type is defined and topic.topic_type != 0 %}
             {% if topic.topic_type == 2 %}
-                {% set topic_type = 'announcement' %}
+                {% set topic_type = 'fas fa-bullhorn' %}
             {% elseif topic.topic_type == 1 %}
-                {% set topic_type = 'pinned' %}
+                {% set topic_type = 'fas fa-thumbtack' %}
             {% endif %}
         {% elseif topic.topic_locked is defined and topic.topic_locked is not null %}
-            {% set topic_type = 'locked' %}
+            {% set topic_type = 'fas fa-lock' %}
         {% else %}
-            {% set topic_type = 'default' %}
+            {% set topic_type = 'fas fa-comment' %}
         {% endif %}
     {% endif %}
 
-    <div class="forum__topics__entry forum__topics__entry--{{ topic_type }}">
-        <img src="{{ topic_icon|format(topic_type, topic_unread) }}" alt="{{ topic_unread }}" class="forum__topics__entry__icon">
+    <div class="forum__topics__entry">
+        <div class="forum__topics__entry__icon forum__topics__entry__icon--{{ topic_unread }}">
+            <i class="{{ topic_type }}"></i>
+        </div>
 
         <div class="forum__topics__entry__info">
             <div class="forum__topics__entry__info__title forum__topics__entry__info__title--{{ topic_unread }}">
