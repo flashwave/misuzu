@@ -137,14 +137,16 @@
 
 {% macro forum_topic_locked(locked, archived) %}
     {% if locked is not null or archived %}
-        <div class="forum__status">
-            <div class="forum__status__icon"></div>
+        <div class="container container--new forum__status">
+            <div class="forum__status__icon">
+                <i class="fas fa-{{ archived ? 'archive' : 'lock' }}"></i>
+            </div>
             <div class="forum__status__text">
                 {% if archived %}
                     This topic has been <span class="forum__status__emphasis">archived</span>.
                 {% else %}
-                    This topic was locked <time
-                        class="forum__status__emphasis"
+                    This topic was locked
+                    <time class="forum__status__emphasis"
                         datetime="{{ locked|date('c') }}"
                         title="{{ locked|date('r') }}">{{ locked|time_diff }}</time>.
                 {% endif %}

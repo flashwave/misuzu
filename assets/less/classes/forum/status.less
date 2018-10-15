@@ -4,24 +4,21 @@
     align-items: center;
     min-height: 40px;
     margin-bottom: 2px;
-    box-shadow: 0 1px 2px var(--accent-colour);
 
     &__icon {
         height: 40px;
         width: 40px;
-        background-size: 35px;
-        background-image: url('https://static.flash.moe/images/topic-icons/topic-locked-read.png');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-color: var(--accent-colour);
-        flex-grow: 0;
-        flex-shrink: 0;
+        background-image: linear-gradient(90deg, var(--accent-colour), transparent);
+        flex: 0 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2em;
     }
 
     &__text {
-        margin: 0 10px;
-        flex-grow: 1;
-        flex-shrink: 1;
+        margin: 0 5px;
+        flex: 1 1 auto;
     }
 
     &__emphasis {
