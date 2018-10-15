@@ -1,142 +1,19 @@
 .forum__topics {
-    &__listing {
-        margin: 1px;
+    margin-bottom: 2px;
+    box-sizing: content-box;
+    overflow: auto;
+
+    &__empty {
+        font-size: 1.2em;
+        line-height: 1.5em;
+        text-align: center;
+        padding: 10px;
     }
 
-    &__none {
-        margin: 0 3px;
-    }
-
-    &__entry {
+    &__list {
         display: flex;
-        align-items: stretch;
-        min-height: 40px;
-
-        &:not(:first-child) {
-            margin-top: 1px;
-            padding-top: 1px;
-            border-top: 1px solid var(--accent-colour);
-        }
-
-        &__icon {
-            flex-shrink: 0;
-            flex-grow: 0;
-            align-self: center;
-        }
-
-        &__info {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            flex-grow: 1;
-            flex-shrink: 1;
-            padding: 0 2px;
-            word-wrap: break-word;
-            overflow: hidden;
-        }
-
-        &__stats,
-        &__activity {
-            display: flex;
-            flex-shrink: 0;
-            flex-grow: 0;
-            border-left: 1px solid var(--accent-colour);
-        }
-
-        &__info,
-        &__activity {
-            &__datetime,
-            &__title {
-                line-height: 1.4em;
-                margin-bottom: 2px;
-
-                &__link {
-                    text-decoration: none;
-                    color: inherit;
-
-                    &:hover {
-                        text-decoration: underline;
-                    }
-                }
-
-                &--unread {
-                    font-weight: 700;
-                }
-            }
-
-            &__author {
-                font-size: .9em;
-                line-height: 1.2em;
-
-                &__name {
-                    color: var(--user-colour);
-                    font-weight: 700;
-                    text-decoration: none;
-
-                    &:hover {
-                        text-decoration: underline;
-                    }
-                }
-            }
-        }
-
-        &__stat {
-            line-height: 1.2em;
-
-            &--posts {
-                font-size: 1.3em;
-                color: #111;
-            }
-
-            &--views {
-                font-size: 0.8em;
-                color: #555;
-            }
-
-            @media (max-width: @site-mobile-width) {
-                font-size: 1em;
-                margin: 0 4px;
-            }
-        }
-
-        &__stats {
-            text-align: center;
-            padding-left: 1px;
-            min-width: 70px;
-            flex-direction: column;
-            justify-content: center;
-
-            @media (max-width: @site-mobile-width) {
-                min-width: initial;
-                border-left-width: 0;
-                align-self: flex-end;
-                align-items: flex-end;
-            }
-        }
-
-        &__activity {
-            min-width: 200px;
-            padding-left: 3px;
-            align-items: center;
-
-            @media (max-width: @site-mobile-width) {
-                min-width: initial;
-                width: 120px;
-            }
-
-            &__info {
-                flex-grow: 1;
-                flex-shrink: 1;
-                margin-left: 3px;
-            }
-
-            &__avatar {
-                width: 40px;
-                height: 40px;
-                flex-grow: 0;
-                flex-shrink: 0;
-                margin: 1px;
-            }
-        }
+        flex-direction: column;
+        margin: 5px;
+        overflow: hidden;
     }
 }

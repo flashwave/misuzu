@@ -156,15 +156,15 @@
 {% macro forum_topic_listing(topics) %}
     {% from _self import forum_topic_entry %}
 
-    <div class="container forum__topics">
+    <div class="container container--new forum__topics">
         <div class="container__title">Topics</div>
-        <div class="forum__topics__listing">
+        <div class="forum__topics__list">
             {% if topics|length > 0 %}
                 {% for topic in topics %}
                     {{ forum_topic_entry(topic) }}
                 {% endfor %}
             {% else %}
-                <div class="forum__topics__none">
+                <div class="forum__topics__empty">
                     There are no topics in this forum.
                 </div>
             {% endif %}
@@ -192,61 +192,59 @@
         {% endif %}
     {% endif %}
 
-    <div class="forum__topics__entry">
-        <div class="forum__topics__entry__icon forum__topics__entry__icon--{{ topic_unread }}">
-            <i class="{{ topic_type }}"></i>
-        </div>
+    <div class="forum__topic">
+        <a href="/forum/topic.php?t={{ topic.topic_id }}" class="forum__topic__link"></a>
 
-        <div class="forum__topics__entry__info">
-            <div class="forum__topics__entry__info__title forum__topics__entry__info__title--{{ topic_unread }}">
-                <a href="/forum/topic.php?t={{ topic.topic_id }}" class="forum__topics__entry__info__title__link">{{ topic.topic_title }}</a>
+        <div class="forum__topic__container">
+            <div class="forum__topic__icon forum__topic__icon--{{ topic_unread }}">
+                <i class="{{ topic_type }}"></i>
             </div>
-            <div class="forum__topics__entry__info__author">
-                {% if topic.author_id is not null %}
-                    by <a
-                        href="/profile.php?u={{ topic.author_id }}"
-                        class="forum__topics__entry__info__author__name"
-                        style="{{ topic.author_colour|html_colour }}">{{ topic.author_name }}</a>,
 
-                {% endif %}
-                <time datetime="{{ topic.topic_created|date('c') }}" title="{{ topic.topic_created|date('r') }}">{{ topic.topic_created|time_diff }}</time>
-            </div>
-        </div>
+            <div class="forum__topic__details">
+                <div class="forum__topic__title">
+                    <span class="forum__topic__title__inner">
+                        {{ topic.topic_title }}
+                    </span>
+                </div>
 
-        <div class="forum__topics__entry__stats">
-            <div class="forum__topics__entry__stat forum__topics__entry__stat--posts" title="Posts">
-                {{ topic.topic_post_count|number_format }}
-            </div>
-            <div class="forum__topics__entry__stat forum__topics__entry__stat--views" title="Views">
-                {{ topic.topic_view_count|number_format }}
-            </div>
-        </div>
+                <div class="forum__topic__info">
+                    {% if topic.author_id is not null %}
+                        by <a
+                            href="/profile.php?u={{ topic.author_id }}"
+                            class="forum__topic__username"
+                            style="{{ topic.author_colour|html_colour }}">{{ topic.author_name }}</a>,
 
-        <div class="forum__topics__entry__activity">
-            <div class="forum__topics__entry__activity__info">
-                <div class="forum__topics__entry__activity__datetime">
-                    <a href="/forum/topic.php?p={{ topic.response_id }}#p{{ topic.response_id }}" class="forum__topics__entry__activity__datetime__link">
-                        <time
-                            datetime="{{ topic.response_created|date('c') }}"
+                    {% endif %}
+                    <time datetime="{{ topic.topic_created|date('c') }}" title="{{ topic.topic_created|date('r') }}">{{ topic.topic_created|time_diff }}</time>
+                </div>
+            </div>
+
+            <div class="forum__topic__stats">
+                <div class="forum__topic__stat" title="Posts">{{ topic.topic_post_count|number_format }}</div>
+                <div class="forum__topic__stat" title="Views">{{ topic.topic_view_count|number_format }}</div>
+            </div>
+
+            <div class="forum__topic__activity">
+                <div class="forum__topic__activity__details">
+                    {% if topic.respondent_id is not null %}
+                        <a href="/profile.php?u={{ topic.respondent_id }}" class="forum__topic__username"
+                            style="{{ topic.respondent_colour|html_colour }}">{{ topic.respondent_name }}</a>
+                    {% endif %}
+
+                    <a class="forum__topic__activity__post"
+                        href="/forum/topic.php?p={{ topic.response_id }}#p{{ topic.response_id }}">
+                        <time datetime="{{ topic.response_created|date('c') }}"
                             title="{{ topic.response_created|date('r') }}">{{ topic.response_created|time_diff }}</time>
                     </a>
                 </div>
+
                 {% if topic.respondent_id is not null %}
-                    <div class="forum__topics__entry__activity__author">
-                        by <a href="/profile.php?u={{ topic.respondent_id }}" class="forum__topics__entry__activity__author__name" style="{{ topic.respondent_colour|html_colour }}">
-                            {{ topic.respondent_name }}
-                        </a>
-                    </div>
+                    <a href="/profile.php?u={{ topic.respondent_id }}"
+                        class="avatar avatar--new forum__topic__avatar"
+                        style="background-image:url('/profile.php?u={{ topic.respondent_id }}&amp;m=avatar')">
+                    </a>
                 {% endif %}
             </div>
-
-            {% if topic.respondent_id is not null %}
-                <a
-                    href="/profile.php?u={{ topic.respondent_id }}"
-                    class="avatar forum__topics__entry__activity__avatar"
-                    style="background-image:url('/profile.php?u={{ topic.respondent_id }}&amp;m=avatar')">
-                </a>
-            {% endif %}
         </div>
     </div>
 {% endmacro %}
