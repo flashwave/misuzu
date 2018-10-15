@@ -6,7 +6,8 @@
         forum_post_listing,
         forum_topic_buttons,
         forum_topic_locked,
-        forum_posting_form
+        forum_posting_form,
+        forum_header
 %}
 
 {% set title = topic_info.topic_title %}
@@ -26,13 +27,7 @@
 ) %}
 
 {% block content %}
-    {{ navigation(topic_breadcrumbs, topic_breadcrumbs|last, true, null, 'left') }}
-
-    <div class="container">
-        <div class="container__title">
-            {{ topic_info.topic_title }}
-        </div>
-    </div>
+    {{ forum_header(topic_info.topic_title, topic_breadcrumbs) }}
 
     {{ forum_topic_locked(topic_info.topic_locked, topic_info.topic_archived) }}
 

@@ -1,0 +1,32 @@
+.forum__header {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 10px 15px;
+
+    &__title {
+        font-size: 2em;
+        line-height: 1.5em;
+    }
+
+    &__breadcrumbs {
+        display: flex;
+        font-size: 1.1em;
+        line-height: 1.5em;
+    }
+
+    &__breadcrumb {
+        color: var(--accent-colour);
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+
+        &__separator {
+            color: var(--accent-colour);
+            margin: 0 8px;
+            font-size: .9em;
+        }
+    }
+}

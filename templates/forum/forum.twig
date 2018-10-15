@@ -1,6 +1,6 @@
 {% extends 'forum/master.twig' %}
 {% from 'macros.twig' import navigation, pagination %}
-{% from 'forum/macros.twig' import forum_category_listing, forum_topic_listing, forum_category_buttons %}
+{% from 'forum/macros.twig' import forum_category_listing, forum_topic_listing, forum_category_buttons, forum_header %}
 
 {% set title = forum_info.forum_name %}
 {% set canonical_url = '/forum/forum.php'|url_construct({
@@ -9,7 +9,7 @@
 }) %}
 
 {% block content %}
-    {{ navigation(forum_breadcrumbs, forum_breadcrumbs|last, true, null, 'left') }}
+    {{ forum_header(forum_info.forum_name, forum_breadcrumbs, true) }}
 
     {% if forum_info.forum_subforums|length > 0 or forum_info.forum_type == 1 %}
         {{ forum_category_listing(forum_info.forum_subforums, 'Forums') }}
