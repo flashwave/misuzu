@@ -45,6 +45,7 @@ define('MSZ_FORUM_ROOT_DATA', [ // should be compatible with the data fetched in
     'forum_name' => 'Forums',
     'forum_children' => 0,
     'forum_type' => MSZ_FORUM_TYPE_CATEGORY,
+    'forum_colour' => null,
 ]);
 
 function forum_may_have_children(int $forumType): bool
@@ -61,7 +62,8 @@ function forum_fetch(int $forumId): array
 {
     $getForum = db_prepare('
         SELECT
-            `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_link_clicks`, `forum_parent`,
+            `forum_id`, `forum_name`, `forum_type`, `forum_link`,
+            `forum_link_clicks`, `forum_parent`, `forum_colour`,
             (
                 SELECT COUNT(`topic_id`)
                 FROM `msz_forum_topics`
@@ -87,7 +89,7 @@ function forum_get_root_categories(int $userId): array
 
     $getCategories = db_prepare("
         SELECT
-            f.`forum_id`, f.`forum_name`, f.`forum_type`,
+            f.`forum_id`, f.`forum_name`, f.`forum_type`, f.`forum_colour`,
             (
                 SELECT COUNT(`forum_id`)
                 FROM `msz_forum_categories` as sf
@@ -239,7 +241,7 @@ define(
         SELECT
             :user_id as `target_user_id`,
             f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`,
-            f.`forum_link`, f.`forum_link_clicks`, f.`forum_archived`,
+            f.`forum_link`, f.`forum_link_clicks`, f.`forum_archived`, f.`forum_colour`,
             t.`topic_id` as `recent_topic_id`, p.`post_id` as `recent_post_id`,
             t.`topic_title` as `recent_topic_title`, t.`topic_bumped` as `recent_topic_bumped`,
             p.`post_created` as `recent_post_created`,

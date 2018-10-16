@@ -8,7 +8,7 @@
     {% if not forum_empty %}
         {% for category in forum_categories %}
             {% if category.forum_children > 0 %}
-                {{ forum_category_listing(category.forum_subforums, category.forum_name) }}
+                {{ forum_category_listing(category.forum_subforums, category.forum_name, category.forum_colour) }}
             {% endif %}
         {% endfor %}
 

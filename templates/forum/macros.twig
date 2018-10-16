@@ -1,7 +1,7 @@
-{% macro forum_category_listing(forums, title) %}
+{% macro forum_category_listing(forums, title, colour) %}
     {% from _self import forum_category_entry %}
 
-    <div class="container container--new forum__categories">
+    <div class="container container--new forum__categories"{% if colour is not null %} style="{{ colour|html_colour('--accent-colour') }}"{% endif %}>
         <div class="container__title">{{ title }}</div>
 
         {% if forums|length > 0 %}
