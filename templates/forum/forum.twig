@@ -9,25 +9,27 @@
 }) %}
 
 {% block content %}
-    {{ forum_header(forum_info.forum_name, forum_breadcrumbs, true) }}
+    <div style="{{ forum_info.forum_colour|html_colour('--accent-colour') }}">
+        {{ forum_header(forum_info.forum_name, forum_breadcrumbs, true) }}
 
-    {% if forum_info.forum_subforums|length > 0 or forum_info.forum_type == 1 %}
-        {{ forum_category_listing(forum_info.forum_subforums, 'Forums') }}
-    {% endif %}
+        {% if forum_info.forum_subforums|length > 0 or forum_info.forum_type == 1 %}
+            {{ forum_category_listing(forum_info.forum_subforums, 'Forums') }}
+        {% endif %}
 
-    {% if forum_info.forum_type == 0 %}
-        {% set fcbuttons = current_user is defined ? forum_category_buttons(forum_info, forum_perms) : '' %}
-        {% set fcpagination = pagination(
-            forum_info.forum_topic_count,
-            forum_range,
-            forum_offset,
-            '/forum/forum.php'|url_construct({'f': forum_info.forum_id}), 'forum__'
-        ) %}
+        {% if forum_info.forum_type == 0 %}
+            {% set fcbuttons = current_user is defined ? forum_category_buttons(forum_info, forum_perms) : '' %}
+            {% set fcpagination = pagination(
+                forum_info.forum_topic_count,
+                forum_range,
+                forum_offset,
+                '/forum/forum.php'|url_construct({'f': forum_info.forum_id}), 'forum__'
+            ) %}
 
-        {{ fcbuttons }}
-        {{ fcpagination }}
-        {{ forum_topic_listing(forum_topics) }}
-        {{ fcpagination }}
-        {{ fcbuttons }}
-    {% endif %}
+            {{ fcbuttons }}
+            {{ fcpagination }}
+            {{ forum_topic_listing(forum_topics) }}
+            {{ fcpagination }}
+            {{ fcbuttons }}
+        {% endif %}
+    </div>
 {% endblock %}
