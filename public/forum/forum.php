@@ -32,19 +32,26 @@ if ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK) {
     return;
 }
 
-$topics = forum_may_have_topics($forum['forum_type'])
+$forumMayHaveTopics = forum_may_have_topics($forum['forum_type']);
+$topics = $forumMayHaveTopics
     ? forum_topic_listing($forum['forum_id'], user_session_current('user_id', 0), $topicsOffset, $topicsRange)
     : [];
 
-$forum['forum_subforums'] = forum_get_children($forum['forum_id'], user_session_current('user_id', 0));
+$forumMayHaveChildren = forum_may_have_children($forum['forum_type']);
 
-foreach ($forum['forum_subforums'] as $skey => $subforum) {
-    $forum['forum_subforums'][$skey]['forum_subforums']
-        = forum_get_children($subforum['forum_id'], user_session_current('user_id', 0), true);
+if ($forumMayHaveChildren) {
+    $forum['forum_subforums'] = forum_get_children($forum['forum_id'], user_session_current('user_id', 0));
+
+    foreach ($forum['forum_subforums'] as $skey => $subforum) {
+        $forum['forum_subforums'][$skey]['forum_subforums']
+            = forum_get_children($subforum['forum_id'], user_session_current('user_id', 0), true);
+    }
 }
 
 echo tpl_render('forum.forum', [
     'forum_breadcrumbs' => forum_get_breadcrumbs($forum['forum_id']),
+    'forum_may_have_topics' => $forumMayHaveTopics,
+    'forum_may_have_children' => $forumMayHaveChildren,
     'forum_info' => $forum,
     'forum_topics' => $topics,
     'forum_offset' => $topicsOffset,
