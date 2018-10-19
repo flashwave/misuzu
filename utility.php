@@ -1,4 +1,9 @@
 <?php
+function use_legacy_style(): void
+{
+    tpl_var('use_legacy_style', true);
+}
+
 function set_cookie_m(string $name, string $value, int $expires): void
 {
     setcookie(

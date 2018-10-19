@@ -260,6 +260,9 @@ MIG;
         'cache' => MSZ_DEBUG ? false : create_directory(build_path(sys_get_temp_dir(), 'msz-tpl-cache-' . md5(MSZ_ROOT))),
     ]);
 
+    // Remove this when the new style is kinda ready
+    use_legacy_style();
+
     tpl_var('globals', [
         'site_name' => config_get_default('Misuzu', 'Site', 'name'),
         'site_description' => config_get('Site', 'description'),
@@ -267,35 +270,35 @@ MIG;
         'site_url' => config_get('Site', 'url'),
     ]);
 
-    tpl_add_function('json_decode', true);
-    tpl_add_function('byte_symbol', true);
-    tpl_add_function('html_link', true);
-    tpl_add_function('html_colour', true);
-    tpl_add_function('url_construct', true);
-    tpl_add_function('country_name', true, 'get_country_name');
-    tpl_add_function('flip', true, 'array_flip');
-    tpl_add_function('first_paragraph', true);
-    tpl_add_function('colour_get_css', true);
-    tpl_add_function('colour_get_css_contrast', true);
-    tpl_add_function('colour_get_inherit', true);
-    tpl_add_function('colour_get_red', true);
-    tpl_add_function('colour_get_green', true);
-    tpl_add_function('colour_get_blue', true);
-    tpl_add_function('parse_line', true);
-    tpl_add_function('parse_text', true);
-    tpl_add_function('asset_url', true);
-    tpl_add_function('vsprintf', true);
-    tpl_add_function('perms_check', true);
-    tpl_add_function('bg_settings', true, 'user_background_settings_strings');
-    tpl_add_function('csrf', true, 'csrf_html');
+    tpl_add_filter('json_decode');
+    tpl_add_filter('byte_symbol');
+    tpl_add_filter('html_link');
+    tpl_add_filter('html_colour');
+    tpl_add_filter('url_construct');
+    tpl_add_filter('country_name', 'get_country_name');
+    tpl_add_filter('flip', 'array_flip');
+    tpl_add_filter('first_paragraph');
+    tpl_add_filter('colour_get_css');
+    tpl_add_filter('colour_get_css_contrast');
+    tpl_add_filter('colour_get_inherit');
+    tpl_add_filter('colour_get_red');
+    tpl_add_filter('colour_get_green');
+    tpl_add_filter('colour_get_blue');
+    tpl_add_filter('parse_line');
+    tpl_add_filter('parse_text');
+    tpl_add_filter('asset_url');
+    tpl_add_filter('vsprintf');
+    tpl_add_filter('perms_check');
+    tpl_add_filter('bg_settings', 'user_background_settings_strings');
+    tpl_add_filter('csrf', 'csrf_html');
 
     tpl_add_function('git_commit_hash');
     tpl_add_function('git_tag');
     tpl_add_function('csrf_token');
-    tpl_add_function('startup_time', false, function (float $time = MSZ_STARTUP) {
+    tpl_add_function('startup_time', function (float $time = MSZ_STARTUP) {
         return microtime(true) - $time;
     });
-    tpl_add_function('sql_query_count', false, 'db_query_count');
+    tpl_add_function('sql_query_count', 'db_query_count');
 
     tpl_add_path(MSZ_ROOT . '/templates');
 

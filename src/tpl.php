@@ -45,15 +45,14 @@ function tpl_sanitise_path(string $path): string
     return str_replace('.', '/', $path) . MSZ_TPL_FILE_EXT;
 }
 
-function tpl_add_function(string $name, bool $isFilter = false, callable $callable = null): void
+function tpl_add_function(string $name, callable $callable = null): void
 {
-    $twig = Twig::instance();
+    Twig::instance()->addFunction(new Twig_SimpleFunction($name, $callable === null ? $name : $callable));
+}
 
-    if ($isFilter) {
-        $twig->addFilter(new Twig_SimpleFilter($name, $callable === null ? $name : $callable));
-    } else {
-        $twig->addFunction(new Twig_SimpleFunction($name, $callable === null ? $name : $callable));
-    }
+function tpl_add_filter(string $name, callable $callable = null): void
+{
+    Twig::instance()->addFilter(new Twig_SimpleFilter($name, $callable === null ? $name : $callable));
 }
 
 function tpl_exists(string $path): bool
