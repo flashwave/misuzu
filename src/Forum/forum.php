@@ -189,19 +189,16 @@ function forum_read_status_sql(
             AND
                 %3$s >= NOW() - INTERVAL 1 MONTH
             AND (
-                SELECT COUNT(ti.`topic_id`) < (
-                    SELECT COUNT(`topic_id`)
-                    FROM `msz_forum_topics`
-                    WHERE `forum_id` = %4$s
-                    AND `topic_bumped` >= NOW() - INTERVAL 1 MONTH
-                    AND `topic_deleted` IS NULL
-                )
+                SELECT COUNT(tt.`topic_id`)
                 FROM `msz_forum_topics_track` as tt
                 RIGHT JOIN `msz_forum_topics` as ti
                 ON ti.`topic_id` = tt.`topic_id`
                 WHERE ti.`forum_id` = %4$s
                 AND tt.`user_id` = %1$s
-                AND  `track_last_read` >= `topic_bumped`
+                AND (
+                    tt.`track_last_read` IS NULL
+                    OR tt.`track_last_read` < ti.`topic_bumped`
+                )
             )
         ',
         $user_param,
