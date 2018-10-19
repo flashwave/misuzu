@@ -177,6 +177,7 @@ function forum_increment_clicks(int $forumId): void
 function forum_read_status_sql(
     string $topic_id_param,
     string $topic_bumped_param,
+    string $user_param_sub,
     string $forum_id_param = 'f.`forum_id`',
     string $user_param = '`target_user_id`'
 ): string {
@@ -189,12 +190,12 @@ function forum_read_status_sql(
             AND
                 %3$s >= NOW() - INTERVAL 1 MONTH
             AND (
-                SELECT COUNT(tt.`topic_id`)
-                FROM `msz_forum_topics_track` as tt
-                RIGHT JOIN `msz_forum_topics` as ti
-                ON ti.`topic_id` = tt.`topic_id`
+                SELECT COUNT(ti.`topic_id`)
+                FROM `msz_forum_topics` AS ti
+                LEFT JOIN `msz_forum_topics_track` AS tt
+                ON tt.`topic_id` = ti.`topic_id` AND tt.`user_id` = %5$s
                 WHERE ti.`forum_id` = %4$s
-                AND tt.`user_id` = %1$s
+                AND ti.`topic_deleted` IS NULL
                 AND (
                     tt.`track_last_read` IS NULL
                     OR tt.`track_last_read` < ti.`topic_bumped`
@@ -204,7 +205,8 @@ function forum_read_status_sql(
         $user_param,
         $topic_id_param,
         $topic_bumped_param,
-        $forum_id_param
+        $forum_id_param,
+        $user_param_sub
     );
 }
 
@@ -295,7 +297,7 @@ function forum_get_children_query(bool $small = false): string
         $small
             ? MSZ_FORUM_GET_CHILDREN_QUERY_SMALL
             : MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD,
-        forum_read_status_sql('t.`topic_id`', 't.`topic_bumped`'),
+        forum_read_status_sql('t.`topic_id`', 't.`topic_bumped`', ':user_for_check'),
         MSZ_FORUM_ROOT,
         MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql('forum', 'f.`forum_id`'),
@@ -309,6 +311,7 @@ function forum_get_children(int $parentId, int $userId, bool $small = false): ar
     $getListing->bindValue('user_id', $userId);
     $getListing->bindValue('perm_user_id_user', $userId);
     $getListing->bindValue('perm_user_id_role', $userId);
+    $getListing->bindValue('user_for_check', $userId);
     $getListing->bindValue('parent_id', $parentId);
 
     return $getListing->execute() ? $getListing->fetchAll() : [];
