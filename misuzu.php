@@ -290,7 +290,6 @@ MIG;
     tpl_add_function('csrf', true, 'csrf_html');
 
     tpl_add_function('git_commit_hash');
-    tpl_add_function('git_branch');
     tpl_add_function('git_tag');
     tpl_add_function('csrf_token');
     tpl_add_function('startup_time', false, function (float $time = MSZ_STARTUP) {

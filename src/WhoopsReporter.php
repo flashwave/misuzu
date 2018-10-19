@@ -69,7 +69,9 @@ HTML;
 
         $json = json_encode([
             'git' => [
-                'branch' => git_branch(),
+                // providing branch as tag still for now, can't be bothered to update the references
+                'branch' => git_tag(),
+                'tag' => git_tag(),
                 'hash' => git_commit_hash(true),
             ],
             'misuzu' => [

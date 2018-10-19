@@ -18,11 +18,6 @@ function git_commit_time(): int
     return strtotime(git_commit_info(MSZ_GIT_FORMAT_HASH_DATE_TIME));
 }
 
-function git_branch(): string
-{
-    return trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
-}
-
 function git_tag(): string
 {
     return trim(shell_exec('git describe --abbrev=0 --tags'));
