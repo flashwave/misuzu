@@ -137,6 +137,6 @@ if (!empty($topic)) {
 
 echo tpl_render('forum.posting', [
     'posting_breadcrumbs' => forum_get_breadcrumbs($forumId),
-    'forum_colour' => forum_get_colour($forumId),
+    'global_accent_colour' => forum_get_colour($forumId),
     'posting_forum' => $forum,
 ]);

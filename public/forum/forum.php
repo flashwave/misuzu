@@ -50,7 +50,7 @@ if ($forumMayHaveChildren) {
 
 echo tpl_render('forum.forum', [
     'forum_breadcrumbs' => forum_get_breadcrumbs($forum['forum_id']),
-    'forum_colour' => forum_get_colour($forum['forum_id']),
+    'global_accent_colour' => forum_get_colour($forum['forum_id']),
     'forum_may_have_topics' => $forumMayHaveTopics,
     'forum_may_have_children' => $forumMayHaveChildren,
     'forum_info' => $forum,

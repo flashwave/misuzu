@@ -1,6 +1,8 @@
 <?php
 require_once '../misuzu.php';
 
+use_legacy_style();
+
 $queryOffset = (int)($_GET['o'] ?? 0);
 $queryTake = 15;
 

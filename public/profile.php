@@ -4,6 +4,8 @@ $misuzuBypassLockdown = $mode === 'avatar';
 
 require_once '../misuzu.php';
 
+use_legacy_style();
+
 $userId = (int)($_GET['u'] ?? 0);
 
 switch ($mode) {

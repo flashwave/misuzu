@@ -260,9 +260,6 @@ MIG;
         'cache' => MSZ_DEBUG ? false : create_directory(build_path(sys_get_temp_dir(), 'msz-tpl-cache-' . md5(MSZ_ROOT))),
     ]);
 
-    // Remove this when the new style is kinda ready
-    use_legacy_style();
-
     tpl_var('globals', [
         'site_name' => config_get_default('Misuzu', 'Site', 'name'),
         'site_description' => config_get('Site', 'description'),

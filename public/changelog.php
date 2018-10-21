@@ -1,6 +1,8 @@
 <?php
 require_once '../misuzu.php';
 
+use_legacy_style();
+
 $changelogOffset = max((int)($_GET['o'] ?? 0), 0);
 $changelogRange = 30;
 

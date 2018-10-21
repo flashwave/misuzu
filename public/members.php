@@ -1,6 +1,8 @@
 <?php
 require_once '../misuzu.php';
 
+use_legacy_style();
+
 $usersOffset = max((int)($_GET['o'] ?? 0), 0);
 $usersTake = 30;
 

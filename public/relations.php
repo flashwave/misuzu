@@ -1,6 +1,8 @@
 <?php
 require_once '../misuzu.php';
 
+use_legacy_style();
+
 if (empty($_SERVER['HTTP_REFERER']) || !is_local_url($_SERVER['HTTP_REFERER'])) {
     header('Location: /');
     return;

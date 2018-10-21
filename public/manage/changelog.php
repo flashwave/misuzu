@@ -1,6 +1,8 @@
 <?php
 require_once '../../misuzu.php';
 
+use_legacy_style();
+
 $changelogPerms = perms_get_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id', 0));
 $queryOffset = (int)($_GET['o'] ?? 0);
 

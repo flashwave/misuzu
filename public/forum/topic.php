@@ -40,7 +40,7 @@ forum_topic_mark_read(user_session_current('user_id', 0), $topic['topic_id'], $t
 
 echo tpl_render('forum.topic', [
     'topic_breadcrumbs' => forum_get_breadcrumbs($topic['forum_id']),
-    'forum_colour' => forum_get_colour($topic['forum_id']),
+    'global_accent_colour' => forum_get_colour($topic['forum_id']),
     'topic_info' => $topic,
     'topic_posts' => $posts,
     'topic_offset' => $postsOffset,

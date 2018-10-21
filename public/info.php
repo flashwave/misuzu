@@ -1,6 +1,8 @@
 <?php
 require_once '../misuzu.php';
 
+use_legacy_style();
+
 $pathInfo = $_SERVER['PATH_INFO'] ?? '';
 
 if (empty($pathInfo) || $pathInfo === '/') {

@@ -5,6 +5,8 @@ $misuzuBypassLockdown = $authMode === 'login' || $authMode === 'get_user';
 
 require_once '../misuzu.php';
 
+use_legacy_style();
+
 $usernameValidationErrors = [
     'trim' => 'Your username may not start or end with spaces!',
     'short' => sprintf('Your username is too short, it has to be at least %d characters!', MSZ_USERNAME_MIN_LENGTH),

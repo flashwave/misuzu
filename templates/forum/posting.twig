@@ -12,8 +12,6 @@
 {% endif %}
 
 {% block content %}
-    <div style="{{ forum_colour|html_colour('--accent-colour') }}">
-        {{ forum_header('Creating Topic', posting_breadcrumbs) }}
-        {{ forum_posting_form(form_title, form_target_id, posting_topic is defined) }}
-    </div>
+    {{ forum_header('Creating Topic', posting_breadcrumbs) }}
+    {{ forum_posting_form(form_title, form_target_id, posting_topic is defined) }}
 {% endblock %}

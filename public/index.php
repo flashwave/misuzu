@@ -1,6 +1,8 @@
 <?php
 require_once '../misuzu.php';
 
+use_legacy_style();
+
 if (config_get_default(false, 'Site', 'embed_linked_data')) {
     tpl_var('linked_data', [
         'name' => config_get('Site', 'name'),
