@@ -1,6 +1,5 @@
 {% extends 'forum/master.twig' %}
-{% from 'macros.twig' import navigation %}
-{% from 'forum/macros.twig' import forum_posting_form %}
+{% from 'forum/macros.twig' import forum_posting_form, forum_header %}
 
 {% set title = 'Posting' %}
 
@@ -13,6 +12,8 @@
 {% endif %}
 
 {% block content %}
-    {{ navigation(posting_breadcrumbs, posting_breadcrumbs|last, true, null, 'left') }}
-    {{ forum_posting_form(form_title, form_target_id, posting_topic is defined) }}
+    <div style="{{ forum_colour|html_colour('--accent-colour') }}">
+        {{ forum_header('Creating Topic', posting_breadcrumbs) }}
+        {{ forum_posting_form(form_title, form_target_id, posting_topic is defined) }}
+    </div>
 {% endblock %}

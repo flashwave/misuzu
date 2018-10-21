@@ -1,5 +1,5 @@
 {% extends 'forum/master.twig' %}
-{% from 'macros.twig' import navigation, pagination %}
+{% from 'macros.twig' import pagination %}
 {%
     from 'forum/macros.twig'
     import
@@ -27,23 +27,25 @@
 ) %}
 
 {% block content %}
-    {{ forum_header(topic_info.topic_title, topic_breadcrumbs) }}
+    <div style="{{ forum_colour|html_colour('--accent-colour') }}">
+        {{ forum_header(topic_info.topic_title, topic_breadcrumbs) }}
 
-    {{ forum_topic_locked(topic_info.topic_locked, topic_info.topic_archived) }}
+        {{ forum_topic_locked(topic_info.topic_locked, topic_info.topic_archived) }}
 
-    {{ ftbuttons }}
-    {{ ftpagination }}
-    {{ forum_post_listing(topic_posts, topic_info.topic_first_post_id) }}
-    {{ ftpagination }}
+        {{ ftbuttons }}
+        {{ ftpagination }}
+        {{ forum_post_listing(topic_posts, topic_info.topic_first_post_id) }}
+        {{ ftpagination }}
 
-    {% if can_reply %}
-        {{ forum_posting_form('Reply', topic_info.topic_id, true, 'reply', true) }}
+        {% if can_reply %}
+            {{ forum_posting_form('Reply', topic_info.topic_id, true, 'reply', true) }}
 
-        <script>
-            window.addEventListener('load', () => {
-                closeContainer('reply');
-                document.getElementById('reply').children[0].addEventListener('mouseover', () => openContainer('reply'));
-            });
-        </script>
-    {% endif %}
+            <script>
+                window.addEventListener('load', () => {
+                    closeContainer('reply');
+                    document.getElementById('reply').children[0].addEventListener('mouseover', () => openContainer('reply'));
+                });
+            </script>
+        {% endif %}
+    </div>
 {% endblock %}

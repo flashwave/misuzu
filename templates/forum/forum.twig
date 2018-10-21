@@ -1,5 +1,5 @@
 {% extends 'forum/master.twig' %}
-{% from 'macros.twig' import navigation, pagination %}
+{% from 'macros.twig' import pagination %}
 {% from 'forum/macros.twig' import forum_category_listing, forum_topic_listing, forum_category_buttons, forum_header %}
 
 {% set title = forum_info.forum_name %}
@@ -9,7 +9,7 @@
 }) %}
 
 {% block content %}
-    <div style="{{ forum_info.forum_colour|html_colour('--accent-colour') }}">
+    <div style="{{ forum_colour|html_colour('--accent-colour') }}">
         {{ forum_header(forum_info.forum_name, forum_breadcrumbs, true) }}
 
         {% if forum_may_have_children and forum_info.forum_subforums|length > 0 %}

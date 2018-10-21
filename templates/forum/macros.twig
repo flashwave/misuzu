@@ -334,7 +334,7 @@
     {% set is_reply = is_reply ? true : false %}
 
     <form{% if element_id is defined %} id="{{ element_id }}"{% endif %}
-        class="container forum__posting"
+        class="container container--new forum__posting"
         method="post"
         action="/forum/posting.php">
         <div class="container__title">
@@ -351,16 +351,16 @@
 
             {% if not is_reply %}
                 <div class="forum__posting__title">
-                    <input class="input__text forum__posting__title__input" type="text" name="post[title]" placeholder="Topic title">
+                    <input class="input__text input__text--new forum__posting__title__input" type="text" name="post[title]" placeholder="Topic title">
                 </div>
             {% endif %}
 
             <div class="forum__posting__text">
-                <textarea class="input__textarea forum__posting__text__input" name="post[text]"></textarea>
+                <textarea class="input__textarea input__textarea--new forum__posting__text__input" name="post[text]"></textarea>
             </div>
 
             <div class="forum__posting__buttons">
-                <button class="input__button">Submit</button>
+                <button class="input__button input__button--new">Submit</button>
             </div>
         </div>
     </form>

@@ -161,6 +161,35 @@ function forum_get_breadcrumbs(
     return array_reverse($breadcrumbs + $indexLink);
 }
 
+function forum_get_colour(int $forumId): int
+{
+    $getColours = db_prepare('
+        WITH RECURSIVE breadcrumbs(forum_id, forum_parent, forum_colour) as (
+            SELECT c.`forum_id`, c.`forum_parent`, c.`forum_colour`
+            FROM `msz_forum_categories` as c
+            WHERE `forum_id` = :forum_id
+            UNION ALL
+            SELECT p.`forum_id`, p.`forum_parent`, p.`forum_colour`
+            FROM `msz_forum_categories` as p
+            INNER JOIN breadcrumbs
+            ON p.`forum_id` = breadcrumbs.forum_parent
+        )
+        SELECT * FROM breadcrumbs
+    ');
+    $getColours->bindValue('forum_id', $forumId);
+    $colours = $getColours->execute() ? $getColours->fetchAll(PDO::FETCH_ASSOC) : [];
+
+    if ($colours) {
+        foreach ($colours as $colour) {
+            if ($colour['forum_colour'] !== null) {
+                return $colour['forum_colour'];
+            }
+        }
+    }
+
+    return colour_none();
+}
+
 function forum_increment_clicks(int $forumId): void
 {
     $incrementLinkClicks = db_prepare(sprintf('
