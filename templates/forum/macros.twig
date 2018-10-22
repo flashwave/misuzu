@@ -292,27 +292,30 @@
     {% set is_original_post = is_original_post|default(false) %}
     {% set is_original_poster = is_original_poster|default(false) %}
 
-    <div class="container forum__post" id="p{{ post.post_id }}">
-        <div class="forum__post__info" style="{{ post.poster_colour|html_colour }}">
-            {% if post.poster_id is not null %}
-                <a class="avatar forum__post__avatar"
-                    style="background-image:url('/profile.php?u={{ post.poster_id }}&amp;m=avatar');"
-                    href="/profile.php?u={{ post.poster_id }}">
-                </a>
+    <div class="container forum__post" id="p{{ post.post_id }}" style="{{ post.poster_colour|html_colour('--accent-colour') }}">
+        <div class="forum__post__info">
+            <div class="forum__post__info__background"></div>
+            <div class="forum__post__info__content">
+                {% if post.poster_id is not null %}
+                    <a class="avatar forum__post__avatar"
+                        style="background-image:url('/profile.php?u={{ post.poster_id }}&amp;m=avatar');"
+                        href="/profile.php?u={{ post.poster_id }}">
+                    </a>
 
-                <a class="forum__post__username" href="/profile.php?u={{ post.poster_id }}">{{ post.poster_name }}</a>
+                    <a class="forum__post__username" href="/profile.php?u={{ post.poster_id }}">{{ post.poster_name }}</a>
 
-                <div class="forum__post__icons">
-                    <div class="flag flag--{{ post.poster_country|lower }}" title="{{ post.poster_country|country_name }}"></div>
-                    <div class="forum__post__posts-count">{{ post.poster_post_count|number_format }} posts</div>
-                </div>
+                    <div class="forum__post__icons">
+                        <div class="flag flag--{{ post.poster_country|lower }}" title="{{ post.poster_country|country_name }}"></div>
+                        <div class="forum__post__posts-count">{{ post.poster_post_count|number_format }} posts</div>
+                    </div>
 
-                <div class="forum__post__joined">
-                    joined <time datetime="{{ post.poster_joined|date('c') }}" title="{{ post.poster_joined|date('r') }}">{{ post.poster_joined|time_diff }}</time>
-                </div>
-            {% else %}
-                <div class="forum__post__username">Deleted User</div>
-            {% endif %}
+                    <div class="forum__post__joined">
+                        joined <time datetime="{{ post.poster_joined|date('c') }}" title="{{ post.poster_joined|date('r') }}">{{ post.poster_joined|time_diff }}</time>
+                    </div>
+                {% else %}
+                    <div class="forum__post__username">Deleted User</div>
+                {% endif %}
+            </div>
         </div>
 
         <div class="forum__post__content">
