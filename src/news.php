@@ -84,34 +84,39 @@ function news_categories_get(
         $query = sprintf(
             '
                 SELECT
-                    `category_id`, `category_name`, `category_is_hidden`,
-                    `category_created`,
+                    c.`category_id`, c.`category_name`, c.`category_is_hidden`,
+                    c.`category_created`,
                     (
-                        SELECT COUNT(`post_id`)
-                        FROM `msz_news_posts`
-                        WHERE %2$s %3$s %4$s
+                        SELECT COUNT(p.`post_id`)
+                        FROM `msz_news_posts` as p
+                        WHERE p.`category_id` = c.`category_id` %2$s %3$s %4$s
                     ) as `posts_count`
-                FROM `msz_news_categories`
+                FROM `msz_news_categories` as c
                 %5$s
-                GROUP BY `category_id`
+                GROUP BY c.`category_id`
+                ORDER BY c.`category_id` DESC
+                %1$s
+            ',
+            $getAll ? '' : 'LIMIT :offset, :take',
+            $featuredOnly ? 'AND p.`post_is_featured` != 0' : '',
+            $exposeScheduled ? '' : 'AND p.`post_scheduled` < NOW()',
+            $excludeDeleted ? 'AND p.`post_deleted` IS NULL' : '',
+            $includeHidden ? '' : 'WHERE c.`category_is_hidden` = 0'
+        );
+    } else {
+        $query = sprintf(
+            '
+                SELECT
+                    `category_id`, `category_name`, `category_is_hidden`,
+                    `category_created`
+                FROM `msz_news_categories`
+                %2$s
                 ORDER BY `category_id` DESC
                 %1$s
             ',
             $getAll ? '' : 'LIMIT :offset, :take',
-            $featuredOnly ? '`post_is_featured` != 0' : '1',
-            $exposeScheduled ? '' : 'AND `post_scheduled` < NOW()',
-            $excludeDeleted ? 'AND `post_deleted` IS NULL' : '',
-            $includeHidden ? '' : 'WHERE `category_is_hidden` != 0'
+            $includeHidden ? '' : 'WHERE c.`category_is_hidden` != 0'
         );
-    } else {
-        $query = sprintf('
-            SELECT
-                `category_id`, `category_name`, `category_is_hidden`,
-                `category_created`
-            FROM `msz_news_categories`
-            ORDER BY `category_id` DESC
-            %s
-        ', $getAll ? '' : 'LIMIT :offset, :take');
     }
 
     $getCats = db_prepare($query);
@@ -147,20 +152,20 @@ function news_category_get(
         $query = sprintf(
             '
                 SELECT
-                    `category_id`, `category_name`, `category_description`,
-                    `category_is_hidden`, `category_created`,
+                    c.`category_id`, c.`category_name`, c.`category_description`,
+                    c.`category_is_hidden`, c.`category_created`,
                     (
-                        SELECT COUNT(`post_id`)
-                        FROM `msz_news_posts`
-                        WHERE `category_id` = `category_id` %1$s %2$s %3$s
+                        SELECT COUNT(p.`post_id`)
+                        FROM `msz_news_posts` as p
+                        WHERE p.`category_id` = c.`category_id` %1$s %2$s %3$s
                     ) as `posts_count`
-                FROM `msz_news_categories`
-                WHERE `category_id` = :category
-                GROUP BY `category_id`
+                FROM `msz_news_categories` as c
+                WHERE c.`category_id` = :category
+                GROUP BY c.`category_id`
             ',
-            $featuredOnly ? 'AND `post_is_featured` != 0' : '',
-            $exposeScheduled ? '' : 'AND `post_scheduled` < NOW()',
-            $excludeDeleted ? 'AND `post_deleted` IS NULL' : ''
+            $featuredOnly ? 'AND p.`post_is_featured` != 0' : '',
+            $exposeScheduled ? '' : 'AND p.`post_scheduled` < NOW()',
+            $excludeDeleted ? 'AND p.`post_deleted` IS NULL' : ''
         );
     } else {
         $query = '
