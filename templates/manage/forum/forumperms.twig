@@ -1,9 +1,10 @@
 {% extends 'manage/users/master.twig' %}
+{% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import permissions_table %}
 
 {% block manage_content %}
     <div class="container">
-        <div class="container__title">{{ forum is defined ? forum.forum_name ~ ' ' : '' }}Permissions for {{ role.role_name }}</div>
+        {{ container_title((forum is defined ? forum.forum_name ~ ' ' : '') ~ 'Permissions for ' ~ role.role_name) }}
         {{ permissions_table(perms) }}
     </div>
 {% endblock %}

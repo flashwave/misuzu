@@ -1,9 +1,9 @@
 {% extends 'manage/news/master.twig' %}
-{% from 'macros.twig' import pagination %}
+{% from 'macros.twig' import pagination, container_title %}
 
 {% block manage_content %}
     <div class="container">
-        <div class="container__title">Categories</div>
+        {{ container_title('Categories') }}
 
         <a href="?v=category" class="input__button">New Category</a>
 

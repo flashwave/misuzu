@@ -1,18 +1,13 @@
 {% extends 'manage/users/master.twig' %}
+{% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import permissions_table %}
 
 {% block manage_content %}
-    <form action="?v=role{{ edit_role is defined ? '&r=' ~ edit_role.role_id : '' }}" method="post">
+    <form action="?v=role{{ edit_role is defined ? '&r=' ~ edit_role.role_id : '' }}" method="post"{% if edit_role is defined %} style="{{ edit_role.role_colour|html_colour('--accent-colour') }}"{% endif %}>
         {{ 'users_role'|csrf|raw }}
 
         <div class="container">
-            <h1 class="container__title">
-                {% if edit_role is defined %}
-                    Editing <span style="{{ edit_role.role_colour|html_colour }}">{{ edit_role.role_name }}</span> ({{ edit_role.role_id }})
-                {% else %}
-                    Creating a new Role
-                {% endif %}
-            </h1>
+            {{ container_title(edit_role is defined ? 'Editing ' ~ edit_role.role_name ~ ' (' ~ edit_role.role_id ~ ')' : 'Creating a new role') }}
 
             <label class="form__label">
                 <div class="form__label__text">Role Name</div>
@@ -45,7 +40,7 @@
         </div>
 
         <div class="container">
-            <div class="container__title">Colour</div>
+            {{ container_title('Colour') }}
 
             <label class="form__label">
                 <div class="form__label__text">Inherit Colour</div>
@@ -78,7 +73,7 @@
         </div>
 
         <div class="container">
-            <div class="container__title">Additional</div>
+            {{ container_title('Additional') }}
 
             <label class="form__label">
                 <div class="form__label__text">Description</div>
@@ -90,7 +85,7 @@
 
         {% if can_manage_perms %}
             <div class="container">
-                <div class="container__title">Permissions</div>
+                {{ container_title('Permissions') }}
                 {{ permissions_table(permissions) }}
             </div>
         {% endif %}

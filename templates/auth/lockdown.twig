@@ -1,8 +1,9 @@
 {% extends 'auth/master.twig' %}
+{% from 'macros.twig' import container_title %}
 
 {% block content %}
     <div class="container auth">
-        <div class="container__title">Unavailable</div>
+        {{ container_title('Unavailable') }}
 
         <div class="container__content">
             The site is currently unavailable, try again later.

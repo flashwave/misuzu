@@ -1,8 +1,8 @@
 {% macro news_preview(post) %}
+    {% from 'macros.twig' import container_title %}
+
     <div class="container news__preview">
-        <a href="/news.php?p={{ post.post_id }}" class="container__title container__title--link">
-            {{ post.post_title }}
-        </a>
+        {{ container_title(post.post_title, '/news.php?p=' ~ post.post_id) }}
 
         <div class="news__preview__container">
             <div class="news__preview__content">

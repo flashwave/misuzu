@@ -1,10 +1,11 @@
 {% extends 'manage/changelog/master.twig' %}
+{% from 'macros.twig' import container_title %}
 
 {% block manage_content %}
     <div class="changelog-actions-tags">
         {% if changelog_tags is defined %}
             <div class="container changelog-actions-tags__panel changelog-actions-tags__panel--tags">
-                <div class="container__title">Tags</div>
+                {{ container_title('Tags') }}
 
                 <a href="?v=tag" class="input__button">Create new tag</a>
 
@@ -28,7 +29,8 @@
 
         {% if changelog_actions is defined %}
             <div class="container changelog-actions-tags__panel changelog-actions-tags__panel--actions">
-                <div class="container__title">Actions</div>
+                {{ container_title('Actions') }}
+
                 <a href="?v=action" class="input__button">Create new action</a>
 
                 <div class="changelog-actions-tags__list">

@@ -1,5 +1,5 @@
 {% extends 'news/master.twig' %}
-{% from 'macros.twig' import pagination %}
+{% from 'macros.twig' import pagination, container_title %}
 {% from 'news/macros.twig' import news_preview %}
 
 {% set title = category.category_name ~ ' :: News' %}
@@ -19,9 +19,8 @@
 
         <div class="news__sidebar">
             <div class="container news__list">
-                <div class="container__title news__container__title">
-                    News » {{ category.category_name }}
-                </div>
+                {{ container_title('News » ' ~ category.category_name) }}
+
                 <div class="container__content">
                     {{ category.category_description|length > 0 ? category.category_description : '' }}
                 </div>
@@ -29,9 +28,8 @@
 
             {% if featured|length > 0 %}
                 <div class="container news__list">
-                    <div class="container__title">
-                        Featured Posts
-                    </div>
+                    {{ container_title('Featured Posts') }}
+
                     <div class="container__content">
                         {% for featured_post in featured %}
                             <a class="news__list__item" href="/news.php?p={{ featured_post.post_id }}">{{ featured_post.post_title }}</a>

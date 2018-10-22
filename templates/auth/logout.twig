@@ -1,8 +1,9 @@
 {% extends 'auth/master.twig' %}
+{% from 'macros.twig' import container_title %}
 
 {% block content %}
     <div class="container auth">
-        <div class="container__title">Logout confirmation</div>
+        {{ container_title('Logout confirmation') }}
 
         <div class="auth__form">
             <p class="auth__paragraph">We couldn't verify that you were actually the person attempting to log out.</p>

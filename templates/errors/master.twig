@@ -1,10 +1,9 @@
 {% extends 'master.twig' %}
+{% from 'macros.twig' import container_title %}
 
 {% block content %}
     <div class="container">
-        <div class="container__title">
-            {{ title|default(error_code|default(http_code) >= 400 ? 'Error' : 'Information') }} {{ error_code|default(http_code >= 400 ? http_code : '') }}{{ error_text is defined ? ' - ' ~ error_text : '' }}
-        </div>
+        {{ container_title((title|default(error_code|default(http_code) >= 400 ? 'Error' : 'Information')) ~ ' ' ~ (error_code|default(http_code >= 400 ? http_code : '')) ~ (error_text is defined ? ' - ' ~ error_text : '')) }}
 
         <div class="container__content">
             {% if message is defined %}

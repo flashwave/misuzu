@@ -1,4 +1,5 @@
 {% extends 'settings/master.twig' %}
+{% from 'macros.twig' import container_title %}
 
 {% if user_has_background %}
     {% set site_background_url = '/profile.php?m=background&u=' ~ settings_user_id %}
@@ -12,7 +13,8 @@
     </div>#}
 
     <div class="container container--translucent">
-        <div class="container__title">Account</div>
+        {{ container_title('Account') }}
+
         <form action="" method="post" class="settings__account">
             {{ 'settings'|csrf|raw }}
 
@@ -133,7 +135,8 @@
 
     {% if settings_perms.edit_avatar %}
         <div class="container container--translucent">
-            <div class="container__title">Avatar</div>
+            {{ container_title('Avatar') }}
+
             <form action="" method="post" class="settings__images" enctype="multipart/form-data">
                 <input type="hidden" name="MAX_FILE_SIZE" value="{{ background.max_size }}">
                 {{ 'settings'|csrf|raw }}
@@ -204,7 +207,8 @@
 
     {% if settings_perms.edit_background %}
         <div class="container container--translucent">
-            <div class="container__title">Background</div>
+            {{ container_title('Background') }}
+
             <form action="" method="post" class="settings__images" enctype="multipart/form-data">
                 <input type="hidden" name="MAX_FILE_SIZE" value="{{ background.max_size }}">
                 {{ 'settings'|csrf|raw }}
@@ -276,7 +280,7 @@
                 url = url || "/profile.php?u={{ settings_user_id }}&m=background";
                 previewEl = previewEl || document.body;
                 nameEl = nameEl || document.getElementById('background-name');
-                previewEl.style.setProperty('--site-background-image', 'url(\'{0}\')'.replace('{0}', url));
+                previewEl.style.setProperty('--background-image', 'url(\'{0}\')'.replace('{0}', url));
                 nameEl.textContent = name;
             }
 
@@ -288,9 +292,7 @@
 
     {% if settings_perms.edit_about %}
         <div class="container container--translucent">
-            <div class="container__title">
-                About
-            </div>
+            {{ container_title('About') }}
 
             <form method="post" action="" enctype="multipart/form-data" class="settings__about">
                 {{ 'settings'|csrf|raw }}

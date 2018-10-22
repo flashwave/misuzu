@@ -1,6 +1,6 @@
 .header {
     flex: 0 0 auto;
-    background: linear-gradient(0deg, transparent, var(--gradient-start)) repeat-x;
+    background: linear-gradient(0deg, transparent, var(--accent-colour)) repeat-x;
 
     &__wrapper {
         margin: 0 auto;
@@ -64,7 +64,6 @@
     &__menu {
         flex: 1 1 auto;
         margin: 0 6px;
-        font-family: @mio-font-heading;
         list-style: none;
         display: flex;
 
@@ -84,7 +83,7 @@
 
         @media (max-width: @site-mobile-width) {
             width: 100%;
-            background: var(--gradient-start);
+            background: var(--accent-colour);
 
             &__item:not(:last-child) {
                 border-bottom: 1px solid var(--accent-colour);
@@ -105,7 +104,7 @@
                 transition: background-color .2s;
 
                 &:hover {
-                    background-color: var(--gradient-start);
+                    background-color: var(--accent-colour);
 
                     .header__submenu {
                         transform: scaleY(1);
@@ -143,7 +142,7 @@
             position: absolute; // floating
             transform: scaleY(0);
             transform-origin: center top 0;
-            background: var(--gradient-start);
+            background: var(--accent-colour);
             overflow: hidden;
             z-index: 100;
             text-align: left;
@@ -177,7 +176,7 @@
         @media (max-width: @site-mobile-width) {
             display: none;
             width: 100%;
-            background: var(--gradient-start);
+            background: var(--accent-colour);
             font-size: 1.1em;
 
             &-toggle:checked ~ .header__user {
@@ -215,7 +214,6 @@
             text-shadow: 0 0 5px var(--user-colour);
             font-size: 1.4em;
             line-height: 1.4em;
-            font-family: @mio-font-heading;
             text-decoration: none;
             display: block;
             text-align: right;

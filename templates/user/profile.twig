@@ -1,4 +1,5 @@
 {% extends 'user/master.twig' %}
+{% from 'macros.twig' import container_title %}
 
 {% set image = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
 {% set canonical_url = '/profile.php?u=' ~ profile.user_id %}
@@ -119,9 +120,8 @@
                         </div>
                     {% elseif is_editing ? perms.edit_profile : profile_fields|default([])|length > 0 %}
                         <div class="container">
-                            <div class="container__title">
-                                Elsewhere
-                            </div>
+                            {{ container_title('Elsewhere') }}
+
                             <div class="profile__accounts">
                                 {% for name, data in profile_fields %}
                                     <label class="profile__accounts__item">
@@ -150,12 +150,10 @@
                 </div>
 
                 <div class="profile__container__main">
-
                     {% if (is_editing and perms.edit_about) or profile.user_about_content|length > 0 %}
                         <div class="container profile__about" id="about">
-                            <div class="container__title profile__about__title">
-                                About {{ profile.username }}
-                            </div>
+                            {{ container_title('About ' ~ profile.username) }}
+
                             <div class="profile__about__content{% if is_editing %} profile__about__content--edit{% endif %}">
                                 {% if is_editing %}
                                     <select name="about[parser]" class="input__select profile__about__select">

@@ -50,7 +50,10 @@ final class WhoopsReporter extends Handler
     <body class="main" style="justify-content: center; --site-max-width: 400px">
         <div class="main__wrapper" style="flex: 0 0 auto">
             <div class="container">
-                <div class="container__title">Something broke!</div>
+                <div class="container__title">
+                    <div class="container__title__background"></div>
+                    <div class="container__title__text">Something broke!</div>
+                </div>
                 <div class="container__content">
                     <p>{$text}</p>
                 </div>

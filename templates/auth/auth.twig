@@ -1,4 +1,5 @@
 {% extends 'auth/master.twig' %}
+{% from 'macros.twig' import container_title %}
 {% from 'auth/macros.twig' import auth_login %}
 
 {% block content %}
@@ -13,7 +14,7 @@
             <input type="hidden" name="auth[mode]" value="register">
             {{ 'register'|csrf|raw }}
 
-            <div class="container__title">Register</div>
+            {{ container_title('Register') }}
 
             {% if auth_register_error is defined %}
                 <div class="warning auth__warning">
@@ -48,7 +49,7 @@
             <input type="hidden" name="auth[mode]" value="forgot">
             {{ 'passforgot'|csrf|raw }}
 
-            <div class="container__title">Forgot password</div>
+            {{ container_title('Forgot password') }}
 
             {% if auth_forgot_error is defined %}
                 <div class="warning auth__warning">

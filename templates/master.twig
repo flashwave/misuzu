@@ -9,25 +9,20 @@
         {% if site_background_url is defined %}
             <style>
                 :root {
-                    --site-background-image: url('{{ site_background_url|raw }}');
+                    --background-image: url('{{ site_background_url|raw }}');
                 }
             </style>
         {% endif %}
     </head>
 
     <body
-        class="main {{ use_legacy_style|default(false) ? 'main--legacy' : 'main--default' }}{% if current_user.user_background_settings is defined %} {{ current_user.user_background_settings|bg_settings('main--bg-%s')|join(' ') }}{% endif %}"
+        class="main main--default{% if current_user.user_background_settings is defined %} {{ current_user.user_background_settings|bg_settings('main--bg-%s')|join(' ') }}{% endif %}"
         style="{% if global_accent_colour is defined %}{{ global_accent_colour|html_colour('--accent-colour') }}{% endif %}">
         {% include '_layout/header.twig' %}
 
         <div class="main__wrapper">
             {% block content %}
-                <div class="container">
-                    <div class="container__title">Hello!</div>
-                    <div class="container__content">
-                        This page has no content!
-                    </div>
-                </div>
+                This page has no content!
             {% endblock %}
         </div>
 

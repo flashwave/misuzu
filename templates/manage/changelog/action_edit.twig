@@ -1,17 +1,12 @@
 {% extends 'manage/changelog/master.twig' %}
+{% from 'macros.twig' import container_title %}
 
 {% block manage_content %}
     <div class="container">
         <form action="?v=action{{ edit_action is defined ? '&a=' ~ edit_action.action_id : '' }}" method="post">
             {{ 'changelog_action'|csrf|raw }}
 
-            <h1 class="container__title">
-                {% if edit_action is defined %}
-                    Editing <span style="{{ edit_action.action_colour|html_colour }};color:var(--user-colour)">{{ edit_action.action_name }}</span> ({{ edit_action.action_id }})
-                {% else %}
-                    Adding a new action
-                {% endif %}
-            </h1>
+            {{ container_title(edit_action is defined ? 'Editing ' ~ edit_action.action_name ~ ' (' ~ edit_action.action_id ~ ')' : 'Adding a new action') }}
 
             <label class="form__label">
                 <div class="form__label__text">Name</div>

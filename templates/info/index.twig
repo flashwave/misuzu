@@ -1,12 +1,12 @@
 {% extends 'info/master.twig' %}
+{% from 'macros.twig' import container_title %}
 
 {% set title = 'Info' %}
 
 {% block content %}
     <div class="container">
-        <div class="container__title">
-            Flashii Informational Pages
-        </div>
+        {{ container_title('Flashii Informational Pages') }}
+
         <div class="container__content">
             <p>Here's a listing of a few informational pages that'll probably come in handy during your Flashii Experience&trade;.</p>
             <ul>

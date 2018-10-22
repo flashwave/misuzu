@@ -1,5 +1,5 @@
 {% extends 'news/master.twig' %}
-{% from 'macros.twig' import pagination %}
+{% from 'macros.twig' import pagination, container_title %}
 {% from 'news/macros.twig' import news_preview %}
 
 {% set title = 'News' %}
@@ -16,9 +16,8 @@
 
         <div class="news__sidebar">
             <div class="container news__list">
-                <div class="container__title">
-                    Categories
-                </div>
+                {{ container_title('Categories') }}
+
                 <div class="container__content">
                     {% for category in categories %}
                         <a class="news__list__item news__list__item--kvp" href="/news.php?c={{ category.category_id }}">

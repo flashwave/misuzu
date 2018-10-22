@@ -1,17 +1,12 @@
 {% extends 'manage/changelog/master.twig' %}
+{% from 'macros.twig' import container_title %}
 
 {% block manage_content %}
     <div class="container">
         <form action="?v=tag{{ edit_tag is defined ? '&t=' ~ edit_tag.tag_id : '' }}" method="post">
             {{ 'changelog_tag'|csrf|raw }}
 
-            <h1 class="container__title">
-                {% if edit_tag is defined %}
-                    Editing {{ edit_tag.tag_name }} ({{ edit_tag.tag_id }})
-                {% else %}
-                    Adding a new tag
-                {% endif %}
-            </h1>
+            {{ container_title(edit_tag is defined ? 'Editing ' ~ edit_tag.tag_name ~ ' (' ~ edit_tag.tag_id ~ ')' : 'Adding a new tag') }}
 
             <label class="form__label" style="width:100%">
                 <div class="form__label__text">Name</div>

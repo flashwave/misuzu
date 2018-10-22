@@ -1,8 +1,9 @@
 {% macro manage_navigation(nav) %}
+    {% from 'macros.twig' import container_title %}
 
     {% for name, value in nav %}
         <div class="container manage__navigation">
-            <div class="container__title">{{ name }}</div>
+            {{ container_title(name) }}
 
             <div class="manage__navigation__links">
                 {% for title, link in value %}

@@ -38,7 +38,7 @@
                             </label>
                         {% endif %}
                     {% endif %}
-                    <button class="comment__action comment__action--button comment__action--post">
+                    <button class="input__button comment__action comment__action--button comment__action--post">
                         {{ reply_mode ? 'Reply' : 'Post' }}
                     </button>
                 </div>
@@ -479,7 +479,7 @@
                 replyContent.appendChild(replyActions);
 
                 var replyButton = document.createElement('button');
-                replyButton.className = 'comment__action comment__action--button comment__action--post';
+                replyButton.className = 'input__button comment__action comment__action--button comment__action--post';
                 replyButton.textContent = 'Reply';
                 replyActions.appendChild(replyButton);
 

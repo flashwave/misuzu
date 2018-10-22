@@ -1,4 +1,5 @@
 {% extends 'changelog/master.twig' %}
+{% from 'macros.twig' import container_title %}
 {% from '_layout/comments.twig' import comments_section %}
 
 {% set is_valid = change|length > 0 %}
@@ -12,9 +13,8 @@
 
 {% block content %}
     <div class="container">
-        <div class="container__title">
-            {{ title }}
-        </div>
+        {{ container_title(title) }}
+
         <div class="changelog__content">
             {% if is_valid %}
                 <div class="changelog__change" id="#c{{ change.change_id }}">
@@ -98,9 +98,7 @@
 
     {% if comments is defined %}
         <div class="container">
-            <div class="container__title">
-                Comments for {{ change.change_date }}
-            </div>
+            {{ container_title('Comments for ' ~ change.change_date) }}
             {{ comments_section(comments, comments_category, current_user|default(null), comments_perms) }}
         </div>
     {% endif %}

@@ -1,5 +1,5 @@
 {% extends 'changelog/master.twig' %}
-{% from 'macros.twig' import pagination %}
+{% from 'macros.twig' import pagination, container_title %}
 {% from 'changelog/macros.twig' import changelog_listing %}
 {% from '_layout/comments.twig' import comments_section %}
 
@@ -23,9 +23,8 @@
 
 {% block content %}
     <div class="container">
-        <div class="container__title">
-            {{ title }}
-        </div>
+        {{ container_title(title) }}
+
         <div class="changelog__content">
             {{ changelog_listing(changes, is_date) }}
 
@@ -40,9 +39,7 @@
 
     {% if comments is defined %}
         <div class="container">
-            <div class="container__title">
-                Comments
-            </div>
+            {{ container_title('Comments') }}
             {{ comments_section(comments, comments_category, current_user|default(null), comments_perms) }}
         </div>
     {% endif %}

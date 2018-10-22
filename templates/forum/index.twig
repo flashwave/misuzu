@@ -1,4 +1,5 @@
 {% extends 'forum/master.twig' %}
+{% from 'macros.twig' import container_title %}
 {% from 'forum/macros.twig' import forum_category_listing %}
 
 {% set title = 'Forum Listing' %}
@@ -20,7 +21,7 @@
         </div>
     {% else %}
         <div class="container">
-            <div class="container__title">Forums</div>
+            {{ container_title('Forums') }}
             <div class="container__content">
                 <p>There are no forums yet, check back later!</p>
             </div>

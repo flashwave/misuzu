@@ -1,5 +1,5 @@
 {% extends 'settings/master.twig' %}
-{% from 'macros.twig' import pagination %}
+{% from 'macros.twig' import pagination, container_title %}
 
 {% set alpagination = pagination(
     audit_log_count,
@@ -22,7 +22,7 @@
 
 {% block settings_content %}
     <div class="container">
-        <div class="container__title">Login History</div>
+        {{ container_title('Login History') }}
 
         <div class="settings__login-history">
             <div class="settings__description">
@@ -81,7 +81,7 @@
     </div>
 
     <div class="container">
-        <div class="container__title">Account Log</div>
+        {{ container_title('Account Log') }}
 
         <div class="settings__log">
             <div class="settings__description">

@@ -1,8 +1,6 @@
 <?php
 require_once '../../misuzu.php';
 
-use_legacy_style();
-
 $userPerms = perms_get_user(MSZ_PERMS_USER, user_session_current('user_id', 0));
 $isPostRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
 $queryQffset = (int)($_GET['o'] ?? 0);

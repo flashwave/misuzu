@@ -1,4 +1,5 @@
 {% extends 'home/master.twig' %}
+{% from 'macros.twig' import container_title %}
 {% from 'news/macros.twig' import news_preview %}
 {% from 'changelog/macros.twig' import changelog_listing %}
 {% from 'home/macros.twig' import chat_quote_display %}
@@ -10,13 +11,13 @@
         <div class="index__sidebar">
             {% if chat_quote is defined and chat_quote is iterable and chat_quote|length > 0 %}
                 <div class="container">
-                    <div class="container__title">Chat quote from {{ chat_quote[0].quote_timestamp|date('Y-m-d') }}</div>
+                    {{ container_title('Chat quote from ' ~ (chat_quote[0].quote_timestamp|date('Y-m-d'))) }}
                     {{ chat_quote_display(chat_quote) }}
                 </div>
             {% endif %}
 
             <div class="container">
-                <div class="container__title">Statistics</div>
+                {{ container_title('Statistics') }}
                 <div class="container__content">
                     {% if users_count < 1 %}
                         This is a fresh installation, <a href="/auth.php?m=register" class="index__stats__emphasis index__stats__link">create an account</a>!
@@ -29,7 +30,7 @@
             </div>
 
             <div class="container">
-                <div class="container__title">Online users</div>
+                {{ container_title('Online users') }}
                 <div class="container__content">
                     {% if online_users < 1 %}
                         No one was online in the last 5 minutes.
@@ -43,7 +44,7 @@
             </div>
 
             <div class="container">
-                <a class="container__title container__title--link" href="/changelog.php">Changelog</a>
+                {{ container_title('Changelog', '/changelog.php') }}
                 <div class="changelog__content">
                     {{ changelog_listing(featured_changelog) }}
                 </div>
@@ -53,7 +54,7 @@
         <div class="index__main">
             {% if current_user is defined %}
                 <div class="container">
-                    <div class="container__title">Welcome</div>
+                    {{ container_title('Welcome') }}
                     <div class="container__content">
                         <p>You have 0 new messages because the PM system doesn't exist yet, have a nice day.</p>
                     </div>

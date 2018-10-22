@@ -1,10 +1,10 @@
 {% extends 'manage/general/master.twig' %}
 {% from 'home/macros.twig' import chat_quote_display %}
-{% from 'macros.twig' import pagination %}
+{% from 'macros.twig' import pagination, container_title %}
 
 {% block manage_content %}
     <div class="container">
-        <div class="container__title">Quotes</div>
+        {{ container_title('Quotes') }}
 
         {% if current_quote is defined %}
             <form method="post" action="">
@@ -62,7 +62,7 @@
 
             {% for parent in quote_parents %}
                 <div class="container">
-                    <a href="?v=quotes&amp;s={{ parent.quote_id }}" class="container__title container__title--link">{{ parent.quote_timestamp|date('Y-m-d') }}</a>
+                    {{ container_title(parent.quote_timestamp|date('Y-m-d'), '?v=quotes&s=' ~ parent.quote_id) }}
                     {{ chat_quote_display([parent]) }}
                 </div>
             {% endfor %}

@@ -1,8 +1,6 @@
 <?php
 require_once '../misuzu.php';
 
-use_legacy_style();
-
 // basing whether or not this is an xhr request on whether a referrer header is present
 // this page is never directy accessed, under normal circumstances
 $redirect = !empty($_SERVER['HTTP_REFERER']) && empty($_SERVER['HTTP_X_MISUZU_XHR']) ? $_SERVER['HTTP_REFERER'] : '';

@@ -1,11 +1,11 @@
 {% extends 'settings/master.twig' %}
-{% from 'macros.twig' import pagination %}
+{% from 'macros.twig' import pagination, container_title %}
 
 {% set spagination = pagination(sessions_count, sessions_take, sessions_offset, '?m=sessions', 'settings__') %}
 
 {% block settings_content %}
     <div class="container">
-        <div class="container__title">Sessions</div>
+        {{ container_title('Sessions') }}
 
         <div class="settings__sessions">
             <div class="settings__description">

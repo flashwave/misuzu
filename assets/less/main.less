@@ -1,28 +1,19 @@
-@mio-font-heading: Verdana, 'Dejavu Sans', Arial, Helvetica, sans-serif;
 @mio-font-regular: Tahoma, Geneva, 'Dejavu Sans', Arial, Helvetica, sans-serif;
 @mio-font-mono: Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-@site-max-width: 1200px;
 @site-mobile-width: 800px;
 
-@default-accent-colour: #9475b2;
-@default-background-colour: #fbeeff;
-@default-text-colour: #000;
-@default-header-text-colour: #306;
-@default-gradient-start: #c2affe;
-
 :root {
-    --site-max-width: @site-max-width;
-    --site-background-meta: no-repeat center / cover fixed;
-    --site-background-image: initial;
+    --site-max-width: 1200px;
+
+    --background-image: initial;
+    --background-colour: #111;
+    --background-colour-translucent: #111E;
+
+    --text-colour: #fff;
+    --text-colour-inverted: #000;
 
     --user-colour: inherit;
-    --accent-colour: @default-accent-colour;
-    --text-colour: @default-text-colour;
-    --text-colour-inverted: color(#fff - @default-text-colour);
-    --text-colour-header: @default-header-text-colour;
-    --background-colour: @default-background-colour;
-    --background-colour-translucent: fade(@default-background-colour, 90%);
-    --gradient-start: @default-gradient-start; // deprecate this in favour of --accent-colour at some point
+    --accent-colour: #9475b2;
 }
 
 * {
@@ -42,8 +33,7 @@ body {
 .main {
     display: flex;
     flex-direction: column;
-    background: var(--site-background-meta);
-    background-image: var(--site-background-image);
+    background-image: var(--background-image);
     background-color: var(--background-colour);
     font: 12px/20px @mio-font-regular;
     color: var(--text-colour);
@@ -53,23 +43,6 @@ body {
         width: 100%;
         margin: 0 auto;
         flex: 1 0 auto;
-    }
-
-    &--default {
-        --site-background-meta: repeat;
-        --site-background-image: url('https://mikoto.misaka.nl/i/cloudss.png');
-        background-blend-mode: multiply;
-        --accent-colour: #452c4c;
-        --text-colour: #fff;
-        --text-colour-inverted: #000;
-
-        background-color: var(--accent-colour);
-        --gradient-start: var(--accent-colour);
-    }
-
-    &--legacy {
-        --background-colour: #fbeeff;
-        --accent-colour: #9475b2;
     }
 
     &--bg-blend {

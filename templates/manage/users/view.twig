@@ -1,17 +1,16 @@
 {% extends 'manage/users/master.twig' %}
+{% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import permissions_table %}
 
 {% set site_link = '/profile.php?u=' ~ view_user.user_id %}
 
 {% block manage_content %}
     {% if can_manage_users %}
-        <form method="post" enctype="multipart/form-data" action="">
+        <form method="post" enctype="multipart/form-data" action=""{% if view_user is defined %} style="{{ view_user.user_colour|html_colour('--accent-colour') }}"{% endif %}>
             {{ 'users_edit'|csrf|raw }}
 
             <div class="container">
-                <div class="container__title">
-                    Viewing <span style="{{ view_user.colour|html_colour }}">{{ view_user.username }}</span> ({{ view_user.user_id }})
-                </div>
+                {{ container_title('Viewing ' ~ view_user.username ~ ' (' ~ view_user.user_id ~ ')') }}
 
                 <label class="form__label">
                     <div class="form__label__text">Username</div>
@@ -71,7 +70,7 @@
             </div>
 
             <div class="container">
-                <div class="container__title">Avatar</div>
+                {{ container_title('Avatar') }}
 
                 <label class="form__label">
                     <div class="form__label__text">New Avatar</div>
@@ -89,7 +88,7 @@
             </div>
 
             <div class="container">
-                <div class="container__title">Password</div>
+                {{ container_title('Password') }}
 
                 <label class="form__label">
                     <div class="form__label__text">New Password</div>
@@ -107,7 +106,7 @@
             </div>
 
             <div class="container">
-                <div class="container__title">Colour</div>
+                {{ container_title('Colour') }}
 
                 {% set colour_is_defined = view_user is defined and view_user.user_colour is not null and not view_user.user_colour|colour_get_inherit %}
 
@@ -142,7 +141,7 @@
 
             {% if can_manage_perms %}
                 <div class="container">
-                    <div class="container__title">Permissions</div>
+                    {{ container_title('Permissions') }}
                     {{ permissions_table(permissions) }}
                 </div>
             {% endif %}
@@ -154,7 +153,8 @@
     {% if can_manage_users %}
         {% if has_roles|length > 0 %}
             <form method="post" action="" class="container">
-                <div class="container__title">Manage Roles</div>
+                {{ container_title('Manage Roles') }}
+
                 <div class="container__content">
                     {{ 'users_edit'|csrf|raw }}
 
@@ -179,7 +179,8 @@
 
         {% if available_roles|length > 0 %}
             <form method="post" action="" class="container">
-                <div class="container__title">Add Role</div>
+                {{ container_title('Add role') }}
+
                 <div class="container__content">
                     <label class="form__label">
                         <div class="form__label__text">Available Roles</div>

@@ -1,5 +1,7 @@
 {% extends 'master.twig' %}
+{% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import manage_navigation %}
+
 {% set title = 'Broom Closet' %}
 
 {% block content %}
@@ -11,7 +13,7 @@
         <div class="manage__content">
             {% block manage_content %}
                 <div class="container">
-                    <div class="container__title">No brooms</div>
+                    {{ container_title('No brooms') }}
                     <div class="container__content">
                         This broom closet is empty.
                     </div>

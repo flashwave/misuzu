@@ -1,8 +1,6 @@
 <?php
 require_once '../../misuzu.php';
 
-use_legacy_style();
-
 switch ($_GET['v'] ?? null) {
     case 'listing':
         $forums = db_query('SELECT * FROM `msz_forum_categories`');

@@ -1,4 +1,5 @@
 {% extends 'news/master.twig' %}
+{% from 'macros.twig' import container_title %}
 {% from '_layout/comments.twig' import comments_section %}
 
 {% set title = post.post_title ~ ' :: News' %}
@@ -7,10 +8,7 @@
 
 {% block content %}
     <div class="container news__post">
-        <div class="container__title">
-            <a href="/news.php?c={{ post.category_id }}" class="container__title__link">{{ post.category_name }}</a> »
-            {{ post.post_title }}
-        </div>
+        {{ container_title(post.post_title) }}
 
         <div class="news__post__content">
             <div class="news__post__text">
@@ -57,9 +55,7 @@
 
     {% if comments is defined %}
         <div class="container">
-            <div class="container__title">
-                Comments
-            </div>
+            {{ container_title('Comments') }}
             {{ comments_section(comments, comments_category, current_user|default(null), comments_perms) }}
         </div>
     {% endif %}

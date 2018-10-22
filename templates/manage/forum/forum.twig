@@ -1,9 +1,11 @@
 {% extends 'manage/users/master.twig' %}
+{% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import permissions_table %}
 
 {% block manage_content %}
     <div class="container">
-        <div class="container__title">{{ forum.forum_name }}</div>
+        {{ container_title(forum.forum_name) }}
+
         <div class="container__content">
             <form action="" method="get">
                 <input type="hidden" name="v" value="forumperms">
@@ -19,7 +21,7 @@
     </div>
 
     <div class="container">
-        <div class="container__title">Base Permissions</div>
+        {{ container_title('Base Permissions') }}
         {{ permissions_table(perms) }}
     </div>
 {% endblock %}

@@ -1,5 +1,5 @@
 {% extends 'master.twig' %}
-{% from 'macros.twig' import navigation %}
+{% from 'macros.twig' import navigation, container_title %}
 
 {% set title = 'Settings » ' ~ settings_title %}
 
@@ -9,7 +9,8 @@
     {% block settings_container %}
         {% if settings_errors is defined and settings_errors|length > 0 %}
             <div class="container">
-                <div class="container__title">Information</div>
+                {{ container_title('Information') }}
+
                 <div class="container__content">
                     <ul class="settings__errors">
                         {% for error in settings_errors %}
@@ -22,7 +23,8 @@
 
         {% block settings_content %}
             <div class="container">
-                <div class="container__title">{{ title }}</div>
+                {{ container_title(title) }}
+
                 <div class="container__content">
                     This is a blank settings page.
                 </div>

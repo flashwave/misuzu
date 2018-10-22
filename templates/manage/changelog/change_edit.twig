@@ -1,4 +1,5 @@
 {% extends 'manage/changelog/master.twig' %}
+{% from 'macros.twig' import container_title %}
 
 {% if edit_change is defined %}
     {% set site_link = '/changelog.php?c=' ~ edit_change.change_id %}
@@ -9,13 +10,7 @@
         <form action="?v=change{{ edit_change is defined ? '&c=' ~ edit_change.change_id : '' }}" method="post">
             {{ 'changelog_add'|csrf|raw }}
 
-            <h1 class="container__title">
-                {% if edit_change is defined %}
-                    Editing #{{ edit_change.change_id }}
-                {% else %}
-                    Adding a new change
-                {% endif %}
-            </h1>
+            {{ container_title(edit_change is defined ? 'Editing #' ~ edit_change.change_id : 'Adding a new change') }}
 
             <label class="form__label" style="width:100%">
                 <div class="form__label__text">Log</div>
@@ -64,9 +59,7 @@
         </form>
 
         {% if edit_change is defined %}
-            <h1 class="container__title">
-                Tags
-            </h1>
+            {{ container_title('Tags') }}
 
             {% if edit_change_assigned_tags|length > 0 %}
                 <form class="container" method="post" action="" style="display:inline-block">

@@ -1,10 +1,11 @@
 {% extends 'manage/news/master.twig' %}
+{% from 'macros.twig' import container_title %}
 
 {% set is_new = category|length < 1 %}
 
 {% block manage_content %}
     <form method="post" action="" class="container">
-        <div class="container__title">{{ is_new ? 'New Category' : 'Editing ' ~ category.category_name }}</div>
+        {{ container_title(is_new ? 'New Category' : 'Editing ' ~ category.category_name) }}
 
         {{ 'news_category'|csrf|raw }}
         <input type="hidden" name="category[id]" value="{{ category.category_id|default(0) }}">

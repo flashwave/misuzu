@@ -1,14 +1,13 @@
 {% extends 'manage/changelog/master.twig' %}
-{% from 'macros.twig' import pagination %}
+{% from 'macros.twig' import pagination, container_title %}
 {% from 'changelog/macros.twig' import changelog_listing %}
 
 {% block manage_content %}
     <a href="?v=change" class="input__button">Create new change</a>
 
     <div class="container">
-        <div class="container__title">
-            Changelog
-        </div>
+        {{ container_title('Changelog') }}
+
         <div class="changelog__content">
             {{ changelog_listing(
                 changelog_changes, false, true,

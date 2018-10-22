@@ -1,8 +1,6 @@
 <?php
 require_once '../misuzu.php';
 
-use_legacy_style();
-
 $categoryId = isset($_GET['c']) ? (int)$_GET['c'] : null;
 $postId = isset($_GET['p']) ? (int)$_GET['p'] : (isset($_GET['n']) ? (int)$_GET['n'] : null);
 $postsOffset = (int)($_GET['o'] ?? 0);
