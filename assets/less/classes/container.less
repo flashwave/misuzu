@@ -1,18 +1,9 @@
 .container {
-    border: 1px solid var(--accent-colour);
-    background-color: var(--background-colour);
-    margin: 2px 0;
-    box-shadow: 0 1px 2px var(--accent-colour);
+    background-color: #111;
+    box-shadow: 0 1px 2px #111;
+    text-shadow: 0 1px 4px #111;
 
-    &--new {
-        color: #fff;
-        border: initial;
-        background-color: #111;
-        text-shadow: 0 1px 4px #111;
-        box-shadow: 0 1px 2px #111;
-        margin: 0; // new style containers should not depend on existing margins
-    }
-
+    // should this exist?
     &--hidden { // __title should always be the first element of a container
         :not(:first-child) {
             display: none;
@@ -20,18 +11,17 @@
     }
 
     &--translucent {
-        background-color: var(--background-colour-translucent);
+        background-color: #111E;
     }
 
     &__title {
         display: block;
         text-decoration: none;
         background-image: linear-gradient(0deg, transparent, var(--accent-colour));
-        color: var(--text-colour-header);
-        font-size: 1.17em;
-        font-weight: 700;
-        padding: 3px;
-        font-family: @mio-font-heading;
+        color: #fff;
+        font-size: 1.5em;
+        line-height: 1.5em;
+        padding: 8px 10px;
         word-wrap: break-word;
         overflow: hidden;
 
@@ -49,21 +39,7 @@
         }
     }
 
-    &--new &__title {
-        background-image: linear-gradient(0deg, transparent, var(--accent-colour));
-        color: #fff;
-        font-weight: 400;
-        font-size: 1.5em;
-        line-height: 1.5em;
-        padding: 8px 10px;
-        font-family: inherit;
-    }
-
     &__content { // only use this for text going forward, just throw your child container in directly after __title
-        margin: 2px 5px;
-    }
-
-    &--new &__content {
         margin: 0;
         padding: 2px 5px;
     }
