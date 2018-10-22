@@ -9,7 +9,7 @@
     ) }}
 
     {% if can_create_account %}
-        <form class="container container--new auth" method="post" action="">
+        <form class="container auth" method="post" action="">
             <input type="hidden" name="auth[mode]" value="register">
             {{ 'register'|csrf|raw }}
 
@@ -24,27 +24,27 @@
             {% endif %}
 
             <div class="auth__form">
-                <input class="input__text input__text--new auth__input" type="text"
+                <input class="input__text auth__input" type="text"
                     name="auth[username]" placeholder="Username"
                     value="{{ auth_username|default('') }}" required>
 
-                <input class="input__text input__text--new auth__input" type="password"
+                <input class="input__text auth__input" type="password"
                     name="auth[password]" placeholder="Password" required>
 
-                <input class="input__text input__text--new auth__input" type="text"
+                <input class="input__text auth__input" type="text"
                     name="auth[email]" placeholder="E-mail"
                     value="{{ auth_email|default('') }}" required>
 
-                <input class="input__text input__text--new auth__input" type="text"
+                <input class="input__text auth__input" type="text"
                     name="auth[meow]" placeholder="What is the outcome of nine plus ten?" required>
 
-                <button class="input__button input__button--new">Sign up</button>
+                <button class="input__button">Sign up</button>
             </div>
         </form>
     {% endif %}
 
     {% if can_reset_password %}
-        <form class="container container--new auth" method="post" action="">
+        <form class="container auth" method="post" action="">
             <input type="hidden" name="auth[mode]" value="forgot">
             {{ 'passforgot'|csrf|raw }}
 
@@ -59,11 +59,11 @@
             {% endif %}
 
             <div class="auth__form">
-                <input class="input__text input__text--new auth__input" type="text"
+                <input class="input__text auth__input" type="text"
                     name="auth[email]" placeholder="E-mail"
                     value="{{ auth_email|default('') }}" required>
 
-                <button class="input__button input__button--new">Send reminder</button>
+                <button class="input__button">Send reminder</button>
             </div>
         </form>
     {% endif %}

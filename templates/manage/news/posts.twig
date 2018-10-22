@@ -2,15 +2,15 @@
 {% from 'macros.twig' import pagination %}
 
 {% block manage_content %}
-    <div class="container container--new">
+    <div class="container">
         <div class="container__title">News Posts</div>
 
-        <a href="?v=post" class="input__button input__button--new">New Post</a>
+        <a href="?v=post" class="input__button">New Post</a>
 
         {% for post in news_posts %}
             <p>
-                <a href="?v=post&amp;p={{ post.post_id }}" class="input__button input__button--new">{{ post.post_id }}</a>
-                <a href="?v=category&amp;c={{ post.category_id }}" class="input__button input__button--new">Cat: {{ post.category_id }}</a>
+                <a href="?v=post&amp;p={{ post.post_id }}" class="input__button">{{ post.post_id }}</a>
+                <a href="?v=category&amp;c={{ post.category_id }}" class="input__button">Cat: {{ post.category_id }}</a>
                 {{ post.post_is_featured }},
                 {{ post.user_id }},
                 {{ post.post_title }},

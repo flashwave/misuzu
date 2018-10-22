@@ -3,7 +3,7 @@
         <div class="profile__header__avatar">
 
             {% if is_editing and perms.edit_avatar %}
-                <label class="avatar avatar--new profile__header__avatar__image profile__header__avatar__image--edit"
+                <label class="avatar profile__header__avatar__image profile__header__avatar__image--edit"
                     style="background-image:url('{{ image }}')"
                     id="avatar-preview"
                     for="avatar-selection"></label>
@@ -23,7 +23,7 @@
                     </label>
                 </div>
             {% else %}
-                <div class="avatar avatar--new profile__header__avatar__image" style="background-image:url('{{ image }}')"></div>
+                <div class="avatar profile__header__avatar__image" style="background-image:url('{{ image }}')"></div>
             {% endif %}
         </div>
 
@@ -62,18 +62,18 @@
     <div class="profile__header__options">
         <div class="profile__header__actions">
             {% if is_editing %}
-                <button class="input__button input__button--new input__button--save profile__header__action">Save</button>
-                <a href="/profile.php?u={{ profile.user_id }}" class="input__button input__button--new input__button--destroy profile__header__action">Discard</a>
-                <a href="/settings.php" class="input__button input__button--new profile__header__action">Settings</a>
+                <button class="input__button input__button--save profile__header__action">Save</button>
+                <a href="/profile.php?u={{ profile.user_id }}" class="input__button input__button--destroy profile__header__action">Discard</a>
+                <a href="/settings.php" class="input__button profile__header__action">Settings</a>
             {% elseif can_edit %}
-                <a href="/profile.php?u={{ profile.user_id }}&amp;m=edit" class="input__button input__button--new profile__header__action">Edit Profile</a>
+                <a href="/profile.php?u={{ profile.user_id }}&amp;m=edit" class="input__button profile__header__action">Edit Profile</a>
             {% endif %}
 
             {% if current_user is defined and current_user.user_id != profile.user_id and not is_editing %}
                 {% if friend_info.visitor_relation == constant('MSZ_USER_RELATION_FOLLOW') %}
-                    <a href="/relations.php?u={{ profile.user_id }}&amp;m=remove" class="input__button input__button--new input__button--destroy profile__header__action">{{ friend_info.profile_relation == constant('MSZ_USER_RELATION_FOLLOW') ? 'Unfriend' : 'Unfollow' }}</a>
+                    <a href="/relations.php?u={{ profile.user_id }}&amp;m=remove" class="input__button input__button--destroy profile__header__action">{{ friend_info.profile_relation == constant('MSZ_USER_RELATION_FOLLOW') ? 'Unfriend' : 'Unfollow' }}</a>
                 {% else %}
-                    <a href="/relations.php?u={{ profile.user_id }}&amp;m=add&amp;t=follow" class="input__button input__button--new profile__header__action">{{ friend_info.profile_relation == constant('MSZ_USER_RELATION_FOLLOW') ? 'Add as Friend' : 'Follow' }}</a>
+                    <a href="/relations.php?u={{ profile.user_id }}&amp;m=add&amp;t=follow" class="input__button profile__header__action">{{ friend_info.profile_relation == constant('MSZ_USER_RELATION_FOLLOW') ? 'Add as Friend' : 'Follow' }}</a>
                 {% endif %}
             {% endif %}
         </div>

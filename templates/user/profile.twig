@@ -71,7 +71,7 @@
             {% include 'user/_layout/header.twig' %}
 
             {% if is_editing %}
-                <div class="container container--new profile__guidelines">
+                <div class="container profile__guidelines">
                     <ul class="profile__guidelines__section">
                         <li class="profile__guidelines__line profile__guidelines__line--header">General</li>
                         <li class="profile__guidelines__line">Keep things sane and generally suitable for all ages.</li>
@@ -112,13 +112,13 @@
             <div class="profile__container">
                 <div class="profile__container__side">
                     {% if current_user is not defined %}
-                        <div class="container container--new">
+                        <div class="container">
                             <div class="profile__accounts__notice">
                                 You must <a href="/auth.php?m=login" class="profile__accounts__link">log in</a> to view full profiles!
                             </div>
                         </div>
                     {% elseif is_editing ? perms.edit_profile : profile_fields|default([])|length > 0 %}
-                        <div class="container container--new">
+                        <div class="container">
                             <div class="container__title">
                                 Elsewhere
                             </div>
@@ -130,7 +130,7 @@
                                         </div>
 
                                         {% if is_editing %}
-                                            <input type="{{ data.type|default('text') }}" name="profile[{{ name }}]" value="{{ profile['user_' ~ name] }}" class="input__text input__text--new profile__accounts__input">
+                                            <input type="{{ data.type|default('text') }}" name="profile[{{ name }}]" value="{{ profile['user_' ~ name] }}" class="input__text profile__accounts__input">
                                         {% else %}
                                             <div class="profile__accounts__value"
                                                 {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>
@@ -152,18 +152,18 @@
                 <div class="profile__container__main">
 
                     {% if (is_editing and perms.edit_about) or profile.user_about_content|length > 0 %}
-                        <div class="container container--new profile__about" id="about">
+                        <div class="container profile__about" id="about">
                             <div class="container__title profile__about__title">
                                 About {{ profile.username }}
                             </div>
                             <div class="profile__about__content{% if is_editing %} profile__about__content--edit{% endif %}">
                                 {% if is_editing %}
-                                    <select name="about[parser]" class="input__select input__select--new profile__about__select">
+                                    <select name="about[parser]" class="input__select profile__about__select">
                                         {% for parser, name in constant('MSZ_PARSERS_NAMES') %}
                                             <option value="{{ parser }}"{% if parser == profile.user_about_parser %} selected{% endif %}>{{ name }}</option>
                                         {% endfor %}
                                     </select>
-                                    <textarea name="about[text]" class="input__textarea input__textarea--new profile__about__editor" id="about-textarea">{{ profile.user_about_content|escape }}</textarea>
+                                    <textarea name="about[text]" class="input__textarea profile__about__editor" id="about-textarea">{{ profile.user_about_content|escape }}</textarea>
                                 {% else %}
                                     {{ profile.user_about_content|escape|parse_text(profile.user_about_parser)|raw }}
                                 {% endif %}

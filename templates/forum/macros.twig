@@ -1,7 +1,7 @@
 {% macro forum_category_listing(forums, title, colour) %}
     {% from _self import forum_category_entry %}
 
-    <div class="container container--new forum__categories"{% if colour is not null %} style="{{ colour|html_colour('--accent-colour') }}"{% endif %}>
+    <div class="container forum__categories"{% if colour is not null %} style="{{ colour|html_colour('--accent-colour') }}"{% endif %}>
         <div class="container__title">{{ title }}</div>
 
         {% if forums|length > 0 %}
@@ -19,7 +19,7 @@
 {% endmacro %}
 
 {% macro forum_header(title, breadcrumbs, omit_last_breadcrumb) %}
-    <div class="container container--new forum__header">
+    <div class="container forum__header">
         {% if breadcrumbs is iterable and breadcrumbs|length > 0 %}
             <div class="forum__header__breadcrumbs">
                 {% for name, url in breadcrumbs %}
@@ -47,7 +47,7 @@
 {% macro forum_category_buttons(forum, perms) %}
     <div class="forum__actions forum__actions__content">
         {% if perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
-            <a href="/forum/posting.php?f={{ forum.forum_id }}" class="input__button input__button--new forum__actions__button">New Topic</a>
+            <a href="/forum/posting.php?f={{ forum.forum_id }}" class="input__button forum__actions__button">New Topic</a>
         {% endif %}
     </div>
 {% endmacro %}
@@ -141,7 +141,7 @@
 
                             {% if forum.recent_post_user_id is not null %}
                                 <a href="/profile.php?u={{ forum.recent_post_user_id }}"
-                                    class="avatar avatar--new forum__category__avatar"
+                                    class="avatar forum__category__avatar"
                                     style="background-image:url('/profile.php?u={{ forum.recent_post_user_id }}&amp;m=avatar')">
                                 </a>
                             {% endif %}
@@ -156,14 +156,14 @@
 {% macro forum_topic_buttons(topic) %}
     <div class="forum__actions forum__actions__content">
         <a  href="#reply"
-            class="input__button input__button--new forum__actions__button"
+            class="input__button forum__actions__button"
             onclick="openContainer('reply')">Reply</a>
     </div>
 {% endmacro %}
 
 {% macro forum_topic_locked(locked, archived) %}
     {% if locked is not null or archived %}
-        <div class="container container--new forum__status">
+        <div class="container forum__status">
             <div class="forum__status__icon">
                 <i class="fas fa-{{ archived ? 'archive' : 'lock' }}"></i>
             </div>
@@ -184,7 +184,7 @@
 {% macro forum_topic_listing(topics) %}
     {% from _self import forum_topic_entry %}
 
-    <div class="container container--new forum__topics">
+    <div class="container forum__topics">
         <div class="container__title">Topics</div>
         <div class="forum__topics__list">
             {% if topics|length > 0 %}
@@ -268,7 +268,7 @@
 
                 {% if topic.respondent_id is not null %}
                     <a href="/profile.php?u={{ topic.respondent_id }}"
-                        class="avatar avatar--new forum__topic__avatar"
+                        class="avatar forum__topic__avatar"
                         style="background-image:url('/profile.php?u={{ topic.respondent_id }}&amp;m=avatar')">
                     </a>
                 {% endif %}
@@ -289,10 +289,10 @@
     {% set is_original_post = is_original_post|default(false) %}
     {% set is_original_poster = is_original_poster|default(false) %}
 
-    <div class="container container--new forum__post" id="p{{ post.post_id }}">
+    <div class="container forum__post" id="p{{ post.post_id }}">
         <div class="forum__post__info" style="{{ post.poster_colour|html_colour }}">
             {% if post.poster_id is not null %}
-                <a class="avatar avatar--new forum__post__avatar"
+                <a class="avatar forum__post__avatar"
                     style="background-image:url('/profile.php?u={{ post.poster_id }}&amp;m=avatar');"
                     href="/profile.php?u={{ post.poster_id }}">
                 </a>
@@ -334,7 +334,7 @@
     {% set is_reply = is_reply ? true : false %}
 
     <form{% if element_id is defined %} id="{{ element_id }}"{% endif %}
-        class="container container--new forum__posting"
+        class="container forum__posting"
         method="post"
         action="/forum/posting.php">
         <div class="container__title">
@@ -351,16 +351,16 @@
 
             {% if not is_reply %}
                 <div class="forum__posting__title">
-                    <input class="input__text input__text--new forum__posting__title__input" type="text" name="post[title]" placeholder="Topic title">
+                    <input class="input__text forum__posting__title__input" type="text" name="post[title]" placeholder="Topic title">
                 </div>
             {% endif %}
 
             <div class="forum__posting__text">
-                <textarea class="input__textarea input__textarea--new forum__posting__text__input" name="post[text]"></textarea>
+                <textarea class="input__textarea forum__posting__text__input" name="post[text]"></textarea>
             </div>
 
             <div class="forum__posting__buttons">
-                <button class="input__button input__button--new">Submit</button>
+                <button class="input__button">Submit</button>
             </div>
         </div>
     </form>

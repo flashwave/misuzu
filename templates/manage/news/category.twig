@@ -3,7 +3,7 @@
 {% set is_new = category|length < 1 %}
 
 {% block manage_content %}
-    <form method="post" action="" class="container container--new">
+    <form method="post" action="" class="container">
         <div class="container__title">{{ is_new ? 'New Category' : 'Editing ' ~ category.category_name }}</div>
 
         {{ 'news_category'|csrf|raw }}
@@ -12,12 +12,12 @@
         <table style="color:inherit">
             <tr>
                 <td>Name</td>
-                <td><input type="text" required name="category[name]" class="input__text input__text--new" value="{{ category.category_name|default() }}"></td>
+                <td><input type="text" required name="category[name]" class="input__text" value="{{ category.category_name|default() }}"></td>
             </tr>
 
             <tr>
                 <td>Description</td>
-                <td><textarea name="category[description]" required class="input__textarea input__textarea--new">{{ category.category_description|default() }}</textarea></td>
+                <td><textarea name="category[description]" required class="input__textarea">{{ category.category_description|default() }}</textarea></td>
             </tr>
 
             <tr>
@@ -26,6 +26,6 @@
             </tr>
         </table>
 
-        <button class="input__button input__button--new">Save</button>
+        <button class="input__button">Save</button>
     </form>
 {% endblock %}

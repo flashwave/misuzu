@@ -3,7 +3,7 @@
 {% set is_new = post|length < 1 %}
 
 {% block manage_content %}
-    <form method="post" action="" class="container container--new">
+    <form method="post" action="" class="container">
         <div class="container__title">{{ is_new ? 'New Post' : 'Editing ' ~ post.post_title }}</div>
 
         {{ 'news_post'|csrf|raw }}
@@ -12,13 +12,13 @@
         <table style="color:inherit">
             <tr>
                 <td>Name</td>
-                <td><input type="text" required name="post[title]" class="input__text input__text--new" value="{{ post.post_title|default() }}"></td>
+                <td><input type="text" required name="post[title]" class="input__text" value="{{ post.post_title|default() }}"></td>
             </tr>
 
             <tr>
                 <td>Category</td>
                 <td>
-                    <select name="post[category]" class="input__select input__select--new">
+                    <select name="post[category]" class="input__select">
                         {% for category in categories %}
                             <option value="{{ category.category_id }}" {% if category.category_id == post.category_id|default(0) %}selected{% endif %}>{{ category.category_name }}</option>
                         {% endfor %}
@@ -32,10 +32,10 @@
             </tr>
 
             <tr>
-                <td colspan="2"><textarea name="post[text]" required class="input__textarea input__textarea--new">{{ post.post_text|default() }}</textarea></td>
+                <td colspan="2"><textarea name="post[text]" required class="input__textarea">{{ post.post_text|default() }}</textarea></td>
             </tr>
         </table>
 
-        <button class="input__button input__button--new">Save</button>
+        <button class="input__button">Save</button>
     </form>
 {% endblock %}

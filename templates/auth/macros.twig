@@ -1,12 +1,12 @@
 {% macro auth_login(username, message, is_welcome) %} {# please only use this once per page, it has script shit rn #}
     {% set is_welcome = is_welcome|default(false) %}
 
-    <form class="container container--new auth" method="post" action="/auth.php">
+    <form class="container auth" method="post" action="/auth.php">
         <input type="hidden" name="auth[mode]" value="login">
         {{ 'login'|csrf|raw }}
 
         <div class="auth__header">
-            <div class="avatar avatar--new auth__avatar" id="login-avatar"
+            <div class="avatar auth__avatar" id="login-avatar"
                 style="background-image:url('/profile.php?u=0&amp;m=avatar');"></div>
         </div>
 
@@ -19,14 +19,14 @@
         {% endif %}
 
         <div class="auth__form">
-            <input class="input__text input__text--new auth__input" type="text"
+            <input class="input__text auth__input" type="text"
                 name="auth[username]" placeholder="Username" id="login-username"
                 value="{{ username|default('') }}" required>
 
-            <input class="input__text input__text--new auth__input" type="password"
+            <input class="input__text auth__input" type="password"
                 name="auth[password]" placeholder="Password" required>
 
-            <button class="input__button input__button--new">Login</button>
+            <button class="input__button">Login</button>
         </div>
     </form>
 
