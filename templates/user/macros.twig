@@ -1,6 +1,6 @@
 {% macro user_card(user, profile_url, rank_url, actions) %}
-    <div class="usercard">
-        <a  href="{{ profile_url|default('/profile.php?u=%d')|format(user.user_id) }}"
+    <div class="usercard" {% if user.user_colour is defined %}style="{{ user.user_colour|html_colour('--accent-colour') }}"{% endif %}>
+        <a href="{{ profile_url|default('/profile.php?u=%d')|format(user.user_id) }}"
             class="usercard__background" title="{{ user.username }}"></a>
 
         <div class="usercard__container">
@@ -10,8 +10,7 @@
                 </div>
 
                 <div class="usercard__details">
-                    <div class="usercard__name"
-                        {% if user.user_colour is defined %}style="{{ user.user_colour|html_colour }}"{% endif %}>
+                    <div class="usercard__name">
                         {{ user.username }}
                     </div>
 

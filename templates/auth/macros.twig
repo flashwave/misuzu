@@ -6,8 +6,10 @@
         {{ 'login'|csrf|raw }}
 
         <div class="auth__header">
-            <div class="avatar auth__avatar" id="login-avatar"
-                style="background-image:url('/profile.php?u=0&amp;m=avatar');"></div>
+            <div class="auth__header__wrapper">
+                <div class="avatar auth__avatar" id="login-avatar"
+                    style="background-image:url('/profile.php?u=0&amp;m=avatar');"></div>
+            </div>
         </div>
 
         {% if message|length > 0 %}

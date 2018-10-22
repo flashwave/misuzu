@@ -1,13 +1,20 @@
 .auth {
+    background: var(--background-colour);
     max-width: 400px;
     margin: 0 auto;
     margin-bottom: 2px;
 
     &__header {
-        display: flex;
-        justify-content: center;
-        padding: 20px;
-        background-image: linear-gradient(0deg, #111, var(--accent-colour));
+        background: var(--user-header) center / cover no-repeat, var(--background-pattern);
+        background-color: var(--accent-colour);
+        background-blend-mode: normal, multiply;
+
+        &__wrapper {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background-image: linear-gradient(0deg, var(--background-colour-translucent), transparent);
+        }
     }
 
     &__warning {
