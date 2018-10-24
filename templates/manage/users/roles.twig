@@ -49,7 +49,5 @@
         {% endfor %}
     </div>
 
-    <div class="pagination__wrapper">
-        {{ pagination(manage_roles_count, manage_roles_range, manage_roles_offset, '?v=roles') }}
-    </div>
+    {{ pagination(manage_roles_count, manage_roles_range, manage_roles_offset, '?v=roles') }}
 {% endblock %}

@@ -6,7 +6,6 @@
     audit_log_take,
     audit_log_offset,
     '?m=logs'|url_construct({'lo': login_attempts_offset}),
-    'settings__',
     false,
     'ao'
 ) %}
@@ -15,7 +14,6 @@
     login_attempts_take,
     login_attempts_offset,
     '?m=logs'|url_construct({'ao': audit_log_offset}),
-    'settings__',
     false,
     'lo'
 ) %}

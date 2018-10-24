@@ -1,57 +1,47 @@
 .pagination {
-    list-style: none;
     display: flex;
-    padding: 1px;
-    border: 1px solid var(--accent-colour);
+    justify-content: space-between;
+    align-items: center;
 
-    &__wrapper {
-        background-color: var(--accent-colour);
-        margin: 2px 0;
-        box-shadow: 0 1px 2px var(--accent-colour);
-    }
+    &__section {
+        display: flex;
+        overflow: auto;
+        flex: 0 0 auto;
 
-    &__separator {
-        flex-grow: 1;
-        flex-shrink: 1;
-    }
+        &--pages {
+            flex-shrink: 1;
 
-    &__option {
-        background: var(--accent-colour);
-        height: 20px;
-        min-width: 20px;
-
-        &:not(:last-child) {
-            margin-right: 1px;
-        }
-
-        &--disabled {
-            color: #383838;
-            background: #777;
-        }
-
-        @media (max-width: @site-mobile-width) {
-            height: 30px;
-            min-width: 30px;
-            font-size: 1.5em;
-            line-height: 1.5em;
+            @media (max-width: @site-mobile-width) {
+                display: none;
+            }
         }
     }
 
     &__link {
         display: block;
-        width: 100%;
-        height: 100%;
+        height: 30px;
+        font-size: 1.2em;
+        line-height: 1.5em;
+        margin: 1px;
+        padding: 3px 10px;
         text-align: center;
         text-decoration: none;
-        color: inherit;
+        background-color: var(--background-colour);
+        color: var(--accent-colour);
+        border: 1px solid var(--accent-colour);
+        border-radius: 2px;
+        transition: background-color .2s, color .2s;
 
-        &--prev,
-        &--next,
-        &--first,
-        &--last,
-        &--active,
-        &:hover {
-            font-weight: bold;
+        &--disabled {
+            --accent-colour: #555;
+        }
+
+        &--current,
+        &:not(&--disabled):hover,
+        &:not(&--disabled):active,
+        &:not(&--disabled):focus {
+            background-color: var(--accent-colour);
+            color: var(--background-colour);
         }
     }
 }

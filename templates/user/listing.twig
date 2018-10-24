@@ -61,9 +61,7 @@
 
     {% set mpagination = pagination(role.role_user_count, users_take, users_offset, full_url) %}
 
-    <div class="pagination__wrapper">
-        {{ mpagination }}
-    </div>
+    {{ mpagination }}
 
     <div class="userlist">
         {% for user in users %}
@@ -73,7 +71,5 @@
         {% endfor %}
     </div>
 
-    <div class="pagination__wrapper">
-        {{ mpagination }}
-    </div>
+    {{ mpagination }}
 {% endblock %}

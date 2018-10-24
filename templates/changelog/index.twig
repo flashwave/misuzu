@@ -29,10 +29,12 @@
             {{ changelog_listing(changes, is_date) }}
 
             {% if not is_date %}
-                {{ pagination(changelog_count, changelog_take, changelog_offset, '/changelog.php'|url_construct({
-                    'd': changelog_date,
-                    'u': changelog_user ? changelog_user : ''
-                }), 'changelog__') }}
+                <div class="changelog__pagination">
+                    {{ pagination(changelog_count, changelog_take, changelog_offset, '/changelog.php'|url_construct({
+                        'd': changelog_date,
+                        'u': changelog_user ? changelog_user : ''
+                    })) }}
+                </div>
             {% endif %}
         </div>
     </div>
