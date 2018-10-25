@@ -15,6 +15,10 @@
             {% for post in posts %}
                 {{ news_preview(post) }}
             {% endfor %}
+
+            <div class="container" style="padding: 5px;">
+                {{ pagination(category.posts_count, posts_take, posts_offset, '/news.php'|url_construct({'c':category.category_id}), true) }}
+            </div>
         </div>
 
         <div class="news__sidebar">
@@ -37,8 +41,6 @@
                     </div>
                 </div>
             {% endif %}
-
-            {{ pagination(category.posts_count, posts_take, posts_offset, '/news.php?c=' ~ category.category_id) }}
         </div>
     </div>
 {% endblock %}
