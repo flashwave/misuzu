@@ -1,14 +1,16 @@
 {% macro comments_input(category, user, perms, reply_to) %}
     {% set reply_mode = reply_to is not null %}
 
+    {% from '_layout/input.twig' import input_hidden, input_csrf %}
+
     <form class="comment comment--input{% if reply_mode %} comment--reply{% endif %}"
         method="post" action="/comments.php?m=create"
         id="comment-{{ reply_mode ? 'reply-' ~ reply_to.comment_id : 'create-' ~ category.category_id }}">
-        <input type="hidden" name="comment[category]" value="{{ category.category_id }}">
-        {{ 'comments'|csrf|raw }}
+        {{ input_hidden('comment[category]', category.category_id) }}
+        {{ input_csrf('comments') }}
 
         {% if reply_mode %}
-            <input type="hidden" name="comment[reply]" value="{{ reply_to.comment_id }}">
+            {{ input_hidden('comment[reply]', reply_to.comment_id) }}
         {% endif %}
 
         <div class="comment__container">

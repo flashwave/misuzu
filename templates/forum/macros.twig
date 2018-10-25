@@ -370,6 +370,7 @@
 
 {% macro forum_posting_form(title, target_id, is_reply, element_id) %}
     {% from 'macros.twig' import container_title %}
+    {% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
     {% set is_reply = is_reply ? true : false %}
 
     <form{% if element_id is defined %} id="{{ element_id }}"{% endif %}
@@ -379,8 +380,8 @@
         {{ container_title(title) }}
 
         <div class="forum__posting__content">
-            <input type="hidden" name="post[{{ is_reply ? 'topic' : 'forum' }}]" value="{{ target_id }}">
-            {{ 'forum_post'|csrf|raw }}
+            {{ input_hidden('post[' ~ (is_reply ? 'topic' : 'forum') ~ ']', target_id) }}
+            {{ input_csrf('forum_post') }}
 
             {#<div class="forum__posting__errors">
                 <p class="forum__posting__error">Error: Your post contained too much text, shorten it a bit or split it out in two posts.</p>
@@ -388,7 +389,7 @@
 
             {% if not is_reply %}
                 <div class="forum__posting__title">
-                    <input class="input__text forum__posting__title__input" type="text" name="post[title]" placeholder="Topic title">
+                    {{ input_text('post[title]', 'forum__posting__title__input', '', 'text', 'Topic title') }}
                 </div>
             {% endif %}
 

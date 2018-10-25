@@ -1,5 +1,6 @@
 {% extends 'user/master.twig' %}
 {% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 
 {% set image = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
 {% set canonical_url = '/profile.php?u=' ~ profile.user_id %}
@@ -42,8 +43,8 @@
 {% block content %}
     {% if is_editing %}
         <form class="profile" method="post" action="/settings.php" enctype="multipart/form-data">
-            <input type="hidden" name="user" value="{{ profile.user_id }}">
-            {{ 'settings'|csrf|raw }}
+            {{ input_hidden('user', profile.user_id) }}
+            {{ input_csrf('settings') }}
 
             {% if perms.edit_avatar %}
                 <input class="settings__avatar__input"
@@ -130,7 +131,7 @@
                                         </div>
 
                                         {% if is_editing %}
-                                            <input type="{{ data.type|default('text') }}" name="profile[{{ name }}]" value="{{ profile['user_' ~ name] }}" class="input__text profile__accounts__input">
+                                            {{ input_text('profile[' ~ name ~ ']', 'profile__accounts__input', profile['user_' ~ name], data.type|default('text')) }}
                                         {% else %}
                                             <div class="profile__accounts__value"
                                                 {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>

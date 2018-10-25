@@ -1,6 +1,7 @@
 {% extends 'manage/general/master.twig' %}
 {% from 'home/macros.twig' import chat_quote_display %}
 {% from 'macros.twig' import pagination, container_title %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 
 {% block manage_content %}
     <div class="container">
@@ -8,8 +9,8 @@
 
         {% if current_quote is defined %}
             <form method="post" action="">
-                {{ 'add_quote'|csrf|raw }}
-                <input type="hidden" name="quote[id]" value="{{ current_quote.quote_id|default(0) }}">
+                {{ input_csrf('add_quote') }}
+                {{ input_hidden('quote[id]', current_quote.quote_id|default(0)) }}
 
                 * = optional
 
@@ -26,12 +27,12 @@
 
                     <tr>
                         <td>Date/time*</td>
-                        <td><input type="text" name="quote[time]" class="input__text" value="{{ current_quote.quote_timestamp|default(0)|date('Y-m-d H:i:s') }}"></td>
+                        <td>{{ input_text('quote[time]', '', (current_quote.quote_timestamp|default('')|date('Y-m-d H:i:s'))) }}</td>
                     </tr>
 
                     <tr>
                         <td>Username</td>
-                        <td><input type="text" required name="quote[user][name]" class="input__text" value="{{ current_quote.quote_username|default() }}"></td>
+                        <td>{{ input_text('quote[user][name]', '', current_quote.quote_username|default(), 'text', '', true) }}</td>
                     </tr>
 
                     <tr>

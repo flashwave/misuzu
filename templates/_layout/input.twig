@@ -1,0 +1,24 @@
+{% macro input_hidden(name, value) %}
+{% spaceless %}
+    <input type="hidden" name="{{ name }}" value="{{ value }}">
+{% endspaceless %}
+{% endmacro %}
+
+{% macro input_csrf(realm, name) %} {# so we don't have to specify |raw every time #}
+{% spaceless %}
+    {{ csrf_input(realm, name|default('csrf'))|raw }}
+{% endspaceless %}
+{% endmacro %}
+
+{% macro input_text(name, class, value, type, placeholder, required, attributes) %}
+{% spaceless %}
+    <input type="{{ type|default('text') }}" {% if name|length > 0 %}name="{{ name }}"{% else %}readonly{% endif %}
+        class="input__text{% if name|length < 1 %} input__text--readonly{% endif %}{{ class|length > 0 ? ' ' ~ class : '' }}"
+        {% if placeholder|length > 0 %}placeholder="{{ placeholder }}"{% endif %}
+        {% if value|length > 0 %}value="{{ value }}"{% endif %}
+        {% if required|default(false) %}required{% endif %}
+        {% for name, value in attributes|default([]) %}
+            {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
+        {% endfor %}>
+{% endspaceless %}
+{% endmacro %}

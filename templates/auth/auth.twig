@@ -1,5 +1,6 @@
 {% extends 'auth/master.twig' %}
 {% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 {% from 'auth/macros.twig' import auth_login %}
 
 {% block content %}
@@ -11,8 +12,8 @@
 
     {% if can_create_account %}
         <form class="container auth" method="post" action="">
-            <input type="hidden" name="auth[mode]" value="register">
-            {{ 'register'|csrf|raw }}
+            {{ input_hidden('auth[mode]', 'register') }}
+            {{ input_csrf('register') }}
 
             {{ container_title('Register') }}
 
@@ -25,19 +26,10 @@
             {% endif %}
 
             <div class="auth__form">
-                <input class="input__text auth__input" type="text"
-                    name="auth[username]" placeholder="Username"
-                    value="{{ auth_username|default('') }}" required>
-
-                <input class="input__text auth__input" type="password"
-                    name="auth[password]" placeholder="Password" required>
-
-                <input class="input__text auth__input" type="text"
-                    name="auth[email]" placeholder="E-mail"
-                    value="{{ auth_email|default('') }}" required>
-
-                <input class="input__text auth__input" type="text"
-                    name="auth[meow]" placeholder="What is the outcome of nine plus ten?" required>
+                {{ input_text('auth[username]', 'auth__input', auth_username|default(''), 'text', 'Username', true) }}
+                {{ input_text('auth[password]', 'auth__input', '', 'password', 'Password', true) }}
+                {{ input_text('auth[email]', 'auth__input', auth_email|default(''), 'text', 'E-mail', true) }}
+                {{ input_text('auth[meow]', 'auth__input', '', 'text', 'What is the outcome of nine plus ten?', true) }}
 
                 <button class="input__button">Sign up</button>
             </div>
@@ -46,8 +38,8 @@
 
     {% if can_reset_password %}
         <form class="container auth" method="post" action="">
-            <input type="hidden" name="auth[mode]" value="forgot">
-            {{ 'passforgot'|csrf|raw }}
+            {{ input_hidden('auth[mode]', 'forgot') }}
+            {{ input_csrf('passforgot') }}
 
             {{ container_title('Forgot password') }}
 
@@ -60,9 +52,7 @@
             {% endif %}
 
             <div class="auth__form">
-                <input class="input__text auth__input" type="text"
-                    name="auth[email]" placeholder="E-mail"
-                    value="{{ auth_email|default('') }}" required>
+                {{ input_text('auth[email]', 'auth__input', auth_email|default(''), 'text', 'E-mail', true) }}
 
                 <button class="input__button">Send reminder</button>
             </div>

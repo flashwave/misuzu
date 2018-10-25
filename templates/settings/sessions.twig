@@ -1,5 +1,6 @@
 {% extends 'settings/master.twig' %}
 {% from 'macros.twig' import pagination, container_title %}
+{% from '_layout/input.twig' import input_hidden, input_csrf %}
 
 {% set spagination = pagination(sessions_count, sessions_take, sessions_offset, '?m=sessions') %}
 
@@ -13,7 +14,7 @@
             </div>
 
             <form class="settings__sessions__actions" method="post" action="?m=sessions">
-                {{ 'settings'|csrf|raw }}
+                {{ input_csrf('settings') }}
 
                 <button class="input__button" name="session_action" value="kill-all">
                     Kill all active sessions
@@ -66,8 +67,8 @@
                     {% endif %}
 
                     <form class="settings__sessions__column settings__sessions__column--options" method="post" action="?m=sessions">
-                        <input type="hidden" name="session" value="{{ session.session_id }}">
-                        {{ 'settings'|csrf|raw }}
+                        {{ input_hidden('session', session.session_id) }}
+                        {{ input_csrf('settings') }}
 
                         <button class="input__button settings__sessions__button">
                             {{ session.session_id == active_session_id ? 'Logout' : 'Kill' }}

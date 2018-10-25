@@ -1,9 +1,11 @@
 {% macro auth_login(username, message, is_welcome) %} {# please only use this once per page, it has script shit rn #}
     {% set is_welcome = is_welcome|default(false) %}
 
+    {% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
+
     <form class="container auth" method="post" action="/auth.php">
-        <input type="hidden" name="auth[mode]" value="login">
-        {{ 'login'|csrf|raw }}
+        {{ input_hidden('auth[mode]', 'login') }}
+        {{ input_csrf('login') }}
 
         <div class="auth__header">
             <div class="auth__header__wrapper">
@@ -21,12 +23,8 @@
         {% endif %}
 
         <div class="auth__form">
-            <input class="input__text auth__input" type="text"
-                name="auth[username]" placeholder="Username" id="login-username"
-                value="{{ username|default('') }}" required>
-
-            <input class="input__text auth__input" type="password"
-                name="auth[password]" placeholder="Password" required>
+            {{ input_text('auth[username]', 'auth__input', username|default(''), 'text', 'Username', true, {'id':'login-username'}) }}
+            {{ input_text('auth[password]', 'auth__input', '', 'password', 'Password', true) }}
 
             <button class="input__button">Login</button>
         </div>

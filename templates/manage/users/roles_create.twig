@@ -1,10 +1,11 @@
 {% extends 'manage/users/master.twig' %}
 {% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import permissions_table %}
+{% from '_layout/input.twig' import input_csrf, input_text %}
 
 {% block manage_content %}
     <form action="?v=role{{ edit_role is defined ? '&r=' ~ edit_role.role_id : '' }}" method="post"{% if edit_role is defined %} style="{{ edit_role.role_colour|html_colour('--accent-colour') }}"{% endif %}>
-        {{ 'users_role'|csrf|raw }}
+        {{ input_csrf('users_role') }}
 
         <div class="container">
             {{ container_title(edit_role is defined ? 'Editing ' ~ edit_role.role_name ~ ' (' ~ edit_role.role_id ~ ')' : 'Creating a new role') }}
@@ -12,7 +13,7 @@
             <label class="form__label">
                 <div class="form__label__text">Role Name</div>
                 <div class="form__label__input">
-                    <input class="input__text" type="text" value="{{ edit_role is defined ? edit_role.role_name : '' }}" name="role[name]" maxlength="255">
+                    {{ input_text('role[name]', '', edit_role.role_name|default(''), 'text', '', true, {'maxlength':255}) }}
                 </div>
             </label>
 
@@ -33,7 +34,7 @@
             <label class="form__label">
                 <div class="form__label__text">Title</div>
                 <div class="form__label__input">
-                    <input class="input__text" type="text" value="{{ edit_role is defined ? edit_role.role_title : '' }}" name="role[title]" maxlength="64">
+                    {{ input_text('role[title]', '', edit_role.role_title|default(''), 'text', '', false, {'maxlength':64}) }}
                 </div>
             </label>
 

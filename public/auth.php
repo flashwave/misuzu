@@ -81,6 +81,11 @@ switch ($authMode) {
         tpl_var('auth_reset_message', "A verification code should've been sent to your e-mail address.");
 
         while ($isSubmission) {
+            if (!csrf_verify('passreset', $_POST['csrf'] ?? '')) {
+                tpl_var('auth_reset_error', 'Possible request forgery detected, refresh and try again.');
+                break;
+            }
+
             if (!user_recovery_token_validate($resetUser['user_id'], $authVerification)) {
                 tpl_var('auth_reset_error', 'Invalid verification code!');
                 break;

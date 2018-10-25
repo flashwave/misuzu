@@ -1,5 +1,6 @@
 {% extends 'manage/news/master.twig' %}
 {% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 
 {% set is_new = post|length < 1 %}
 
@@ -7,13 +8,13 @@
     <form method="post" action="" class="container">
         {{ container_title(is_new ? 'New Post' : 'Editing ' ~ post.post_title) }}
 
-        {{ 'news_post'|csrf|raw }}
-        <input type="hidden" name="post[id]" value="{{ post.post_id|default(0) }}">
+        {{ input_csrf('news_post') }}
+        {{ input_hidden('post[id]', post.post_id|default(0)) }}
 
         <table style="color:inherit">
             <tr>
                 <td>Name</td>
-                <td><input type="text" required name="post[title]" class="input__text" value="{{ post.post_title|default() }}"></td>
+                <td>{{ input_text('post[title]', '', post.post_title|default(), 'text', '', true) }}</td>
             </tr>
 
             <tr>

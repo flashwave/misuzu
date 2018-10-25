@@ -1,5 +1,6 @@
 {% extends 'settings/master.twig' %}
 {% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 
 {% if user_has_background %}
     {% set site_background_url = '/profile.php?m=background&u=' ~ settings_user_id %}
@@ -16,7 +17,7 @@
         {{ container_title('Account') }}
 
         <form action="" method="post" class="settings__account">
-            {{ 'settings'|csrf|raw }}
+            {{ input_csrf('settings') }}
 
             <div class="settings__account__row">
                 {% if settings_perms.edit_profile %}
@@ -29,7 +30,7 @@
                                 {{ props.name }}
                             </div>
                             <div class="settings__account__input__value">
-                                <input type="{{ props.type|default('text') }}" name="profile[{{ name }}]" value="{{ account_info['user_' ~ name] }}" class="input__text settings__account__input__value__text">
+                                {{ input_text('profile[' ~ name ~ ']', 'settings__account__input__value__text', account_info['user_' ~ name], props.type|default('text')) }}
                             </div>
                         </label>
                         {% endfor %}
@@ -58,7 +59,7 @@
                                         Current e-mail address
                                     </div>
                                     <div class="settings__account__input__value">
-                                        <input type="text" class="input__text input__text--readonly settings__account__input__value__text" readonly value="{{ account_info.email }}">
+                                        {{ input_text('', 'settings__account__input__value__text', account_info.email) }}
                                     </div>
                                 </label>
 
@@ -67,7 +68,7 @@
                                         New e-mail Address
                                     </div>
                                     <div class="settings__account__input__value">
-                                        <input type="text" name="email[new]" class="input__text settings__account__input__value__text">
+                                        {{ input_text('email[new]', 'settings__account__input__value__text') }}
                                     </div>
                                 </label>
 
@@ -76,7 +77,7 @@
                                         Confirmation
                                     </div>
                                     <div class="settings__account__input__value">
-                                        <input type="text" name="email[confirm]" class="input__text settings__account__input__value__text">
+                                        {{ input_text('email[confirm]', 'settings__account__input__value__text') }}
                                     </div>
                                 </label>
                             </div>
@@ -91,7 +92,7 @@
                                         New Password
                                     </div>
                                     <div class="settings__account__input__value">
-                                        <input type="password" name="password[new]" class="input__text settings__account__input__value__text">
+                                        {{ input_text('password[new]', 'settings__account__input__value__text', '', 'password') }}
                                     </div>
                                 </label>
 
@@ -100,7 +101,7 @@
                                         Confirmation
                                     </div>
                                     <div class="settings__account__input__value">
-                                        <input type="password" name="password[confirm]" class="input__text settings__account__input__value__text">
+                                        {{ input_text('password[confirm]', 'settings__account__input__value__text', '', 'password') }}
                                     </div>
                                 </label>
                             </div>
@@ -115,7 +116,7 @@
                                         Current Password
                                     </div>
                                     <div class="settings__account__input__value">
-                                        <input type="password" name="current_password" placeholder="only needed for e-mail and password updating" class="input__text settings__account__input__value__text">
+                                        {{ input_text('current_password', 'settings__account__input__value__text', '', 'password', 'only needed for e-mail and password updating') }}
                                     </div>
                                 </label>
                             </div>
@@ -138,8 +139,8 @@
             {{ container_title('Avatar') }}
 
             <form action="" method="post" class="settings__images" enctype="multipart/form-data">
-                <input type="hidden" name="MAX_FILE_SIZE" value="{{ background.max_size }}">
-                {{ 'settings'|csrf|raw }}
+                {{ input_hidden('MAX_FILE_SIZE', avatar.max_size) }}
+                {{ input_csrf('settings') }}
 
                 <div class="settings__images__sections">
                     <div class="settings__images__requirements">
@@ -210,8 +211,8 @@
             {{ container_title('Background') }}
 
             <form action="" method="post" class="settings__images" enctype="multipart/form-data">
-                <input type="hidden" name="MAX_FILE_SIZE" value="{{ background.max_size }}">
-                {{ 'settings'|csrf|raw }}
+                {{ input_hidden('MAX_FILE_SIZE', background.max_size) }}
+                {{ input_csrf('settings') }}
 
                 <div class="settings__images__sections">
                     <div class="settings__images__requirements">
@@ -295,7 +296,7 @@
             {{ container_title('About') }}
 
             <form method="post" action="" enctype="multipart/form-data" class="settings__about">
-                {{ 'settings'|csrf|raw }}
+                {{ input_csrf('settings') }}
 
                 <textarea name="about[text]" class="input__textarea settings__about__text" id="about-textarea">{{ account_info.user_about_content|escape }}</textarea>
 

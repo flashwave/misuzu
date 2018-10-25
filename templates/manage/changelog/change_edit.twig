@@ -1,5 +1,6 @@
 {% extends 'manage/changelog/master.twig' %}
 {% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_csrf, input_text %}
 
 {% if edit_change is defined %}
     {% set site_link = '/changelog.php?c=' ~ edit_change.change_id %}
@@ -8,14 +9,14 @@
 {% block manage_content %}
     <div class="container">
         <form action="?v=change{{ edit_change is defined ? '&c=' ~ edit_change.change_id : '' }}" method="post">
-            {{ 'changelog_add'|csrf|raw }}
+            {{ input_csrf('changelog_add') }}
 
             {{ container_title(edit_change is defined ? 'Editing #' ~ edit_change.change_id : 'Adding a new change') }}
 
             <label class="form__label" style="width:100%">
                 <div class="form__label__text">Log</div>
                 <div class="form__label__input">
-                    <input class="input__text" type="text" value="{{ edit_change is defined ? edit_change.change_log : '' }}" name="change[log]" maxlength="255">
+                    {{ input_text('change[log]', '', edit_change is defined ? edit_change.change_log : '', 'text', '', true, {'maxlength':255}) }}
                 </div>
             </label>
 
@@ -49,7 +50,7 @@
             <label class="form__label">
                 <div class="form__label__text">Created</div>
                 <div class="form__label__input">
-                    <input class="input__text" type="text" value="{{ edit_change is defined ? edit_change.change_created : ''|date('Y-m-d H:i:s') }}" name="change[created]">
+                    {{ input_text('change[created]', '', (edit_change is defined ? edit_change.change_created : ''|date('Y-m-d H:i:s')), 'text', '', true) }}
                 </div>
             </label>
 

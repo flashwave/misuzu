@@ -1,24 +1,25 @@
 {% extends 'manage/changelog/master.twig' %}
 {% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_csrf, input_text %}
 
 {% block manage_content %}
     <div class="container">
         <form action="?v=action{{ edit_action is defined ? '&a=' ~ edit_action.action_id : '' }}" method="post">
-            {{ 'changelog_action'|csrf|raw }}
+            {{ input_csrf('changelog_action') }}
 
             {{ container_title(edit_action is defined ? 'Editing ' ~ edit_action.action_name ~ ' (' ~ edit_action.action_id ~ ')' : 'Adding a new action') }}
 
             <label class="form__label">
                 <div class="form__label__text">Name</div>
                 <div class="form__label__input">
-                    <input class="input__text" type="text" value="{{ edit_action is defined ? edit_action.action_name : '' }}" name="action[name]" maxlength="50">
+                    {{ input_text('action[name]', '', edit_action is defined ? edit_action.action_name : '', 'text', '', true, {'maxlength':50}) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Class</div>
                 <div class="form__label__input">
-                    <input class="input__text" type="text" value="{{ edit_action is defined ? edit_action.action_class : '' }}" name="action[class]" maxlength="20">
+                    {{ input_text('action[class]', '', edit_action is defined ? edit_action.action_class : '', 'text', '', true, {'maxlength':20}) }}
                 </div>
             </label>
 

@@ -1,13 +1,14 @@
 {% extends 'manage/users/master.twig' %}
 {% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import permissions_table %}
+{% from '_layout/input.twig' import input_csrf, input_text %}
 
 {% set site_link = '/profile.php?u=' ~ view_user.user_id %}
 
 {% block manage_content %}
     {% if can_manage_users %}
         <form method="post" enctype="multipart/form-data" action=""{% if view_user is defined %} style="{{ view_user.user_colour|html_colour('--accent-colour') }}"{% endif %}>
-            {{ 'users_edit'|csrf|raw }}
+            {{ input_csrf('users_edit') }}
 
             <div class="container">
                 {{ container_title('Viewing ' ~ view_user.username ~ ' (' ~ view_user.user_id ~ ')') }}
@@ -15,56 +16,56 @@
                 <label class="form__label">
                     <div class="form__label__text">Username</div>
                     <div class="form__label__input">
-                        <input class="input__text" type="text" value="{{ view_user.username }}" name="user[username]" maxlength="16">
+                        {{ input_text('user[username]', '', view_user.username, 'text', '', true, {'maxlength':16}) }}
                     </div>
                 </label>
 
                 <label class="form__label">
                     <div class="form__label__text">E-mail address</div>
                     <div class="form__label__input">
-                        <input class="input__text" type="text" value="{{ view_user.email }}" name="user[email]" maxlength="255">
+                        {{ input_text('user[email]', '', view_user.email, 'text', '', true, {'maxlength':255}) }}
                     </div>
                 </label>
 
                 <label class="form__label">
                     <div class="form__label__text">Title</div>
                     <div class="form__label__input">
-                        <input class="input__text" type="text" value="{{ view_user.user_title }}" name="user[title]" maxlength="64">
+                        {{ input_text('user[title]', '', view_user.user_title, 'text', '', false, {'maxlength':64}) }}
                     </div>
                 </label>
 
                 <label class="form__label">
                     <div class="form__label__text">Joined</div>
                     <div class="form__label__input">
-                        <input class="input__text" readonly type="text" value="{{ view_user.created_at }}">
+                        {{ input_text('', '', view_user.created_at) }}
                     </div>
                 </label>
 
                 <label class="form__label">
                     <div class="form__label__text">Last online</div>
                     <div class="form__label__input">
-                        <input class="input__text" readonly type="text" value="{{ view_user.last_seen }}">
+                        {{ input_text('', '', view_user.last_seen) }}
                     </div>
                 </label>
 
                 <label class="form__label">
                     <div class="form__label__text">Register IP</div>
                     <div class="form__label__input">
-                        <input class="input__text" readonly type="text" value="{{ view_user.register_ip_decoded }}">
+                        {{ input_text('', '', view_user.register_ip_decoded) }}
                     </div>
                 </label>
 
                 <label class="form__label">
                     <div class="form__label__text">Last IP</div>
                     <div class="form__label__input">
-                        <input class="input__text" readonly type="text" value="{{ view_user.last_ip_decoded }}">
+                        {{ input_text('', '', view_user.last_ip_decoded) }}
                     </div>
                 </label>
 
                 <label class="form__label">
                     <div class="form__label__text">Country</div>
                     <div class="form__label__input">
-                        <input class="input__text" type="text" value="{{ view_user.user_country }}" name="user[country]" maxlength="2">
+                        {{ input_text('user[country]', '', view_user.user_country, 'text', 'XX', true, {'maxlength':2,'minlength':2}) }}
                     </div>
                 </label>
             </div>
@@ -93,14 +94,14 @@
                 <label class="form__label">
                     <div class="form__label__text">New Password</div>
                     <div class="form__label__input">
-                        <input class="input__text" type="password" name="password[new]">
+                        {{ input_text('password[new]', '', '', 'password') }}
                     </div>
                 </label>
 
                 <label class="form__label">
                     <div class="form__label__text">Confirm Password</div>
                     <div class="form__label__input">
-                        <input class="input__text" type="password" name="password[confirm]">
+                        {{ input_text('password[confirm]', '', '', 'password') }}
                     </div>
                 </label>
             </div>
@@ -156,7 +157,7 @@
                 {{ container_title('Manage Roles') }}
 
                 <div class="container__content">
-                    {{ 'users_edit'|csrf|raw }}
+                    {{ input_csrf('users_edit') }}
 
                     <label class="form__label">
                         <div class="form__label__text">Has Roles</div>

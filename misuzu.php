@@ -287,11 +287,11 @@ MIG;
     tpl_add_filter('vsprintf');
     tpl_add_filter('perms_check');
     tpl_add_filter('bg_settings', 'user_background_settings_strings');
-    tpl_add_filter('csrf', 'csrf_html');
 
     tpl_add_function('git_commit_hash');
     tpl_add_function('git_tag');
     tpl_add_function('csrf_token');
+    tpl_add_function('csrf_input', 'csrf_html');
     tpl_add_function('startup_time', function (float $time = MSZ_STARTUP) {
         return microtime(true) - $time;
     });
