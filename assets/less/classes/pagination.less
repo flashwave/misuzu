@@ -1,10 +1,12 @@
 .pagination {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: stretch;
+    width: 100%;
 
     &__section {
         display: flex;
+        align-items: stretch;
         overflow: auto;
         flex: 0 0 auto;
 
@@ -15,15 +17,18 @@
                 display: none;
             }
         }
+
+        &:not(:last-child) {
+            margin-right: 1px;
+        }
     }
 
     &__link {
-        display: block;
-        height: 30px;
+        display: flex;
+        min-width: 40px;
         font-size: 1.2em;
         line-height: 1.5em;
-        margin: 1px;
-        padding: 3px 10px;
+        padding: 3px 10px 4px;
         text-align: center;
         text-decoration: none;
         background-color: var(--background-colour);
@@ -31,9 +36,24 @@
         border: 1px solid var(--accent-colour);
         border-radius: 2px;
         transition: background-color .2s, color .2s;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        flex: 1 0 auto;
+
+        &:not(:last-child) {
+            margin-right: 1px;
+        }
 
         &--disabled {
             --accent-colour: #555;
+        }
+
+        &--first,
+        &--last,
+        &--next,
+        &--prev {
+            padding-top: 5px;
         }
 
         &--current,

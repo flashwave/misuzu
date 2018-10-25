@@ -45,11 +45,51 @@
     </div>
 {% endmacro %}
 
-{% macro forum_category_buttons(forum, perms) %}
-    <div class="forum__actions forum__actions__content">
-        {% if perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
-            <a href="/forum/posting.php?f={{ forum.forum_id }}" class="input__button forum__actions__button">New Topic</a>
-        {% endif %}
+{% macro forum_category_tools(info, perms, take, offset) %}
+    {% from 'macros.twig' import pagination %}
+
+    <div class="container forum__actions">
+        <div class="forum__actions__buttons">
+            {% if perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
+                <a href="{{ '/forum/posting.php'|url_construct({'f':info.forum_id}) }}" class="input__button">New Topic</a>
+            {% endif %}
+        </div>
+
+        <div class="forum__actions__pagination">
+            {{ pagination(
+                info.forum_topic_count,
+                take,
+                offset,
+                '/forum/forum.php'|url_construct({'f':info.forum_id}),
+                false,
+                null,
+                5
+            ) }}
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro forum_topic_tools(info, take, offset, can_reply) %}
+    {% from 'macros.twig' import pagination %}
+
+    <div class="container forum__actions">
+        <div class="forum__actions__buttons">
+            {% if can_reply %}
+                <a href="#reply" class="input__button" onclick="openContainer('reply')">Reply</a>
+            {% endif %}
+        </div>
+
+        <div class="forum__actions__pagination">
+            {{ pagination(
+                info.topic_post_count,
+                take,
+                offset,
+                '/forum/topic.php'|url_construct({'t':info.topic_id}),
+                false,
+                null,
+                5
+            ) }}
+        </div>
     </div>
 {% endmacro %}
 
@@ -151,14 +191,6 @@
                 </div>
             {% endif %}
         </div>
-    </div>
-{% endmacro %}
-
-{% macro forum_topic_buttons(topic) %}
-    <div class="forum__actions forum__actions__content">
-        <a  href="#reply"
-            class="input__button forum__actions__button"
-            onclick="openContainer('reply')">Reply</a>
     </div>
 {% endmacro %}
 

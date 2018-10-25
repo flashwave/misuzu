@@ -29,6 +29,8 @@ if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     return;
 }
 
+tpl_var('topic_perms', $perms);
+
 $posts = forum_post_listing($topic['topic_id'], $postsOffset, $postsRange);
 
 if (!$posts) {
