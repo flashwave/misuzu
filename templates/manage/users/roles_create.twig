@@ -27,7 +27,7 @@
             <label class="form__label">
                 <div class="form__label__text">Hierarchy</div>
                 <div class="form__label__input">
-                    <input class="input input--number" type="number" value="{{ edit_role is defined ? edit_role.role_hierarchy : '1' }}" min="1" max="100" name="role[hierarchy]">
+                    {{ input_text('role[hierarchy]', '', edit_role.role_hierarchy|default(1), 'number', '', true) }}
                 </div>
             </label>
 
@@ -53,21 +53,21 @@
             <label class="form__label">
                 <div class="form__label__text">Red</div>
                 <div class="form__label__input">
-                    <input class="input input--number" type="number" value="{{ edit_role is defined ? edit_role.role_colour|colour_get_red : '0' }}" min="0" max="255" name="role[colour][red]">
+                    {{ input_text('role[colour][red]', '', edit_role is defined ? edit_role.role_colour|colour_get_red : '0', 'number', '', false, {'min':0,'max':255}) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Green</div>
                 <div class="form__label__input">
-                    <input class="input input--number" type="number" value="{{ edit_role is defined ? edit_role.role_colour|colour_get_green : '0' }}" min="0" max="255" name="role[colour][green]">
+                    {{ input_text('role[colour][green]', '', edit_role is defined ? edit_role.role_colour|colour_get_green : '0', 'number', '', false, {'min':0,'max':255}) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Blue</div>
                 <div class="form__label__input">
-                    <input class="input input--number" type="number" value="{{ edit_role is defined ? edit_role.role_colour|colour_get_blue : '0' }}" min="0" max="255" name="role[colour][blue]">
+                    {{ input_text('role[colour][blue]', '', edit_role is defined ? edit_role.role_colour|colour_get_blue : '0', 'number', '', false, {'min':0,'max':255}) }}
                 </div>
             </label>
 

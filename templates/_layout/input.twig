@@ -26,12 +26,12 @@
 {% macro input_checkbox_raw(name, checked, class, value, radio, attributes) %}
 {% spaceless %}
     <input type="{{ radio ? 'radio' : 'checkbox' }}" class="{{ class|length > 0 ? class : 'input__checkbox__input' }}"
-            {% if name|length > 0 %}name="{{ name }}"{% endif %}
-            {% if checked %}checked{% endif %}
-            {% if value|length > 0 %}value="{{ value }}"{% endif %}
-            {% for name, value in attributes|default([]) %}
-                {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
-            {% endfor %}>
+        {% if name|length > 0 %}name="{{ name }}"{% endif %}
+        {% if checked %}checked{% endif %}
+        {% if value|length > 0 %}value="{{ value }}"{% endif %}
+        {% for name, value in attributes|default([]) %}
+            {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
+        {% endfor %}>
 {% endspaceless %}
 {% endmacro %}
 

@@ -17,12 +17,12 @@
                 <table style="color:inherit">
                     <tr>
                         <td>Parent ID*</td>
-                        <td><input type="number" name="quote[parent]" value="{{ current_quote.quote_parent|default(quote_parent) }}" class="input__text"></td>
+                        <td>{{ input_text('quote[parent]', '', current_quote.quote_parent|default(quote_parent), 'number') }}</td>
                     </tr>
 
                     <tr>
                         <td>User ID*</td>
-                        <td><input type="number" name="quote[user][id]" class="input__text" value="{{ current_quote.quote_user_id|default(0) }}"></td>
+                        <td>{{ input_text('quote[user][id]', '', current_quote.quote_user_id|default(0), 'number') }}</td>
                     </tr>
 
                     <tr>
@@ -37,7 +37,7 @@
 
                     <tr>
                         <td>User Colour</td>
-                        <td><input type="number" required name="quote[user][colour]" class="input__text" value="{{ current_quote.quote_user_colour|default(constant('MSZ_COLOUR_INHERIT')) }}"></td>
+                        <td>{{ input_text('quote[user][colour]', '', current_quote.quote_user_colour|default(constant('MSZ_COLOUR_INHERIT')), 'number', '', true) }}</td>
                     </tr>
 
                     <tr>

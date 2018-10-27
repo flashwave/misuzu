@@ -35,21 +35,21 @@
             <label class="form__label">
                 <div class="form__label__text">Red</div>
                 <div class="form__label__input">
-                    <input class="input input--number" type="number" value="{{ edit_action is defined ? edit_action.action_colour|colour_get_red : '0' }}" min="0" max="255" name="action[colour][red]">
+                    {{ input_text('action[colour][red]', '', edit_action is defined ? edit_action.action_colour|colour_get_red : '0', 'number', '', false, {'min':0,'max':255}) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Green</div>
                 <div class="form__label__input">
-                    <input class="input input--number" type="number" value="{{ edit_action is defined ? edit_action.action_colour|colour_get_green : '0' }}" min="0" max="255" name="action[colour][green]">
+                    {{ input_text('action[colour][green]', '', edit_action is defined ? edit_action.action_colour|colour_get_green : '0', 'number', '', false, {'min':0,'max':255}) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Blue</div>
                 <div class="form__label__input">
-                    <input class="input input--number" type="number" value="{{ edit_action is defined ? edit_action.action_colour|colour_get_blue : '0' }}" min="0" max="255" name="action[colour][blue]">
+                    {{ input_text('action[colour][blue]', '', edit_action is defined ? edit_action.action_colour|colour_get_blue : '0', 'number', '', false, {'min':0,'max':255}) }}
                 </div>
             </label>
 
