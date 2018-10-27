@@ -1,7 +1,7 @@
 {% extends 'manage/users/master.twig' %}
 {% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import permissions_table %}
-{% from '_layout/input.twig' import input_csrf, input_text, input_checkbox, input_file %}
+{% from '_layout/input.twig' import input_csrf, input_text, input_checkbox, input_file, input_select %}
 
 {% set site_link = '/profile.php?u=' ~ view_user.user_id %}
 
@@ -155,20 +155,13 @@
         {% if has_roles|length > 0 %}
             <form method="post" action="" class="container">
                 {{ container_title('Manage Roles') }}
+                {{ input_csrf('users_edit') }}
 
                 <div class="container__content">
-                    {{ input_csrf('users_edit') }}
-
                     <label class="form__label">
                         <div class="form__label__text">Has Roles</div>
                         <div class="form__label__input">
-                            <select name="manage_roles[role]" class="input__select">
-                                {% for role in has_roles %}
-                                    <option value="{{ role.role_id }}"{% if role.role_id == view_user.display_role %} selected{% endif %}>
-                                        {{ role.role_name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
+                            {{ input_select('manage_roles[role]', has_roles, view_user.display_role, 'role_name', 'role_id') }}
                         </div>
                     </label>
 
@@ -181,22 +174,17 @@
         {% if available_roles|length > 0 %}
             <form method="post" action="" class="container">
                 {{ container_title('Add role') }}
+                {{ input_csrf('users_edit') }}
 
                 <div class="container__content">
                     <label class="form__label">
                         <div class="form__label__text">Available Roles</div>
                         <div class="form__label__input">
-                            <select name="add_role[role]" class="input__select">
-                                {% for role in available_roles %}
-                                    <option value="{{ role.role_id }}">
-                                        {{ role.role_name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
+                            {{ input_select('add_role[role]', available_roles, '', 'role_name', 'role_id') }}
                         </div>
                     </label>
 
-                    <button class="input__button" name="csrf" value="{{ csrf_token('users_edit') }}">Add</button>
+                    <button class="input__button">Add</button>
                 </div>
             </form>
         {% endif %}

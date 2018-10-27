@@ -1,6 +1,6 @@
 {% extends 'user/master.twig' %}
 {% from 'macros.twig' import container_title %}
-{% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox, input_file, input_file_raw %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox, input_file, input_file_raw, input_select %}
 
 {% set image = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
 {% set canonical_url = '/profile.php?u=' ~ profile.user_id %}
@@ -112,15 +112,11 @@
                             <div class="profile__background-settings__content">
                                 {{ input_file('background[file]', '', ['image/png', 'image/jpeg', 'image/gif'], {'id':'background-selection'}) }}
 
-                                <select name="background[attach]" class="input__select" onchange="profileChangeBackgroundAttach(this.value)">
-                                    {% for key, value in background_attachments %}
-                                        <option value="{{ value }}"{% if profile.user_background_attachment == key %} selected{% endif %}>
-                                            {{ value|capitalize }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                                {{ input_checkbox('background[attach]', 'None', true, '', 0, true, {'onchange':'profileChangeBackgroundAttach(this.value)'}) }}
+                                {% for key, value in background_attachments %}
+                                    {{ input_checkbox('background[attach]', value|capitalize, key == profile.user_background_attachment, '', key, true, {'onchange':'profileChangeBackgroundAttach(this.value)'}) }}
+                                {% endfor %}
 
-                                {{ input_checkbox('background[delete]', 'Delete', false, '', '', false, {'onchange':'profileToggleBackground(this.checked)'}) }}
                                 {{ input_checkbox('background[attr][blend]', 'Blend', profile.user_background_blend, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'blend\', this.checked)'}) }}
                                 {{ input_checkbox('background[attr][slide]', 'Slide', profile.user_background_slide, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'slide\', this.checked)'}) }}
                             </div>
@@ -170,11 +166,7 @@
 
                             <div class="profile__about__content{% if is_editing %} profile__about__content--edit{% endif %}">
                                 {% if is_editing %}
-                                    <select name="about[parser]" class="input__select profile__about__select">
-                                        {% for parser, name in constant('MSZ_PARSERS_NAMES') %}
-                                            <option value="{{ parser }}"{% if parser == profile.user_about_parser %} selected{% endif %}>{{ name }}</option>
-                                        {% endfor %}
-                                    </select>
+                                    {{ input_select('about[parser]', constant('MSZ_PARSERS_NAMES'), profile.user_about_parser, '', '', false, 'profile__about__select') }}
                                     <textarea name="about[text]" class="input__textarea profile__about__editor" id="about-textarea">{{ profile.user_about_content|escape }}</textarea>
                                 {% else %}
                                     {{ profile.user_about_content|escape|parse_text(profile.user_about_parser)|raw }}
@@ -196,7 +188,7 @@
                 if (currentBg != 'initial' && checked) {
                     profilePreviousBackground = currentBg;
                     currentBg = 'initial';
-                } else if (!checked) {
+                } else if (currentBg == 'initial' && !checked) {
                     currentBg = profilePreviousBackground;
                 }
 
@@ -204,20 +196,22 @@
             }
 
             function profileChangeBackgroundAttach(mode) {
-                const modes = [
-                    'cover',
-                    'stretch',
-                    'tile',
-                    'contain',
-                ];
+                const modes = {
+                    1: 'cover',
+                    2: 'stretch',
+                    3: 'tile',
+                    4: 'contain',
+                };
 
-                if (modes.indexOf(mode) < 0)
-                    return;
+                profileToggleBackground(mode == 0);
 
-                for (let i = 0; i < modes.length; i++)
+                for (let i = 1; i <= Object.keys(modes).length; i++)
                     document.body.classList.remove('main--bg-' + modes[i]);
 
-                document.body.classList.add('main--bg-' + mode);
+                if (!modes[mode])
+                    return;
+
+                document.body.classList.add('main--bg-' + modes[mode]);
             }
 
             function profileToggleBackgroundAttr(attr, mode) {

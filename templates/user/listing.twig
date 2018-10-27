@@ -1,5 +1,6 @@
 {% extends 'user/master.twig' %}
 {% from 'macros.twig' import pagination, container_title %}
+{% from '_layout/input.twig' import input_select %}
 {% from 'user/macros.twig' import user_card %}
 
 {% set canonical_url = '/members.php'|url_construct({
@@ -22,36 +23,9 @@
         {{ container_title('Member Listing') }}
 
         <div class="userlist__selection">
-            <select class="input__select" name="r"
-                style="{{ role.role_colour|html_colour('color') }}">
-                {% for r in roles %}
-                    <option
-                        value="{{ r.role_id }}"
-                        style="{{ r.role_colour|html_colour('color') }}"
-                        {% if r.role_id == role.role_id %} selected{% endif %}>
-                        {{ r.role_name }}
-                    </option>
-                {% endfor %}
-            </select>
-
-            <select class="input__select" name="ss">
-                {% for name, info in order_fields %}
-                    <option
-                        value="{{ name }}"
-                        {% if name == order_field %} selected{% endif %}>
-                        {{ info.title }}
-                    </option>
-                {% endfor %}
-            </select>
-
-            <select class="input__select" name="sd">
-                {% for name, title in order_directions %}
-                    <option value="{{ name }}"
-                        {% if name == order_direction %} selected{% endif %}>
-                        {{ title }}
-                    </option>
-                {% endfor %}
-            </select>
+            {{ input_select('r', roles, role.role_id, 'role_name', 'role_id') }}
+            {{ input_select('ss', order_fields, order_field, 'title') }}
+            {{ input_select('sd', order_directions, order_direction) }}
 
             <noscript>
                 <button class="input__button">Go</button>

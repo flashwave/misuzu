@@ -1,7 +1,7 @@
 {% extends 'manage/users/master.twig' %}
 {% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import permissions_table %}
-{% from '_layout/input.twig' import input_hidden, input_csrf %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_select %}
 
 {% block manage_content %}
     <div class="container">
@@ -11,11 +11,7 @@
             <form action="" method="get">
                 {{ input_hidden('v', 'forumperms') }}
                 {{ input_hidden('f', forum.forum_id) }}
-                <select name="r" class="input__select">
-                    {% for role in roles %}
-                        <option value="{{ role.role_id }}">{{ role.role_name }}</option>
-                    {% endfor %}
-                </select>
+                {{ input_select('r', roles, '', 'role_name', 'role_id') }}
                 <button class="input__button">Manage permissions</button>
             </form>
         </div>

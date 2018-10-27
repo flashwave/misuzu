@@ -190,11 +190,11 @@ switch ($mode) {
                     }
 
                     if (!empty($_FILES['background'])) {
-                        if (!empty($_POST['background']['delete'])) {
+                        if ((int)($_POST['background']['attach'] ?? -1) === 0) {
                             user_background_delete($userId);
                             user_background_set_settings($userId, MSZ_USER_BACKGROUND_ATTACHMENT_NONE);
                         } else {
-                            if (!$perms['edit_avatar']) {
+                            if (!$perms['edit_background']) {
                                 $notices[] = MSZ_TMP_USER_ERROR_STRINGS['background']['not-allowed'];
                             } elseif (!empty($_FILES['background'])
                                 && is_array($_FILES['background'])) {
@@ -228,8 +228,8 @@ switch ($mode) {
                                     }
                                 }
 
-                                $backgroundSettings = in_array($_POST['background']['attach'] ?? '', MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES)
-                                    ? array_flip(MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES)[$_POST['background']['attach']]
+                                $backgroundSettings = in_array($_POST['background']['attach'] ?? '', MSZ_USER_BACKGROUND_ATTACHMENTS)
+                                    ? (int)($_POST['background']['attach'])
                                     : MSZ_USER_BACKGROUND_ATTACHMENTS[0];
 
                                 if (!empty($_POST['background']['attr']['blend'])) {

@@ -80,3 +80,28 @@
     </label>
 {% endspaceless %}
 {% endmacro %}
+
+{% macro input_select_option(value, key, selected) %}
+{% spaceless %}
+    <option{% if key|length > 0 %} value="{{ key }}"{% endif %}{% if selected %} selected{% endif %}>
+        {{ value }}
+    </option>
+{% endspaceless %}
+{% endmacro %}
+
+{% macro input_select(name, options, selected, value_name, key_name, only_values, class, attributes) %}
+{% from _self import input_select_option %}
+{% spaceless %}
+    <select class="input__select{{ class|length > 0 ? ' ' ~ class : '' }}"
+        {% if name|length > 0 %}name="{{ name }}"{% endif %}
+        {% for name, value in attributes|default([]) %}
+            {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
+        {% endfor %}>
+        {% for key, value in options %}
+            {% set option_value = value_name|length > 0 ? value[value_name] : value %}
+            {% set option_key = only_values ? '' : (key_name|length > 0 ? value[key_name] : key) %}
+            {{ input_select_option(option_value, option_key, option_key|default(option_value) == selected) }}
+        {% endfor %}
+    </select>
+{% endspaceless %}
+{% endmacro %}
