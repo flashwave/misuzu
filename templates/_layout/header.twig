@@ -1,3 +1,4 @@
+{% from '_layout/input.twig' import input_checkbox_raw %}
 {% set in_manage = manage_menu is defined %}
 
 <nav class="header">
@@ -17,7 +18,7 @@
                 for="toggle-mobile-header-user"></label>
         </div>
 
-        <input type="checkbox" class="header__menu-toggle" id="toggle-mobile-header-menu">
+        {{ input_checkbox_raw('', false, 'header__menu-toggle', '', false, {'id':'toggle-mobile-header-menu'}) }}
         <ul class="header__menu">
             <li class="header__menu__item">
                 <a href="/" class="header__menu__link">Home</a>
@@ -41,7 +42,7 @@
             <li class="header__menu__item"><a href="https://chat.flashii.net" class="header__menu__link">Chat</a></li>
         </ul>
 
-        <input type="checkbox" class="header__user-toggle" id="toggle-mobile-header-user">
+        {{ input_checkbox_raw('', false, 'header__user-toggle', '', false, {'id':'toggle-mobile-header-user'}) }}
         <div class="header__user">
             {% if current_user is defined %}
                 <a  href="/profile.php?u={{ current_user.user_id }}"

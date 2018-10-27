@@ -1,7 +1,7 @@
 {% extends 'manage/users/master.twig' %}
 {% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import permissions_table %}
-{% from '_layout/input.twig' import input_csrf, input_text, input_checkbox %}
+{% from '_layout/input.twig' import input_csrf, input_text, input_checkbox, input_file %}
 
 {% set site_link = '/profile.php?u=' ~ view_user.user_id %}
 
@@ -76,7 +76,7 @@
                 <label class="form__label">
                     <div class="form__label__text">New Avatar</div>
                     <div class="form__label__input">
-                        <input class="input__text" type="file" name="avatar[file]">
+                        {{ input_file('avatar[file]') }}
                     </div>
                 </label>
 

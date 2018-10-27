@@ -39,6 +39,7 @@ body {
     background-color: var(--background-colour);
     font: 12px/20px @mio-font-regular;
     color: var(--text-colour);
+    background-attachment: fixed;
 
     &__wrapper {
         max-width: var(--site-max-width);
@@ -48,25 +49,33 @@ body {
     }
 
     &--bg-blend {
+        background-color: var(--accent-colour);
         background-blend-mode: multiply;
     }
 
-    /*&--bg-slide {
-    }*/
+    &--bg-slide {
+        animation: background-slide infinite linear 2s;
+    }
 
     &--bg-cover {
-        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    &--bg-contain {
+        background-size: contain;
     }
 
     &--bg-stretch {
         background-size: 100% 100%;
-        background-repeat: no-repeat;
     }
 
     &--bg-tile {
-        background-repeat: repeat;
+        background-size: auto;
     }
 }
+
+// Misc
+@import "animations";
 
 // Input elements
 @import "classes/input/button";

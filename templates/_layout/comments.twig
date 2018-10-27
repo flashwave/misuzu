@@ -44,6 +44,8 @@
 {% endmacro %}
 
 {% macro comments_entry(comment, indent, category, user, perms) %}
+    {% from '_layout/input.twig' import input_checkbox_raw %}
+
     {% if comment.comment_deleted is null or comment.comment_replies|length > 0 %}
         <div class="comment" id="comment-{{ comment.comment_id }}">
             <div class="comment__container">
@@ -114,7 +116,7 @@
             <div class="comment__replies comment__replies--indent-{{ indent }}" id="comment-{{ comment.comment_id }}-replies">
                 {% from _self import comments_entry, comments_input %}
                 {% if user|default(null) is not null and category|default(null) is not null and perms|default(null) is not null and perms.can_comment %}
-                    <input type="checkbox" class="comment__reply-toggle" id="comment-reply-toggle-{{ comment.comment_id }}">
+                    {{ input_checkbox_raw('', false, 'comment__reply-toggle', '', false, {'id':'comment-reply-toggle-' ~ comment.comment_id}) }}
                     {{ comments_input(category, user, perms, comment) }}
                 {% endif %}
                 {% if comment.comment_replies is defined and comment.comment_replies|length > 0 %}

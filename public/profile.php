@@ -262,7 +262,7 @@ switch ($mode) {
                     SELECT
                         u.`user_id`, u.`username`, u.`user_country`,
                         u.`created_at`, u.`last_seen`,
-                        u.`user_about_parser`, u.`user_about_content`,
+                        u.`user_about_parser`, u.`user_about_content`, u.`user_background_settings`,
                         %1$s,
                         COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
                         COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
@@ -303,13 +303,27 @@ switch ($mode) {
         $getProfile->bindValue('user_id', $userId);
         $profile = $getProfile->execute() ? $getProfile->fetch(PDO::FETCH_ASSOC) : [];
 
+        $backgroundPath = build_path(MSZ_STORAGE, 'backgrounds/original', "{$profile['user_id']}.msz");
+
+        if (is_file($backgroundPath)) {
+            $backgroundInfo = getimagesize($backgroundPath);
+
+            if ($backgroundInfo) {
+                tpl_var('site_background', [
+                    'url' => "/profile.php?m=background&u={$userId}",
+                    'width' => $backgroundInfo[0],
+                    'height' => $backgroundInfo[1],
+                    'settings' => $profile['user_background_settings'],
+                ]);
+            }
+        }
+
         echo tpl_render('user.profile', [
             'profile' => $profile,
             'profile_notices' => $notices,
             'can_edit' => $canEdit,
             'is_editing' => $isEditing,
             'profile_fields' => user_session_active() ? user_profile_fields_display($profile, !$isEditing) : [],
-            'has_background' => is_file(build_path(MSZ_STORAGE, 'backgrounds/original', "{$profile['user_id']}.msz")),
             'friend_info' => user_session_active() ? user_relation_info(user_session_current('user_id', 0), $profile['user_id']) : [],
         ]);
         break;

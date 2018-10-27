@@ -1,7 +1,8 @@
+{% from '_layout/input.twig' import input_checkbox_raw %}
+
 <div class="container profile__header">
     <div class="profile__header__details">
         <div class="profile__header__avatar">
-
             {% if is_editing and perms.edit_avatar %}
                 <label class="avatar profile__header__avatar__image profile__header__avatar__image--edit"
                     style="background-image:url('{{ image }}')"
@@ -13,10 +14,7 @@
                         Select
                     </label>
 
-                    <input type="checkbox"
-                        class="profile__header__avatar__check"
-                        name="avatar[delete]"
-                        id="avatar-delete">
+                    {{ input_checkbox_raw('avatar[delete]', false, 'profile__header__avatar__check', '', false, {'id':'avatar-delete'}) }}
                     <label class="profile__header__avatar__option profile__header__avatar__option--delete"
                         for="avatar-delete">
                         Remove

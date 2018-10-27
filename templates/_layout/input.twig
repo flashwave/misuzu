@@ -23,13 +23,23 @@
 {% endspaceless %}
 {% endmacro %}
 
-{% macro input_checkbox(name, text, checked, class, value, radio) %}
+{% macro input_checkbox_raw(name, checked, class, value, radio, attributes) %}
 {% spaceless %}
-    <label class="input__checkbox{% if radio %} input__checkbox--radio{% endif %}{{ class|length > 0 ? ' ' ~ class : '' }}">
-        <input type="{{ radio ? 'radio' : 'checkbox' }}" class="input__checkbox__input"
+    <input type="{{ radio ? 'radio' : 'checkbox' }}" class="{{ class|length > 0 ? class : 'input__checkbox__input' }}"
             {% if name|length > 0 %}name="{{ name }}"{% endif %}
             {% if checked %}checked{% endif %}
-            {% if value|length > 0 %}value="{{ value }}"{% endif %}>
+            {% if value|length > 0 %}value="{{ value }}"{% endif %}
+            {% for name, value in attributes|default([]) %}
+                {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
+            {% endfor %}>
+{% endspaceless %}
+{% endmacro %}
+
+{% macro input_checkbox(name, text, checked, class, value, radio, attributes) %}
+{% from _self import input_checkbox_raw %}
+{% spaceless %}
+    <label class="input__checkbox{% if radio %} input__checkbox--radio{% endif %}{{ class|length > 0 ? ' ' ~ class : '' }}">
+        {{ input_checkbox_raw(name, checked, '', value, radio, attributes) }}
         <div class="input__checkbox__display">
             <div class="input__checkbox__display__icon"></div>
         </div>
@@ -38,6 +48,35 @@
                 {{ text }}
             </div>
         {% endif %}
+    </label>
+{% endspaceless %}
+{% endmacro %}
+
+{% macro input_file_raw(name, class, accepts, attributes) %}
+{% spaceless %}
+    <input type="file" {% if name|length > 0 %}name="{{ name }}"{% endif %}
+        class="{{ class|length > 0 ? class : 'input__upload__input' }}"
+        {% if accepts|length > 0 %}accept="{{ accepts|join(',') }}"{% endif %}
+        {% for name, value in attributes|default([]) %}
+            {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
+        {% endfor %}>
+{% endspaceless %}
+{% endmacro %}
+
+{% macro input_file(name, class, accepts, attributes) %}
+{% from _self import input_file_raw %}
+{% spaceless %}
+    <label class="input__upload">
+        {{ input_file_raw(name, class, accepts, attributes) }}
+        <div class="input__upload__selection">
+            Click here to select a file!
+        </div>
+        <script>
+            const parent = document.currentScript.parentNode,
+                input = parent.querySelector('input[type="file"]'),
+                display = parent.querySelector('.input__upload__selection');
+            input.addEventListener('change', ev => display.textContent = Array.from(ev.target.files).map(f => f.name).join(', '));
+        </script>
     </label>
 {% endspaceless %}
 {% endmacro %}

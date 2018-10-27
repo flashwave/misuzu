@@ -1,15 +1,11 @@
 {% extends 'user/master.twig' %}
 {% from 'macros.twig' import container_title %}
-{% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox, input_file, input_file_raw %}
 
 {% set image = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
 {% set canonical_url = '/profile.php?u=' ~ profile.user_id %}
 {% set title = 'Profile of ' ~ profile.username %}
 {% set manage_link = '/manage/users.php?v=view&u=' ~ profile.user_id %}
-
-{% if has_background %}
-    {% set site_background_url = '/profile.php?m=background&u=' ~ profile.user_id %}
-{% endif %}
 
 {% set stats = [
     {
@@ -47,11 +43,7 @@
             {{ input_csrf('profile') }}
 
             {% if perms.edit_avatar %}
-                <input class="profile__hidden"
-                    accept="image/png,image/jpeg,image/gif"
-                    type="file"
-                    name="avatar[file]"
-                    id="avatar-selection">
+                {{ input_file_raw('avatar[file]', 'profile__hidden', ['image/png', 'image/jpeg', 'image/gif'], {'id':'avatar-selection'}) }}
 
                 <script>
                     function updateAvatarPreview(name, url, preview) {
@@ -118,15 +110,9 @@
                             {{ container_title('Background') }}
 
                             <div class="profile__background-settings__content">
-                                <label>
-                                    <input
-                                        accept="image/png,image/jpeg,image/gif"
-                                        type="file"
-                                        name="background[file]"
-                                        id="background-selection">
-                                </label>
+                                {{ input_file('background[file]', '', ['image/png', 'image/jpeg', 'image/gif'], {'id':'background-selection'}) }}
 
-                                <select name="background[attach]" class="input__select">
+                                <select name="background[attach]" class="input__select" onchange="profileChangeBackgroundAttach(this.value)">
                                     {% for key, value in background_attachments %}
                                         <option value="{{ value }}"{% if profile.user_background_attachment == key %} selected{% endif %}>
                                             {{ value|capitalize }}
@@ -134,9 +120,9 @@
                                     {% endfor %}
                                 </select>
 
-                                {{ input_checkbox('background[delete]', 'Delete') }}
-                                {{ input_checkbox('background[attr][blend]', 'Blend', profile.user_background_blend) }}
-                                {{ input_checkbox('background[attr][slide]', 'Slide', profile.user_background_slide) }}
+                                {{ input_checkbox('background[delete]', 'Delete', false, '', '', false, {'onchange':'profileToggleBackground(this.checked)'}) }}
+                                {{ input_checkbox('background[attr][blend]', 'Blend', profile.user_background_blend, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'blend\', this.checked)'}) }}
+                                {{ input_checkbox('background[attr][slide]', 'Slide', profile.user_background_slide, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'slide\', this.checked)'}) }}
                             </div>
                         </div>
                     {% endif %}
@@ -201,6 +187,70 @@
             </div>
     {% if is_editing %}
         </form>
+        <script>
+            let profilePreviousBackground = null;
+
+            function profileToggleBackground(checked) {
+                let currentBg = document.body.style.getPropertyValue('--background-image');
+
+                if (currentBg != 'initial' && checked) {
+                    profilePreviousBackground = currentBg;
+                    currentBg = 'initial';
+                } else if (!checked) {
+                    currentBg = profilePreviousBackground;
+                }
+
+                document.body.style.setProperty('--background-image', currentBg);
+            }
+
+            function profileChangeBackgroundAttach(mode) {
+                const modes = [
+                    'cover',
+                    'stretch',
+                    'tile',
+                    'contain',
+                ];
+
+                if (modes.indexOf(mode) < 0)
+                    return;
+
+                for (let i = 0; i < modes.length; i++)
+                    document.body.classList.remove('main--bg-' + modes[i]);
+
+                document.body.classList.add('main--bg-' + mode);
+            }
+
+            function profileToggleBackgroundAttr(attr, mode) {
+                let className = '';
+
+                switch (attr) {
+                    case 'blend':
+                        className = 'main--bg-blend';
+                        break;
+
+                    case 'slide':
+                        className = 'main--bg-slide';
+                        break;
+                }
+
+                if (className) {
+                    if (mode)
+                        document.body.classList.add(className);
+                    else
+                        document.body.classList.remove(className);
+                }
+            }
+
+            document.getElementById('background-selection').addEventListener('change', ev => {
+                const image = new Image();
+                image.src = URL.createObjectURL(ev.target.files[0]);
+                image.addEventListener('load', () => {
+                    document.body.style.setProperty('--background-image', 'url(%)'.replace('%', image.src));
+                    document.body.style.setProperty('--background-width', '%px'.replace('%', image.width));
+                    document.body.style.setProperty('--background-height', '%px'.replace('%', image.height));
+                });
+            });
+        </script>
     {% else %}
         </div>
     {% endif %}
