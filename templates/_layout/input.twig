@@ -23,12 +23,13 @@
 {% endspaceless %}
 {% endmacro %}
 
-{% macro input_checkbox(name, text, value, class) %}
+{% macro input_checkbox(name, text, checked, class, value, radio) %}
 {% spaceless %}
-    <label class="input__checkbox{{ class|length > 0 ? ' ' ~ class : '' }}">
-        <input type="checkbox" class="input__checkbox__input"
+    <label class="input__checkbox{% if radio %} input__checkbox--radio{% endif %}{{ class|length > 0 ? ' ' ~ class : '' }}">
+        <input type="{{ radio ? 'radio' : 'checkbox' }}" class="input__checkbox__input"
             {% if name|length > 0 %}name="{{ name }}"{% endif %}
-            {% if value %}checked{% endif %}>
+            {% if checked %}checked{% endif %}
+            {% if value|length > 0 %}value="{{ value }}"{% endif %}>
         <div class="input__checkbox__display">
             <div class="input__checkbox__display__icon"></div>
         </div>

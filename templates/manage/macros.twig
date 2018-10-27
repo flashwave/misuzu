@@ -15,6 +15,8 @@
 {% endmacro %}
 
 {% macro permissions_table(permissions) %}
+    {% from '_layout/input.twig' import input_checkbox %}
+
     <div class="permissions">
         {% for perms in permissions %}
             <div class="permissions__line permissions__line--header">
@@ -37,27 +39,15 @@
                     <div class="permissions__title">
                         {{ perm.title }}
                     </div>
-                    <label class="permissions__choice permissions__choice--radio permissions__choice--yes">
-                        <input {% if perm.value == 'yes' %}checked{% endif %}
-                            class="permissions__input"
-                            type="radio"
-                            name="perms[{{ perms.section }}][{{ perm.section }}]"
-                            value="yes">
-                    </label>
-                    <label class="permissions__choice permissions__choice--radio permissions__choice--no">
-                        <input {% if perm.value == 'no' %}checked{% endif %}
-                            class="permissions__input"
-                            type="radio"
-                            name="perms[{{ perms.section }}][{{ perm.section }}]"
-                            value="no">
-                    </label>
-                    <label class="permissions__choice permissions__choice--radio permissions__choice--never">
-                        <input {% if perm.value == 'never' %}checked{% endif %}
-                            class="permissions__input"
-                            type="radio"
-                            name="perms[{{ perms.section }}][{{ perm.section }}]"
-                            value="never">
-                    </label>
+                    <div class="permissions__choice__wrapper">
+                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ ']', '', perm.value == 'yes', 'permissions__choice permissions__choice--radio permissions__choice--yes', 'yes', true) }}
+                    </div>
+                    <div class="permissions__choice__wrapper">
+                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ ']', '', perm.value == 'no', 'permissions__choice permissions__choice--radio permissions__choice--no', 'no', true) }}
+                    </div>
+                    <div class="permissions__choice__wrapper">
+                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ ']', '', perm.value == 'never', 'permissions__choice permissions__choice--radio permissions__choice--never', 'never', true) }}
+                    </div>
                 </div>
             {% endfor %}
         {% endfor %}

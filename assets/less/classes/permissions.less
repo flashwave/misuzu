@@ -6,13 +6,14 @@
     &__line {
         display: flex;
         font-size: .9em;
-        line-height: 1.2em;
+        line-height: 1.7em;
 
         &--header {
             font-size: 1.2em;
             line-height: 1.4em;
             border-bottom: 1px solid var(--accent-colour);
             padding-bottom: 1px;
+            font-weight: 700;
 
             &:not(:first-child) {
                 margin-top: 4px;
@@ -22,7 +23,7 @@
         @media (max-width: @site-mobile-width) {
             flex-wrap: wrap;
             justify-content: right;
-            border-bottom: 1px solid #ded5e7;
+            border-bottom: 1px solid var(--accent-colour);
         }
     }
 
@@ -32,16 +33,12 @@
     }
 
     &__line:not(&__line--header) &__title {
-        border-bottom: 1px solid #ded5e7;
+        border-bottom: 1px solid var(--accent-colour);
 
         @media (max-width: @site-mobile-width) {
             width: 100%;
             border-bottom-width: 0;
         }
-    }
-
-    &__input {
-        cursor: pointer;
     }
 
     &__choice {
@@ -55,27 +52,27 @@
         }
 
         &--radio {
-            cursor: pointer;
-            border-left: 1px solid var(--accent-colour);
+            justify-content: center;
         }
 
         &--yes {
-
-            &:hover {
-                background-color: #0a0;
-            }
+            --accent-colour: #0a0;
 
             @media (max-width: @site-mobile-width) {
                 border-left-width: 0;
             }
         }
 
-        &--no:hover {
-            background-color: #a00;
+        &--no {
+            --accent-colour: #a00;
         }
 
-        &--never:hover {
-            background-color: #400;
+        &--never {
+            --accent-colour: #400;
+        }
+
+        &__wrapper {
+            border-left: 1px solid var(--accent-colour);
         }
     }
 }
