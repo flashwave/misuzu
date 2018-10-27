@@ -1,6 +1,6 @@
 {% extends 'manage/changelog/master.twig' %}
 {% from 'macros.twig' import container_title %}
-{% from '_layout/input.twig' import input_csrf, input_text %}
+{% from '_layout/input.twig' import input_csrf, input_text, input_checkbox %}
 
 {% block manage_content %}
     <div class="container">
@@ -26,7 +26,7 @@
             <label class="form__label">
                 <div class="form__label__text">Archived</div>
                 <div class="form__label__input">
-                    <input class="input" type="checkbox" name="tag[archived]"{% if edit_tag is defined and edit_tag.tag_archived is not null %} checked{% endif %}>
+                    {{ input_checkbox('tag[archived]', '', edit_tag is defined and edit_tag.tag_archived is not null) }}
                 </div>
             </label>
 

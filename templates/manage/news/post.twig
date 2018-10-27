@@ -1,6 +1,6 @@
 {% extends 'manage/news/master.twig' %}
 {% from 'macros.twig' import container_title %}
-{% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox %}
 
 {% set is_new = post|length < 1 %}
 
@@ -30,7 +30,7 @@
 
             <tr>
                 <td>Is Featured</td>
-                <td><input type="checkbox" name="post[featured]" {% if post.post_is_featured|default(false) %}checked{% endif %}></td>
+                <td>{{ input_checkbox('post[featured]', '', post.post_is_featured|default(false)) }}</td>
             </tr>
 
             <tr>

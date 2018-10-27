@@ -1,7 +1,7 @@
 {% extends 'manage/users/master.twig' %}
 {% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import permissions_table %}
-{% from '_layout/input.twig' import input_csrf, input_text %}
+{% from '_layout/input.twig' import input_csrf, input_text, input_checkbox %}
 
 {% block manage_content %}
     <form action="?v=role{{ edit_role is defined ? '&r=' ~ edit_role.role_id : '' }}" method="post"{% if edit_role is defined %} style="{{ edit_role.role_colour|html_colour('--accent-colour') }}"{% endif %}>
@@ -20,7 +20,7 @@
             <label class="form__label">
                 <div class="form__label__text">Hide Rank</div>
                 <div class="form__label__input">
-                    <input class="input" type="checkbox" name="role[secret]"{% if edit_role is defined and edit_role.role_secret %} checked{% endif %}>
+                    {{ input_checkbox('role[secret]', '', edit_role is defined and edit_role.role_secret) }}
                 </div>
             </label>
 
@@ -46,7 +46,7 @@
             <label class="form__label">
                 <div class="form__label__text">Inherit Colour</div>
                 <div class="form__label__input">
-                    <input class="input" type="checkbox" name="role[colour][inherit]"{% if edit_role is defined and edit_role.role_colour|colour_get_inherit %} checked{% endif %}>
+                    {{ input_checkbox('role[colour][inherit]', '', edit_role is defined and edit_role.role_colour|colour_get_inherit) }}
                 </div>
             </label>
 

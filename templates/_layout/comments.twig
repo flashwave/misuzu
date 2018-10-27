@@ -1,7 +1,7 @@
 {% macro comments_input(category, user, perms, reply_to) %}
     {% set reply_mode = reply_to is not null %}
 
-    {% from '_layout/input.twig' import input_hidden, input_csrf %}
+    {% from '_layout/input.twig' import input_hidden, input_csrf, input_checkbox %}
 
     <form class="comment comment--input{% if reply_mode %} comment--reply{% endif %}"
         method="post" action="/comments.php?m=create"
@@ -28,16 +28,10 @@
                 <div class="comment__actions">
                     {% if not reply_mode %}
                         {% if perms.can_pin %}
-                            <label class="comment__action comment__action--label">
-                                <input type="checkbox" class="comment__action__checkbox" name="comment[pin]">
-                                Pin this comment
-                            </label>
+                            {{ input_checkbox('comment[pin]', 'Pin this comment', false, 'comment__action') }}
                         {% endif %}
                         {% if perms.can_lock %}
-                            <label class="comment__action comment__action--label">
-                                <input type="checkbox" class="comment__action__checkbox" name="comment[lock]">
-                                Toggle locked status
-                            </label>
+                            {{ input_checkbox('comment[lock]', 'Toggle locked status', false, 'comment__action') }}
                         {% endif %}
                     {% endif %}
                     <button class="input__button comment__action comment__action--button comment__action--post">

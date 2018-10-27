@@ -1,7 +1,7 @@
 {% extends 'manage/users/master.twig' %}
 {% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import permissions_table %}
-{% from '_layout/input.twig' import input_csrf, input_text %}
+{% from '_layout/input.twig' import input_csrf, input_text, input_checkbox %}
 
 {% set site_link = '/profile.php?u=' ~ view_user.user_id %}
 
@@ -83,7 +83,7 @@
                 <label class="form__label">
                     <div class="form__label__text">Delete Avatar</div>
                     <div class="form__label__input">
-                        <input class="input" type="checkbox" name="avatar[delete]">
+                        {{ input_checkbox('avatar[delete]') }}
                     </div>
                 </label>
             </div>
@@ -114,7 +114,7 @@
                 <label class="form__label">
                     <div class="form__label__text">Custom Colour</div>
                     <div class="form__label__input">
-                        <input class="input" type="checkbox" name="colour[enable]"{% if colour_is_defined %} checked{% endif %}>
+                        {{ input_checkbox('colour[enable]', '', colour_is_defined) }}
                     </div>
                 </label>
 

@@ -1,6 +1,6 @@
 {% extends 'user/master.twig' %}
 {% from 'macros.twig' import container_title %}
-{% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox %}
 
 {% set image = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
 {% set canonical_url = '/profile.php?u=' ~ profile.user_id %}
@@ -134,20 +134,9 @@
                                     {% endfor %}
                                 </select>
 
-                                <label>
-                                    <input type="checkbox" name="background[delete]">
-                                    Delete
-                                </label>
-
-                                <label>
-                                    <input type="checkbox" name="background[attr][blend]"{% if profile.user_background_blend %} checked{% endif %}>
-                                    Blend
-                                </label>
-
-                                <label>
-                                    <input type="checkbox" name="background[attr][slide]"{% if profile.user_background_slide %} checked{% endif %}>
-                                    Slide
-                                </label>
+                                {{ input_checkbox('background[delete]', 'Delete') }}
+                                {{ input_checkbox('background[attr][blend]', 'Blend', profile.user_background_blend) }}
+                                {{ input_checkbox('background[attr][slide]', 'Slide', profile.user_background_slide) }}
                             </div>
                         </div>
                     {% endif %}

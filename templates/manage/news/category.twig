@@ -1,6 +1,6 @@
 {% extends 'manage/news/master.twig' %}
 {% from 'macros.twig' import container_title %}
-{% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox %}
 
 {% set is_new = category|length < 1 %}
 
@@ -24,7 +24,7 @@
 
             <tr>
                 <td>Is Hidden</td>
-                <td><input type="checkbox" name="category[hidden]" {% if category.category_is_hidden|default(false) %}checked{% endif %}></td>
+                <td>{{ input_checkbox('category[hidden]', '', category.category_is_hidden|default(false)) }}</td>
             </tr>
         </table>
 

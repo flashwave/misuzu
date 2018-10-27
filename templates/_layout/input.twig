@@ -4,7 +4,7 @@
 {% endspaceless %}
 {% endmacro %}
 
-{% macro input_csrf(realm, name) %} {# so we don't have to specify |raw every time #}
+{% macro input_csrf(realm, name) %}{# so we don't have to specify |raw every time #}
 {% spaceless %}
     {{ csrf_input(realm, name|default('csrf'))|raw }}
 {% endspaceless %}
@@ -20,5 +20,23 @@
         {% for name, value in attributes|default([]) %}
             {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
         {% endfor %}>
+{% endspaceless %}
+{% endmacro %}
+
+{% macro input_checkbox(name, text, value, class) %}
+{% spaceless %}
+    <label class="input__checkbox{{ class|length > 0 ? ' ' ~ class : '' }}">
+        <input type="checkbox" class="input__checkbox__input"
+            {% if name|length > 0 %}name="{{ name }}"{% endif %}
+            {% if value %}checked{% endif %}>
+        <div class="input__checkbox__display">
+            <div class="input__checkbox__display__icon"></div>
+        </div>
+        {% if text|length > 0 %}
+            <div class="input__checkbox__text">
+                {{ text }}
+            </div>
+        {% endif %}
+    </label>
 {% endspaceless %}
 {% endmacro %}
