@@ -77,14 +77,18 @@
     {% endif %}
 {% endmacro %}
 
-{% macro container_title(title, url) %}
+{% macro container_title(title, url, raw) %}
     {% set has_url = url is not null and url|length > 0 %}
 
     <div class="container__title">
         <div class="container__title__background"></div>
         {% if has_url %}<a href="{{ url }}" class="container__title__link">{% endif %}
         <div class="container__title__text">
-            {{ title }}
+            {% if raw %}
+                {{ title|raw }}
+            {% else %}
+                {{ title }}
+            {% endif %}
         </div>
         {% if has_url %}</a>{% endif %}
     </div>

@@ -11,30 +11,9 @@ if (!user_session_active()) {
 
 $settingsUserId = user_session_current('user_id', 0);
 
-if ($settingsUserId !== user_session_current('user_id', 0) && !user_exists($settingsUserId)) {
-    echo render_error(400);
-    return;
-}
-
-$settingsModes = [
-    'account' => 'Account',
-    'sessions' => 'Sessions',
-    'logs' => 'Logs',
-];
-$settingsMode = $_GET['m'] ?? key($settingsModes);
-
 tpl_vars([
     'settings_user_id' => $settingsUserId,
-    'settings_mode' => $settingsMode,
-    'settings_modes' => $settingsModes,
 ]);
-
-if (!array_key_exists($settingsMode, $settingsModes)) {
-    http_response_code(404);
-    tpl_var('settings_title', 'Not Found');
-    echo tpl_render('settings.notfound');
-    return;
-}
 
 $settingsErrors = [];
 
@@ -163,126 +142,112 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
-
-    if (empty($settingsErrors) && !empty($_POST['user']) && !empty($_SERVER['HTTP_REFERER'])) {
-        header('Location: /profile.php?u=' . ((int)($_POST['user'] ?? 0)));
-        return;
-    }
 }
 
 tpl_vars([
-    'settings_title' => $settingsModes[$settingsMode],
     'settings_errors' => $settingsErrors,
 ]);
 
-switch ($settingsMode) {
-    case 'account':
-        $getAccountInfo = db_prepare(sprintf('
-            SELECT `email`
-            FROM `msz_users`
-            WHERE `user_id` = :user_id
-        '));
-        $getAccountInfo->bindValue('user_id', $settingsUserId);
-        $accountInfo = $getAccountInfo->execute() ? $getAccountInfo->fetch(PDO::FETCH_ASSOC) : [];
+$getAccountInfo = db_prepare(sprintf('
+    SELECT `email`
+    FROM `msz_users`
+    WHERE `user_id` = :user_id
+'));
+$getAccountInfo->bindValue('user_id', $settingsUserId);
+$accountInfo = $getAccountInfo->execute() ? $getAccountInfo->fetch(PDO::FETCH_ASSOC) : [];
 
-        tpl_vars([
-            'background' => $backgroundProps,
-            'settings_disable_account_options' => $disableAccountOptions,
-            'account_info' => $accountInfo,
-        ]);
-        break;
+tpl_vars([
+    'background' => $backgroundProps,
+    'settings_disable_account_options' => $disableAccountOptions,
+    'account_info' => $accountInfo,
+]);
 
-    case 'sessions':
-        $getSessionCount = db_prepare('
-            SELECT COUNT(`session_id`)
-            FROM `msz_sessions`
-            WHERE `user_id` = :user_id
-        ');
-        $getSessionCount->bindValue('user_id', $settingsUserId);
-        $sessionCount = $getSessionCount->execute() ? $getSessionCount->fetchColumn() : 0;
+$getSessionCount = db_prepare('
+    SELECT COUNT(`session_id`)
+    FROM `msz_sessions`
+    WHERE `user_id` = :user_id
+');
+$getSessionCount->bindValue('user_id', $settingsUserId);
+$sessionCount = $getSessionCount->execute() ? $getSessionCount->fetchColumn() : 0;
 
-        $getSessions = db_prepare('
-            SELECT
-                `session_id`, `session_country`, `user_agent`, `created_at`, `expires_on`,
-                INET6_NTOA(`session_ip`) as `session_ip_decoded`
-            FROM `msz_sessions`
-            WHERE `user_id` = :user_id
-            ORDER BY `session_id` DESC
-            LIMIT :offset, :take
-        ');
-        $getSessions->bindValue('offset', $queryOffset);
-        $getSessions->bindValue('take', $queryTake);
-        $getSessions->bindValue('user_id', $settingsUserId);
-        $sessions = $getSessions->execute() ? $getSessions->fetchAll() : [];
+$getSessions = db_prepare('
+    SELECT
+        `session_id`, `session_country`, `user_agent`, `created_at`, `expires_on`,
+        INET6_NTOA(`session_ip`) as `session_ip_decoded`
+    FROM `msz_sessions`
+    WHERE `user_id` = :user_id
+    ORDER BY `session_id` DESC
+    LIMIT :offset, :take
+');
+$getSessions->bindValue('offset', $queryOffset);
+$getSessions->bindValue('take', $queryTake);
+$getSessions->bindValue('user_id', $settingsUserId);
+$sessions = $getSessions->execute() ? $getSessions->fetchAll() : [];
 
-        tpl_vars([
-            'active_session_id' => user_session_current('session_id'),
-            'user_sessions' => $sessions,
-            'sessions_offset' => $queryOffset,
-            'sessions_take' => $queryTake,
-            'sessions_count' => $sessionCount,
-        ]);
-        break;
+tpl_vars([
+    'active_session_id' => user_session_current('session_id'),
+    'user_sessions' => $sessions,
+    'sessions_offset' => $queryOffset,
+    'sessions_take' => $queryTake,
+    'sessions_count' => $sessionCount,
+]);
 
-    case 'logs':
-        $loginAttemptsOffset = max(0, $_GET['lo'] ?? 0);
-        $auditLogOffset = max(0, $_GET['ao'] ?? 0);
+$loginAttemptsOffset = max(0, $_GET['lo'] ?? 0);
+$auditLogOffset = max(0, $_GET['ao'] ?? 0);
 
-        $getLoginAttemptsCount = db_prepare('
-            SELECT COUNT(`attempt_id`)
-            FROM `msz_login_attempts`
-            WHERE `user_id` = :user_id
-        ');
-        $getLoginAttemptsCount->bindValue('user_id', $settingsUserId);
-        $loginAttemptsCount = $getLoginAttemptsCount->execute() ? $getLoginAttemptsCount->fetchColumn() : 0;
+$getLoginAttemptsCount = db_prepare('
+    SELECT COUNT(`attempt_id`)
+    FROM `msz_login_attempts`
+    WHERE `user_id` = :user_id
+');
+$getLoginAttemptsCount->bindValue('user_id', $settingsUserId);
+$loginAttemptsCount = $getLoginAttemptsCount->execute() ? $getLoginAttemptsCount->fetchColumn() : 0;
 
-        $getLoginAttempts = db_prepare('
-            SELECT
-                `attempt_id`, `attempt_country`, `was_successful`, `user_agent`, `created_at`,
-                INET6_NTOA(`attempt_ip`) as `attempt_ip_decoded`
-            FROM `msz_login_attempts`
-            WHERE `user_id` = :user_id
-            ORDER BY `attempt_id` DESC
-            LIMIT :offset, :take
-        ');
-        $getLoginAttempts->bindValue('offset', $loginAttemptsOffset);
-        $getLoginAttempts->bindValue('take', min(20, max(5, $queryTake)));
-        $getLoginAttempts->bindValue('user_id', $settingsUserId);
-        $loginAttempts = $getLoginAttempts->execute() ? $getLoginAttempts->fetchAll() : [];
+$getLoginAttempts = db_prepare('
+    SELECT
+        `attempt_id`, `attempt_country`, `was_successful`, `user_agent`, `created_at`,
+        INET6_NTOA(`attempt_ip`) as `attempt_ip_decoded`
+    FROM `msz_login_attempts`
+    WHERE `user_id` = :user_id
+    ORDER BY `attempt_id` DESC
+    LIMIT :offset, :take
+');
+$getLoginAttempts->bindValue('offset', $loginAttemptsOffset);
+$getLoginAttempts->bindValue('take', min(20, max(5, $queryTake)));
+$getLoginAttempts->bindValue('user_id', $settingsUserId);
+$loginAttempts = $getLoginAttempts->execute() ? $getLoginAttempts->fetchAll() : [];
 
-        $auditLogCount = audit_log_count($settingsUserId);
-        $auditLog = audit_log_list(
-            $auditLogOffset,
-            min(20, max(5, $queryTake)),
-            $settingsUserId
-        );
+$auditLogCount = audit_log_count($settingsUserId);
+$auditLog = audit_log_list(
+    $auditLogOffset,
+    min(20, max(5, $queryTake)),
+    $settingsUserId
+);
 
-        tpl_vars([
-            'audit_logs' => $auditLog,
-            'audit_log_count' => $auditLogCount,
-            'audit_log_take' => $queryTake,
-            'audit_log_offset' => $auditLogOffset,
-            'log_strings' => [
-                'PERSONAL_EMAIL_CHANGE' => 'Changed e-mail address to %s.',
-                'PERSONAL_PASSWORD_CHANGE' => 'Changed account password.',
-                'PERSONAL_SESSION_DESTROY' => 'Ended session #%d.',
-                'PERSONAL_SESSION_DESTROY_ALL' => 'Ended all personal sessions.',
-                'PASSWORD_RESET' => 'Successfully used the password reset form to change password.',
-                'CHANGELOG_ENTRY_CREATE' => 'Created a new changelog entry #%d.',
-                'CHANGELOG_ENTRY_EDIT' => 'Edited changelog entry #%d.',
-                'CHANGELOG_TAG_ADD' => 'Added tag #%2$d to changelog entry #%1$d.',
-                'CHANGELOG_TAG_REMOVE' => 'Removed tag #%2$d from changelog entry #%1$d.',
-                'CHANGELOG_TAG_CREATE' => 'Created new changelog tag #%d.',
-                'CHANGELOG_TAG_EDIT' => 'Edited changelog tag #%d.',
-                'CHANGELOG_ACTION_CREATE' => 'Created new changelog action #%d.',
-                'CHANGELOG_ACTION_EDIT' => 'Edited changelog action #%d.',
-            ],
-            'user_login_attempts' => $loginAttempts,
-            'login_attempts_offset' => $loginAttemptsOffset,
-            'login_attempts_take' => $queryTake,
-            'login_attempts_count' => $loginAttemptsCount,
-        ]);
-        break;
-}
+tpl_vars([
+    'audit_logs' => $auditLog,
+    'audit_log_count' => $auditLogCount,
+    'audit_log_take' => $queryTake,
+    'audit_log_offset' => $auditLogOffset,
+    'log_strings' => [
+        'PERSONAL_EMAIL_CHANGE' => 'Changed e-mail address to %s.',
+        'PERSONAL_PASSWORD_CHANGE' => 'Changed account password.',
+        'PERSONAL_SESSION_DESTROY' => 'Ended session #%d.',
+        'PERSONAL_SESSION_DESTROY_ALL' => 'Ended all personal sessions.',
+        'PASSWORD_RESET' => 'Successfully used the password reset form to change password.',
+        'CHANGELOG_ENTRY_CREATE' => 'Created a new changelog entry #%d.',
+        'CHANGELOG_ENTRY_EDIT' => 'Edited changelog entry #%d.',
+        'CHANGELOG_TAG_ADD' => 'Added tag #%2$d to changelog entry #%1$d.',
+        'CHANGELOG_TAG_REMOVE' => 'Removed tag #%2$d from changelog entry #%1$d.',
+        'CHANGELOG_TAG_CREATE' => 'Created new changelog tag #%d.',
+        'CHANGELOG_TAG_EDIT' => 'Edited changelog tag #%d.',
+        'CHANGELOG_ACTION_CREATE' => 'Created new changelog action #%d.',
+        'CHANGELOG_ACTION_EDIT' => 'Edited changelog action #%d.',
+    ],
+    'user_login_attempts' => $loginAttempts,
+    'login_attempts_offset' => $loginAttemptsOffset,
+    'login_attempts_take' => $queryTake,
+    'login_attempts_count' => $loginAttemptsCount,
+]);
 
-echo tpl_render("settings.{$settingsMode}");
+echo tpl_render('user.settings');
