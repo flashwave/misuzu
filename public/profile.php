@@ -77,10 +77,10 @@ switch ($mode) {
             break;
         }
 
+        $viewingOwnProfile = user_session_current('user_id', 0) === $userId;
         $userPerms = perms_get_user(MSZ_PERMS_USER, user_session_current('user_id', 0));
         $canEdit = user_session_active() && (
-            user_session_current('user_id', 0) === $userId
-            || perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS)
+            $viewingOwnProfile || perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS)
         );
         $isEditing = $mode === 'edit';
 
@@ -252,7 +252,7 @@ switch ($mode) {
                     return;
                 }
             }
-        } else {
+        } elseif ($viewingOwnProfile) {
             $notices[] = 'The profile pages are still under much construction, more things will eventually populate the area where this container current exists.';
         }
 
