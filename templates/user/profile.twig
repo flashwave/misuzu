@@ -42,12 +42,12 @@
 
 {% block content %}
     {% if is_editing %}
-        <form class="profile" method="post" action="/settings.php" enctype="multipart/form-data">
+        <form class="profile" method="post" action="" enctype="multipart/form-data">
             {{ input_hidden('user', profile.user_id) }}
-            {{ input_csrf('settings') }}
+            {{ input_csrf('profile') }}
 
             {% if perms.edit_avatar %}
-                <input class="settings__avatar__input"
+                <input class="profile__hidden"
                     accept="image/png,image/jpeg,image/gif"
                     type="file"
                     name="avatar[file]"
@@ -101,7 +101,7 @@
                 </div>
             {% endif %}
 
-            {% if profile_notices is defined %}
+            {% if profile_notices|length > 0 %}
                 <div class="warning">
                     <div class="warning__content">
                         {% for notice in profile_notices %}
@@ -120,10 +120,10 @@
                             </div>
                         </div>
                     {% elseif is_editing ? perms.edit_profile : profile_fields|default([])|length > 0 %}
-                        <div class="container">
+                        <div class="container profile__accounts">
                             {{ container_title('Elsewhere') }}
 
-                            <div class="profile__accounts">
+                            <div class="profile__accounts__content">
                                 {% for name, data in profile_fields %}
                                     <label class="profile__accounts__item">
                                         <div class="profile__accounts__title">
@@ -145,6 +145,44 @@
                                         {% endif %}
                                     </label>
                                 {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if is_editing and perms.edit_background %}
+                        <div class="container profile__background-settings">
+                            {{ container_title('Background') }}
+
+                            <div class="profile__background-settings__content">
+                                <label>
+                                    <input
+                                        accept="image/png,image/jpeg,image/gif"
+                                        type="file"
+                                        name="background[file]"
+                                        id="background-selection">
+                                </label>
+
+                                <select name="background[attach]" class="input__select">
+                                    {% for key, value in background_attachments %}
+                                        <option value="{{ value }}"{% if profile.user_background_attachment == key %} selected{% endif %}>
+                                            {{ value|capitalize }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+
+                                <label>
+                                    <input type="checkbox" name="background[delete]">
+                                    Delete
+                                </label>
+
+                                <label>
+                                    <input type="checkbox" name="background[attr][blend]"{% if profile.user_background_blend %} checked{% endif %}>
+                                    Blend
+                                </label>
+
+                                <label>
+                                    <input type="checkbox" name="background[attr][slide]"{% if profile.user_background_slide %} checked{% endif %}>
+                                    Slide
+                                </label>
                             </div>
                         </div>
                     {% endif %}

@@ -52,3 +52,34 @@ function user_relation_remove(int $userId, int $subjectId): bool
 
     return $removeRelation->execute();
 }
+
+function user_relation_info(int $userId, int $subjectId): array
+{
+    $getRelationInfo = db_prepare('
+        SELECT
+            :user_id as `user_id_arg`, :subject_id as `subject_id_arg`,
+            (
+                SELECT `relation_type`
+                FROM `msz_user_relations`
+                WHERE `user_id` = `user_id_arg`
+                AND `subject_id` = `subject_id_arg`
+            ) as `user_relation`,
+            (
+                SELECT `relation_type`
+                FROM `msz_user_relations`
+                WHERE `subject_id` = `user_id_arg`
+                AND `user_id` = `subject_id_arg`
+            ) as `subject_relation`,
+            (
+                SELECT MAX(`relation_created`)
+                FROM `msz_user_relations`
+                WHERE (`user_id` = `user_id_arg` AND `subject_id` = `subject_id_arg`)
+                OR (`user_id` = `subject_id_arg` AND `subject_id` = `user_id_arg`)
+            ) as `relation_created`
+    ');
+    $getRelationInfo->bindValue('user_id', $userId);
+    $getRelationInfo->bindValue('subject_id', $subjectId);
+    $relationInfo = $getRelationInfo->execute() ? $getRelationInfo->fetch(PDO::FETCH_ASSOC) : false;
+
+    return $relationInfo ? $relationInfo : [];
+}

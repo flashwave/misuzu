@@ -35,7 +35,9 @@ function safe_delete(string $path): void
         return;
     }
 
-    unlink($path);
+    if (is_file($path)) {
+        unlink($path);
+    }
 }
 
 // mkdir + recursion

@@ -2,16 +2,12 @@
 {% from 'macros.twig' import container_title %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 
-{% if user_has_background %}
-    {% set site_background_url = '/profile.php?m=background&u=' ~ settings_user_id %}
-{% endif %}
-
 {% block settings_content %}
-    {#<div class="warning">
+    <div class="warning">
         <div class="warning__content">
             A few of the elements on this page have been moved to the on-profile editor. To find them, go to your profile and hit the "Edit Profile" button below your avatar.
         </div>
-    </div>#}
+    </div>
 
     <div class="container container--translucent">
         {{ container_title('Account') }}
@@ -20,23 +16,6 @@
             {{ input_csrf('settings') }}
 
             <div class="settings__account__row">
-                {% if settings_perms.edit_profile %}
-                    <div class="settings__account__column">
-                        <div class="settings__account__title">Profile</div>
-
-                        {% for name, props in settings_profile_fields %}
-                        <label class="settings__account__input settings__account__input--{{ name }}">
-                            <div class="settings__account__input__name">
-                                {{ props.name }}
-                            </div>
-                            <div class="settings__account__input__value">
-                                {{ input_text('profile[' ~ name ~ ']', 'settings__account__input__value__text', account_info['user_' ~ name], props.type|default('text')) }}
-                            </div>
-                        </label>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-
                 {% if settings_disable_account_options %}
                     <div class="settings__account__column settings__account__column--no-margin settings__account__column--disabled">
                         <div class="settings__account__row">
@@ -116,7 +95,7 @@
                                         Current Password
                                     </div>
                                     <div class="settings__account__input__value">
-                                        {{ input_text('current_password', 'settings__account__input__value__text', '', 'password', 'only needed for e-mail and password updating') }}
+                                        {{ input_text('current_password', 'settings__account__input__value__text', '', 'password') }}
                                     </div>
                                 </label>
                             </div>
@@ -125,7 +104,7 @@
                 {% endif %}
             </div>
 
-            {% if settings_perms.edit_profile or not settings_disable_account_options %}
+            {% if not settings_disable_account_options %}
                 <div class="settings__account__row settings__account__row--buttons">
                     <button class="input__button">Update</button>
                     <button class="input__button" type="reset">Reset</button>
@@ -133,193 +112,4 @@
             {% endif %}
         </form>
     </div>
-
-    {% if settings_perms.edit_avatar %}
-        <div class="container container--translucent">
-            {{ container_title('Avatar') }}
-
-            <form action="" method="post" class="settings__images" enctype="multipart/form-data">
-                {{ input_hidden('MAX_FILE_SIZE', avatar.max_size) }}
-                {{ input_csrf('settings') }}
-
-                <div class="settings__images__sections">
-                    <div class="settings__images__requirements">
-                        <ul class="settings__images__requirements__list">
-                            <li class="settings__images__requirement settings__images__requirement--header">Guidelines</li>
-                            <li class="settings__images__requirement">Keep things sane and suitable for all ages.</li>
-                            <li class="settings__images__requirement">Image may not exceed the <strong>{{ avatar.max_size|byte_symbol(true) }}</strong> filesize limit.</li>
-                            <li class="settings__images__requirement">May not be larger than <strong>{{ avatar.max_width }}x{{ avatar.max_height }}</strong>.</li>
-                            <li class="settings__images__requirement">Will be centre cropped to be <strong>200x200</strong>.</li>
-                            <li class="settings__images__requirement">Animated gif images are allowed.</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="settings__avatar">
-                    <label class="settings__avatar__label">
-                        <div
-                            class="avatar settings__avatar__preview"
-                            id="avatar-preview"
-                            style="background-image:url('/profile.php?u={{ settings_user_id }}&amp;m=avatar')"></div>
-                        <input
-                            class="settings__avatar__input"
-                            accept="image/png,image/jpeg,image/gif"
-                            type="file"
-                            name="avatar[file]"
-                            id="avatar-selection">
-                        <div class="settings__avatar__name" id="avatar-name">
-                            Click to select a file!
-                        </div>
-                    </label>
-
-                    <div class="settings__avatar__buttons">
-                        <button
-                            class="settings__avatar__button"
-                            name="avatar[mode]"
-                            value="upload">
-                            Upload
-                        </button>
-                        <button
-                            class="settings__avatar__button settings__avatar__button--delete{{ user_has_avatar ? '' : ' settings__avatar__button--disabled' }}"
-                            {{ user_has_avatar ? '' : 'disabled' }}
-                            name="avatar[mode]"
-                            value="delete">
-                            Delete
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <script>
-            function updateAvatarPreview(name, url, previewEl, nameEl) {
-                url = url || "/profile.php?u={{ settings_user_id }}&m=avatar";
-                previewEl = previewEl || document.getElementById('avatar-preview');
-                nameEl = nameEl || document.getElementById('avatar-name');
-                previewEl.style.backgroundImage = 'url(\'{0}\')'.replace('{0}', url);
-                nameEl.textContent = name;
-            }
-
-            document.getElementById('avatar-selection').addEventListener('change', function (ev) {
-                updateAvatarPreview(ev.target.files[0].name, URL.createObjectURL(ev.target.files[0]));
-            });
-        </script>
-    {% endif %}
-
-    {% if settings_perms.edit_background %}
-        <div class="container container--translucent">
-            {{ container_title('Background') }}
-
-            <form action="" method="post" class="settings__images" enctype="multipart/form-data">
-                {{ input_hidden('MAX_FILE_SIZE', background.max_size) }}
-                {{ input_csrf('settings') }}
-
-                <div class="settings__images__sections">
-                    <div class="settings__images__requirements">
-                        <ul class="settings__images__requirements__list">
-                            <li class="settings__images__requirement settings__images__requirement--header">Guidelines</li>
-                            <li class="settings__images__requirement">Keep things sane and suitable for all ages.</li>
-                            <li class="settings__images__requirement">Image may not exceed the <strong>{{ background.max_size|byte_symbol(true) }}</strong> filesize limit.</li>
-                            <li class="settings__images__requirement">May not be larger than <strong>{{ background.max_width }}x{{ background.max_height }}</strong>.</li>
-                            <li class="settings__images__requirement">Animated gif images are <strong>not</strong> allowed.</li>
-                        </ul>
-
-                        <select name="background[attach]" class="input__select">
-                            {% for key, value in background_attachments %}
-                                <option value="{{ value }}"{% if account_info.user_background_attachment == key %} selected{% endif %}>
-                                    {{ value|capitalize }}
-                                </option>
-                            {% endfor %}
-                        </select>
-
-                        <label>
-                            <input type="checkbox" name="background[attr][blend]"{% if account_info.user_background_attr_blend %} checked{% endif %}>
-                            Blend
-                        </label>
-
-                        <label>
-                            <input type="checkbox" name="background[attr][slide]"{% if account_info.user_background_attr_slide %} checked{% endif %}>
-                            Slide
-                        </label>
-                    </div>
-                </div>
-
-                <div class="settings__avatar">
-                    <label class="settings__avatar__label">
-                        <input
-                            class="settings__avatar__input"
-                            accept="image/png,image/jpeg,image/gif"
-                            type="file"
-                            name="background[file]"
-                            id="background-selection">
-                        <div class="settings__avatar__name" id="background-name">
-                            Click to select a file!
-                        </div>
-                    </label>
-
-                    <div class="settings__avatar__buttons">
-                        <button
-                            class="settings__avatar__button"
-                            name="background[mode]"
-                            value="upload">
-                            Upload
-                        </button>
-                        <button
-                            class="settings__avatar__button settings__avatar__button--delete{{ user_has_background ? '' : ' settings__avatar__button--disabled' }}"
-                            {{ user_has_background ? '' : 'disabled' }}
-                            name="background[mode]"
-                            value="delete">
-                            Delete
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <script>
-            function updateBackgroundPreview(name, url, previewEl, nameEl) {
-                url = url || "/profile.php?u={{ settings_user_id }}&m=background";
-                previewEl = previewEl || document.body;
-                nameEl = nameEl || document.getElementById('background-name');
-                previewEl.style.setProperty('--background-image', 'url(\'{0}\')'.replace('{0}', url));
-                nameEl.textContent = name;
-            }
-
-            document.getElementById('background-selection').addEventListener('change', function (ev) {
-                updateBackgroundPreview(ev.target.files[0].name, URL.createObjectURL(ev.target.files[0]));
-            });
-        </script>
-    {% endif %}
-
-    {% if settings_perms.edit_about %}
-        <div class="container container--translucent">
-            {{ container_title('About') }}
-
-            <form method="post" action="" enctype="multipart/form-data" class="settings__about">
-                {{ input_csrf('settings') }}
-
-                <textarea name="about[text]" class="input__textarea settings__about__text" id="about-textarea">{{ account_info.user_about_content|escape }}</textarea>
-
-                <div class="settings__about__options">
-                    <select name="about[parser]" class="input__select">
-                        {% for parser, name in constant('MSZ_PARSERS_NAMES') %}
-                            <option value="{{ parser }}"{% if parser == account_info.user_about_parser %} selected{% endif %}>{{ name }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <div>
-                        <span id="about-character-count"></span>
-                        <button class="input__button">Update</button>
-                        <button class="input__button" type="reset">Reset</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <script>
-            /*document.getElementById('about-textarea').addEventListener('change', function (ev) {
-                document.getElementById('about-character-count').textContent = ' / ' . ;
-            });*/
-        </script>
-    {% endif %}
 {% endblock %}

@@ -144,6 +144,7 @@ function user_set_about_page(int $userId, string $content, int $parser = MSZ_PAR
 define('MSZ_TMP_USER_ERROR_STRINGS', [
     'csrf' => "Couldn't verify you, please refresh the page and retry.",
     'avatar' => [
+        'not-allowed' => "You aren't allow to change your avatar.",
         'upload' => [
             '_' => 'Something happened? (UP:%1$d)',
             UPLOAD_ERR_OK => '',
@@ -166,14 +167,40 @@ define('MSZ_TMP_USER_ERROR_STRINGS', [
             MSZ_USER_AVATAR_ERROR_FILE_NOT_FOUND => 'Unable to save your avatar, contact an administator!',
         ],
     ],
+    'background' => [
+        'not-allowed' => "You aren't allow to change your background.",
+        'upload' => [
+            '_' => 'Something happened? (UP:%1$d)',
+            UPLOAD_ERR_OK => '',
+            UPLOAD_ERR_NO_FILE => 'Select a file before hitting upload!',
+            UPLOAD_ERR_PARTIAL => 'The upload was interrupted, please try again!',
+            UPLOAD_ERR_INI_SIZE => 'Your background is not allowed to be larger in file size than %2$s!',
+            UPLOAD_ERR_FORM_SIZE => 'Your background is not allowed to be larger in file size than %2$s!',
+            UPLOAD_ERR_NO_TMP_DIR => 'Unable to save your background, contact an administator!',
+            UPLOAD_ERR_CANT_WRITE => 'Unable to save your background, contact an administator!',
+        ],
+        'set' => [
+            '_' => 'Something happened? (SET:%1$d)',
+            MSZ_USER_AVATAR_NO_ERRORS => '',
+            MSZ_USER_AVATAR_ERROR_INVALID_IMAGE => 'The file you uploaded was not an image!',
+            MSZ_USER_AVATAR_ERROR_PROHIBITED_TYPE => 'This type of image is not supported!',
+            MSZ_USER_AVATAR_ERROR_DIMENSIONS_TOO_LARGE => 'Your background can\'t be larger than %3$dx%4$d!',
+            MSZ_USER_AVATAR_ERROR_DATA_TOO_LARGE => 'Your background is not allowed to be larger in file size than %2$s!',
+            MSZ_USER_AVATAR_ERROR_TMP_FAILED => 'Unable to save your background, contact an administator!',
+            MSZ_USER_AVATAR_ERROR_STORE_FAILED => 'Unable to save your background, contact an administator!',
+            MSZ_USER_AVATAR_ERROR_FILE_NOT_FOUND => 'Unable to save your background, contact an administator!',
+        ],
+    ],
     'profile' => [
         '_' => 'An unexpected error occurred, contact an administator.',
+        'not-allowed' => "You're not allowed to edit your profile.",
         MSZ_USER_PROFILE_INVALID_FIELD => "Field '%1\$s' does not exist!",
         MSZ_USER_PROFILE_FILTER_FAILED => '%2$s field was invalid!',
         MSZ_USER_PROFILE_UPDATE_FAILED => 'Failed to update values, contact an administator.',
     ],
     'about' => [
         '_' => 'An unexpected error occurred, contact an administator.',
+        'not-allowed' => "You're not allowed to edit your about page.",
         MSZ_USER_ABOUT_INVALID_USER => 'The requested user does not exist.',
         MSZ_USER_ABOUT_INVALID_PARSER => 'The selected parser is invalid.',
         MSZ_USER_ABOUT_TOO_LONG => 'Please keep the length of your about section below %1$d characters.',

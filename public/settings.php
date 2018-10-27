@@ -4,22 +4,12 @@ require_once '../misuzu.php';
 $queryOffset = (int)($_GET['o'] ?? 0);
 $queryTake = 15;
 
-$userPerms = perms_get_user(MSZ_PERMS_USER, user_session_current('user_id', 0));
-$perms = [
-    'edit_profile' => perms_check($userPerms, MSZ_PERM_USER_EDIT_PROFILE),
-    'edit_avatar' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_AVATAR),
-    'edit_background' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_BACKGROUND),
-    'edit_about' => perms_check($userPerms, MSZ_PERM_USER_EDIT_ABOUT),
-];
-
 if (!user_session_active()) {
     echo render_error(403);
     return;
 }
 
-$settingsUserId = !empty($_REQUEST['user']) && perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS)
-    ? (int)$_REQUEST['user']
-    : user_session_current('user_id', 0);
+$settingsUserId = user_session_current('user_id', 0);
 
 if ($settingsUserId !== user_session_current('user_id', 0) && !user_exists($settingsUserId)) {
     echo render_error(400);
@@ -35,7 +25,6 @@ $settingsMode = $_GET['m'] ?? key($settingsModes);
 
 tpl_vars([
     'settings_user_id' => $settingsUserId,
-    'settings_perms' => $perms,
     'settings_mode' => $settingsMode,
     'settings_modes' => $settingsModes,
 ]);
@@ -60,164 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_verify('settings', $_POST['csrf'] ?? '')) {
         $settingsErrors[] = MSZ_TMP_USER_ERROR_STRINGS['csrf'];
     } else {
-        if (!empty($_POST['profile']) && is_array($_POST['profile'])) {
-            if (!$perms['edit_profile']) {
-                $settingsErrors[] = "You're not allowed to edit your profile.";
-            } else {
-                $setUserFieldErrors = user_profile_fields_set($settingsUserId, $_POST['profile']);
-
-                if (count($setUserFieldErrors) > 0) {
-                    foreach ($setUserFieldErrors as $name => $error) {
-                        $settingsErrors[] = sprintf(
-                            MSZ_TMP_USER_ERROR_STRINGS['profile'][$error] ?? MSZ_TMP_USER_ERROR_STRINGS['profile']['_'],
-                            $name,
-                            user_profile_field_get_display_name($name)
-                        );
-                    }
-                }
-            }
-        }
-
-        if (!empty($_POST['about']) && is_array($_POST['about'])) {
-            if (!$perms['edit_about']) {
-                $settingsErrors[] = "You're not allowed to edit your about page.";
-            } else {
-                $setAboutError = user_set_about_page(
-                    $settingsUserId,
-                    $_POST['about']['text'] ?? '',
-                    (int)($_POST['about']['parser'] ?? MSZ_PARSER_PLAIN)
-                );
-
-                if ($setAboutError !== MSZ_USER_ABOUT_OK) {
-                    $settingsErrors[] = sprintf(
-                        MSZ_TMP_USER_ERROR_STRINGS['about'][$setAboutError] ?? MSZ_TMP_USER_ERROR_STRINGS['about']['_'],
-                        MSZ_USER_ABOUT_MAX_LENGTH
-                    );
-                }
-            }
-        }
-
-        if (!empty($_FILES['avatar'])) {
-            if (empty($_POST['avatar']['mode'])) {
-                // cool monkey patch
-                $_POST['avatar']['mode'] = empty($_POST['avatar']['delete']) ? 'upload' : 'delete';
-            }
-
-            switch ($_POST['avatar']['mode'] ?? '') {
-                case 'delete':
-                    user_avatar_delete($settingsUserId);
-                    break;
-
-                case 'upload':
-                    if (!$perms['edit_avatar']) {
-                        $settingsErrors[] = "You aren't allow to change your avatar.";
-                        break;
-                    }
-
-                    if (empty($_FILES['avatar'])
-                        || !is_array($_FILES['avatar'])
-                        || empty($_FILES['avatar']['name']['file'])) {
-                        break;
-                    }
-
-                    if ($_FILES['avatar']['error']['file'] !== UPLOAD_ERR_OK) {
-                        $settingsErrors[] = sprintf(
-                            MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload'][$_FILES['avatar']['error']['file']]
-                            ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload']['_'],
-                            $_FILES['avatar']['error']['file'],
-                            byte_symbol($avatarProps['max_size'], true),
-                            $avatarProps['max_width'],
-                            $avatarProps['max_height']
-                        );
-                        break;
-                    }
-
-                    $setAvatar = user_avatar_set_from_path(
-                        $settingsUserId,
-                        $_FILES['avatar']['tmp_name']['file'],
-                        $avatarProps
-                    );
-
-                    if ($setAvatar !== MSZ_USER_AVATAR_NO_ERRORS) {
-                        $settingsErrors[] = sprintf(
-                            MSZ_TMP_USER_ERROR_STRINGS['avatar']['set'][$setAvatar]
-                            ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['set']['_'],
-                            $setAvatar,
-                            byte_symbol($avatarProps['max_size'], true),
-                            $avatarProps['max_width'],
-                            $avatarProps['max_height']
-                        );
-                    }
-                    break;
-            }
-        }
-
-        if (!empty($_FILES['background'])) {
-            switch ($_POST['background']['mode'] ?? '') {
-                case 'delete':
-                    user_background_delete($settingsUserId);
-                    user_background_set_settings($settingsUserId, MSZ_USER_BACKGROUND_ATTACHMENT_NONE);
-                    break;
-
-                case 'upload':
-                    if (!$perms['edit_background']) {
-                        $settingsErrors[] = "You aren't allow to change your background.";
-                        break;
-                    }
-
-                    if (empty($_POST['background'])
-                        || !is_array($_POST['background'])) {
-                        break;
-                    }
-
-                    if (!empty($_FILES['background']['name']['file'])) {
-                        if ($_FILES['background']['error']['file'] !== UPLOAD_ERR_OK) {
-                            $settingsErrors[] = sprintf(
-                                MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload'][$_FILES['background']['error']['file']]
-                                ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload']['_'],
-                                $_FILES['background']['error']['file'],
-                                byte_symbol($backgroundProps['max_size'], true),
-                                $backgroundProps['max_width'],
-                                $backgroundProps['max_height']
-                            );
-                            break;
-                        }
-
-                        $setBackground = user_background_set_from_path(
-                            $settingsUserId,
-                            $_FILES['background']['tmp_name']['file'],
-                            $backgroundProps
-                        );
-
-                        if ($setBackground !== MSZ_USER_BACKGROUND_NO_ERRORS) {
-                            $settingsErrors[] = sprintf(
-                                MSZ_TMP_USER_ERROR_STRINGS['avatar']['set'][$setBackground]
-                                ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['set']['_'],
-                                $setBackground,
-                                byte_symbol($backgroundProps['max_size'], true),
-                                $backgroundProps['max_width'],
-                                $backgroundProps['max_height']
-                            );
-                        }
-                    }
-
-                    $backgroundSettings = in_array($_POST['background']['attach'] ?? '', MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES)
-                        ? array_flip(MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES)[$_POST['background']['attach']]
-                        : MSZ_USER_BACKGROUND_ATTACHMENTS[0];
-
-                    if (!empty($_POST['background']['attr']['blend'])) {
-                        $backgroundSettings |= MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND;
-                    }
-
-                    if (!empty($_POST['background']['attr']['slide'])) {
-                        $backgroundSettings |= MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE;
-                    }
-
-                    user_background_set_settings($settingsUserId, $backgroundSettings);
-                    break;
-            }
-        }
-
         if (!empty($_POST['session_action'])) {
             switch ($_POST['session_action']) {
                 case 'kill-all':
@@ -346,37 +177,18 @@ tpl_vars([
 
 switch ($settingsMode) {
     case 'account':
-        $profileFields = user_profile_fields_get();
-
-        $getAccountInfo = db_prepare(sprintf(
-            '
-                SELECT
-                    %1$s, `email`, `user_about_content`, `user_about_parser`,
-                    `user_background_settings` & 0x0F as `user_background_attachment`,
-                    (`user_background_settings` & %2$d) > 0 as `user_background_attr_blend`,
-                    (`user_background_settings` & %3$d) > 0 as `user_background_attr_slide`
-                FROM `msz_users`
-                WHERE `user_id` = :user_id
-            ',
-            pdo_prepare_array($profileFields, true, '`user_%s`'),
-            MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND,
-            MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE
-        ));
+        $getAccountInfo = db_prepare(sprintf('
+            SELECT `email`
+            FROM `msz_users`
+            WHERE `user_id` = :user_id
+        '));
         $getAccountInfo->bindValue('user_id', $settingsUserId);
         $accountInfo = $getAccountInfo->execute() ? $getAccountInfo->fetch(PDO::FETCH_ASSOC) : [];
 
-        $userHasAvatar = is_file(build_path(MSZ_STORAGE, 'avatars/original', $avatarFileName));
-        $userHasBackground = is_file(build_path(MSZ_STORAGE, 'backgrounds/original', $avatarFileName));
-
         tpl_vars([
-            'avatar' => $avatarProps,
             'background' => $backgroundProps,
-            'user_has_avatar' => $userHasAvatar,
-            'user_has_background' => $userHasBackground,
-            'settings_profile_fields' => $profileFields,
             'settings_disable_account_options' => $disableAccountOptions,
             'account_info' => $accountInfo,
-            'background_attachments' => MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES,
         ]);
         break;
 
