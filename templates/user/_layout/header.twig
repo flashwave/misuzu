@@ -44,7 +44,7 @@
             </div>
         </div>
 
-        {% if friend_info is defined and (friend_info.subject_relation is not null or friend_info.user_relation is not null) %}
+        {% if friend_info|length > 0 and (friend_info.subject_relation is not null or friend_info.user_relation is not null) %}
             <div class="profile__header__details__relation" title="Since {{ friend_info.relation_created|date('r') }}">
                 {% if friend_info.subject_relation and friend_info.user_relation %}
                     Mutual Friends
