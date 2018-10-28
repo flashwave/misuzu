@@ -288,6 +288,7 @@ MIG;
     tpl_add_filter('perms_check');
     tpl_add_filter('bg_settings', 'user_background_settings_strings');
 
+    tpl_add_function('get_browser');
     tpl_add_function('git_commit_hash');
     tpl_add_function('git_tag');
     tpl_add_function('csrf_token');

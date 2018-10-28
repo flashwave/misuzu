@@ -17,9 +17,10 @@ tpl_vars([
 
 $settingsErrors = [];
 
-$disableAccountOptions = !MSZ_DEBUG
-    && boolval(config_get_default(false, 'Private', 'enabled'))
-    && boolval(config_get_default(false, 'Private', 'disable_account_settings'));
+$disableAccountOptions = !MSZ_DEBUG && (
+    boolval(config_get_default(false, 'Private', 'enabled'))
+    && boolval(config_get_default(false, 'Private', 'disable_account_settings'))
+);
 $avatarFileName = "{$settingsUserId}.msz";
 $avatarProps = user_avatar_default_options();
 $backgroundProps = user_background_default_options();

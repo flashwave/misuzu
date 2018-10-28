@@ -1,74 +1,47 @@
-@mio-settings-account-mobile: 800px;
-
 .settings__account {
-    display: flex;
-    flex-direction: column;
-    margin: 1px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 
-    &__disabled {
-        text-align: center;
-        padding: 5px;
+    @media (max-width: @site-mobile-width) {
+        grid-template-columns: 1fr;
     }
 
-    &__row {
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-evenly;
+    &__section {
+        margin: 5px;
 
-        @media (max-width: @mio-settings-account-mobile) {
-            flex-direction: column;
+        &--confirm {
+            grid-column: 1 / span 2;
         }
 
-        &--buttons {
-            display: block;
-            text-align: center;
-            margin: 2px 0;
+        @media (max-width: @site-mobile-width) {
+            grid-column: 1 / 1;
         }
     }
 
-    &__column {
-        flex-grow: 1;
+    &__item {
+        padding-bottom: 5px;
 
-        &:not(.settings__account__column--no-margin) {
-            margin: 1px;
-            border: 1px solid var(--accent-colour);
-            border-top-width: 0;
-        }
-
-        @media (min-width: @mio-settings-account-mobile) {
-            &--disabled {
-                max-width: 400px;
-            }
+        &:not(:last-child) {
+            border-bottom: 1px solid #222;
         }
     }
 
     &__title {
-        background-color: var(--accent-colour);
-        font-size: 1.1em;
-        font-weight: 700;
-        padding: 3px;
+        font-size: .9em;
+        line-height: 1.8em;
     }
 
     &__input {
+        width: 100%;
+    }
+
+    &__buttons {
         display: flex;
-        margin: 2px;
+        margin-top: 5px;
+        justify-content: center;
+    }
 
-        @media (max-width: @mio-settings-account-mobile) {
-            flex-direction: column;
-        }
-
-        &__name {
-            margin: 0 2px;
-            min-width: 140px;
-        }
-
-        &__value {
-            flex-grow: 1;
-
-            &__text {
-                width: 100%;
-            }
-        }
+    &__button {
+        margin: 0 2px;
     }
 }
