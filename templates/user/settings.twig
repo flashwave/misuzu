@@ -1,5 +1,6 @@
 {% extends 'user/master.twig' %}
 {% from 'macros.twig' import container_title, pagination %}
+{% from 'user/macros.twig' import user_session %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 
 {% set title = 'Settings' %}
@@ -113,48 +114,7 @@
                 {{ spagination }}
 
                 {% for session in user_sessions %}
-                    {% set browser = get_browser(session.user_agent) %}
-
-                    <div class="settings__session{% if session.session_id == active_session_id %} settings__session--current{% endif %}" id="session-{{ session.session_id }}">
-                        <div class="settings__session__icon settings__session__icon--browser">
-                            {% if browser.browser[:7]|lower == 'firefox' %}
-                                <i class="fab fa-firefox"></i>
-                            {% elseif browser.browser[:6]|lower == 'chrome' %}
-                                <i class="fab fa-chrome"></i>
-                            {% elseif browser.browser[:4]|lower == 'edge' %}
-                                <i class="fab fa-edge"></i>
-                            {% elseif browser.browser[:2]|lower == 'ie' %}
-                                <i class="fab fa-internet-explorer"></i>
-                            {% elseif browser.browser[:6]|lower == 'safari' %}
-                                <i class="fab fa-safari"></i>
-                            {% elseif browser.browser[:6]|lower == 'opera' %}
-                                <i class="fab fa-opera"></i>
-                            {% else %}
-                                <i class="fas fa-globe"></i>
-                            {% endif %}
-                        </div>
-
-                        <div class="settings__session__icon settings__session__icon--device">
-                            {% if browser.device_type[:7]|lower == 'desktop' %}
-                                <i class="fas fa-desktop"></i>
-                            {% elseif browser.device_type[:6]|lower == 'mobile' %}
-                                <i class="fas fa-mobile-alt"></i>
-                            {% else %}
-                                <i class="fas fa-blender-phone"></i>
-                            {% endif %}
-                        </div>
-
-                        <div class="settings__session__icon settings__session__icon--system">
-                            {% if browser.platform[:3]|lower == 'win' %}
-                                <i class="fab fa-windows"></i>
-                            {% elseif browser.platform[:3]|lower == 'ios' or browser.platform[:3]|lower == 'mac' %}
-                                <i class="fab fa-apple"></i>
-                            {% elseif browser.platform[:7]|lower == 'android' %}
-                                <i class="fab fa-android"></i>
-                            {% else %}
-                                <i class="fab fa-linux"></i>
-                            {% endif %}
-                        </div>
+                    {{ user_session(session) }}
 
 
                         <div class="settings__sessions__column settings__sessions__column--ip">
@@ -206,7 +166,6 @@
                                 {{ session.session_id == active_session_id ? 'Logout' : 'Kill' }}
                             </button>
                         </form-->
-                    </div>
                 {% endfor %}
 
                 {{ spagination }}

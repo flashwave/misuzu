@@ -43,3 +43,55 @@
         </div>
     </div>
 {% endmacro %}
+
+{% macro user_session(session, is_current_session) %}
+    {% set browser = get_browser(session.user_agent) %}
+
+    <div class="settings__session{% if is_current_session %} settings__session--current{% endif %}" id="session-{{ session.session_id }}">
+        <div class="settings__session__icon settings__session__icon--browser" title="{{ browser.browser }}">
+            {% if browser.browser[:7]|lower == 'firefox' %}
+                <i class="fab fa-firefox"></i>
+            {% elseif browser.browser[:6]|lower == 'chrome' %}
+                <i class="fab fa-chrome"></i>
+            {% elseif browser.browser[:4]|lower == 'edge' %}
+                <i class="fab fa-edge"></i>
+            {% elseif browser.browser[:2]|lower == 'ie' %}
+                <i class="fab fa-internet-explorer"></i>
+            {% elseif browser.browser[:6]|lower == 'safari' %}
+                <i class="fab fa-safari"></i>
+            {% elseif browser.browser[:6]|lower == 'opera' %}
+                <i class="fab fa-opera"></i>
+            {% else %}
+                <i class="fas fa-globe"></i>
+            {% endif %}
+        </div>
+
+        <div class="settings__session__icon settings__session__icon--device" title="{{ browser.device_type }}">
+            {% if browser.device_type[:7]|lower == 'desktop' %}
+                <i class="fas fa-desktop"></i>
+            {% elseif browser.device_type[:6]|lower == 'mobile' %}
+                <i class="fas fa-mobile-alt"></i>
+            {% elseif browser.device_type[:6]|lower == 'tablet' %}
+                <i class="fas fa-tablet-alt"></i>
+            {% else %}
+                <i class="fas fa-blender-phone"></i>
+            {% endif %}
+        </div>
+
+        <div class="settings__session__icon settings__session__icon--system" title="{{ browser.platform }}">
+            {% if browser.platform[:3]|lower == 'win' %}
+                <i class="fab fa-windows"></i>
+            {% elseif browser.platform[:3]|lower == 'ios' or browser.platform[:3]|lower == 'mac' %}
+                <i class="fab fa-apple"></i>
+            {% elseif browser.platform[:7]|lower == 'android' %}
+                <i class="fab fa-android"></i>
+            {% else %}
+                <i class="fab fa-linux"></i>
+            {% endif %}
+        </div>
+
+        <div class="settings__session__description">
+            {{ browser.browser }} on {{ browser.platform }}
+        </div>
+    </div>
+{% endmacro %}
