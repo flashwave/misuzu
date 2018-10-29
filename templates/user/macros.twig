@@ -98,6 +98,17 @@
                 </time>
             </div>
 
+            {% if session.session_active is not null %}
+                <div class="settings__session__detail" title="{{ session.session_active|date('r') }}">
+                    <div class="settings__session__detail__title">
+                        Last Active
+                    </div>
+                    <time class="settings__session__detail__value" datetime="{{ session.session_active|date('c') }}">
+                        {{ session.session_active|time_diff }}
+                    </time>
+                </div>
+            {% endif %}
+
             <div class="settings__session__detail">
                 <div class="settings__session__detail__title">
                     User Agent

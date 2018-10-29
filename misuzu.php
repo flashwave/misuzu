@@ -313,6 +313,7 @@ MIG;
         $mszUserId = (int)$_COOKIE['msz_uid'];
 
         user_bump_last_active($mszUserId);
+        user_session_bump_active(user_session_current('session_id'));
 
         $getUserDisplayInfo = db_prepare('
             SELECT

@@ -114,6 +114,21 @@ function user_session_list(int $offset, int $take, int $userId = 0): array
     return $sessions ? $sessions : [];
 }
 
+function user_session_bump_active(int $sessionId): void
+{
+    if ($sessionId < 1) {
+        return;
+    }
+
+    $bump = db_prepare('
+        UPDATE `msz_sessions`
+        SET `session_active` = NOW()
+        WHERE `session_id` = :session_id
+    ');
+    $bump->bindValue('session_id', $sessionId);
+    $bump->execute();
+}
+
 // the functions below this line are imperative
 
 function user_session_start(int $userId, string $sessionKey): bool
