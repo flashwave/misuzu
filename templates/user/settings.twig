@@ -6,297 +6,250 @@
 {% set title = 'Settings' %}
 
 {% block content %}
-    <form action="" method="post">
+    {% if settings_errors is defined and settings_errors|length > 0 %}
+        <div class="warning">
+            <div class="warning__content">
+                {% for error in settings_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="warning">
+            <div class="warning__content">
+                A few of the elements on this page have been moved to the on-profile editor. To find them, go to your profile and hit the "Edit Profile" button below your avatar.
+            </div>
+        </div>
+    {% endif %}
+
+    <form action="" method="post" class="container settings__container" id="account">
+        {{ container_title('<i class="fas fa-user fa-fw"></i> Account', '', true) }}
         {{ input_csrf('settings') }}
 
-        {% if settings_errors is defined and settings_errors|length > 0 %}
-            <div class="warning">
-                <div class="warning__content">
-                    {% for error in settings_errors %}
-                        {{ error }}
-                    {% endfor %}
+        <div class="settings__description">
+            <p>Here you can change your e-mail address and/or your password, please make sure your e-mail is accurate and your password is strong in order to protect your account. For convenience your current e-mail address is displayed. You are required to verify yourself by entering your current password to change either value.</p>
+        </div>
+
+        {% if settings_disable_account_options %}
+            <div class="settings__disabled">
+                <div class="settings__disabled__notice">
+                    E-mail and password changing is only available on the main site for stability reasons.
+                </div>
+                <div class="settings__disabled__options">
+                    <a class="input__button" href="https://flashii.net/settings.php">
+                        <i class="fas fa-external-link-square-alt fa-fw"></i>&nbsp;Change E-mail or Password on Flashii
+                    </a>
                 </div>
             </div>
         {% else %}
-            <div class="warning">
-                <div class="warning__content">
-                    A few of the elements on this page have been moved to the on-profile editor. To find them, go to your profile and hit the "Edit Profile" button below your avatar.
+            <div class="settings__account">
+                <div class="settings__account__section">
+                    <label class="settings__account__input">
+                        <div class="settings__account__title">
+                            New e-mail address
+                        </div>
+                        {{ input_text('email[new]', 'settings__account__input', '', 'email', account_info.email) }}
+                    </label>
+
+                    <label class="settings__account__input">
+                        <div class="settings__account__title">
+                            Confirm new e-mail address
+                        </div>
+                        {{ input_text('email[new]', 'settings__account__input', '', 'email') }}
+                    </label>
+                </div>
+
+                <div class="settings__account__section">
+                    <label class="settings__account__input">
+                        <div class="settings__account__title">
+                            New password
+                        </div>
+                        {{ input_text('password[new]', 'settings__account__input', '', 'password') }}
+                    </label>
+
+                    <label class="settings__account__input">
+                        <div class="settings__account__title">
+                            Confirm new password
+                        </div>
+                        {{ input_text('password[confirm]', 'settings__account__input', '', 'password') }}
+                    </label>
+                </div>
+
+                <div class="settings__account__section settings__account__section--confirm">
+                    <label class="settings__account__input">
+                        <div class="settings__account__title">
+                            Current password
+                        </div>
+                        {{ input_text('current_password', 'settings__account__input', '', 'password') }}
+                    </label>
+
+                    <div class="settings__account__buttons">
+                        <button class="input__button settings__account__button">Update</button>
+                        <button class="input__button settings__account__button" type="reset">Reset</button>
+                    </div>
                 </div>
             </div>
         {% endif %}
+    </form>
 
-        <div class="container settings__container" id="account">
-            {{ container_title('<i class="fas fa-user fa-fw"></i> Account', '', true) }}
+    <div class="container settings__container" id="sessions">
+        {{ container_title('<i class="fas fa-key fa-fw"></i> Sessions', '', true) }}
+        {% set spagination = pagination(sessions_count, sessions_take, sessions_offset, '?m=sessions') %}
 
-            <div class="settings__description">
-                <p>Here you can change your e-mail address and/or your password, please make sure your e-mail is accurate and your password is strong in order to protect your account. For convenience your current e-mail address is displayed. You are required to verify yourself by entering your current password to change either value.</p>
-            </div>
-
-            {% if settings_disable_account_options %}
-                <div class="settings__disabled">
-                    <div class="settings__disabled__notice">
-                        E-mail and password changing is only available on the main site for stability reasons.
-                    </div>
-                    <div class="settings__disabled__options">
-                        <a class="input__button" href="https://flashii.net/settings.php">
-                            <i class="fas fa-external-link-square-alt fa-fw"></i>&nbsp;Change E-mail or Password on Flashii
-                        </a>
-                    </div>
-                </div>
-            {% else %}
-                <div class="settings__account">
-                    <div class="settings__account__section">
-                        <label class="settings__account__input">
-                            <div class="settings__account__title">
-                                New e-mail address
-                            </div>
-                            {{ input_text('email[new]', 'settings__account__input', '', 'email', account_info.email) }}
-                        </label>
-
-                        <label class="settings__account__input">
-                            <div class="settings__account__title">
-                                Confirm new e-mail address
-                            </div>
-                            {{ input_text('email[new]', 'settings__account__input', '', 'email') }}
-                        </label>
-                    </div>
-
-                    <div class="settings__account__section">
-                        <label class="settings__account__input">
-                            <div class="settings__account__title">
-                                New password
-                            </div>
-                            {{ input_text('password[new]', 'settings__account__input', '', 'password') }}
-                        </label>
-
-                        <label class="settings__account__input">
-                            <div class="settings__account__title">
-                                Confirm new password
-                            </div>
-                            {{ input_text('password[confirm]', 'settings__account__input', '', 'password') }}
-                        </label>
-                    </div>
-
-                    <div class="settings__account__section settings__account__section--confirm">
-                        <label class="settings__account__input">
-                            <div class="settings__account__title">
-                                Current password
-                            </div>
-                            {{ input_text('current_password', 'settings__account__input', '', 'password') }}
-                        </label>
-
-                        <div class="settings__account__buttons">
-                            <button class="input__button settings__account__button">Update</button>
-                            <button class="input__button settings__account__button" type="reset">Reset</button>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
+        <div class="settings__description">
+            <p>These are the active logins to your account, clicking the Kill button will force a logout on that session. Your current login is highlighted with a different colour so you don't accidentally force yourself to logout.</p>
         </div>
 
-        <div class="container settings__container" id="sessions">
-            {{ container_title('<i class="fas fa-key fa-fw"></i> Sessions', '', true) }}
-            {% set spagination = pagination(sessions_count, sessions_take, sessions_offset, '?m=sessions') %}
+        <div class="settings__sessions">
+            <form action="" method="post" class="settings__sessions__all">
+                {{ input_csrf('settings') }}
+                {{ input_hidden('session', 'all') }}
 
-            <div class="settings__description">
-                <p>These are the active logins to your account, clicking the Kill button will force a logout on that session. Your current login is highlighted with a darker purple so you don't accidentally force yourself to logout.</p>
+                <button class="input__button">
+                    <i class="fas fa-bomb"></i>&nbsp;Kill ALL active sessions
+                </button>
+            </form>
+
+            <div class="settings__sessions__pagination">
+                {{ spagination }}
             </div>
 
-            <div class="settings__sessions">
-                <!--form class="settings__sessions__actions" method="post" action="?m=sessions">
-                    {{ input_csrf('settings') }}
-
-                    <button class="input__button" name="session_action" value="kill-all">
-                        Kill all active sessions
-                    </button>
-                </form-->
-
-                {{ spagination }}
-
+            <div class="settings__sessions__list">
                 {% for session in user_sessions %}
-                    {{ user_session(session) }}
-
-
-                        <div class="settings__sessions__column settings__sessions__column--ip">
-                            <div class="settings__sessions__column__name">
-                                IP
-                            </div>
-                            <div class="settings__sessions__column__value">
-                                {{ session.session_ip_decoded }}
-                                {% if session.session_country != 'XX' %}
-                                    <div class="flag flag--{{ session.session_country|lower }} settings__sessions__country" title="{{ session.session_country|country_name }}"></div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="settings__sessions__column settings__sessions__column--created" title="{{ session.created_at|date('r') }}">
-                            <div class="settings__sessions__column__name">
-                                Created
-                            </div>
-                            <time class="settings__sessions__column__value" datetime="{{ session.created_at|date('c') }}">
-                                {{ session.created_at|time_diff }}
-                            </time>
-                        </div>
-
-                        <div class="settings__sessions__column settings__sessions__column--expires" title="{{ session.expires_on|date('r') }}">
-                            <div class="settings__sessions__column__name">
-                                Expires
-                            </div>
-                            <time class="settings__sessions__column__value" datetime="{{ session.expires_on|date('c') }}">
-                                {{ session.expires_on|time_diff }}
-                            </time>
-                        </div>
-
-                        {% if session.user_agent|length > 0 %}
-                            <div class="settings__sessions__column settings__sessions__column--user_agent">
-                                <div class="settings__sessions__column__name">
-                                    User Agent
-                                </div>
-                                <div class="settings__sessions__column__value">
-                                    {{ session.user_agent }}
-                                </div>
-                            </div>
-                        {% endif %}
-
-                        <!--form class="settings__sessions__column settings__sessions__column--options" method="post" action="?m=sessions">
-                            {{ input_hidden('session', session.session_id) }}
-                            {{ input_csrf('settings') }}
-
-                            <button class="input__button settings__sessions__button">
-                                {{ session.session_id == active_session_id ? 'Logout' : 'Kill' }}
-                            </button>
-                        </form-->
+                    {{ user_session(session, session.session_id == active_session_id) }}
                 {% endfor %}
+            </div>
 
+            <div class="settings__sessions__pagination">
                 {{ spagination }}
             </div>
         </div>
+    </div>
 
-        <div class="container settings__container" id="logins">
-            {{ container_title('<i class="fas fa-user-lock fa-fw"></i> Login History', '', true) }}
-            {% set lhpagination = pagination(
-                login_attempts_count,
-                login_attempts_take,
-                login_attempts_offset,
-                '?m=logs'|url_construct({'ao': audit_log_offset}),
-                false,
-                'lo'
-            ) %}
+    <div class="container settings__container" id="logins">
+        {{ container_title('<i class="fas fa-user-lock fa-fw"></i> Login History', '', true) }}
+        {% set lhpagination = pagination(
+            login_attempts_count,
+            login_attempts_take,
+            login_attempts_offset,
+            '?m=logs'|url_construct({'ao': audit_log_offset}),
+            false,
+            'lo'
+        ) %}
 
-            <div class="settings__description">
-                <p>These are all the login attempts to your account. If any attempt that you don't recognise is marked as successful your account may be compromised, ask a staff member for advice in this case.</p>
-            </div>
+        <div class="settings__description">
+            <p>These are all the login attempts to your account. If any attempt that you don't recognise is marked as successful your account may be compromised, ask a staff member for advice in this case.</p>
+        </div>
 
-            <div class="settings__login-history">
-                {{ lhpagination }}
+        <div class="settings__login-history">
+            {{ lhpagination }}
 
-                {% for attempt in user_login_attempts %}
-                    <div class="settings__login-history__entry" id="attempt-{{ attempt.attempt_id }}">
-                        <div class="settings__login-history__column settings__login-history__column--ip">
+            {% for attempt in user_login_attempts %}
+                <div class="settings__login-history__entry" id="attempt-{{ attempt.attempt_id }}">
+                    <div class="settings__login-history__column settings__login-history__column--ip">
+                        <div class="settings__login-history__column__name">
+                            IP
+                        </div>
+                        <div class="settings__login-history__column__value">
+                            {{ attempt.attempt_ip_decoded }}
+                            {% if attempt.attempt_country != 'XX' %}
+                                <div class="flag flag--{{ attempt.attempt_country|lower }} settings__login-history__country" title="{{ attempt.attempt_country|country_name }}"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="settings__login-history__column settings__login-history__column--success">
+                        <div class="settings__login-history__column__name">
+                            Was Successful?
+                        </div>
+                        <div class="settings__login-history__column__value settings__login-history__column__value--{{ attempt.was_successful ? 'successful' : 'failed' }}">
+                            {{ attempt.was_successful ? 'Yes' : 'No' }}
+                        </div>
+                    </div>
+
+                    <div class="settings__login-history__column settings__login-history__column--created" title="{{ attempt.created_at|date('r') }}">
+                        <div class="settings__login-history__column__name">
+                            Attempted
+                        </div>
+                        <time class="settings__login-history__column__value" datetime="{{ attempt.created_at|date('c') }}">
+                            {{ attempt.created_at|time_diff }}
+                        </time>
+                    </div>
+
+                    {% if attempt.user_agent|length > 0 %}
+                        <div class="settings__login-history__column settings__login-history__column--user_agent">
                             <div class="settings__login-history__column__name">
-                                IP
+                                User Agent
                             </div>
                             <div class="settings__login-history__column__value">
-                                {{ attempt.attempt_ip_decoded }}
-                                {% if attempt.attempt_country != 'XX' %}
-                                    <div class="flag flag--{{ attempt.attempt_country|lower }} settings__login-history__country" title="{{ attempt.attempt_country|country_name }}"></div>
-                                {% endif %}
+                                {{ attempt.user_agent }}
                             </div>
                         </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
 
-                        <div class="settings__login-history__column settings__login-history__column--success">
-                            <div class="settings__login-history__column__name">
-                                Was Successful?
-                            </div>
-                            <div class="settings__login-history__column__value settings__login-history__column__value--{{ attempt.was_successful ? 'successful' : 'failed' }}">
-                                {{ attempt.was_successful ? 'Yes' : 'No' }}
-                            </div>
-                        </div>
+            {{ lhpagination }}
+        </div>
+    </div>
 
-                        <div class="settings__login-history__column settings__login-history__column--created" title="{{ attempt.created_at|date('r') }}">
-                            <div class="settings__login-history__column__name">
-                                Attempted
-                            </div>
-                            <time class="settings__login-history__column__value" datetime="{{ attempt.created_at|date('c') }}">
-                                {{ attempt.created_at|time_diff }}
-                            </time>
-                        </div>
+    <div class="container settings__container" id="log">
+        {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Account Log', '', true) }}
+        {% set alpagination = pagination(
+            audit_log_count,
+            audit_log_take,
+            audit_log_offset,
+            '?m=logs'|url_construct({'lo': login_attempts_offset}),
+            false,
+            'ao'
+        ) %}
 
-                        {% if attempt.user_agent|length > 0 %}
-                            <div class="settings__login-history__column settings__login-history__column--user_agent">
-                                <div class="settings__login-history__column__name">
-                                    User Agent
-                                </div>
-                                <div class="settings__login-history__column__value">
-                                    {{ attempt.user_agent }}
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-
-                {{ lhpagination }}
-            </div>
+        <div class="settings__description">
+            <p>This is a log of all "important" actions that have been done using your account for your review. If you notice anything strange, please alert the staff.</p>
         </div>
 
-        <div class="container settings__container" id="log">
-            {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Account Log', '', true) }}
-            {% set alpagination = pagination(
-                audit_log_count,
-                audit_log_take,
-                audit_log_offset,
-                '?m=logs'|url_construct({'lo': login_attempts_offset}),
-                false,
-                'ao'
-            ) %}
+        <div class="settings__log">
+            {{ alpagination }}
 
-            <div class="settings__description">
-                <p>This is a log of all "important" actions that have been done using your account for your review. If you notice anything strange, please alert the staff.</p>
-            </div>
-
-            <div class="settings__log">
-                {{ alpagination }}
-
-                {% for log in audit_logs %}
-                    <div class="settings__log__entry" id="log-{{ log.log_id }}">
-                        <div class="settings__log__column settings__login-history__column--ip">
-                            <div class="settings__log__column__name">
-                                IP
-                            </div>
-                            <div class="settings__log__column__value">
-                                {{ log.log_ip }}
-                                {% if log.log_country|default('XX') != 'XX' %}
-                                    <div class="flag flag--{{ log.log_country|lower }} settings__log__country" title="{{ log.log_country|country_name }}"></div>
-                                {% endif %}
-                            </div>
+            {% for log in audit_logs %}
+                <div class="settings__log__entry" id="log-{{ log.log_id }}">
+                    <div class="settings__log__column settings__login-history__column--ip">
+                        <div class="settings__log__column__name">
+                            IP
                         </div>
-
-                        <div class="settings__log__column settings__log__column--date" title="{{ log.log_created|date('r') }}">
-                            <div class="settings__log__column__name">
-                                Date
-                            </div>
-                            <time class="settings__log__column__value" datetime="{{ log.log_created|date('c') }}">
-                                {{ log.log_created|time_diff }}
-                            </time>
-                        </div>
-
-                        <div class="settings__log__column settings__log__column--action">
-                            <div class="settings__log__column__name">
-                                Action
-                            </div>
-                            <div class="settings__log__column__value">
-                                {% if log.log_action in log_strings|keys %}
-                                    {{ log_strings[log.log_action]|vsprintf(log.log_params|json_decode) }}
-                                {% else %}
-                                    {{ log.log_action }}({{ log.log_params }})
-                                {% endif %}
-                            </div>
+                        <div class="settings__log__column__value">
+                            {{ log.log_ip }}
+                            {% if log.log_country|default('XX') != 'XX' %}
+                                <div class="flag flag--{{ log.log_country|lower }} settings__log__country" title="{{ log.log_country|country_name }}"></div>
+                            {% endif %}
                         </div>
                     </div>
-                {% endfor %}
 
-                {{ alpagination }}
-            </div>
+                    <div class="settings__log__column settings__log__column--date" title="{{ log.log_created|date('r') }}">
+                        <div class="settings__log__column__name">
+                            Date
+                        </div>
+                        <time class="settings__log__column__value" datetime="{{ log.log_created|date('c') }}">
+                            {{ log.log_created|time_diff }}
+                        </time>
+                    </div>
+
+                    <div class="settings__log__column settings__log__column--action">
+                        <div class="settings__log__column__name">
+                            Action
+                        </div>
+                        <div class="settings__log__column__value">
+                            {% if log.log_action in log_strings|keys %}
+                                {{ log_strings[log.log_action]|vsprintf(log.log_params|json_decode) }}
+                            {% else %}
+                                {{ log.log_action }}({{ log.log_params }})
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            {{ alpagination }}
         </div>
-    </form>
+    </div>
 {% endblock %}

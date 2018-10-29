@@ -1,83 +1,74 @@
-@mio-settings-sessions-mobile: 1000px;
-
 .settings__session {
-    margin: 1px;
+    margin: 4px;
+    border: 1px solid var(--accent-colour);
+    border-radius: 2px;
+    overflow: hidden;
 
-    &__country {
-        vertical-align: middle;
+    &--current {
+        // todo: make this now bad
+        background-image: linear-gradient(0deg, #111c, #111c);
+        background-color: var(--accent-colour);
     }
 
-    @media (max-width: @mio-settings-sessions-mobile) {
-        &__button {
-            width: 100%;
-            text-align: center;
-        }
+    &__important {
+        display: flex;
+        align-items: center;
+        font-size: 1.4em;
+        z-index: 2;
+    }
+
+    &__flag {
+        flex: 0 0 auto;
+        margin: 10px;
+        margin-right: 0;
+    }
+
+    &__description {
+        flex: 1 1 auto;
+        margin: 10px;
     }
 
     &__actions {
+        flex: 0 0 auto;
         display: flex;
-        justify-content: center;
-        padding: 6px;
-        border-bottom: 1px solid var(--accent-colour);
-        margin-bottom: 1px;
     }
 
-    &__entry {
+    &__action {
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-shadow: inherit;
+        padding: 10px;
+        cursor: pointer;
+        transition: color .2s;
+
+        &:hover {
+            color: var(--accent-colour);
+        }
+    }
+
+    &__details {
+        z-index: 1;
+        margin: 10px;
+        margin-top: -5px;
         display: flex;
-        border: 1px solid var(--accent-colour);
-        justify-content: space-between;
-        padding: 1px;
         flex-wrap: wrap;
-
-        &:not(:last-child) {
-            margin-bottom: 1px;
-        }
-
-        &--current {
-            background-color: #c2affe;
-        }
     }
 
-    &__column {
-        flex-grow: 1;
+    &__detail {
+        display: inline-block;
+        margin-right: 2px;
+        min-width: 120px;
 
-        &:not(:last-child) {
-            margin-left: 5px;
-            margin-right: 1px;
-        }
-
-        &--ip,
-        &--created,
-        &--expires,
-        &--options {
-            flex-grow: 0;
-            flex-shrink: 0;
-        }
-
-        @media (max-width: @mio-settings-sessions-mobile) {
-            &--options {
-                text-align: center;
-                flex-grow: 1;
-                width: 100%;
-            }
-        }
-
-        &--user-agent {
-            flex-shrink: 1;
-            flex-grow: 1;
-        }
-
-        &--ip {
-            min-width: 200px;
-        }
-
-        &--created,
-        &--expires {
-            min-width: 120px;
-        }
-
-        &__name {
+        &__title {
+            border-bottom: 1px solid var(--accent-colour);
             font-weight: 700;
+            padding: 1px 5px;
+        }
+
+        &__value {
+            padding: 1px 5px;
         }
     }
 }

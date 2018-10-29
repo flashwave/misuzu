@@ -29,31 +29,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_verify('settings', $_POST['csrf'] ?? '')) {
         $settingsErrors[] = MSZ_TMP_USER_ERROR_STRINGS['csrf'];
     } else {
-        if (!empty($_POST['session_action'])) {
-            switch ($_POST['session_action']) {
-                case 'kill-all':
-                    user_session_purge_all($settingsUserId);
-                    audit_log('PERSONAL_SESSION_DESTROY_ALL', $settingsUserId);
-                    header('Location: /');
-                    return;
+        if (!empty($_POST['session'])) {
+            $currentSessionKilled = false;
+
+            if (is_array($_POST['session'])) {
+                foreach ($_POST['session'] as $sessionId) {
+                    $sessionId = intval($sessionId);
+                    $session = user_session_find($sessionId);
+
+                    if (!$session || (int)$session['user_id'] !== $settingsUserId) {
+                        $settingsErrors[] = "Session #{$sessionId} does not exist.";
+                        break;
+                    } elseif ((int)$session['session_id'] === user_session_current('session_id')) {
+                        $currentSessionKilled = true;
+                    }
+
+                    user_session_delete($session['session_id']);
+                    audit_log('PERSONAL_SESSION_DESTROY', $settingsUserId, [
+                        $session['session_id'],
+                    ]);
+                }
+            } elseif ($_POST['session'] === 'all') {
+                $currentSessionKilled = true;
+                user_session_purge_all($settingsUserId);
+                audit_log('PERSONAL_SESSION_DESTROY_ALL', $settingsUserId);
             }
-        }
 
-        if (!empty($_POST['session']) && is_numeric($_POST['session'])) {
-            $session = user_session_find((int)($_POST['session'] ?? 0));
-
-            if (!$session) {
-                $settingsErrors[] = 'Invalid session.';
-            } elseif ((int)$session['user_id'] !== $settingsUserId) {
-                $settingsErrors[] = 'You may only end your own sessions.';
-            } elseif ((int)$session['session_id'] === user_session_current('session_id')) {
-                header('Location: /auth.php?m=logout&s=' . csrf_token('logout'));
+            if ($currentSessionKilled) {
+                header('Location: /');
                 return;
-            } else {
-                user_session_delete($session['session_id']);
-                audit_log('PERSONAL_SESSION_DESTROY', $settingsUserId, [
-                    $session['session_id'],
-                ]);
             }
         }
 
