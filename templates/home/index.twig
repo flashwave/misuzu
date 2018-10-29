@@ -24,7 +24,7 @@
                     {% else %}
                         We have <span class="index__stats__emphasis">{{ users_count|number_format }}</span> users and
                         the last person to join was <a href="/profile.php?u={{ last_user.user_id }}" class="index__stats__emphasis index__stats__link" style="{{ last_user.user_colour|html_colour }}">{{ last_user.username }}</a>,
-                        <time datetime="{{ last_user.created_at|date('c') }}" title="{{ last_user.created_at|date('r') }}">{{ last_user.created_at|time_diff }}</time>!
+                        <time datetime="{{ last_user.user_created|date('c') }}" title="{{ last_user.user_created|date('r') }}">{{ last_user.user_created|time_diff }}</time>!
                     {% endif %}
                 </div>
             </div>

@@ -376,12 +376,12 @@ switch ($_GET['v'] ?? null) {
                     INSERT INTO `msz_roles`
                         (
                             `role_name`, `role_hierarchy`, `role_secret`, `role_colour`,
-                            `role_description`, `created_at`, `role_title`
+                            `role_description`, `role_title`
                         )
                     VALUES
                         (
                             :role_name, :role_hierarchy, :role_secret, :role_colour,
-                            :role_description, NOW(), :role_title
+                            :role_description, :role_title
                         )
                 ');
             } else {

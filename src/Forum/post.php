@@ -52,7 +52,7 @@ define('MSZ_FORUM_POST_LISTING_QUERY_STANDARD', '
         p.`topic_id`,
         u.`user_id` as `poster_id`,
         u.`username` as `poster_name`,
-        u.`created_at` as `poster_joined`,
+        u.`user_created` as `poster_joined`,
         u.`user_country` as `poster_country`,
         COALESCE(u.`user_colour`, r.`role_colour`) as `poster_colour`,
         (

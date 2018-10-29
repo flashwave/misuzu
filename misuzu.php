@@ -89,7 +89,7 @@ if (PHP_SAPI === 'cli') {
                 // Ensure main role exists.
                 db_exec("
                     INSERT IGNORE INTO `msz_roles`
-                        (`role_id`, `role_name`, `role_hierarchy`, `role_colour`, `role_description`, `created_at`)
+                        (`role_id`, `role_name`, `role_hierarchy`, `role_colour`, `role_description`, `role_created`)
                     VALUES
                         (1, 'Member', 1, 1073741824, NULL, NOW())
                 ");
@@ -142,7 +142,7 @@ if (PHP_SAPI === 'cli') {
                 // Cleans up the login history table
                 db_exec('
                     DELETE FROM `msz_login_attempts`
-                    WHERE `created_at` < NOW() - INTERVAL 1 YEAR
+                    WHERE `attempt_created` < NOW() - INTERVAL 1 YEAR
                 ');
 
                 // Cleans up the audit log table

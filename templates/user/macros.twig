@@ -46,7 +46,7 @@
 
 {% macro user_session(session, is_current_session) %}
     {% from '_layout/input.twig' import input_hidden, input_csrf, input_checkbox_raw %}
-    {% set browser = get_browser(session.user_agent) %}
+    {% set browser = get_browser(session.session_user_agent) %}
 
     <div class="settings__session{% if is_current_session %} settings__session--current{% endif %}" id="session-{{ session.session_id }}">
         <div class="settings__session__important">
@@ -80,21 +80,21 @@
                 </div>
             </div>
 
-            <div class="settings__session__detail" title="{{ session.created_at|date('r') }}">
+            <div class="settings__session__detail" title="{{ session.session_created|date('r') }}">
                 <div class="settings__session__detail__title">
                     Created
                 </div>
-                <time class="settings__session__detail__value" datetime="{{ session.created_at|date('c') }}">
-                    {{ session.created_at|time_diff }}
+                <time class="settings__session__detail__value" datetime="{{ session.session_created|date('c') }}">
+                    {{ session.session_created|time_diff }}
                 </time>
             </div>
 
-            <div class="settings__session__detail" title="{{ session.expires_on|date('r') }}">
+            <div class="settings__session__detail" title="{{ session.session_expires|date('r') }}">
                 <div class="settings__session__detail__title">
                     Expires
                 </div>
-                <time class="settings__session__detail__value" datetime="{{ session.expires_on|date('c') }}">
-                    {{ session.expires_on|time_diff }}
+                <time class="settings__session__detail__value" datetime="{{ session.session_expires|date('c') }}">
+                    {{ session.session_expires|time_diff }}
                 </time>
             </div>
 
@@ -103,7 +103,7 @@
                     User Agent
                 </div>
                 <div class="settings__session__detail__value">
-                    {{ session.user_agent|length > 0 ? session.user_agent : 'None' }}
+                    {{ session.session_user_agent|length > 0 ? session.session_user_agent : 'None' }}
                 </div>
             </div>
         </div>

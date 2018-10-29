@@ -13,18 +13,18 @@ function user_session_create(
         INSERT INTO `msz_sessions`
             (
                 `user_id`, `session_ip`, `session_country`,
-                `user_agent`, `session_key`, `created_at`, `expires_on`
+                `session_user_agent`, `session_key`, `session_created`, `session_expires`
             )
         VALUES
             (
                 :user_id, INET6_ATON(:session_ip), :session_country,
-                :user_agent, :session_key, NOW(), NOW() + INTERVAL 1 MONTH
+                :session_user_agent, :session_key, NOW(), NOW() + INTERVAL 1 MONTH
             )
     ');
     $createSession->bindValue('user_id', $userId);
     $createSession->bindValue('session_ip', $ipAddress);
     $createSession->bindValue('session_country', ip_country_code($ipAddress));
-    $createSession->bindValue('user_agent', $userAgent);
+    $createSession->bindValue('session_user_agent', $userAgent);
     $createSession->bindValue('session_key', $sessionKey);
 
     return $createSession->execute() ? $sessionKey : '';
@@ -39,7 +39,7 @@ function user_session_find($sessionId, bool $byKey = false): array
     $findSession = db_prepare(sprintf('
         SELECT
             `session_id`, `user_id`, INET6_NTOA(`session_ip`) as `session_ip`,
-            `session_country`, `user_agent`, `session_key`, `created_at`, `expires_on`
+            `session_country`, `session_user_agent`, `session_key`, `session_created`, `session_expires`, `session_active`
         FROM `msz_sessions`
         WHERE `%s` = :session_id
     ', $byKey ? 'session_key' : 'session_id'));
@@ -95,7 +95,7 @@ function user_session_list(int $offset, int $take, int $userId = 0): array
 
     $getSessions = db_prepare(sprintf('
         SELECT
-            `session_id`, `session_country`, `user_agent`, `created_at`, `expires_on`,
+            `session_id`, `session_country`, `session_user_agent`, `session_created`, `session_expires`, `session_active`,
             INET6_NTOA(`session_ip`) as `session_ip`
         FROM `msz_sessions`
         WHERE %s
@@ -125,7 +125,7 @@ function user_session_start(int $userId, string $sessionKey): bool
         return false;
     }
 
-    if (time() >= strtotime($session['expires_on'])) {
+    if (time() >= strtotime($session['session_expires'])) {
         user_session_delete($session['session_id']);
         return false;
     }
@@ -159,5 +159,5 @@ function user_session_current(?string $variable = null, $default = null)
 function user_session_active(): bool
 {
     return !empty($GLOBALS[MSZ_SESSION_DATA_STORE])
-        && time() < strtotime($GLOBALS[MSZ_SESSION_DATA_STORE]['expires_on']);
+        && time() < strtotime($GLOBALS[MSZ_SESSION_DATA_STORE]['session_expires']);
 }

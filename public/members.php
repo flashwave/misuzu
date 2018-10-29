@@ -31,12 +31,12 @@ $orderFields = [
         'title' => 'Country',
     ],
     'registered' => [
-        'column' => 'created_at',
+        'column' => 'user_created',
         'default-dir' => 'desc',
         'title' => 'Registration Date',
     ],
     'last-online' => [
-        'column' => 'last_seen',
+        'column' => 'user_active',
         'default-dir' => 'desc',
         'title' => 'Last Online',
     ],
@@ -58,7 +58,7 @@ if (empty($orderDir)) {
 
 $getRole = db_prepare('
     SELECT
-        `role_id`, `role_name`, `role_colour`, `role_description`, `created_at`,
+        `role_id`, `role_name`, `role_colour`, `role_description`, `role_created`,
         (
             SELECT COUNT(`user_id`)
             FROM `msz_user_roles`

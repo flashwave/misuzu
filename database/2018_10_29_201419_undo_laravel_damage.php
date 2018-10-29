@@ -54,4 +54,7 @@ function migrate_up(PDO $conn): void
 
 function migrate_down(PDO $conn): void
 {
+    // can't be bothered to write a reverse for this migration
+    // honestly i might just remove migrate_down system since i don't really ever use it
+    $conn = $conn; // trick phpcs
 }

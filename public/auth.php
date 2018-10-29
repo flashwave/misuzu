@@ -268,7 +268,7 @@ MSG;
             }
 
             user_session_start($userId, $sessionKey);
-            $cookieLife = strtotime(user_session_current('expires_on'));
+            $cookieLife = strtotime(user_session_current('session_expires'));
             set_cookie_m('uid', $userId, $cookieLife);
             set_cookie_m('sid', $sessionKey, $cookieLife);
 

@@ -175,27 +175,27 @@
                         <div class="settings__login-history__column__name">
                             Was Successful?
                         </div>
-                        <div class="settings__login-history__column__value settings__login-history__column__value--{{ attempt.was_successful ? 'successful' : 'failed' }}">
-                            {{ attempt.was_successful ? 'Yes' : 'No' }}
+                        <div class="settings__login-history__column__value settings__login-history__column__value--{{ attempt.attempt_success ? 'successful' : 'failed' }}">
+                            {{ attempt.attempt_success ? 'Yes' : 'No' }}
                         </div>
                     </div>
 
-                    <div class="settings__login-history__column settings__login-history__column--created" title="{{ attempt.created_at|date('r') }}">
+                    <div class="settings__login-history__column settings__login-history__column--created" title="{{ attempt.attempt_created|date('r') }}">
                         <div class="settings__login-history__column__name">
                             Attempted
                         </div>
-                        <time class="settings__login-history__column__value" datetime="{{ attempt.created_at|date('c') }}">
-                            {{ attempt.created_at|time_diff }}
+                        <time class="settings__login-history__column__value" datetime="{{ attempt.attempt_created|date('c') }}">
+                            {{ attempt.attempt_created|time_diff }}
                         </time>
                     </div>
 
-                    {% if attempt.user_agent|length > 0 %}
+                    {% if attempt.attempt_user_agent|length > 0 %}
                         <div class="settings__login-history__column settings__login-history__column--user_agent">
                             <div class="settings__login-history__column__name">
                                 User Agent
                             </div>
                             <div class="settings__login-history__column__value">
-                                {{ attempt.user_agent }}
+                                {{ attempt.attempt_user_agent }}
                             </div>
                         </div>
                     {% endif %}

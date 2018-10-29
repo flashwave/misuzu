@@ -32,12 +32,12 @@ function user_create(
         INSERT INTO `msz_users`
             (
                 `username`, `password`, `email`, `register_ip`,
-                `last_ip`, `user_country`, `created_at`, `display_role`
+                `last_ip`, `user_country`, `display_role`
             )
         VALUES
             (
                 :username, :password, LOWER(:email), INET6_ATON(:register_ip),
-                INET6_ATON(:last_ip), :user_country, NOW(), 1
+                INET6_ATON(:last_ip), :user_country, 1
             )
     ');
     $createUser->bindValue('username', $username);
@@ -138,7 +138,7 @@ function user_bump_last_active(int $userId, string $ipAddress = null): void
 {
     $bumpUserLast = db_prepare('
         UPDATE `msz_users`
-        SET `last_seen` = NOW(),
+        SET `user_active` = NOW(),
             `last_ip` = INET6_ATON(:last_ip)
         WHERE `user_id` = :user_id
     ');

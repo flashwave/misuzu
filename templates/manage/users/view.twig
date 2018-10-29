@@ -37,14 +37,14 @@
                 <label class="form__label">
                     <div class="form__label__text">Joined</div>
                     <div class="form__label__input">
-                        {{ input_text('', '', view_user.created_at) }}
+                        {{ input_text('', '', view_user.user_created) }}
                     </div>
                 </label>
 
                 <label class="form__label">
                     <div class="form__label__text">Last online</div>
                     <div class="form__label__input">
-                        {{ input_text('', '', view_user.last_seen) }}
+                        {{ input_text('', '', view_user.user_active) }}
                     </div>
                 </label>
 

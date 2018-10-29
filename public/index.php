@@ -20,7 +20,7 @@ $statistics = cache_get('index:stats:v1', function () {
         ')->fetchColumn(),
         'lastUser' => db_query('
             SELECT
-                u.`user_id`, u.`username`, u.`created_at`,
+                u.`user_id`, u.`username`, u.`user_created`,
                 COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
             FROM `msz_users` as u
             LEFT JOIN `msz_roles` as r
@@ -54,8 +54,8 @@ $onlineUsers = cache_get('index:online:v1', function () {
         FROM `msz_users` as u
         LEFT JOIN `msz_roles` as r
         ON r.`role_id` = u.`display_role`
-        WHERE u.`last_seen` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
-        ORDER BY u.`last_seen` DESC
+        WHERE u.`user_active` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
+        ORDER BY u.`user_active` DESC
     ')->fetchAll(PDO::FETCH_ASSOC);
 }, 30);
 

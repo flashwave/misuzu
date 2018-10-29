@@ -261,7 +261,7 @@ switch ($mode) {
                 '
                     SELECT
                         u.`user_id`, u.`username`, u.`user_country`,
-                        u.`created_at`, u.`last_seen`,
+                        u.`user_created`, u.`user_active`,
                         u.`user_about_parser`, u.`user_about_content`, u.`user_background_settings`,
                         %1$s,
                         COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
