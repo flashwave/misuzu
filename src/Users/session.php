@@ -73,6 +73,47 @@ function user_session_purge_all(int $userId): void
     ]);
 }
 
+function user_session_count($userId = 0): int
+{
+    $getCount = db_prepare(sprintf('
+        SELECT COUNT(`session_id`)
+        FROM `msz_sessions`
+        WHERE %s
+    ', $userId < 1 ? '1' : '`user_id` = :user_id'));
+
+    if ($userId >= 1) {
+        $getCount->bindValue('user_id', $userId);
+    }
+
+    return $getCount->execute() ? (int)$getCount->fetchColumn() : 0;
+}
+
+function user_session_list(int $offset, int $take, int $userId = 0): array
+{
+    $offset = max(0, $offset);
+    $take = max(1, $take);
+
+    $getSessions = db_prepare(sprintf('
+        SELECT
+            `session_id`, `session_country`, `user_agent`, `created_at`, `expires_on`,
+            INET6_NTOA(`session_ip`) as `session_ip`
+        FROM `msz_sessions`
+        WHERE %s
+        ORDER BY `session_id` DESC
+        LIMIT :offset, :take
+    ', $userId < 1 ? '1' : '`user_id` = :user_id'));
+
+    if ($userId > 0) {
+        $getSessions->bindValue('user_id', $userId);
+    }
+
+    $getSessions->bindValue('offset', $offset);
+    $getSessions->bindValue('take', $take);
+    $sessions = $getSessions->execute() ? $getSessions->fetchAll(PDO::FETCH_ASSOC) : false;
+
+    return $sessions ? $sessions : [];
+}
+
 // the functions below this line are imperative
 
 function user_session_start(int $userId, string $sessionKey): bool

@@ -31,3 +31,44 @@ function user_login_attempts_remaining(string $ipAddress): int
         ? (int)$getRemaining->fetchColumn()
         : 0;
 }
+
+function user_login_attempts_count($userId = 0): int
+{
+    $getCount = db_prepare(sprintf('
+        SELECT COUNT(`attempt_id`)
+        FROM `msz_login_attempts`
+        WHERE %s
+    ', $userId < 1 ? '1' : '`user_id` = :user_id'));
+
+    if ($userId >= 1) {
+        $getCount->bindValue('user_id', $userId);
+    }
+
+    return $getCount->execute() ? (int)$getCount->fetchColumn() : 0;
+}
+
+function user_login_attempts_list(int $offset, int $take, int $userId = 0): array
+{
+    $offset = max(0, $offset);
+    $take = max(1, $take);
+
+    $getAttempts = db_prepare(sprintf('
+        SELECT
+            `attempt_id`, `attempt_country`, `was_successful`, `user_agent`, `created_at`,
+            INET6_NTOA(`attempt_ip`) as `attempt_ip`
+        FROM `msz_login_attempts`
+        WHERE %s
+        ORDER BY `attempt_id` DESC
+        LIMIT :offset, :take
+    ', $userId < 1 ? '1' : '`user_id` = :user_id'));
+
+    if ($userId > 0) {
+        $getAttempts->bindValue('user_id', $userId);
+    }
+
+    $getAttempts->bindValue('offset', $offset);
+    $getAttempts->bindValue('take', $take);
+    $attempts = $getAttempts->execute() ? $getAttempts->fetchAll(PDO::FETCH_ASSOC) : false;
+
+    return $attempts ? $attempts : [];
+}

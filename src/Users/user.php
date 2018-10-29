@@ -67,6 +67,50 @@ function user_password_set(int $userId, string $password): bool
     return $updatePassword->execute();
 }
 
+function user_email_get(int $userId): string
+{
+    if ($userId < 1) {
+        return '';
+    }
+
+    $fetchMail = db_prepare('
+        SELECT `email`
+        FROM `msz_users`
+        WHERE `user_id` = :user_id
+    ');
+    $fetchMail->bindValue('user_id', $userId);
+    return $fetchMail->execute() ? (string)$fetchMail->fetchColumn() : '';
+}
+
+function user_email_set(int $userId, string $email): bool
+{
+    $updateMail = db_prepare('
+        UPDATE `msz_users`
+        SET `email` = LOWER(:email)
+        WHERE `user_id` = :user
+    ');
+    $updateMail->bindValue('user', $userId);
+    $updateMail->bindValue('email', $email);
+    return $updateMail->execute();
+}
+
+function user_password_verify_db(int $userId, string $password): bool
+{
+    if ($userId < 1) {
+        return false;
+    }
+
+    $fetchPassword = db_prepare('
+        SELECT `password`
+        FROM `msz_users`
+        WHERE `user_id` = :user_id
+    ');
+    $fetchPassword->bindValue('user_id', $userId);
+    $currentPassword = $fetchPassword->execute() ? $fetchPassword->fetchColumn() : '';
+
+    return !empty($currentPassword) && password_verify($password, $currentPassword);
+}
+
 // function of the century, only use this if it doesn't make sense to grab data otherwise
 function user_exists(int $userId): bool
 {

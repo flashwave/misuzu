@@ -6,18 +6,12 @@
 {% set title = 'Settings' %}
 
 {% block content %}
-    {% if settings_errors is defined and settings_errors|length > 0 %}
+    {% if errors|length > 0 %}
         <div class="warning">
             <div class="warning__content">
-                {% for error in settings_errors %}
+                {% for error in errors %}
                     {{ error }}
                 {% endfor %}
-            </div>
-        </div>
-    {% else %}
-        <div class="warning">
-            <div class="warning__content">
-                A few of the elements on this page have been moved to the on-profile editor. To find them, go to your profile and hit the "Edit Profile" button below your avatar.
             </div>
         </div>
     {% endif %}
@@ -30,7 +24,7 @@
             <p>Here you can change your e-mail address and/or your password, please make sure your e-mail is accurate and your password is strong in order to protect your account. For convenience your current e-mail address is displayed. You are required to verify yourself by entering your current password to change either value.</p>
         </div>
 
-        {% if settings_disable_account_options %}
+        {% if disable_account_options %}
             <div class="settings__disabled">
                 <div class="settings__disabled__notice">
                     E-mail and password changing is only available on the main site for stability reasons.
@@ -48,14 +42,14 @@
                         <div class="settings__account__title">
                             New e-mail address
                         </div>
-                        {{ input_text('email[new]', 'settings__account__input', '', 'email', account_info.email) }}
+                        {{ input_text('email[new]', 'settings__account__input', '', 'email', current_email) }}
                     </label>
 
                     <label class="settings__account__input">
                         <div class="settings__account__title">
                             Confirm new e-mail address
                         </div>
-                        {{ input_text('email[new]', 'settings__account__input', '', 'email') }}
+                        {{ input_text('email[confirm]', 'settings__account__input', '', 'email') }}
                     </label>
                 </div>
 
@@ -94,7 +88,20 @@
 
     <div class="container settings__container" id="sessions">
         {{ container_title('<i class="fas fa-key fa-fw"></i> Sessions', '', true) }}
-        {% set spagination = pagination(sessions_count, sessions_take, sessions_offset, '?m=sessions') %}
+        {% set spagination = pagination(
+            sessions.amount,
+            sessions.take,
+            sessions.offset,
+            ''|url_construct({
+                'logins[offset]': logins.offset,
+                'logins[take]': logins.take == 15 ? 0 : logins.take,
+                'logs[offset]': logs.offset,
+                'logs[take]': logs.take == 15 ? 0 : logs.take,
+                'sessions[take]': sessions.take == 15 ? 0 : sessions.take,
+            }),
+            false,
+            'sessions[offset]'
+        ) %}
 
         <div class="settings__description">
             <p>These are the active logins to your account, clicking the Kill button will force a logout on that session. Your current login is highlighted with a different colour so you don't accidentally force yourself to logout.</p>
@@ -115,8 +122,8 @@
             </div>
 
             <div class="settings__sessions__list">
-                {% for session in user_sessions %}
-                    {{ user_session(session, session.session_id == active_session_id) }}
+                {% for session in sessions.list %}
+                    {{ user_session(session, session.session_id == sessions.active) }}
                 {% endfor %}
             </div>
 
@@ -129,12 +136,18 @@
     <div class="container settings__container" id="logins">
         {{ container_title('<i class="fas fa-user-lock fa-fw"></i> Login History', '', true) }}
         {% set lhpagination = pagination(
-            login_attempts_count,
-            login_attempts_take,
-            login_attempts_offset,
-            '?m=logs'|url_construct({'ao': audit_log_offset}),
+            logins.amount,
+            logins.take,
+            logins.offset,
+            ''|url_construct({
+                'logins[take]': logins.take == 15 ? 0 : logins.take,
+                'logs[offset]': logs.offset,
+                'logs[take]': logs.take == 15 ? 0 : logs.take,
+                'sessions[offset]': sessions.offset,
+                'sessions[take]': sessions.take == 15 ? 0 : sessions.take,
+            }),
             false,
-            'lo'
+            'logins[offset]'
         ) %}
 
         <div class="settings__description">
@@ -144,14 +157,14 @@
         <div class="settings__login-history">
             {{ lhpagination }}
 
-            {% for attempt in user_login_attempts %}
+            {% for attempt in logins.list %}
                 <div class="settings__login-history__entry" id="attempt-{{ attempt.attempt_id }}">
                     <div class="settings__login-history__column settings__login-history__column--ip">
                         <div class="settings__login-history__column__name">
                             IP
                         </div>
                         <div class="settings__login-history__column__value">
-                            {{ attempt.attempt_ip_decoded }}
+                            {{ attempt.attempt_ip }}
                             {% if attempt.attempt_country != 'XX' %}
                                 <div class="flag flag--{{ attempt.attempt_country|lower }} settings__login-history__country" title="{{ attempt.attempt_country|country_name }}"></div>
                             {% endif %}
@@ -196,12 +209,18 @@
     <div class="container settings__container" id="log">
         {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Account Log', '', true) }}
         {% set alpagination = pagination(
-            audit_log_count,
-            audit_log_take,
-            audit_log_offset,
-            '?m=logs'|url_construct({'lo': login_attempts_offset}),
+            logs.amount,
+            logs.take,
+            logs.offset,
+            ''|url_construct({
+                'logins[offset]': logins.offset,
+                'logins[take]': logins.take == 15 ? 0 : logins.take,
+                'logs[take]': logs.take == 15 ? 0 : logs.take,
+                'sessions[offset]': sessions.offset,
+                'sessions[take]': sessions.take == 15 ? 0 : sessions.take,
+            }),
             false,
-            'ao'
+            'logs[offset]'
         ) %}
 
         <div class="settings__description">
@@ -211,7 +230,7 @@
         <div class="settings__log">
             {{ alpagination }}
 
-            {% for log in audit_logs %}
+            {% for log in logs.list %}
                 <div class="settings__log__entry" id="log-{{ log.log_id }}">
                     <div class="settings__log__column settings__login-history__column--ip">
                         <div class="settings__log__column__name">
@@ -239,8 +258,8 @@
                             Action
                         </div>
                         <div class="settings__log__column__value">
-                            {% if log.log_action in log_strings|keys %}
-                                {{ log_strings[log.log_action]|vsprintf(log.log_params|json_decode) }}
+                            {% if log.log_action in logs.strings|keys %}
+                                {{ logs.strings[log.log_action]|vsprintf(log.log_params|json_decode) }}
                             {% else %}
                                 {{ log.log_action }}({{ log.log_params }})
                             {% endif %}
