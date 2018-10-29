@@ -1,5 +1,6 @@
 <?php
 use Misuzu\Twig;
+use Misuzu\TwigMisuzu;
 
 define('MSZ_TPL_FILE_EXT', '.twig');
 define('MSZ_TPL_VARS_STORE', '_msz_tpl_vars');
@@ -18,6 +19,7 @@ function tpl_init(array $options = []): void
     $loader = new Twig_Loader_Filesystem;
     $twig = new Twig($loader, $options);
     $twig->addExtension(new Twig_Extensions_Extension_Date);
+    $twig->addExtension(new TwigMisuzu);
 }
 
 function tpl_var(string $key, $value): void

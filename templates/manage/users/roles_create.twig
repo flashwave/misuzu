@@ -43,31 +43,33 @@
         <div class="container">
             {{ container_title('Colour') }}
 
+            {% set colour_props = edit_role.role_colour|default(constant('MSZ_COLOUR_INHERIT'))|colour_props %}
+
             <label class="form__label">
                 <div class="form__label__text">Inherit Colour</div>
                 <div class="form__label__input">
-                    {{ input_checkbox('role[colour][inherit]', '', edit_role is defined and edit_role.role_colour|colour_get_inherit) }}
+                    {{ input_checkbox('role[colour][inherit]', '', colour_props.inherit) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Red</div>
                 <div class="form__label__input">
-                    {{ input_text('role[colour][red]', '', edit_role is defined ? edit_role.role_colour|colour_get_red : '0', 'number', '', false, {'min':0,'max':255}) }}
+                    {{ input_text('role[colour][red]', '', colour_props.red, 'number', '', false, {'min':0,'max':255}) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Green</div>
                 <div class="form__label__input">
-                    {{ input_text('role[colour][green]', '', edit_role is defined ? edit_role.role_colour|colour_get_green : '0', 'number', '', false, {'min':0,'max':255}) }}
+                    {{ input_text('role[colour][green]', '', colour_props.green, 'number', '', false, {'min':0,'max':255}) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Blue</div>
                 <div class="form__label__input">
-                    {{ input_text('role[colour][blue]', '', edit_role is defined ? edit_role.role_colour|colour_get_blue : '0', 'number', '', false, {'min':0,'max':255}) }}
+                    {{ input_text('role[colour][blue]', '', colour_props.blue, 'number', '', false, {'min':0,'max':255}) }}
                 </div>
             </label>
 

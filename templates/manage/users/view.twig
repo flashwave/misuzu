@@ -109,33 +109,33 @@
             <div class="container">
                 {{ container_title('Colour') }}
 
-                {% set colour_is_defined = view_user is defined and view_user.user_colour is not null and not view_user.user_colour|colour_get_inherit %}
+                {% set colour_props = view_user.user_colour|default(constant('MSZ_COLOUR_INHERIT'))|colour_props %}
 
                 <label class="form__label">
                     <div class="form__label__text">Custom Colour</div>
                     <div class="form__label__input">
-                        {{ input_checkbox('colour[enable]', '', colour_is_defined) }}
+                        {{ input_checkbox('colour[enable]', '', colour_props.inherit) }}
                     </div>
                 </label>
 
                 <label class="form__label">
                     <div class="form__label__text">Red</div>
                     <div class="form__label__input">
-                        {{ input_text('colour[red]', '', colour_is_defined ? view_user.user_colour|colour_get_red : '0', 'number', '', false, {'min':0,'max':255}) }}
+                        {{ input_text('colour[red]', '', colour_props.red, 'number', '', false, {'min':0,'max':255}) }}
                     </div>
                 </label>
 
                 <label class="form__label">
                     <div class="form__label__text">Green</div>
                     <div class="form__label__input">
-                        {{ input_text('colour[green]', '', colour_is_defined ? view_user.user_colour|colour_get_green : '0', 'number', '', false, {'min':0,'max':255}) }}
+                        {{ input_text('colour[green]', '', colour_props.green, 'number', '', false, {'min':0,'max':255}) }}
                     </div>
                 </label>
 
                 <label class="form__label">
                     <div class="form__label__text">Blue</div>
                     <div class="form__label__input">
-                        {{ input_text('colour[blue]', '', colour_is_defined ? view_user.user_colour|colour_get_blue : '0', 'number', '', false, {'min':0,'max':255}) }}
+                        {{ input_text('colour[blue]', '', colour_props.blue, 'number', '', false, {'min':0,'max':255}) }}
                     </div>
                 </label>
             </div>

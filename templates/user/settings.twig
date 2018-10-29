@@ -259,7 +259,7 @@
                         </div>
                         <div class="settings__log__column__value">
                             {% if log.log_action in logs.strings|keys %}
-                                {{ logs.strings[log.log_action]|vsprintf(log.log_params|json_decode) }}
+                                {{ logs.strings[log.log_action]|log_format(log.log_params) }}
                             {% else %}
                                 {{ log.log_action }}({{ log.log_params }})
                             {% endif %}

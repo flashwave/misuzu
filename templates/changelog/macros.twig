@@ -47,7 +47,7 @@
                 </a>
             {% endif %}
 
-            <a class="changelog__action{{ change.action_class is defined and change.action_class is not null ? ' changelog__action--' ~ change.action_class : '' }} changelog__action--{{ change.action_colour|colour_get_css_contrast }}"
+            <a class="changelog__action{{ change.action_class is defined and change.action_class is not null ? ' changelog__action--' ~ change.action_class : '' }} changelog__action--{{ change.action_colour|colour_contrast }}"
                 href="{{ change_url|format(change.change_id) }}"
                 {% if change.action_colour is defined %}style="{{ change.action_colour|html_colour('--action-colour') }}"{% endif %}>
                 <div class="changelog__action__text">

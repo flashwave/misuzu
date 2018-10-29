@@ -267,37 +267,6 @@ MIG;
         'site_url' => config_get('Site', 'url'),
     ]);
 
-    tpl_add_filter('json_decode');
-    tpl_add_filter('byte_symbol');
-    tpl_add_filter('html_link');
-    tpl_add_filter('html_colour');
-    tpl_add_filter('url_construct');
-    tpl_add_filter('country_name', 'get_country_name');
-    tpl_add_filter('flip', 'array_flip');
-    tpl_add_filter('first_paragraph');
-    tpl_add_filter('colour_get_css');
-    tpl_add_filter('colour_get_css_contrast');
-    tpl_add_filter('colour_get_inherit');
-    tpl_add_filter('colour_get_red');
-    tpl_add_filter('colour_get_green');
-    tpl_add_filter('colour_get_blue');
-    tpl_add_filter('parse_line');
-    tpl_add_filter('parse_text');
-    tpl_add_filter('asset_url');
-    tpl_add_filter('vsprintf');
-    tpl_add_filter('perms_check');
-    tpl_add_filter('bg_settings', 'user_background_settings_strings');
-
-    tpl_add_function('get_browser');
-    tpl_add_function('git_commit_hash');
-    tpl_add_function('git_tag');
-    tpl_add_function('csrf_token');
-    tpl_add_function('csrf_input', 'csrf_html');
-    tpl_add_function('startup_time', function (float $time = MSZ_STARTUP) {
-        return microtime(true) - $time;
-    });
-    tpl_add_function('sql_query_count', 'db_query_count');
-
     tpl_add_path(MSZ_ROOT . '/templates');
 
     $misuzuBypassLockdown = !empty($misuzuBypassLockdown);

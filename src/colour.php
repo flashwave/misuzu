@@ -139,3 +139,14 @@ function colour_from_hex(int &$colour, string $hex): bool
 
     return true;
 }
+
+function colour_get_properties(int $colour): array
+{
+    return [
+        'red' => colour_get_red($colour),
+        'green' => colour_get_green($colour),
+        'blue' => colour_get_blue($colour),
+        'inherit' => colour_get_inherit($colour),
+        'luminance' => colour_get_luminance($colour),
+    ];
+}
