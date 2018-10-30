@@ -11,7 +11,7 @@
         mask-image: linear-gradient(0deg, transparent 10%, var(--background-colour) 100%);
         -webkit-mask-image: linear-gradient(0deg, transparent 10%, var(--background-colour) 100%);
         background: var(--background-pattern);
-        background-color: var(--accent-colour);
+        background-color: var(--header-accent-colour);
         background-blend-mode: multiply;
     }
 
@@ -96,10 +96,10 @@
 
         @media (max-width: @site-mobile-width) {
             width: 100%;
-            background: var(--accent-colour);
+            background: var(--header-accent-colour);
 
             &__item:not(:last-child) {
-                border-bottom: 1px solid var(--accent-colour);
+                border-bottom: 1px solid var(--header-accent-colour);
             }
 
             &__link {
@@ -117,7 +117,7 @@
                 transition: background-color .2s;
 
                 &:hover {
-                    background-color: var(--accent-colour);
+                    background-color: var(--header-accent-colour);
 
                     .header__submenu {
                         transform: scaleY(1);
@@ -155,11 +155,11 @@
             position: absolute; // floating
             transform: scaleY(0);
             transform-origin: center top 0;
-            background: var(--accent-colour);
+            background: var(--header-accent-colour);
             overflow: hidden;
             z-index: 100;
             text-align: left;
-            box-shadow: 0 1px 2px var(--accent-colour);
+            box-shadow: 0 1px 2px var(--header-accent-colour);
             transition: transform .2s;
 
             &:hover {
@@ -189,7 +189,7 @@
         @media (max-width: @site-mobile-width) {
             display: none;
             width: 100%;
-            background: var(--accent-colour);
+            background: var(--header-accent-colour);
             font-size: 1.1em;
 
             &-toggle:checked ~ .header__user {
@@ -245,7 +245,7 @@
                 max-width: 100%;
                 font-size: 1.6em;
                 line-height: 1.5em;
-                border-bottom: 1px solid var(--accent-colour);
+                border-bottom: 1px solid var(--header-accent-colour);
                 padding: 4px 8px;
                 text-align: left;
             }
@@ -276,7 +276,7 @@
                 padding: 0;
 
                 &:not(:last-child) {
-                    border-bottom: 1px solid var(--accent-colour);
+                    border-bottom: 1px solid var(--header-accent-colour);
                 }
             }
         }
