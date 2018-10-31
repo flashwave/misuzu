@@ -59,7 +59,7 @@ $onlineUsers = cache_get('index:online:v1', function () {
     ')->fetchAll(PDO::FETCH_ASSOC);
 }, 30);
 
-echo tpl_render('home.index', [
+echo tpl_render('home.' . (user_session_active() ? 'home' : 'landing'), [
     'users_count' => $statistics['users'],
     'last_user' => $statistics['lastUser'],
     'online_users' => $onlineUsers,
