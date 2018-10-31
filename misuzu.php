@@ -130,7 +130,7 @@ if (PHP_SAPI === 'cli') {
                 // Deletes expired sessions
                 db_exec('
                     DELETE FROM `msz_sessions`
-                    WHERE `expires_on` < NOW()
+                    WHERE `session_expires` < NOW()
                 ');
 
                 // Remove old password reset records, left for a week for possible review
