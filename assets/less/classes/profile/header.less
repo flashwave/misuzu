@@ -27,6 +27,11 @@
             &--edit {
                 cursor: pointer;
             }
+
+            @media (max-width: @site-mobile-width) {
+                width: 80px;
+                height: 80px;
+            }
         }
 
         &__check {
@@ -85,6 +90,10 @@
         &__content {
             margin: 5px 10px;
             flex: 1 1 auto;
+
+            @media (max-width: @site-mobile-width) {
+                text-align: center;
+            }
         }
 
         &__relation {
@@ -95,6 +104,11 @@
             padding: 1px 5px 4px;
             cursor: default;
         }
+
+        @media (max-width: @site-mobile-width) {
+            flex-direction: column;
+            align-items: center;
+        }
     }
 
     &__options {
@@ -103,19 +117,38 @@
         padding: 0 20px;
         display: flex;
         justify-content: space-between;
+
+        @media (max-width: @site-mobile-width) {
+            flex-direction: column;
+        }
     }
 
     &__actions {
         display: flex;
         align-items: center;
+
+        @media (max-width: @site-mobile-width) {
+            flex-direction: column;
+        }
     }
 
     &__action {
         margin-right: 5px;
+
+        @media (max-width: @site-mobile-width) {
+            margin-right: 0;
+            margin-bottom: 5px;
+            width: 100%;
+        }
     }
 
     &__stats {
         display: flex;
+
+        @media (max-width: @site-mobile-width) {
+            flex-direction: column;
+            flex-wrap: wrap;
+        }
     }
 
     &__stat {
