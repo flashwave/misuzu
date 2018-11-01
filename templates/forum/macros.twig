@@ -361,7 +361,7 @@
                 </a>
             </div>
 
-            <div class="forum__post__text">
+            <div class="forum__post__text{% if post.post_parse == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
                 {{ post.post_text|escape|parse_text(post.post_parse)|raw }}
             </div>
         </div>

@@ -60,7 +60,7 @@
                         </div>
 
                         <div class="changelog__change__column changelog__change__column--change-info">
-                            <div class="changelog__change__text">
+                            <div class="changelog__change__text markdown">
                                 {% if change.change_text|length >= 1 %}
                                     {{ change.change_text|parse_text(constant('MSZ_PARSER_MARKDOWN'))|raw }}
                                 {% else %}

@@ -164,7 +164,7 @@
                         <div class="container profile__about" id="about">
                             {{ container_title('About ' ~ profile.username) }}
 
-                            <div class="profile__about__content{% if is_editing %} profile__about__content--edit{% endif %}">
+                            <div class="profile__about__content{% if is_editing %} profile__about__content--edit{% elseif profile.user_about_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
                                 {% if is_editing %}
                                     {{ input_select('about[parser]', constant('MSZ_PARSERS_NAMES'), profile.user_about_parser, '', '', false, 'profile__about__select') }}
                                     <textarea name="about[text]" class="input__textarea profile__about__editor" id="about-textarea">{{ profile.user_about_content|escape }}</textarea>

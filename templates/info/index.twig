@@ -4,18 +4,19 @@
 {% set title = 'Info' %}
 
 {% block content %}
-    <div class="container">
+    <div class="container container--no-overflow">
         {{ container_title('Flashii Informational Pages') }}
 
-        <div class="container__content">
+        <div class="container__content markdown">
             <p>Here's a listing of a few informational pages that'll probably come in handy during your Flashii Experience&trade;.</p>
+            <h2>Flashii</h2>
             <ul>
-                <li>Flashii</li>
                 <li><a href="/info.php/rules">Rules</a></li>
                 <li><a href="/info.php/terms">Terms of Service</a></li>
                 <li><a href="/info.php/privacy">Privacy Policy</a></li>
-
-                <li>Misuzu Project</li>
+            </ul>
+            <h2>Misuzu Project</h2>
+            <ul>
                 <li><a href="/info.php/misuzu">Read me</a></li>
                 <li><a href="/info.php/misuzu/license">License</a></li>
                 <li><a href="/info.php/misuzu/code_of_conduct">Code of Conduct</a></li>

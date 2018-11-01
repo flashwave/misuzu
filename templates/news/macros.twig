@@ -6,7 +6,7 @@
 
         <div class="news__preview__container">
             <div class="news__preview__content">
-                <div class="news__preview__text">
+                <div class="news__preview__text markdown">
                     {{ post.post_text|first_paragraph|parse_text(constant('MSZ_PARSER_MARKDOWN'))|raw }}
                 </div>
 

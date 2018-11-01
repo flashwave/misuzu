@@ -11,7 +11,7 @@ final class MarkdownTag extends BBCodeTag
         return preg_replace_callback(
             '#\[md\](.*?)\[/md\]#s',
             function ($matches) {
-                return MarkdownParser::getOrCreateInstance()->parseText($matches[1]);
+                return sprintf('<div class="markdown">%s</div>', parse_text($matches[1], MSZ_PARSER_MARKDOWN));
             },
             $text
         );

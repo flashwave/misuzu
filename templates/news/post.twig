@@ -11,7 +11,7 @@
         {{ container_title(post.post_title) }}
 
         <div class="news__post__content">
-            <div class="news__post__text">
+            <div class="news__post__text markdown">
                 {{ post.post_text|parse_text(constant('MSZ_PARSER_MARKDOWN'))|raw }}
             </div>
 

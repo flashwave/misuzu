@@ -1,6 +1,8 @@
 @mio-font-regular: Tahoma, Geneva, 'Dejavu Sans', Arial, Helvetica, sans-serif;
 @mio-font-mono: Consolas, 'Liberation Mono', Menlo, Courier, monospace;
 @site-mobile-width: 800px;
+@font-size: 12px;
+@line-height: 20px;
 
 :root {
     --site-max-width: 1200px;
@@ -38,7 +40,7 @@ body {
     flex-direction: column;
     background-image: var(--background-image);
     background-color: var(--background-colour);
-    font: 12px/20px @mio-font-regular;
+    font: @font-size/@line-height @mio-font-regular;
     color: var(--text-colour);
     background-attachment: fixed;
     background-position: center center;
@@ -78,6 +80,8 @@ body {
 
 // Misc
 @import "animations";
+@import "link";
+@import "markdown";
 
 // Input elements
 @import "classes/input/button";
