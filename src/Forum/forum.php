@@ -205,7 +205,6 @@ function forum_increment_clicks(int $forumId): void
 
 function forum_read_status_sql(
     string $topic_id_param,
-    string $topic_bumped_param,
     string $user_param_sub,
     string $forum_id_param = 'f.`forum_id`',
     string $user_param = '`target_user_id`'
@@ -216,15 +215,14 @@ function forum_read_status_sql(
                 %1$s > 0
             AND
                 %2$s IS NOT NULL
-            AND
-                %3$s >= NOW() - INTERVAL 1 MONTH
             AND (
                 SELECT COUNT(ti.`topic_id`)
                 FROM `msz_forum_topics` AS ti
                 LEFT JOIN `msz_forum_topics_track` AS tt
-                ON tt.`topic_id` = ti.`topic_id` AND tt.`user_id` = %5$s
-                WHERE ti.`forum_id` = %4$s
+                ON tt.`topic_id` = ti.`topic_id` AND tt.`user_id` = %4$s
+                WHERE ti.`forum_id` = %3$s
                 AND ti.`topic_deleted` IS NULL
+                AND ti.`topic_bumped` >= NOW() - INTERVAL 1 MONTH
                 AND (
                     tt.`track_last_read` IS NULL
                     OR tt.`track_last_read` < ti.`topic_bumped`
@@ -233,7 +231,6 @@ function forum_read_status_sql(
         ',
         $user_param,
         $topic_id_param,
-        $topic_bumped_param,
         $forum_id_param,
         $user_param_sub
     );
@@ -326,7 +323,7 @@ function forum_get_children_query(bool $small = false): string
         $small
             ? MSZ_FORUM_GET_CHILDREN_QUERY_SMALL
             : MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD,
-        forum_read_status_sql('t.`topic_id`', 't.`topic_bumped`', ':user_for_check'),
+        forum_read_status_sql('t.`topic_id`', ':user_for_check'),
         MSZ_FORUM_ROOT,
         MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql('forum', 'f.`forum_id`'),
