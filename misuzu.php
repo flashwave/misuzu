@@ -150,6 +150,14 @@ if (PHP_SAPI === 'cli') {
                     DELETE FROM `msz_audit_log`
                     WHERE `log_created` < NOW() - INTERVAL 1 YEAR
                 ');
+
+                // Delete ignored forum tracking entries
+                db_exec('
+                    DELETE tt FROM `msz_forum_topics_track` as tt
+                    LEFT JOIN `msz_forum_topics` as t
+                    ON t.`topic_id` = tt.`topic_id`
+                    WHERE t.`topic_bumped` < NOW() - INTERVAL 1 MONTH
+                ');
                 break;
 
             case 'migrate':
