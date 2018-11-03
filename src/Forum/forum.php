@@ -81,44 +81,44 @@ function forum_fetch(int $forumId): array
 
 function forum_get_root_categories(int $userId): array
 {
-    $categoryPermSql = sprintf(
-        '(%s & %d)',
+    $getCategories = db_prepare(sprintf(
+        "
+            SELECT
+                f.`forum_id`, f.`forum_name`, f.`forum_type`, f.`forum_colour`,
+                (
+                    SELECT COUNT(`forum_id`)
+                    FROM `msz_forum_categories` as sf
+                    WHERE sf.`forum_parent` = f.`forum_id`
+                ) as `forum_children`
+            FROM `msz_forum_categories` as f
+            WHERE f.`forum_parent` = 0
+            AND f.`forum_type` = %d
+            AND f.`forum_hidden` = 0
+            AND (%s & %d) > 0
+            ORDER BY f.`forum_order`
+        ",
+        MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql('forum', 'f.`forum_id`'),
         MSZ_FORUM_PERM_CAN_LIST_FORUM
-    );
-
-    $getCategories = db_prepare("
-        SELECT
-            f.`forum_id`, f.`forum_name`, f.`forum_type`, f.`forum_colour`,
-            (
-                SELECT COUNT(`forum_id`)
-                FROM `msz_forum_categories` as sf
-                WHERE sf.`forum_parent` = f.`forum_id`
-            ) as `forum_children`
-        FROM `msz_forum_categories` as f
-        WHERE f.`forum_parent` = 0
-        AND f.`forum_type` = 1
-        AND f.`forum_hidden` = false
-        AND {$categoryPermSql} > 0
-        ORDER BY f.`forum_order`
-    ");
+    ));
     $getCategories->bindValue('perm_user_id_user', $userId);
     $getCategories->bindValue('perm_user_id_role', $userId);
     $categories = $getCategories->execute() ? $getCategories->fetchAll(PDO::FETCH_ASSOC) : [];
     $categories = array_merge([MSZ_FORUM_ROOT_DATA], $categories);
 
-    $forumPermSql = sprintf(
-        '(%s & %d)',
+    $getRootForumCount = db_prepare(sprintf(
+        "
+            SELECT COUNT(`forum_id`)
+            FROM `msz_forum_categories`
+            WHERE `forum_parent` = %d
+            AND `forum_type` != %d
+            AND (%s & %d) > 0
+        ",
+        MSZ_FORUM_ROOT,
+        MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql('forum', '`forum_id`'),
         MSZ_FORUM_PERM_CAN_LIST_FORUM
-    );
-    $getRootForumCount = db_prepare(sprintf("
-        SELECT COUNT(`forum_id`)
-        FROM `msz_forum_categories`
-        WHERE `forum_parent` = %d
-        AND `forum_type` != 1
-        AND {$forumPermSql} > 0
-    ", MSZ_FORUM_ROOT));
+    ));
     $getRootForumCount->bindValue('perm_user_id_user', $userId);
     $getRootForumCount->bindValue('perm_user_id_role', $userId);
     $getRootForumCount->execute();
@@ -307,7 +307,7 @@ define(
         LEFT JOIN `msz_roles` as r
         ON r.`role_id` = u.`display_role`
         WHERE f.`forum_parent` = :parent_id
-        AND f.`forum_hidden` = false
+        AND f.`forum_hidden` = 0
         AND (%4$s & %5$d) > 0
         AND (
             (f.`forum_parent` = %2$d AND f.`forum_type` != %3$d)

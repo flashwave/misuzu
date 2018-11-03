@@ -224,14 +224,16 @@ use PDO;
 
 function migrate_up(PDO \$conn): void
 {
-    \$conn->exec('
+    \$conn->exec("
         CREATE TABLE ...
-    ');
+    ");
 }
 
 function migrate_down(PDO \$conn): void
 {
-    \$conn->exec('DROP TABLE ...');
+    \$conn->exec("
+        DROP TABLE ...
+    ");
 }
 
 MIG;
