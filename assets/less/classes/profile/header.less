@@ -172,6 +172,17 @@
             font-size: 1.3em;
             text-align: right;
             cursor: inherit;
+            display: block;
+        }
+
+        &--date &__value {
+            text-align: left;
+        }
+
+        @media (max-width: @site-mobile-width) {
+            &--date &__value {
+                text-align: right;
+            }
         }
     }
 
