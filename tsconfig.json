@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outFile": "./public/js/misuzu.js",
+        "sourceRoot": "./assets/typescript/",
+        "rootDir": "./assets/typescript/",
+        "sourceMap": true,
+    }
+}

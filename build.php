@@ -120,6 +120,9 @@ function recursiveCopy(string $source, string $dest): bool
     return true;
 }
 
+// Make sure we're running from the misuzu root directory.
+chdir(__DIR__);
+
 misuzu_log('Cleanup');
 createDirIfNotExist(CSS_DIR);
 createDirIfNotExist(JS_DIR);
@@ -137,8 +140,9 @@ if (!is_file(LESS_DIR . LESS_ENTRY_POINT)) {
 }
 
 // figure this out
-//misuzu_log();
-//misuzu_log('Compiling TypeScript');
+misuzu_log();
+misuzu_log('Compiling TypeScript');
+misuzu_log(shell_exec('tsc --extendedDiagnostics -p tsconfig.json'));
 
 misuzu_log();
 misuzu_log('Importing libraries');
