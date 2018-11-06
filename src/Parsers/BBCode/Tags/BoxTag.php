@@ -10,11 +10,10 @@ final class BoxTag extends BBCodeTag
         return preg_replace_callback(
             '/\[box(?:=(.*))?\](.*)\[\/box\]/',
             function ($matches) {
-                $randomId = 'toggle_' . bin2hex(random_bytes(8));
                 $title = strlen($matches[1]) ? $matches[1] : 'Spoiler';
                 // restyle this entirely
-                return '<div class="container container--hidden" id="' . $randomId . '">'
-                    . "<div class='container__title' onclick='toggleContainer(\"{$randomId}\")'>{$title}</div>"
+                return '<div class="container">'
+                    . "<div class='container__title'>{$title}</div>"
                     . "<div class='container__content'>{$matches[2]}</div>"
                     . '</div>';
             },

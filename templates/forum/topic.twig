@@ -30,13 +30,6 @@
 
     {% if can_reply %}
         {{ forum_posting_form('Reply', topic_info.topic_id, true, 'reply', true) }}
-
-        <script>
-            window.addEventListener('load', () => {
-                closeContainer('reply');
-                document.getElementById('reply').children[0].addEventListener('mouseover', () => openContainer('reply'));
-            });
-        </script>
     {% endif %}
 
     {{ topic_tools }}

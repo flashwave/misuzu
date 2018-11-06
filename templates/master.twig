@@ -30,55 +30,12 @@
 
         {% include '_layout/footer.twig' %}
 
-        <script src="{{ '/js/libraries.js'|asset_url }}" charset="utf-8"></script>
-        <script>
-            window.addEventListener('load', () => {
-                timeago().render(document.querySelectorAll('time'));
-                hljs.initHighlighting();
-            });
-
-            // move this to an external JS/TS file eventually.
-            const containerClass = 'container',
-                containerHiddenClass = 'container--hidden';
-
-            function validateContainer(elem) {
-                return elem.classList.contains(containerClass);
-            }
-
-            function containerIsClosed(elem) {
-                return elem.classList.contains(containerHiddenClass);
-            }
-
-            function toggleContainer(id) {
-                const elem = document.getElementById(id);
-
-                if (!validateContainer(elem))
-                    return;
-
-                if (containerIsClosed(elem))
-                    openContainer(id);
-                else
-                    closeContainer(id);
-            }
-
-            function openContainer(id) {
-                const elem = document.getElementById(id);
-
-                if (!validateContainer(elem) || !containerIsClosed(elem))
-                    return;
-
-                elem.classList.remove(containerHiddenClass);
-            }
-
-            function closeContainer(id) {
-                const elem = document.getElementById(id);
-
-                if (!validateContainer(elem) || containerIsClosed(elem))
-                    return;
-
-                elem.classList.add(containerHiddenClass);
-            }
-        </script>
-        <script src="/js/misuzu.js"></script>
+        {% if current_user is defined %}
+            <script type="application/json" id="user-info">
+                {{ current_user|json_encode|raw }}
+            </script>
+        {% endif %}
+        <script src="{{ '/js/libraries.js'|asset_url }}"></script>
+        <script src="{{ '/js/misuzu.js'|asset_url }}"></script>
     </body>
 </html>

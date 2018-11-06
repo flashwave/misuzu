@@ -45,8 +45,8 @@ define('CSS_DIR', PUBLIC_DIR . '/css');
 define('JS_DIR', PUBLIC_DIR . '/js');
 
 define('LESS_DEST', CSS_DIR . '/style.css');
-define('TS_DEST', JS_DIR . '/%s.js');
-define('DTS_DEST', TS_DIR . '/%s.d.ts');
+define('TS_DEST', JS_DIR . '/misuzu.js');
+define('TS_SRC', JS_DIR . '/misuzu/');
 
 define('NODE_MODULES_DIR', __DIR__ . '/node_modules');
 define('NODE_DEST_CSS', CSS_DIR . '/libraries.css');
@@ -120,6 +120,27 @@ function recursiveCopy(string $source, string $dest): bool
     return true;
 }
 
+function recursiveConcat(string $source, string $existing = ''): string
+{
+    if (!is_dir($source)) {
+        return $existing . file_get_contents($source);
+    }
+
+    $dir = dir($source);
+
+    while (($entry = $dir->read()) !== false) {
+        if ($entry === '.' || $entry === '..') {
+            continue;
+        }
+
+        $existing = recursiveConcat($source . DIRECTORY_SEPARATOR . $entry, $existing);
+    }
+
+    $dir->close();
+
+    return $existing;
+}
+
 // Make sure we're running from the misuzu root directory.
 chdir(__DIR__);
 
@@ -138,11 +159,6 @@ if (!is_file(LESS_DIR . LESS_ENTRY_POINT)) {
 } else {
     system(sprintf(LESS_CMD, escapeshellarg(LESS_DIR . LESS_ENTRY_POINT), LESS_DEST));
 }
-
-// figure this out
-misuzu_log();
-misuzu_log('Compiling TypeScript');
-misuzu_log(shell_exec('tsc --extendedDiagnostics -p tsconfig.json'));
 
 misuzu_log();
 misuzu_log('Importing libraries');
@@ -186,6 +202,13 @@ foreach (IMPORT_SEQ as $sequence) {
 
     file_put_contents($sequence['destination'], $contents);
 }
+
+misuzu_log();
+misuzu_log('Compiling TypeScript');
+misuzu_log(shell_exec('tsc --extendedDiagnostics -p tsconfig.json'));
+file_put_contents(TS_DEST, recursiveConcat(TS_SRC));
+deleteAllFilesInDir(TS_SRC, '*.js');
+rmdir(TS_SRC);
 
 misuzu_log();
 misuzu_log('Copying data...');

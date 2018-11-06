@@ -304,7 +304,7 @@ MIG;
             WHERE `user_id` = :user_id
         ');
         $getUserDisplayInfo->bindValue('user_id', $mszUserId);
-        $userDisplayInfo = $getUserDisplayInfo->execute() ? $getUserDisplayInfo->fetch() : [];
+        $userDisplayInfo = $getUserDisplayInfo->execute() ? $getUserDisplayInfo->fetch(\PDO::FETCH_ASSOC) : [];
     }
 
     csrf_init(
