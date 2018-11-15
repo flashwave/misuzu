@@ -203,53 +203,8 @@
                     commentForms[i].onsubmit = commentPost;
                 }
             }
-
-            if (typeof commentDelete === 'function') { // can delete
-                var commentDeletes = document.getElementsByClassName('comment__action--delete');
-
-                for (var i = 0; i < commentDeletes.length; i++) {
-                    commentDeletes[i].onclick = commentDelete;
-                    commentDeletes[i].dataset.href = commentDeletes[i].href;
-                    commentDeletes[i].href = 'javascript:void(0);';
-                }
-            }
         });
     </script>
-
-    {% if perms.can_delete %}
-        <script>
-            var commentDeleteLock = false;
-
-            function commentDelete(ev)
-            {
-                if (commentDeleteLock)
-                    return;
-                commentDeleteLock = true;
-
-                var xhr = new XMLHttpRequest();
-                xhr.onreadystatechange = function () {
-                    if (this.readyState !== 4)
-                        return;
-                    commentDeleteLock = false;
-
-                    var json = JSON.parse(this.responseText),
-                        message = json.error || json.message;
-
-                    if (message)
-                        alert(message);
-                    else {
-                        var elem = document.getElementById('comment-' + json.comment_id);
-
-                        if (elem)
-                            elem.parentNode.removeChild(elem);
-                    }
-                };
-                xhr.open('GET', ev.target.dataset.href);
-                xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
-                xhr.send();
-            }
-        </script>
-    {% endif %}
 
     {% if perms.can_comment %}
         <script>

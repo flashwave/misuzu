@@ -31,7 +31,7 @@
         {% include '_layout/footer.twig' %}
 
         {% if current_user is defined %}
-            <script type="application/json" id="user-info">
+            <script type="application/json" id="js-user-info">
                 {{ current_user|json_encode|raw }}
             </script>
         {% endif %}

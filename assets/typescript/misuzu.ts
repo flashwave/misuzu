@@ -1,11 +1,12 @@
-/// <reference path="CurrentUserInfo.ts" />
+/// <reference path="User.ts" />
 /// <reference path="Colour.ts" />
 /// <reference path="Support.ts" />
+/// <reference path="Permissions.ts" />
+/// <reference path="Comments.ts" />
 
 declare const timeago: any;
 declare const hljs: any;
 
-let userInfo: CurrentUserInfo;
 let loginFormAvatarTimeout: number = 0;
 
 // Initialisation process.
@@ -13,15 +14,7 @@ window.addEventListener('load', () => {
     timeago().render(document.querySelectorAll('time'));
     hljs.initHighlighting();
 
-    const userInfoElement: HTMLDivElement = document.getElementById('user-info') as HTMLDivElement;
-
-    if (userInfoElement) {
-        userInfo = JSON.parse(userInfoElement.textContent) as CurrentUserInfo;
-
-        const colour: Colour = new Colour(userInfo.user_colour);
-
-        console.log(`You are ${userInfo.username} with user id ${userInfo.user_id} and colour ${colour.hex}.`);
-    }
+    userInit();
 
     const changelogChangeAction: HTMLDivElement = document.querySelector('.changelog__change__action') as HTMLDivElement;
 
@@ -43,6 +36,8 @@ window.addEventListener('load', () => {
             loginUsername.addEventListener('keyup', () => loginFormUpdateAvatar(loginAvatar, loginUsername));
         }
     }
+
+    commentsInit();
 });
 
 function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTMLInputElement, force: boolean = false): void {
