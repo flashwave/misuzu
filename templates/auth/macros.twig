@@ -1,15 +1,15 @@
-{% macro auth_login(username, message, is_welcome) %} {# please only use this once per page, it has script shit rn #}
+{% macro auth_login(username, message, is_welcome) %}
     {% set is_welcome = is_welcome|default(false) %}
 
     {% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 
-    <form class="container auth" method="post" action="/auth.php" id="msz-login-form">
+    <form class="container auth js-login-form" method="post" action="/auth.php">
         {{ input_hidden('auth[mode]', 'login') }}
         {{ input_csrf('login') }}
 
         <div class="auth__header">
             <div class="auth__header__wrapper">
-                <div class="avatar auth__avatar" id="login-avatar"
+                <div class="avatar auth__avatar js-login-avatar"
                     style="background-image:url('/profile.php?u=0&amp;m=avatar');"></div>
             </div>
         </div>
@@ -23,7 +23,7 @@
         {% endif %}
 
         <div class="auth__form">
-            {{ input_text('auth[username]', 'auth__input', username|default(''), 'text', 'Username', true, {'id':'login-username'}) }}
+            {{ input_text('auth[username]', 'auth__input js-login-username', username|default(''), 'text', 'Username', true) }}
             {{ input_text('auth[password]', 'auth__input', '', 'password', 'Password', true) }}
 
             <button class="input__button">Login</button>

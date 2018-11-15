@@ -29,16 +29,19 @@ window.addEventListener('load', () => {
         changelogChangeAction.title = "This is supposed to be sideways, but your browser doesn't support that.";
     }
 
-    const loginForm: HTMLFormElement = document.getElementById('msz-login-form') as HTMLFormElement;
+    const loginForms: HTMLCollectionOf<HTMLFormElement> = document.getElementsByClassName('js-login-form') as HTMLCollectionOf<HTMLFormElement>;
 
-    if (loginForm) {
-        const loginAvatar: HTMLElement = document.getElementById('login-avatar'),
-            loginUsername: HTMLInputElement = document.getElementById('login-username') as HTMLInputElement;
+    if (loginForms.length > 0) {
+        for (let i = 0; i < loginForms.length; i++) {
+            const loginForm: HTMLFormElement = loginForms[i],
+                loginAvatar: HTMLElement = loginForm.getElementsByClassName('js-login-avatar')[0] as HTMLElement,
+                loginUsername: HTMLInputElement = loginForm.getElementsByClassName('js-login-username')[0] as HTMLInputElement;
 
-        // Initial bump, in case anything is prefilled.
-        loginFormUpdateAvatar(loginAvatar, loginUsername, true);
+            // Initial bump, in case anything is prefilled.
+            loginFormUpdateAvatar(loginAvatar, loginUsername, true);
 
-        loginUsername.addEventListener('keyup', () => loginFormUpdateAvatar(loginAvatar, loginUsername));
+            loginUsername.addEventListener('keyup', () => loginFormUpdateAvatar(loginAvatar, loginUsername));
+        }
     }
 });
 
