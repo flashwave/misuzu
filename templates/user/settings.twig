@@ -86,6 +86,14 @@
         {% endif %}
     </form>
 
+    <div class="container settings__container" id="roles">
+        {{ container_title('<i class="fas fa-toilet-paper"></i> Roles', '', true) }}
+
+        <div class="settings__description">
+            <p>This is a listing of the user roles you're a part of, you can select which you want to leave or which one you want to boast as your main role which will change your username colour accordingly.</p>
+        </div>
+    </div>
+
     <div class="container settings__container" id="sessions">
         {{ container_title('<i class="fas fa-key fa-fw"></i> Sessions', '', true) }}
         {% set spagination = pagination(

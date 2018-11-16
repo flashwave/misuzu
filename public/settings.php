@@ -157,7 +157,19 @@ $sessions['list'] = user_session_list($sessions['offset'], $sessions['take'], us
 $logins['list'] = user_login_attempts_list($sessions['offset'], $sessions['take'], user_session_current('user_id'));
 $logs['list'] = audit_log_list($logs['offset'], $logs['take'], user_session_current('user_id'));
 
-if (empty($errors)) {
+$getUserRoles = db_prepare('
+    SELECT r.`role_id`, r.`role_name`
+    FROM `msz_user_roles` as ur
+    LEFT JOIN `msz_roles` as r
+    ON r.`role_id` = ur.`role_id`
+    WHERE ur.`user_id` = :user_id
+');
+$getUserRoles->bindValue('user_id', user_session_current('user_id'));
+$userRoles = $getUserRoles->execute() ? $getUserRoles->fetchAll(PDO::FETCH_ASSOC) : [];
+
+var_dump($userRoles);
+
+if (empty($errors)) { // delete this in 2019
     $errors[] = 'A few of the elements on this page have been moved to the on-profile editor. To find them, go to your profile and hit the "Edit Profile" button below your avatar.';
 }
 
@@ -168,4 +180,5 @@ echo tpl_render('user.settings', [
     'sessions' => $sessions,
     'logins' => $logins,
     'logs' => $logs,
+    'roles' => $userRoles,
 ]);
