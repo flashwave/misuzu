@@ -51,9 +51,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if (!$disableAccountOptions) {
-            $currentPasswordValid = !empty($_POST['current_password']);
+        if (!empty($_POST['role'])) {
+            $roleId = (int)($_POST['role']['id'] ?? 0);
 
+            if ($roleId > 0 && user_role_has(user_session_current('user_id'), $roleId)) {
+                switch ($_POST['role']['mode'] ?? '') {
+                    case 'display':
+                        user_role_set_display(user_session_current('user_id'), $roleId);
+                        break;
+
+                    case 'leave':
+                        if (user_role_can_leave($roleId)) {
+                            user_role_remove(user_session_current('user_id'), $roleId);
+                        } else {
+                            $errors[] = "You're not allow to leave this role, an administrator has to remove it for you.";
+                        }
+                        break;
+                }
+            } else {
+                $errors[] = "You're trying to modify a role that hasn't been assigned to you.";
+            }
+        }
+
+        if (!$disableAccountOptions && !empty($_POST['current_password'])) {
             if (!user_password_verify_db(user_session_current('user_id'), $_POST['current_password'] ?? '')) {
                 $errors[] = 'Your password was incorrect.';
             } else {
@@ -158,16 +178,15 @@ $logins['list'] = user_login_attempts_list($sessions['offset'], $sessions['take'
 $logs['list'] = audit_log_list($logs['offset'], $logs['take'], user_session_current('user_id'));
 
 $getUserRoles = db_prepare('
-    SELECT r.`role_id`, r.`role_name`
+    SELECT r.`role_id`, r.`role_name`, r.`role_description`, r.`role_colour`, r.`role_can_leave`
     FROM `msz_user_roles` as ur
     LEFT JOIN `msz_roles` as r
     ON r.`role_id` = ur.`role_id`
     WHERE ur.`user_id` = :user_id
+    ORDER BY r.`role_hierarchy` DESC
 ');
 $getUserRoles->bindValue('user_id', user_session_current('user_id'));
 $userRoles = $getUserRoles->execute() ? $getUserRoles->fetchAll(PDO::FETCH_ASSOC) : [];
-
-var_dump($userRoles);
 
 if (empty($errors)) { // delete this in 2019
     $errors[] = 'A few of the elements on this page have been moved to the on-profile editor. To find them, go to your profile and hit the "Edit Profile" button below your avatar.';
@@ -180,5 +199,6 @@ echo tpl_render('user.settings', [
     'sessions' => $sessions,
     'logins' => $logins,
     'logs' => $logs,
-    'roles' => $userRoles,
+    'user_roles' => $userRoles,
+    'user_display_role' => user_role_get_display(user_session_current('user_id')),
 ]);

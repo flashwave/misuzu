@@ -141,23 +141,35 @@ function recursiveConcat(string $source, string $existing = ''): string
     return $existing;
 }
 
+$doAll = empty($argv[1]) || $argv[1] === 'all';
+$doCss = $doAll || $argv[1] === 'css';
+$doJs = $doAll || $argv[1] === 'js';
+
 // Make sure we're running from the misuzu root directory.
 chdir(__DIR__);
 
 misuzu_log('Cleanup');
-createDirIfNotExist(CSS_DIR);
-createDirIfNotExist(JS_DIR);
-deleteAllFilesInDir(CSS_DIR, '*.css');
-deleteAllFilesInDir(JS_DIR, '*.js');
-deleteAllFilesInDir(TS_DIR, '*.d.ts');
 
-misuzu_log();
-misuzu_log('Compiling LESS');
+if ($doCss) {
+    createDirIfNotExist(CSS_DIR);
+    deleteAllFilesInDir(CSS_DIR, '*.css');
+}
 
-if (!is_file(LESS_DIR . LESS_ENTRY_POINT)) {
-    misuzu_log('==> ERR: Entry point for this style does not exist (' . basename(LESS_ENTRY_POINT) . ')');
-} else {
-    system(sprintf(LESS_CMD, escapeshellarg(LESS_DIR . LESS_ENTRY_POINT), LESS_DEST));
+if ($doJs) {
+    createDirIfNotExist(JS_DIR);
+    deleteAllFilesInDir(JS_DIR, '*.js');
+    deleteAllFilesInDir(TS_DIR, '*.d.ts');
+}
+
+if ($doCss) {
+    misuzu_log();
+    misuzu_log('Compiling LESS');
+
+    if (!is_file(LESS_DIR . LESS_ENTRY_POINT)) {
+        misuzu_log('==> ERR: Entry point for this style does not exist (' . basename(LESS_ENTRY_POINT) . ')');
+    } else {
+        system(sprintf(LESS_CMD, escapeshellarg(LESS_DIR . LESS_ENTRY_POINT), LESS_DEST));
+    }
 }
 
 misuzu_log();
@@ -169,16 +181,22 @@ define('IMPORT_SEQ', [
         'files' => NODE_IMPORT_CSS,
         'destination' => NODE_DEST_CSS,
         'insert-semicolon' => false,
+        'do' => $doCss,
     ],
     [
         'name' => 'JavaScript',
         'files' => NODE_IMPORT_JS,
         'destination' => NODE_DEST_JS,
         'insert-semicolon' => true,
+        'do' => $doJs,
     ],
 ]);
 
 foreach (IMPORT_SEQ as $sequence) {
+    if (!$sequence['do']) {
+        continue;
+    }
+
     misuzu_log("=> {$sequence['name']}");
 
     $contents = '';
@@ -203,12 +221,14 @@ foreach (IMPORT_SEQ as $sequence) {
     file_put_contents($sequence['destination'], $contents);
 }
 
-misuzu_log();
-misuzu_log('Compiling TypeScript');
-misuzu_log(shell_exec('tsc --extendedDiagnostics -p tsconfig.json'));
-file_put_contents(TS_DEST, recursiveConcat(TS_SRC));
-deleteAllFilesInDir(TS_SRC, '*.js');
-rmdir(TS_SRC);
+if ($doJs) {
+    misuzu_log();
+    misuzu_log('Compiling TypeScript');
+    misuzu_log(shell_exec('tsc --extendedDiagnostics -p tsconfig.json'));
+    file_put_contents(TS_DEST, recursiveConcat(TS_SRC));
+    deleteAllFilesInDir(TS_SRC, '*.js');
+    rmdir(TS_SRC);
+}
 
 misuzu_log();
 misuzu_log('Copying data...');
@@ -222,7 +242,7 @@ foreach (NODE_COPY_DIRECTORY as $source => $dest) {
 }
 
 // no need to do this in debug mode, auto reload is enabled and cache is disabled
-if (!file_exists(__DIR__ . '/.debug')) {
+if ($doAll && !file_exists(__DIR__ . '/.debug')) {
     // Clear Twig cache
     misuzu_log();
     misuzu_log('Deleting template cache');

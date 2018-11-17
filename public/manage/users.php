@@ -375,12 +375,12 @@ switch ($_GET['v'] ?? null) {
                 $updateRole = db_prepare('
                     INSERT INTO `msz_roles`
                         (
-                            `role_name`, `role_hierarchy`, `role_secret`, `role_colour`,
+                            `role_name`, `role_hierarchy`, `role_hidden`, `role_colour`,
                             `role_description`, `role_title`
                         )
                     VALUES
                         (
-                            :role_name, :role_hierarchy, :role_secret, :role_colour,
+                            :role_name, :role_hierarchy, :role_hidden, :role_colour,
                             :role_description, :role_title
                         )
                 ');
@@ -389,7 +389,7 @@ switch ($_GET['v'] ?? null) {
                     UPDATE `msz_roles`
                     SET `role_name` = :role_name,
                         `role_hierarchy` = :role_hierarchy,
-                        `role_secret` = :role_secret,
+                        `role_hidden` = :role_hidden,
                         `role_colour` = :role_colour,
                         `role_description` = :role_description,
                         `role_title` = :role_title
@@ -400,7 +400,7 @@ switch ($_GET['v'] ?? null) {
 
             $updateRole->bindValue('role_name', $roleName);
             $updateRole->bindValue('role_hierarchy', $roleHierarchy);
-            $updateRole->bindValue('role_secret', $roleSecret ? 1 : 0);
+            $updateRole->bindValue('role_hidden', $roleSecret ? 1 : 0);
             $updateRole->bindValue('role_colour', $roleColour);
             $updateRole->bindValue('role_description', $roleDescription);
             $updateRole->bindValue('role_title', $roleTitle);

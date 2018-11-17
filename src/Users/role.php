@@ -26,6 +26,17 @@ function user_role_remove(int $userId, int $roleId): bool
     return $removeRole->execute();
 }
 
+function user_role_can_leave(int $roleId): bool
+{
+    $canLeaveRole = db_prepare('
+        SELECT `role_can_leave` != 0
+        FROM `msz_roles`
+        WHERE `role_id` = :role_id
+    ');
+    $canLeaveRole->bindValue('role_id', $roleId);
+    return $canLeaveRole->execute() ? (bool)$canLeaveRole->fetchColumn() : false;
+}
+
 function user_role_has(int $userId, int $roleId): bool
 {
     $hasRole = db_prepare('
@@ -54,4 +65,19 @@ function user_role_set_display(int $userId, int $roleId): bool
     $setDisplay->bindValue('role_id', $roleId);
 
     return $setDisplay->execute();
+}
+
+function user_role_get_display(int $userId): int
+{
+    if ($userId < 1) {
+        return MSZ_ROLE_MAIN;
+    }
+
+    $fetchRole = db_prepare('
+        SELECT `display_role`
+        FROM `msz_users`
+        WHERE `user_id` = :user_id
+    ');
+    $fetchRole->bindValue('user_id', $userId);
+    return $fetchRole->execute() ? (int)$fetchRole->fetchColumn() : MSZ_ROLE_MAIN;
 }

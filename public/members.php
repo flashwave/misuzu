@@ -78,7 +78,7 @@ if (!$role) {
 $roles = db_query('
     SELECT `role_id`, `role_name`, `role_colour`
     FROM `msz_roles`
-    WHERE `role_secret` = 0
+    WHERE `role_hidden` = 0
     ORDER BY `role_id`
 ')->fetchAll(PDO::FETCH_ASSOC);
 

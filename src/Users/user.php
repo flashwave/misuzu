@@ -1,4 +1,8 @@
 <?php
+// Quick note to myself and others about the `display_role` column in the users database.
+// Never ever EVER use it for ANYTHING other than determining display colours, there's a small chance that it might not be accurate.
+// And even if it were, roles properties are aggregated and thus must all be accounted for.
+
 define('MSZ_PERM_USER_EDIT_PROFILE', 1);
 define('MSZ_PERM_USER_CHANGE_AVATAR', 1 << 1);
 define('MSZ_PERM_USER_CHANGE_BACKGROUND', 1 << 2);
