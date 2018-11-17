@@ -39,4 +39,26 @@
             }
         }
     }
+
+    &__online {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        overflow: hidden;
+
+        &__user {
+            color: var(--user-colour);
+            text-decoration: none;
+            font-size: 0;
+            width: 30px;
+            height: 30px;
+            background-image: var(--avatar-url);
+            margin: 2px;
+            transition: box-shadow .2s;
+
+            &:hover {
+                box-shadow: 0 1px 4px var(--user-colour);
+            }
+        }
+    }
 }

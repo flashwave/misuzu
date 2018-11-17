@@ -55,9 +55,10 @@ $onlineUsers = cache_get('index:online:v1', function () {
         LEFT JOIN `msz_roles` as r
         ON r.`role_id` = u.`display_role`
         WHERE u.`user_active` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
-        ORDER BY u.`user_active` DESC
+        ORDER BY RAND()
+        LIMIT 104
     ')->fetchAll(PDO::FETCH_ASSOC);
-}, 30);
+}, -1);
 
 echo tpl_render('home.' . (user_session_active() ? 'home' : 'landing'), [
     'users_count' => $statistics['users'],
