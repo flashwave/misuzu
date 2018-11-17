@@ -87,7 +87,7 @@
     </form>
 
     <div class="container settings__container" id="roles">
-        {{ container_title('<i class="fas fa-toilet-paper"></i> Roles', '', true) }}
+        {{ container_title('<i class="fas fa-user-check"></i> Roles', '', true) }}
 
         <div class="settings__description">
             <p>This is a listing of the user roles you're a part of, you can select which you want to leave or which one you want to boast as your main role which will change your username colour accordingly.</p>
@@ -119,7 +119,7 @@
 
                             <button class="settings__role__option{% if not role.role_can_leave %} settings__role__option--disabled{% endif %}"
                                 name="role[mode]" value="leave" title="Leave this role"
-                                onclick="return confirm('ARE YOU SURE DAWG?')"
+                                onclick="return confirm('Are you sure you want to remove {{ role.role_name|replace({"'": "\'"}) }} from your account?')"
                                 {% if not role.role_can_leave %}disabled{% endif %}>
                                 <i class="fas fa-times-circle"></i>
                             </button>
