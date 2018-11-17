@@ -2,89 +2,70 @@
 {% from 'macros.twig' import container_title %}
 {% from '_layout/comments.twig' import comments_section %}
 
-{% set is_valid = change|length > 0 %}
-{% set title = 'Changelog » ' ~ (is_valid ? 'Change #' ~ change.change_id : 'Unknown Change') %}
-
-{% if is_valid %}
-    {% set canonical_url = '/changelog.php?c=' ~ change.change_id %}
-    {% set manage_link = '/manage/changelog.php?v=change&c=' ~ change.change_id %}
-    {% set description = change.change_log %}
-{% endif %}
+{% set title = 'Changelog » Change #' ~ change.change_id %}
+{% set canonical_url = '/changelog.php?c=' ~ change.change_id %}
+{% set manage_link = '/manage/changelog.php?v=change&c=' ~ change.change_id %}
+{% set description = change.change_log %}
 
 {% block content %}
-    <div class="container">
-        {{ container_title(title) }}
+    <div class="container changelog__change__line" style="{{ change.action_colour|html_colour('--accent-colour') }}">
+        <div class="changelog__change__action {{ change.action_class is defined and change.action_class is not null ? ' changelog__change__action--' ~ change.action_class : '' }} changelog__change__action--{{ change.action_colour|colour_contrast }}">
+            {{ change.action_name }}
+        </div>
 
-        <div class="changelog__content">
-            {% if is_valid %}
-                <div class="changelog__change" id="#c{{ change.change_id }}">
-                    <div class="changelog__change__line"
-                        style="{{ change.action_colour|html_colour('--accent-colour') }}">
-                        <div class="changelog__change__action {{ change.action_class is defined and change.action_class is not null ? ' changelog__change__action--' ~ change.action_class : '' }} changelog__change__action--{{ change.action_colour|colour_contrast }}"
-                            style="{{ change.action_colour|html_colour('--accent-colour') }}">
-                            {{ change.action_name }}
-                        </div>
+        <div class="changelog__change__log">
+            <div class="changelog__change__log__text">
+                {{ change.change_log }}
+            </div>
+        </div>
+    </div>
 
-                        <div class="changelog__change__log">
-                            <div class="changelog__change__log__text">
-                                {{ change.change_log }}
-                            </div>
-                        </div>
-                    </div>
+    <div class="container changelog__change" style="{% if change.user_colour is not null %}{{ change.user_colour|html_colour('--accent-colour') }}{% endif %}">
+        <div class="changelog__change__info">
+            <div class="changelog__change__info__background"></div>
+            <div class="changelog__change__info__content">
+                {% if change.user_id is not null %}
+                    <div class="changelog__change__user">
+                        <a class="avatar changelog__change__avatar"
+                            style="background-image:url('/profile.php?u={{ change.user_id }}&amp;m=avatar');"
+                            href="/profile.php?u={{ change.user_id }}">
+                        </a>
 
-                    <div class="changelog__change__row">
-                        <div class="changelog__change__column changelog__change__column--user-info">
-                            <a class="changelog__change__user" href="/profile.php?u={{ change.user_id }}">
-                                <div class="avatar changelog__change__user__avatar"
-                                    style="background-image:url('/profile.php?u={{ change.user_id }}&amp;m=avatar')">
-                                </div>
-
-                                <div class="changelog__change__user__info">
-                                    <div class="changelog__change__user__name" style="{{ change.user_colour|html_colour }}">
-                                        {{ change.username }}
-                                    </div>
-
-                                    <div class="changelog__change__user__title">
-                                        {{ change.user_title }}
-                                    </div>
-                                </div>
-                            </a>
-
-                            <a  class="changelog__change__date"
-                                href="/changelog.php?d={{ change.change_date }}">
-                                <time datetime="{{ change.change_created|date('c') }}"
-                                     title="{{ change.change_created|date('r') }}">
-                                    {{ change.change_created|time_diff }}
-                                </time>
-                            </a>
-                        </div>
-
-                        <div class="changelog__change__column changelog__change__column--change-info">
-                            <div class="changelog__change__text markdown">
-                                {% if change.change_text|length >= 1 %}
-                                    {{ change.change_text|parse_text(constant('MSZ_PARSER_MARKDOWN'))|raw }}
-                                {% else %}
-                                    <p>This change has no additional notes.</p>
-                                {% endif %}
-                            </div>
-
-                            <ul class="changelog__change__tags">
-                                {% for tag in tags %}
-                                    <li class="changelog__change__tag"
-                                        title="{{ tag.tag_description }}">
-                                        <a href="/changelog.php?t={{ tag.tag_id }}" class="changelog__change__tag__link">
-                                            {{ tag.tag_name }}
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            </ul>
+                        <div class="changelog__change__user__details">
+                            <a class="changelog__change__username" href="/profile.php?u={{ change.user_id }}">{{ change.username }}</a>
+                            <a class="changelog__change__userrole" href="/members.php?r={{ change.user_role }}">{{ change.user_title }}</a>
                         </div>
                     </div>
-                </div>
+                {% endif %}
+
+                <a class="changelog__change__date" href="/changelog.php?d={{ change.change_date }}">
+                    Created
+                    <time datetime="{{ change.change_created|date('c') }}" title="{{ change.change_created|date('r') }}">
+                        {{ change.change_created|time_diff }}
+                    </time>
+                </a>
+
+                {% if tags|length > 0 %}
+                    <ul class="changelog__change__tags">
+                        {% for tag in tags %}
+                            <li class="changelog__change__tag" title="{{ tag.tag_description }}">
+                                <a href="/changelog.php?t={{ tag.tag_id }}" class="changelog__change__tag__link">
+                                    {{ tag.tag_name }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="changelog__change__text markdown">
+            <h1>{{ title }}</h1>
+
+            {% if change.change_text|length >= 1 %}
+                {{ change.change_text|parse_text(constant('MSZ_PARSER_MARKDOWN'))|raw }}
             {% else %}
-                <div class="changelog__none">
-                    The requested change could not be found.
-                </div>
+                <p>This change has no additional notes.</p>
             {% endif %}
         </div>
     </div>

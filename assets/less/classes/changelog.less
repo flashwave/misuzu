@@ -141,32 +141,20 @@
     }
 
     &__change {
-        margin: 1px;
+        display: flex;
+        margin-bottom: 2px;
+
+        @media (max-width: @site-mobile-width) {
+            flex-direction: column;
+        }
 
         &__line {
             border: 1px solid var(--accent-colour);
+            background-color: var(--accent-colour);
             display: flex;
             align-items: stretch;
             flex: 1 0 auto;
-        }
-
-        &__row,
-        &__column {
-            display: flex;
-        }
-
-        &__column {
-            flex-direction: column;
-
-            &--user-info {
-                justify-content: space-between;
-                flex: 0 0 auto;
-            }
-
-            &--change-info {
-                flex: 1 1 auto;
-                overflow: hidden;
-            }
+            margin-bottom: 2px;
         }
 
         &__action {
@@ -187,84 +175,156 @@
 
         &__log {
             padding: 4px 12px;
-            font-size: 1.4em;
+            font-size: 1.5em;
             align-self: center;
             flex: 1 1 auto;
             overflow: hidden;
+            width: 100%;
+            height: 100%;
 
             &__text {
                 word-wrap: break-word;
             }
         }
 
-        &__date {
-            border: 1px solid var(--accent-colour);
+        &__info {
+
+            &__content {
+                width: 200px;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                padding: 15px;
+                flex: 0 0 auto;
+                margin-right: 4px;
+
+                @media (max-width: @site-mobile-width) {
+                    flex-direction: row;
+                    align-items: center;
+                    width: 100%;
+                    flex-wrap: wrap;
+                }
+            }
+
+            &__background {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                mask-image: linear-gradient(270deg, transparent 10%, var(--background-colour) 100%);
+                -webkit-mask-image: linear-gradient(270deg, transparent 10%, var(--background-colour) 100%);
+                background: var(--background-pattern);
+                background-color: var(--accent-colour);
+                background-blend-mode: multiply;
+
+                @media (max-width: @site-mobile-width) {
+                    mask-image: linear-gradient(0deg, transparent 10%, var(--background-colour) 100%);
+                    -webkit-mask-image: linear-gradient(0deg, transparent 10%, var(--background-colour) 100%);
+                }
+            }
+
+            @media (max-width: @site-mobile-width) {
+                flex-direction: row;
+                margin: 0;
+                padding: 5px;
+            }
+        }
+
+        &__user {
+            display: flex;
+            text-align: left;
+            align-items: center;
+            margin-bottom: 10px;
+
+            &__details {
+                display: flex;
+                flex-direction: column;
+            }
+
+            @media (max-width: @site-mobile-width) {
+                margin-bottom: 0;
+                margin-right: 10px;
+            }
+        }
+
+        &__avatar {
+            width: 60px;
+            height: 60px;
+            margin-right: 10px;
+
+            @media (max-width: @site-mobile-width) {
+                width: 50px;
+                height: 50px;
+            }
+        }
+
+        &__username {
+            color: inherit;
+            font-size: 1.4em;
+            line-height: 1.5em;
+            text-decoration: none;
+
+            &[href]:hover {
+                text-decoration: underline;
+            }
+        }
+
+        &__userrole {
+            font-size: .9em;
+            line-height: 1.5em;
             color: inherit;
             text-decoration: none;
-            margin-right: 1px;
-            text-align: center;
-            padding: 2px;
+
+            &[href]:hover {
+                text-decoration: underline;
+            }
+
+            @media (max-width: @site-mobile-width) {
+                display: none;
+            }
+        }
+
+        &__date {
+            color: inherit;
+            text-decoration: none;
+            font-size: 1.1em;
+            line-height: 1.5em;
 
             &:hover {
                 text-decoration: underline;
             }
         }
 
-        &__user {
-            border: 1px solid var(--accent-colour);
-            padding: 2px;
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            color: inherit;
-            margin: 1px;
-            margin-left: 0;
-
-            &__info {
-                margin: 2px 5px;
-            }
-
-            &__title {
-                width: 120px;
-                word-wrap: break-word;
-            }
-
-            &__avatar {
-                width: 60px;
-                height: 60px;
-                margin-right: 1px;
-                align-self: flex-start;
-            }
-
-            &__name {
-                color: var(--user-colour);
-                font-size: 1.5em;
-                line-height: 1.2em;
-            }
-        }
-
         &__text {
-            margin: 1px 0;
-            padding: 1px 3px;
-            border-top: 1px solid var(--accent-colour);
-            font-size: 1.2em;
-            line-height: 1.5em;
+            line-height: 1.2em;
             flex: 1 1 auto;
             word-wrap: break-word;
+            overflow: hidden;
+            margin: 2px;
         }
 
         &__tags {
             list-style: none;
             display: flex;
             flex-wrap: wrap;
+            margin-top: 10px;
+            justify-content: center;
+
+            @media (max-width: @site-mobile-width) {
+                margin-top: 0;
+                margin-left: 10px;
+            }
         }
 
         &__tag {
             border: 1px solid var(--accent-colour);
-            margin-right: 1px;
+            background-color: var(--accent-colour);
+            margin: 1px;
             border-radius: 2px;
 
             &__link {
+                background-color: var(--background-colour-translucent);
                 display: block;
                 width: 100%;
                 height: 100%;
