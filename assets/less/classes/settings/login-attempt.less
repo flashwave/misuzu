@@ -1,14 +1,15 @@
-.settings__session {
+.settings__login-attempt {
     border: 1px solid var(--accent-colour);
     border-radius: 2px;
     overflow: hidden;
     margin: 4px;
 
-    &--current {
+    &--failed {
+        --accent-colour: #a00;
         background-color: var(--accent-colour);
     }
 
-    &--current &__container {
+    &--failed &__container {
         background-color: fade(#111, 80%);
     }
 

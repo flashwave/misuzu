@@ -1,6 +1,6 @@
 {% extends 'user/master.twig' %}
 {% from 'macros.twig' import container_title, pagination %}
-{% from 'user/macros.twig' import user_session %}
+{% from 'user/macros.twig' import user_session, user_login_attempt %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 
 {% set title = 'Settings' %}
@@ -198,55 +198,18 @@
             <p>These are all the login attempts to your account. If any attempt that you don't recognise is marked as successful your account may be compromised, ask a staff member for advice in this case.</p>
         </div>
 
-        <div class="settings__login-history">
-            {{ lhpagination }}
+        <div class="settings__login-attempts">
+            <div class="settings__login-attempts__pagination">
+                {{ lhpagination }}
+            </div>
 
             {% for attempt in logins.list %}
-                <div class="settings__login-history__entry" id="attempt-{{ attempt.attempt_id }}">
-                    <div class="settings__login-history__column settings__login-history__column--ip">
-                        <div class="settings__login-history__column__name">
-                            IP
-                        </div>
-                        <div class="settings__login-history__column__value">
-                            {{ attempt.attempt_ip }}
-                            {% if attempt.attempt_country != 'XX' %}
-                                <div class="flag flag--{{ attempt.attempt_country|lower }} settings__login-history__country" title="{{ attempt.attempt_country|country_name }}"></div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="settings__login-history__column settings__login-history__column--success">
-                        <div class="settings__login-history__column__name">
-                            Was Successful?
-                        </div>
-                        <div class="settings__login-history__column__value settings__login-history__column__value--{{ attempt.attempt_success ? 'successful' : 'failed' }}">
-                            {{ attempt.attempt_success ? 'Yes' : 'No' }}
-                        </div>
-                    </div>
-
-                    <div class="settings__login-history__column settings__login-history__column--created" title="{{ attempt.attempt_created|date('r') }}">
-                        <div class="settings__login-history__column__name">
-                            Attempted
-                        </div>
-                        <time class="settings__login-history__column__value" datetime="{{ attempt.attempt_created|date('c') }}">
-                            {{ attempt.attempt_created|time_diff }}
-                        </time>
-                    </div>
-
-                    {% if attempt.attempt_user_agent|length > 0 %}
-                        <div class="settings__login-history__column settings__login-history__column--user_agent">
-                            <div class="settings__login-history__column__name">
-                                User Agent
-                            </div>
-                            <div class="settings__login-history__column__value">
-                                {{ attempt.attempt_user_agent }}
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
+                {{ user_login_attempt(attempt) }}
             {% endfor %}
 
-            {{ lhpagination }}
+            <div class="settings__login-attempts__pagination">
+                {{ lhpagination }}
+            </div>
         </div>
     </div>
 

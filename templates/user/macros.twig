@@ -49,72 +49,128 @@
     {% set browser = get_browser(session.session_user_agent) %}
 
     <div class="settings__session{% if is_current_session %} settings__session--current{% endif %}" id="session-{{ session.session_id }}">
-        <div class="settings__session__important">
-            <div class="flag flag--{{ session.session_country|lower }} settings__session__flag"></div>
+        <div class="settings__session__container">
+            <div class="settings__session__important">
+                <div class="flag flag--{{ session.session_country|lower }} settings__session__flag"></div>
 
-            <div class="settings__session__description">
-                {{ browser.browser }} on {{ browser.platform }}
+                <div class="settings__session__description">
+                    {{ browser.browser }} on {{ browser.platform }}
+                </div>
+
+                <form class="settings__session__actions" method="post" action="/settings.php">
+                    {{ input_csrf('settings') }}
+                    {{ input_hidden('session[]', session.session_id) }}
+
+                    <button class="settings__session__action" title="{{ is_current_session ? 'Logout' : 'End Session' }}">
+                        {% if is_current_session %}
+                            <i class="fas fa-sign-out-alt"></i>
+                        {% else %}
+                            <i class="fas fa-times-circle"></i>
+                        {% endif %}
+                    </button>
+                </form>
             </div>
 
-            <form class="settings__session__actions" method="post" action="/settings.php">
-                {{ input_csrf('settings') }}
-                {{ input_hidden('session[]', session.session_id) }}
-
-                <button class="settings__session__action" title="{{ is_current_session ? 'Logout' : 'End Session' }}">
-                    {% if is_current_session %}
-                        <i class="fas fa-sign-out-alt"></i>
-                    {% else %}
-                        <i class="fas fa-times-circle"></i>
-                    {% endif %}
-                </button>
-            </form>
-        </div>
-
-        <div class="settings__session__details">
-            <div class="settings__session__detail">
-                <div class="settings__session__detail__title">
-                    IP Address
-                </div>
-                <div class="settings__session__detail__value">
-                    {{ session.session_ip }}
-                </div>
-            </div>
-
-            <div class="settings__session__detail" title="{{ session.session_created|date('r') }}">
-                <div class="settings__session__detail__title">
-                    Created
-                </div>
-                <time class="settings__session__detail__value" datetime="{{ session.session_created|date('c') }}">
-                    {{ session.session_created|time_diff }}
-                </time>
-            </div>
-
-            <div class="settings__session__detail" title="{{ session.session_expires|date('r') }}">
-                <div class="settings__session__detail__title">
-                    Expires
-                </div>
-                <time class="settings__session__detail__value" datetime="{{ session.session_expires|date('c') }}">
-                    {{ session.session_expires|time_diff }}
-                </time>
-            </div>
-
-            {% if session.session_active is not null %}
-                <div class="settings__session__detail" title="{{ session.session_active|date('r') }}">
+            <div class="settings__session__details">
+                <div class="settings__session__detail">
                     <div class="settings__session__detail__title">
-                        Last Active
+                        IP Address
                     </div>
-                    <time class="settings__session__detail__value" datetime="{{ session.session_active|date('c') }}">
-                        {{ session.session_active|time_diff }}
+                    <div class="settings__session__detail__value">
+                        {{ session.session_ip }}
+                    </div>
+                </div>
+
+                <div class="settings__session__detail" title="{{ session.session_created|date('r') }}">
+                    <div class="settings__session__detail__title">
+                        Created
+                    </div>
+                    <time class="settings__session__detail__value" datetime="{{ session.session_created|date('c') }}">
+                        {{ session.session_created|time_diff }}
                     </time>
                 </div>
-            {% endif %}
 
-            <div class="settings__session__detail">
-                <div class="settings__session__detail__title">
-                    User Agent
+                <div class="settings__session__detail" title="{{ session.session_expires|date('r') }}">
+                    <div class="settings__session__detail__title">
+                        Expires
+                    </div>
+                    <time class="settings__session__detail__value" datetime="{{ session.session_expires|date('c') }}">
+                        {{ session.session_expires|time_diff }}
+                    </time>
                 </div>
-                <div class="settings__session__detail__value">
-                    {{ session.session_user_agent|length > 0 ? session.session_user_agent : 'None' }}
+
+                {% if session.session_active is not null %}
+                    <div class="settings__session__detail" title="{{ session.session_active|date('r') }}">
+                        <div class="settings__session__detail__title">
+                            Last Active
+                        </div>
+                        <time class="settings__session__detail__value" datetime="{{ session.session_active|date('c') }}">
+                            {{ session.session_active|time_diff }}
+                        </time>
+                    </div>
+                {% endif %}
+
+                <div class="settings__session__detail">
+                    <div class="settings__session__detail__title">
+                        User Agent
+                    </div>
+                    <div class="settings__session__detail__value">
+                        {{ session.session_user_agent|length > 0 ? session.session_user_agent : 'None' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro user_login_attempt(attempt) %}
+    {% set browser = get_browser(attempt.attempt_user_agent) %}
+
+    <div class="settings__login-attempt{% if not attempt.attempt_success %} settings__login-attempt--failed{% endif %}" id="login-attempt-{{ attempt.attempt_id }}">
+        <div class="settings__login-attempt__container">
+            <div class="settings__login-attempt__important">
+                <div class="flag flag--{{ attempt.attempt_country|lower }} settings__login-attempt__flag"></div>
+
+                <div class="settings__login-attempt__description">
+                    {{ browser.browser }} on {{ browser.platform }}
+                </div>
+            </div>
+
+            <div class="settings__login-attempt__details">
+                <div class="settings__login-attempt__detail">
+                    <div class="settings__login-attempt__detail__title">
+                        IP Address
+                    </div>
+                    <div class="settings__login-attempt__detail__value">
+                        {{ attempt.attempt_ip }}
+                    </div>
+                </div>
+
+                <div class="settings__login-attempt__detail">
+                    <div class="settings__login-attempt__detail__title">
+                        Succeeded
+                    </div>
+                    <div class="settings__login-attempt__detail__value">
+                        {{ attempt.attempt_success ? 'Yes' : 'No' }}
+                    </div>
+                </div>
+
+                <div class="settings__login-attempt__detail" title="{{ attempt.attempt_created|date('r') }}">
+                    <div class="settings__login-attempt__detail__title">
+                        Attempted
+                    </div>
+                    <time class="settings__login-attempt__detail__value" datetime="{{ attempt.attempt_created|date('c') }}">
+                        {{ attempt.attempt_created|time_diff }}
+                    </time>
+                </div>
+
+                <div class="settings__login-attempt__detail">
+                    <div class="settings__login-attempt__detail__title">
+                        User Agent
+                    </div>
+                    <div class="settings__login-attempt__detail__value">
+                        {{ attempt.attempt_user_agent|length > 0 ? attempt.attempt_user_agent : 'None' }}
+                    </div>
                 </div>
             </div>
         </div>
