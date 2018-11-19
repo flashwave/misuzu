@@ -1,6 +1,6 @@
 {% extends 'user/master.twig' %}
 {% from 'macros.twig' import container_title, pagination %}
-{% from 'user/macros.twig' import user_session, user_login_attempt %}
+{% from 'user/macros.twig' import user_session, user_login_attempt, user_account_log %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 
 {% set title = 'Settings' %}
@@ -234,48 +234,18 @@
             <p>This is a log of all "important" actions that have been done using your account for your review. If you notice anything strange, please alert the staff.</p>
         </div>
 
-        <div class="settings__log">
-            {{ alpagination }}
+        <div class="settings__account-logs">
+            <div class="settings__account-logs__pagination">
+                {{ alpagination }}
+            </div>
 
             {% for log in logs.list %}
-                <div class="settings__log__entry" id="log-{{ log.log_id }}">
-                    <div class="settings__log__column settings__login-history__column--ip">
-                        <div class="settings__log__column__name">
-                            IP
-                        </div>
-                        <div class="settings__log__column__value">
-                            {{ log.log_ip }}
-                            {% if log.log_country|default('XX') != 'XX' %}
-                                <div class="flag flag--{{ log.log_country|lower }} settings__log__country" title="{{ log.log_country|country_name }}"></div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="settings__log__column settings__log__column--date" title="{{ log.log_created|date('r') }}">
-                        <div class="settings__log__column__name">
-                            Date
-                        </div>
-                        <time class="settings__log__column__value" datetime="{{ log.log_created|date('c') }}">
-                            {{ log.log_created|time_diff }}
-                        </time>
-                    </div>
-
-                    <div class="settings__log__column settings__log__column--action">
-                        <div class="settings__log__column__name">
-                            Action
-                        </div>
-                        <div class="settings__log__column__value">
-                            {% if log.log_action in logs.strings|keys %}
-                                {{ logs.strings[log.log_action]|log_format(log.log_params) }}
-                            {% else %}
-                                {{ log.log_action }}({{ log.log_params }})
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
+                {{ user_account_log(log, logs.strings) }}
             {% endfor %}
 
-            {{ alpagination }}
+            <div class="settings__account-logs__pagination">
+                {{ alpagination }}
+            </div>
         </div>
     </div>
 {% endblock %}

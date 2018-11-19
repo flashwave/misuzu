@@ -51,7 +51,7 @@
     <div class="settings__session{% if is_current_session %} settings__session--current{% endif %}" id="session-{{ session.session_id }}">
         <div class="settings__session__container">
             <div class="settings__session__important">
-                <div class="flag flag--{{ session.session_country|lower }} settings__session__flag"></div>
+                <div class="flag flag--{{ session.session_country|lower }} settings__session__flag" title="{{ session.session_country|country_name }}">{{ session.session_country }}</div>
 
                 <div class="settings__session__description">
                     {{ browser.browser }} on {{ browser.platform }}
@@ -129,7 +129,7 @@
     <div class="settings__login-attempt{% if not attempt.attempt_success %} settings__login-attempt--failed{% endif %}" id="login-attempt-{{ attempt.attempt_id }}">
         <div class="settings__login-attempt__container">
             <div class="settings__login-attempt__important">
-                <div class="flag flag--{{ attempt.attempt_country|lower }} settings__login-attempt__flag"></div>
+                <div class="flag flag--{{ attempt.attempt_country|lower }} settings__login-attempt__flag" title="{{ attempt.attempt_country|country_name }}">{{ attempt.attempt_country }}</div>
 
                 <div class="settings__login-attempt__description">
                     {{ browser.browser }} on {{ browser.platform }}
@@ -171,6 +171,44 @@
                     <div class="settings__login-attempt__detail__value">
                         {{ attempt.attempt_user_agent|length > 0 ? attempt.attempt_user_agent : 'None' }}
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro user_account_log(data, strings) %}
+    <div class="settings__account-log" id="account-log-{{ data.log_id }}">
+        <div class="settings__account-log__container">
+            <div class="settings__account-log__important">
+                <div class="flag flag--{{ data.log_country|lower }} settings__login-attempt__flag" title="{{ data.log_country|country_name }}">{{ data.log_country }}</div>
+
+                <div class="settings__login-attempt__description">
+                    {% if data.log_action in strings|keys %}
+                        {{ strings[data.log_action]|log_format(data.log_params) }}
+                    {% else %}
+                        {{ data.log_action }}({{ data.log_params }})
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="settings__account-log__details">
+                <div class="settings__account-log__detail">
+                    <div class="settings__account-log__detail__title">
+                        IP Address
+                    </div>
+                    <div class="settings__account-log__detail__value">
+                        {{ data.log_ip }}
+                    </div>
+                </div>
+
+                <div class="settings__account-log__detail" title="{{ data.log_created|date('r') }}">
+                    <div class="settings__account-log__detail__title">
+                        Date
+                    </div>
+                    <time class="settings__account-log__detail__value" datetime="{{ data.log_created|date('c') }}">
+                        {{ data.log_created|time_diff }}
+                    </time>
                 </div>
             </div>
         </div>
