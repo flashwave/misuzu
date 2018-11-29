@@ -26,6 +26,7 @@ $errorHandler->pushHandler(
 );
 $errorHandler->register();
 
+// TODO: do something about this, probably a good idea to include shit as required rather than all at once here
 require_once 'src/array.php';
 require_once 'src/audit_log.php';
 require_once 'src/cache.php';
@@ -83,7 +84,7 @@ db_setup([
 define('MSZ_STORAGE', create_directory(config_get_default(MSZ_ROOT . '/store', 'Storage', 'path')));
 
 if (PHP_SAPI === 'cli') {
-    if ($argv[0] === basename(__FILE__)) {
+    if (realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
         switch ($argv[1] ?? null) {
             case 'cron':
                 // Ensure main role exists.
