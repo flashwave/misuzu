@@ -1,11 +1,16 @@
-{% macro auth_login(username, message, is_welcome) %}
+{% macro auth_login(username, message, is_welcome, redirect, autofocus) %}
     {% set is_welcome = is_welcome|default(false) %}
+    {% set autofocus = autofocus|default(false) %}
 
     {% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 
     <form class="container auth js-login-form" method="post" action="/auth.php">
         {{ input_hidden('auth[mode]', 'login') }}
         {{ input_csrf('login') }}
+
+        {% if redirect|length > 0 %}
+            {{ input_hidden('auth[redirect]', redirect) }}
+        {% endif %}
 
         <div class="auth__header">
             <div class="auth__header__wrapper">
@@ -23,8 +28,8 @@
         {% endif %}
 
         <div class="auth__form">
-            {{ input_text('auth[username]', 'auth__input js-login-username', username|default(''), 'text', 'Username', true) }}
-            {{ input_text('auth[password]', 'auth__input', '', 'password', 'Password', true) }}
+            {{ input_text('auth[username]', 'auth__input js-login-username', username|default(''), 'text', 'Username', true, null, 0, autofocus) }}
+            {{ input_text('auth[password]', 'auth__input', '', 'password', 'Password', true, null) }}
 
             <button class="input__button">Login</button>
         </div>

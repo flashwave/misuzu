@@ -22,6 +22,7 @@ $authUsername = $isSubmission ? ($_POST['auth']['username'] ?? '') : ($_GET['use
 $authEmail = $isSubmission ? ($_POST['auth']['email'] ?? '') : ($_GET['email'] ?? '');
 $authPassword = $_POST['auth']['password'] ?? '';
 $authVerification = $_POST['auth']['verification'] ?? '';
+$authRedirect = $_POST['auth']['redirect'] ?? $_GET['redirect'] ?? $_SERVER['HTTP_REFERER'] ?? '/';
 
 tpl_vars([
     'can_create_account' => $canCreateAccount,
@@ -29,6 +30,7 @@ tpl_vars([
     'auth_mode' => $authMode,
     'auth_username' => $authUsername,
     'auth_email' => $authEmail,
+    'auth_redirect' => $authRedirect,
 ]);
 
 switch ($authMode) {
@@ -54,8 +56,9 @@ switch ($authMode) {
         break;
 
     case 'reset':
+        // If we're logged in, redirect to the password/e-mail change part in settings instead.
         if (user_session_active()) {
-            header('Location: /settings.php');
+            header('Location: /settings.php#account');
             break;
         }
 
@@ -74,7 +77,7 @@ switch ($authMode) {
         $resetUser = $getResetUser->execute() ? $getResetUser->fetch(PDO::FETCH_ASSOC) : [];
 
         if (empty($resetUser)) {
-            header('Location: ?m=forgot');
+            header('Location: /auth.php?m=forgot');
             break;
         }
 
@@ -113,7 +116,7 @@ switch ($authMode) {
 
             user_recovery_token_invalidate($resetUser['user_id'], $authVerification);
 
-            header('Location: /auth.php?m=login&u=' . $resetUser['user_id']);
+            header("Location: /auth.php?m=login&u={$resetUser['user_id']}");
             break;
         }
 
@@ -272,7 +275,11 @@ MSG;
             set_cookie_m('uid', $userId, $cookieLife);
             set_cookie_m('sid', $sessionKey, $cookieLife);
 
-            header('Location: /');
+            if (!is_local_url($authRedirect)) {
+                $authRedirect = '/';
+            }
+
+            header("Location: {$authRedirect}");
             return;
         }
 

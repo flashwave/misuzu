@@ -10,13 +10,13 @@
 {% endspaceless %}
 {% endmacro %}
 
-{% macro input_text(name, class, value, type, placeholder, required, attributes) %}
+{% macro input_text(name, class, value, type, placeholder, required, attributes, tabindex, autofocus) %}
 {% spaceless %}
     <input type="{{ type|default('text') }}" {% if name|length > 0 %}name="{{ name }}"{% else %}readonly{% endif %}
         class="input__text{% if name|length < 1 %} input__text--readonly{% endif %}{{ class|length > 0 ? ' ' ~ class : '' }}"
         {% if placeholder|length > 0 %}placeholder="{{ placeholder }}"{% endif %}
-        {% if value|length > 0 %}value="{{ value }}"{% endif %}
-        {% if required|default(false) %}required{% endif %}
+        {% if value|length > 0 %}value="{{ value }}"{% endif %} {% if required|default(false) %}required{% endif %}
+        {% if tabindex > 0 %}tabindex="{{ tabindex }}"{% endif %} {% if autofocus|default(false) %}autofocus{% endif %}
         {% for name, value in attributes|default([]) %}
             {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
         {% endfor %}>

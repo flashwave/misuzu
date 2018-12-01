@@ -7,7 +7,9 @@
     {{ auth_login(
         auth_username|default(''),
         auth_register_message|default(auth_login_error|default('')),
-        auth_register_message is defined
+        auth_register_message is defined,
+        auth_redirect|default('/'),
+        auth_mode == 'login'
     ) }}
 
     {% if can_create_account %}
@@ -26,7 +28,7 @@
             {% endif %}
 
             <div class="auth__form">
-                {{ input_text('auth[username]', 'auth__input', auth_username|default(''), 'text', 'Username', true) }}
+                {{ input_text('auth[username]', 'auth__input', auth_username|default(''), 'text', 'Username', true, null, 0, auth_mode == 'register') }}
                 {{ input_text('auth[password]', 'auth__input', '', 'password', 'Password', true) }}
                 {{ input_text('auth[email]', 'auth__input', auth_email|default(''), 'text', 'E-mail', true) }}
                 {{ input_text('auth[meow]', 'auth__input', '', 'text', 'What is the outcome of nine plus ten?', true) }}
@@ -52,7 +54,7 @@
             {% endif %}
 
             <div class="auth__form">
-                {{ input_text('auth[email]', 'auth__input', auth_email|default(''), 'text', 'E-mail', true) }}
+                {{ input_text('auth[email]', 'auth__input', auth_email|default(''), 'text', 'E-mail', true, null, 0, auth_mode == 'forgot') }}
 
                 <button class="input__button">Send reminder</button>
             </div>
