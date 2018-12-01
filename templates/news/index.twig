@@ -3,7 +3,7 @@
 {% from 'news/macros.twig' import news_preview %}
 
 {% set title = 'News' %}
-{% set canonical_url = '/news.php'|url_construct({'o':posts_offset}) %}
+{% set canonical_url = url_construct('/news.php', {'o':posts_offset}) %}
 {% set manage_link = '/manage/news.php?v=index' %}
 
 {% block content %}

@@ -15,7 +15,6 @@ final class TwigMisuzu extends Twig_Extension
             new Twig_Filter('first_paragraph', 'first_paragraph'),
             new Twig_Filter('byte_symbol', 'byte_symbol'),
             new Twig_Filter('html_link', 'html_link'),
-            new Twig_Filter('url_construct', 'url_construct'),
             new Twig_Filter('parse_line', 'parse_line'),
             new Twig_Filter('parse_text', 'parse_text'),
             new Twig_Filter('asset_url', 'asset_url'),
@@ -35,6 +34,7 @@ final class TwigMisuzu extends Twig_Extension
             new Twig_Function('csrf_token', 'csrf_token'),
             new Twig_Function('csrf_input', 'csrf_html'),
             new Twig_Function('sql_query_count', 'db_query_count'),
+            new Twig_Function('url_construct', 'url_construct'),
             new Twig_Function('startup_time', function (float $time = MSZ_STARTUP) {
                 return microtime(true) - $time;
             }),

@@ -3,14 +3,14 @@
 {% from '_layout/input.twig' import input_select %}
 {% from 'user/macros.twig' import user_card %}
 
-{% set canonical_url = '/members.php'|url_construct({
+{% set canonical_url = url_construct('/members.php', {
     'r': role.role_id != 1 ? role.role_id : 0,
     'ss': order_field == order_default ? '' : order_field,
     'sd': order_fields[order_field]['default-dir'] == order_direction ? '' : order_direction,
     'o': users_offset,
     't': users_take == 15 ? 0 : users_take,
 }) %}
-{% set full_url = '/members.php'|url_construct({
+{% set full_url = url_construct('/members.php', {
     'r': role.role_id != 1 ? role.role_id : 0,
     'ss': order_field == order_default ? '' : order_field,
     'sd': order_fields[order_field]['default-dir'] == order_direction ? '' : order_direction,

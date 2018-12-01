@@ -3,8 +3,8 @@
 {% from 'news/macros.twig' import news_preview %}
 
 {% set title = category.category_name ~ ' :: News' %}
-{% set manage_link = '/manage/news.php?v=category&c=' ~ category.category_id %}
-{% set canonical_url = '/news.php'|url_construct({
+{% set manage_link = url_construct('/manage/news.php', {'v':'category','c':category.category_id}) %}
+{% set canonical_url = url_construct('/news.php', {
     'c': category.category_id,
     'o': posts_offset,
 }) %}
@@ -17,7 +17,7 @@
             {% endfor %}
 
             <div class="container" style="padding: 5px;">
-                {{ pagination(category.posts_count, posts_take, posts_offset, '/news.php'|url_construct({'c':category.category_id}), true) }}
+                {{ pagination(category.posts_count, posts_take, posts_offset, url_construct('/news.php', {'c':category.category_id}), true) }}
             </div>
         </div>
 

@@ -330,7 +330,7 @@ function url_construct(string $path, array $query = [], string $host = ''): stri
 
         foreach ($query as $key => $value) {
             if ($value) {
-                $url .= urlencode($key) . '=' . urlencode($value) . '&';
+                $url .= rawurlencode($key) . '=' . rawurlencode($value) . '&';
             }
         }
     }

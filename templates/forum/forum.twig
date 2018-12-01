@@ -2,7 +2,7 @@
 {% from 'forum/macros.twig' import forum_category_listing, forum_topic_listing, forum_category_buttons, forum_header, forum_category_tools %}
 
 {% set title = forum_info.forum_name %}
-{% set canonical_url = '/forum/forum.php'|url_construct({
+{% set canonical_url = url_construct('/forum/forum.php', {
     'f': forum_info.forum_id,
     'o': forum_offset,
 }) %}

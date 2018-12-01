@@ -51,7 +51,7 @@
     <div class="container forum__actions">
         <div class="forum__actions__buttons">
             {% if perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
-                <a href="{{ '/forum/posting.php'|url_construct({'f':info.forum_id}) }}" class="input__button">New Topic</a>
+                <a href="{{ url_construct('/forum/posting.php', {'f':info.forum_id}) }}" class="input__button">New Topic</a>
             {% endif %}
         </div>
 
@@ -60,7 +60,7 @@
                 info.forum_topic_count,
                 take,
                 offset,
-                '/forum/forum.php'|url_construct({'f':info.forum_id}),
+                url_construct('/forum/forum.php', {'f':info.forum_id}),
                 false,
                 null,
                 5
@@ -84,7 +84,7 @@
                 info.topic_post_count,
                 take,
                 offset,
-                '/forum/topic.php'|url_construct({'t':info.topic_id}),
+                url_construct('/forum/topic.php', {'t':info.topic_id}),
                 false,
                 null,
                 5

@@ -12,7 +12,7 @@
 %}
 
 {% set title = topic_info.topic_title %}
-{% set canonical_url = '/forum/topic.php'|url_construct({
+{% set canonical_url = url_construct('/forum/topic.php', {
     't': topic_info.topic_id,
     'o': topic_offset,
 }) %}
