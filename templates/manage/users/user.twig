@@ -10,6 +10,12 @@
         <form method="post" enctype="multipart/form-data" action=""{% if view_user is defined %} style="{{ view_user.user_colour|html_colour('--accent-colour') }}"{% endif %}>
             {{ input_csrf('users_edit') }}
 
+            <div class="warning">
+                <div class="warning__content">
+                    Profile fields and avatar can be edited through a user's profile.
+                </div>
+            </div>
+
             <div class="container">
                 {{ container_title('Viewing ' ~ view_user.username ~ ' (' ~ view_user.user_id ~ ')') }}
 
@@ -66,24 +72,6 @@
                     <div class="form__label__text">Country</div>
                     <div class="form__label__input">
                         {{ input_text('user[country]', '', view_user.user_country, 'text', 'XX', true, {'maxlength':2,'minlength':2}) }}
-                    </div>
-                </label>
-            </div>
-
-            <div class="container">
-                {{ container_title('Avatar') }}
-
-                <label class="form__label">
-                    <div class="form__label__text">New Avatar</div>
-                    <div class="form__label__input">
-                        {{ input_file('avatar[file]') }}
-                    </div>
-                </label>
-
-                <label class="form__label">
-                    <div class="form__label__text">Delete Avatar</div>
-                    <div class="form__label__input">
-                        {{ input_checkbox('avatar[delete]') }}
                     </div>
                 </label>
             </div>

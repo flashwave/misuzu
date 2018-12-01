@@ -132,10 +132,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-tpl_add_filter('log_format', function (string $text, string $json): string {
-    return vsprintf($text, json_decode($json));
-});
-
 $sessions = [
     'list' => [],
     'active' => user_session_current('session_id'),

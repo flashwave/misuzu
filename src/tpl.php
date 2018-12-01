@@ -47,16 +47,6 @@ function tpl_sanitise_path(string $path): string
     return str_replace('.', '/', $path) . MSZ_TPL_FILE_EXT;
 }
 
-function tpl_add_function(string $name, callable $callable = null): void
-{
-    Twig::instance()->addFunction(new Twig_SimpleFunction($name, $callable === null ? $name : $callable));
-}
-
-function tpl_add_filter(string $name, callable $callable = null): void
-{
-    Twig::instance()->addFilter(new Twig_SimpleFilter($name, $callable === null ? $name : $callable));
-}
-
 function tpl_exists(string $path): bool
 {
     return Twig::instance()->getLoader()->exists(tpl_sanitise_path($path));

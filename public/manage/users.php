@@ -46,7 +46,7 @@ switch ($_GET['v'] ?? null) {
             'manage_users_range' => $usersTake,
             'manage_users_offset' => $queryQffset,
         ]);
-        echo tpl_render('manage.users.listing');
+        echo tpl_render('manage.users.users');
         break;
 
     case 'view':
@@ -139,12 +139,6 @@ switch ($_GET['v'] ?? null) {
                 );
                 $updateUserDetails->bindValue('user_id', $userId);
                 $updateUserDetails->execute();
-            }
-
-            if (!empty($_POST['avatar']) && !empty($_POST['avatar']['delete'])) {
-                user_avatar_delete($manageUser['user_id']);
-            } elseif (!empty($_FILES['avatar'])) {
-                user_avatar_set_from_path($manageUser['user_id'], $_FILES['avatar']['tmp_name']['file']);
             }
 
             if (!empty($_POST['colour']) && is_array($_POST['colour'])) {
@@ -249,7 +243,7 @@ switch ($_GET['v'] ?? null) {
             'view_user' => $manageUser,
             'profile_fields' => user_profile_fields_get(),
         ]);
-        echo tpl_render('manage.users.view');
+        echo tpl_render('manage.users.user');
         break;
 
     case 'roles':
@@ -465,6 +459,6 @@ switch ($_GET['v'] ?? null) {
             tpl_vars(['edit_role' => $editRole]);
         }
 
-        echo tpl_render('manage.users.roles_create');
+        echo tpl_render('manage.users.role');
         break;
 }

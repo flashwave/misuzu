@@ -22,6 +22,9 @@ final class TwigMisuzu extends Twig_Extension
             new Twig_Filter('bg_settings', 'user_background_settings_strings'),
             new Twig_Filter('colour_contrast', 'colour_get_css_contrast'),
             new Twig_Filter('colour_props', 'colour_get_properties'),
+            new Twig_Filter('log_format', function (string $text, string $json): string {
+                return vsprintf($text, json_decode($json));
+            }),
         ];
     }
 
