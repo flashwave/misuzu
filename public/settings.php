@@ -174,7 +174,7 @@ $logs = [
 ];
 
 $sessions['list'] = user_session_list($sessions['offset'], $sessions['take'], user_session_current('user_id'));
-$logins['list'] = user_login_attempts_list($sessions['offset'], $sessions['take'], user_session_current('user_id'));
+$logins['list'] = user_login_attempts_list($logins['offset'], $logins['take'], user_session_current('user_id'));
 $logs['list'] = audit_log_list($logs['offset'], $logs['take'], user_session_current('user_id'));
 
 $getUserRoles = db_prepare('

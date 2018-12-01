@@ -11,7 +11,8 @@
     </ul>
 {% endmacro %}
 
-{% macro pagination(itemCount, itemRange, currentOffset, baseUrl, alwaysRender, offsetParam, useRanges, pageRange) %}
+{# Sort this mess out. #}
+{% macro pagination(itemCount, itemRange, currentOffset, baseUrl, alwaysRender, offsetParam, useRanges, pageRange, urlSuffix) %}
     {% set alwaysRender = alwaysRender|default(false) %}
 
     {% if alwaysRender or itemCount > itemRange %}
@@ -23,6 +24,7 @@
         {% set useRanges    = useRanges|default(true) %}
         {% set offsetParam  = offsetParam|default(useRanges ? 'o' : 'p') %}
         {% set pageRange    = pageRange|default(10) %}
+        {% set urlSuffix    = urlSuffix|default('') %}
 
         <div class="pagination">
             <div class="pagination__section pagination__section--first">
@@ -34,10 +36,10 @@
                         <i class="fas fa-angle-left"></i>
                     </div>
                 {% else %}
-                    <a href="{{ originalUrl }}" class="pagination__link pagination__link--first" rel="first">
+                    <a href="{{ originalUrl ~ urlSuffix }}" class="pagination__link pagination__link--first" rel="first">
                         <i class="fas fa-angle-double-left"></i>
                     </a>
-                    <a href="{{ currentPage < 2 ? originalUrl : baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((currentPage - 1) * itemRange) : currentPage) }}" class="pagination__link pagination__link--prev" rel="prev">
+                    <a href="{{ currentPage < 2 ? originalUrl ~ urlSuffix : baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((currentPage - 1) * itemRange) : currentPage) ~ urlSuffix }}" class="pagination__link pagination__link--prev" rel="prev">
                         <i class="fas fa-angle-left"></i>
                     </a>
                 {% endif %}
@@ -49,7 +51,7 @@
 
                 {% for i in paginationStart..paginationStop %}
                     {% if i >= 0 and i < pageCount %}
-                        <a href="{{ i == 0 ? originalUrl : baseUrl ~ offsetParam ~ '=' ~ (useRanges ? i * itemRange : i + 1) }}" class="pagination__link{{ currentPage == i ? ' pagination__link--current' : '' }}">
+                        <a href="{{ i == 0 ? originalUrl ~ urlSuffix : baseUrl ~ offsetParam ~ '=' ~ (useRanges ? i * itemRange : i + 1) ~ urlSuffix }}" class="pagination__link{{ currentPage == i ? ' pagination__link--current' : '' }}">
                             {{ i + 1 }}
                         </a>
                     {% endif %}
@@ -65,10 +67,10 @@
                         <i class="fas fa-angle-double-right"></i>
                     </div>
                 {% else %}
-                    <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((currentPage + 1) * itemRange) : currentPage + 2) }}" class="pagination__link pagination__link--next" rel="next">
+                    <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((currentPage + 1) * itemRange) : currentPage + 2) ~ urlSuffix }}" class="pagination__link pagination__link--next" rel="next">
                         <i class="fas fa-angle-right"></i>
                     </a>
-                    <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((pageCount - 1) * itemRange) : pageCount) }}" class="pagination__link pagination__link--last" rel="last">
+                    <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((pageCount - 1) * itemRange) : pageCount) ~ urlSuffix }}" class="pagination__link pagination__link--last" rel="last">
                         <i class="fas fa-angle-double-right"></i>
                     </a>
                 {% endif %}
