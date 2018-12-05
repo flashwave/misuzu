@@ -208,14 +208,11 @@
 
     {% if perms.can_comment %}
         <script>
-            var commentPostLock = false;
-
             function commentPost(ev)
             {
                 // the moment we find the id we engage vote lock
-                if (commentPostLock)
+                if (!commentsRequestLock())
                     return;
-                commentPostLock = true;
 
                 var form = ev.target,
                     formData = new FormData;
@@ -237,6 +234,8 @@
                     if (this.readyState !== 4)
                         return;
 
+                    commentsFreeLock();
+
                     var json = JSON.parse(this.responseText),
                         message = json.error || json.message;
 
@@ -247,8 +246,6 @@
                             form.parentNode.parentNode.querySelector('label.comment__action').click();
                         commentInsert(json, form);
                     }
-
-                    commentPostLock = false;
                 };
 
                 xhr.open('POST', '/comments.php?m=create');

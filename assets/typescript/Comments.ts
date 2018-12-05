@@ -10,8 +10,7 @@ function commentsRequestLock(): boolean
     if (commentsLocked())
         return false;
 
-    globalCommentLock = true;
-    return true;
+    return globalCommentLock = true;
 }
 
 function commentsFreeLock(): void

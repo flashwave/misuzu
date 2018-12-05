@@ -4,8 +4,12 @@
     word-wrap: break-word;
 
     &__listing {
-        max-height: 600px;
         overflow-y: auto;
+
+        &--limit {
+            --comments-max-height: 600px;
+            max-height: var(--comments-max-height);
+        }
     }
 
     &__input,
