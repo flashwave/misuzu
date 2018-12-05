@@ -102,7 +102,7 @@
                 <label class="form__label">
                     <div class="form__label__text">Custom Colour</div>
                     <div class="form__label__input">
-                        {{ input_checkbox('colour[enable]', '', colour_props.inherit) }}
+                        {{ input_checkbox('colour[enable]', '', not colour_props.inherit) }}
                     </div>
                 </label>
 

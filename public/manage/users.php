@@ -19,7 +19,7 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $usersTake = 33;
+        $usersTake = 30;
         $manageUsersCount = db_query('
             SELECT COUNT(`user_id`)
             FROM `msz_users`
