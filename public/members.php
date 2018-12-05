@@ -56,6 +56,11 @@ if (empty($orderDir)) {
     return;
 }
 
+$canManageUsers = perms_check(
+    perms_get_user(MSZ_PERMS_USER, user_session_current('user_id', 0)),
+    MSZ_PERM_USER_MANAGE_USERS
+);
+
 $getRole = db_prepare('
     SELECT
         `role_id`, `role_name`, `role_colour`, `role_description`, `role_created`,
@@ -82,20 +87,26 @@ $roles = db_query('
     ORDER BY `role_id`
 ')->fetchAll(PDO::FETCH_ASSOC);
 
-$getUsers = db_prepare("
-    SELECT
-        u.`user_id`, u.`username`, u.`user_country`, r.`role_id`,
-        COALESCE(u.`user_title`, r.`role_title`, r.`role_name`) as `user_title`,
-        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-    FROM `msz_users` as u
-    LEFT JOIN `msz_roles` as r
-    ON r.`role_id` = u.`display_role`
-    LEFT JOIN `msz_user_roles` as ur
-    ON ur.`user_id` = u.`user_id`
-    WHERE ur.`role_id` = :role_id
-    ORDER BY u.`{$orderFields[$orderBy]['column']}` {$orderDir}
-    LIMIT :offset, :take
-");
+$getUsers = db_prepare(sprintf(
+    '
+        SELECT
+            u.`user_id`, u.`username`, u.`user_country`, r.`role_id`,
+            COALESCE(u.`user_title`, r.`role_title`, r.`role_name`) as `user_title`,
+            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+        FROM `msz_users` as u
+        LEFT JOIN `msz_roles` as r
+        ON r.`role_id` = u.`display_role`
+        LEFT JOIN `msz_user_roles` as ur
+        ON ur.`user_id` = u.`user_id`
+        WHERE ur.`role_id` = :role_id
+        %1$s
+        ORDER BY u.`%2$s` %3$s
+        LIMIT :offset, :take
+    ',
+    $canManageUsers ? '' : 'AND u.`user_deleted` IS NULL',
+    $orderFields[$orderBy]['column'],
+    $orderDir
+));
 $getUsers->bindValue('role_id', $role['role_id']);
 $getUsers->bindValue('offset', $usersOffset);
 $getUsers->bindValue('take', $usersTake);
@@ -112,4 +123,5 @@ echo tpl_render('user.listing', [
     'order_default' => $defaultOrder,
     'users_offset' => $usersOffset,
     'users_take' => $usersTake,
+    'can_manage_users' => $canManageUsers,
 ]);

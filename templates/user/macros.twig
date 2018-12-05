@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            {% if actions is iterable %}
+            {% if actions is iterable and actions|length > 0 %}
                 <div class="usercard__actions">
                     {% for action in actions %}
                         <a class="usercard__action"

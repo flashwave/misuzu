@@ -40,7 +40,12 @@
     <div class="userlist">
         {% for user in users %}
             <div class="userlist__item">
-                {{ user_card(user) }}
+                {{ user_card(user, null, null, not can_manage_users ? [] : [
+                    {
+                        'href': '/manage/users.php?v=view&u=%d'|format(user.user_id),
+                        'text': 'Manage',
+                    }
+                ]) }}
             </div>
         {% endfor %}
     </div>
