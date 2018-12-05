@@ -62,10 +62,8 @@ function forum_perms_get_user_sql(
 
 function forum_perms_get_user(string $prefix, int $forum, int $user): int
 {
-    if (!in_array($prefix, MSZ_FORUM_PERM_MODES) || $user < 1) {
+    if (!in_array($prefix, MSZ_FORUM_PERM_MODES) || $user < 0) {
         return 0;
-    } elseif ($user === 1) {
-        //return 0x7FFFFFFF;
     }
 
     $getPerms = db_prepare(forum_perms_get_user_sql($prefix));

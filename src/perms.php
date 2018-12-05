@@ -49,10 +49,8 @@ function perms_get_key(string $prefix, string $suffix): string
 
 function perms_get_user(string $prefix, int $user): int
 {
-    if (!in_array($prefix, MSZ_PERM_MODES) || $user < 1) {
+    if (!in_array($prefix, MSZ_PERM_MODES) || $user < 0) {
         return 0;
-    } elseif ($user === 1) {
-        return 0x7FFFFFFF;
     }
 
     $getPerms = db_prepare("
