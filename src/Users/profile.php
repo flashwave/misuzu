@@ -46,6 +46,11 @@ define('MSZ_USER_PROFILE_FIELDS', [
         'regex' => '#^(?:https?://(?:www.)?steamcommunity.com/(?:id|profiles)/)?([a-zA-Z0-9_-]{2,100})/?$#u',
         'link' => 'https://steamcommunity.com/id/%s',
     ],
+    'ninswitch' => [
+        'name' => 'Nintendo Switch',
+        'regex' => '#^(?:SW-)?([0-9]{4}-[0-9]{4}-[0-9]{4})$#u',
+        'format' => 'SW-%s',
+    ],
     'twitchtv' => [
         'name' => 'Twitch.tv',
         'regex' => '#^(?:https?://(?:www.)?twitch.tv/)?([0-9A-Za-z_]{3,25})/?$#u',
