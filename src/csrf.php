@@ -112,3 +112,8 @@ function csrf_html(string $realm, string $name = 'csrf'): string
 {
     return sprintf(MSZ_CSRF_HTML, $name, csrf_token($realm));
 }
+
+function csrf_http_header(string $realm, string $name = 'X-Misuzu-CSRF'): string
+{
+    return "{$name}: {$realm};" . csrf_token($realm);
+}

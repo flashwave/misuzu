@@ -23,6 +23,7 @@ if (!user_session_active()) {
     return;
 }
 
+header(csrf_http_header('comments'));
 $commentPerms = comments_get_perms(user_session_current('user_id', 0));
 
 switch ($_GET['m'] ?? null) {

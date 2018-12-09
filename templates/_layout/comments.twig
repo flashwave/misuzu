@@ -182,97 +182,75 @@
 
     <script>
         window.addEventListener('load', function () {
-            if (typeof commentVote === 'function') { // if this exists, the user is allowed to vote
-                var likeButtons = document.getElementsByClassName('comment__action--like'),
-                    dislikeButtons = document.getElementsByClassName('comment__action--dislike');
+            var likeButtons = document.getElementsByClassName('comment__action--like'),
+                dislikeButtons = document.getElementsByClassName('comment__action--dislike');
 
-                for (var i = 0; i < likeButtons.length; i++) // there's gonna be an equal amount of like and dislike buttons
-                {
-                    likeButtons[i].href = 'javascript:void(0);';
-                    likeButtons[i].onclick = commentVote;
-                    dislikeButtons[i].href = 'javascript:void(0);';
-                    dislikeButtons[i].onclick = commentVote;
-                }
-            }
-
-            if (typeof commentPostEventHandler === 'function') { // can comment
-                var commentForms = document.getElementsByClassName('comment--input');
-
-                for (var i = 0; i < commentForms.length; i++) {
-                    commentForms[i].action = 'javascript:void(0);';
-                    commentForms[i].onsubmit = commentPostEventHandler;
-                }
+            for (var i = 0; i < likeButtons.length; i++) // there's gonna be an equal amount of like and dislike buttons
+            {
+                likeButtons[i].href = 'javascript:void(0);';
+                likeButtons[i].onclick = commentVote;
+                dislikeButtons[i].href = 'javascript:void(0);';
+                dislikeButtons[i].onclick = commentVote;
             }
         });
-    </script>
 
-    {% if perms.can_vote %}
-        <script>
-            var commentVoteLock = false,
-                commentLikeClass = 'comment__action--like',
-                commentDislikeClass = 'comment__action--dislike',
-                commentVotedClass = 'comment__action--voted',
-                commentLikeText = 'Like',
-                commentDislikeText = 'Dislike',
-                commentVoteCountSuffix = ' ({0})';
+        var commentVoteLock = false,
+            commentLikeClass = 'comment__action--like',
+            commentDislikeClass = 'comment__action--dislike',
+            commentVotedClass = 'comment__action--voted',
+            commentLikeText = 'Like',
+            commentDislikeText = 'Dislike',
+            commentVoteCountSuffix = ' ({0})';
 
-            // DEBUG THIS IF YOU MAKE MAJOR DOM CHANGES TO COMMENTS
-            function commentVote(ev)
-            {
-                var elem = ev.target,
-                    id = elem.parentNode.parentNode.parentNode.parentNode.id.substr(8); // STACK UP
+        // DEBUG THIS IF YOU MAKE MAJOR DOM CHANGES TO COMMENTS
+        function commentVote(ev)
+        {
+            var elem = ev.target,
+                id = elem.parentNode.parentNode.parentNode.parentNode.id.substr(8); // STACK UP
 
-                // the moment we find the id we engage vote lock
-                if (id < 1 || commentVoteLock)
-                    return;
-                commentVoteLock = true;
-                elem.textContent = '.';
+            // the moment we find the id we engage vote lock
+            if (id < 1 || commentVoteLock)
+                return;
+            commentVoteLock = true;
+            elem.textContent = '.';
 
-                var isLike = elem.classList.contains(commentLikeClass),
-                    isDislike = elem.classList.contains(commentDislikeClass),
-                    isIndifferent = elem.classList.contains(commentVotedClass),
-                    vote = isIndifferent ? 0 : (isLike ? 1 : -1);
+            var isLike = elem.classList.contains(commentLikeClass),
+                isDislike = elem.classList.contains(commentDislikeClass),
+                isIndifferent = elem.classList.contains(commentVotedClass),
+                vote = isIndifferent ? 0 : (isLike ? 1 : -1);
 
-                elem.textContent += '.';
+            elem.textContent += '.';
 
-                // find friendo (the other vote button), this'll fuck up if the parent element is fucked with
-                for (var i = 0; i < elem.parentNode.childNodes.length; i++) {
-                    var current = elem.parentNode.childNodes[i];
-                    if (current.nodeName.toLowerCase() === 'a' && current !== elem) {
-                        var friend = current;
-                        break;
-                    }
+            // find friendo (the other vote button), this'll fuck up if the parent element is fucked with
+            for (var i = 0; i < elem.parentNode.childNodes.length; i++) {
+                var current = elem.parentNode.childNodes[i];
+                if (current.nodeName.toLowerCase() === 'a' && current !== elem) {
+                    var friend = current;
+                    break;
                 }
+            }
 
-                if (typeof friend !== 'object') {
-                    console.error('something happened');
-                    return;
-                }
+            if (typeof friend !== 'object') {
+                console.error('something happened');
+                return;
+            }
 
-                friend.classList.remove(commentVotedClass);
+            friend.classList.remove(commentVotedClass);
 
-                friend.textContent = '';
+            friend.textContent = '';
 
-                elem.textContent += '.';
+            elem.textContent += '.';
 
-                var xhr = new XMLHttpRequest();
-                xhr.onreadystatechange = function () {
-                    if (this.readyState !== 4)
-                        return;
-
+            commentVoteV2(
+                id, vote,
+                (vInfo, uVote) => {
                     if (vote)
                         elem.classList.add(commentVotedClass);
                     else
                         elem.classList.remove(commentVotedClass);
 
-                    var json = JSON.parse(this.responseText),
-                        message = json.error || json.message;
-
-                    if (message)
-                        alert(message);
-
-                    var likes = json.likes || 0,
-                        dislikes = json.dislikes || 0;
+                    var likes = vInfo.likes || 0,
+                        dislikes = vInfo.dislikes || 0;
 
                     if (isLike) { // somewhat implicitly defined, like will always come before dislike
                         elem.textContent = commentLikeText + (likes > 0 ? commentVoteCountSuffix.replace('{0}', likes.toLocaleString()) : '');
@@ -281,13 +259,9 @@
                         elem.textContent = commentDislikeText + (dislikes > 0 ? commentVoteCountSuffix.replace('{0}', dislikes.toLocaleString()) : '');
                         friend.textContent = commentLikeText + (likes > 0 ? commentVoteCountSuffix.replace('{0}', likes.toLocaleString()) : '');
                     }
-
-                    commentVoteLock = false;
-                };
-                xhr.open('GET', '/comments.php?m=vote&c={0}&v={1}&csrf={{ csrf_token("comments") }}'.replace('{0}', id).replace('{1}', vote));
-                xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
-                xhr.send();
-            }
-        </script>
-    {% endif %}
+                },
+                alert
+            );
+        }
+    </script>
 {% endmacro %}

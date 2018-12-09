@@ -101,17 +101,17 @@ function comments_vote_add(int $comment, int $user, ?string $vote): bool
 function comments_votes_get(int $commentId): array
 {
     $getVotes = db_prepare('
-        SELECT :id as `id`,
+        SELECT :id as `comment_id`,
         (
             SELECT COUNT(`user_id`)
             FROM `msz_comments_votes`
-            WHERE `comment_id` = `id`
+            WHERE `comment_id` = `comment_id`
             AND `comment_vote` = \'Like\'
         ) as `likes`,
         (
             SELECT COUNT(`user_id`)
             FROM `msz_comments_votes`
-            WHERE `comment_id` = `id`
+            WHERE `comment_id` = `comment_id`
             AND `comment_vote` = \'Dislike\'
         ) as `dislikes`
     ');
