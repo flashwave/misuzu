@@ -3,6 +3,7 @@
 /// <reference path="Support.ts" />
 /// <reference path="Permissions.ts" />
 /// <reference path="Comments.ts" />
+/// <reference path="Common.ts" />
 
 declare const timeago: any;
 declare const hljs: any;
