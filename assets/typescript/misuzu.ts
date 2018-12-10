@@ -4,6 +4,7 @@
 /// <reference path="Permissions.ts" />
 /// <reference path="Comments.ts" />
 /// <reference path="Common.ts" />
+/// <reference path="FormUtilities.ts" />
 
 declare const timeago: any;
 declare const hljs: any;
@@ -15,6 +16,7 @@ window.addEventListener('load', () => {
     timeago().render(document.querySelectorAll('time'));
     hljs.initHighlighting();
 
+    initCSRF();
     userInit();
 
     const changelogChangeAction: HTMLDivElement = document.querySelector('.changelog__change__action') as HTMLDivElement;

@@ -1,6 +1,6 @@
 <?php
 define('MSZ_CSRF_TOLERANCE', 15 * 60); // DO NOT EXCEED 16-BIT INTEGER SIZES, SHIT _WILL_ BREAK
-define('MSZ_CSRF_HTML', '<input type="hidden" name="%1$s" value="%2$s">');
+define('MSZ_CSRF_HTML', '<input type="hidden" name="%1$s[%3$s]" value="%2$s">');
 define('MSZ_CSRF_SECRET_STORE', '_msz_csrf_secret');
 define('MSZ_CSRF_IDENTITY_STORE', '_msz_csrf_identity');
 define('MSZ_CSRF_TOKEN_STORE', '_msz_csrf_tokens');
@@ -98,8 +98,10 @@ function csrf_token(string $realm): string
     );
 }
 
-function csrf_verify(string $realm, string $token): bool
+function csrf_verify(string $realm, $token): bool
 {
+    $token = (string)(is_array($token) && !empty($token[$realm]) ? $token[$realm] : $token);
+
     return csrf_token_verify(
         $realm,
         $token,
@@ -110,7 +112,7 @@ function csrf_verify(string $realm, string $token): bool
 
 function csrf_html(string $realm, string $name = 'csrf'): string
 {
-    return sprintf(MSZ_CSRF_HTML, $name, csrf_token($realm));
+    return sprintf(MSZ_CSRF_HTML, $name, csrf_token($realm), $realm);
 }
 
 function csrf_http_header(string $realm, string $name = 'X-Misuzu-CSRF'): string

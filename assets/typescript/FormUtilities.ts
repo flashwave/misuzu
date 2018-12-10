@@ -1,4 +1,4 @@
-function ExtractFormData(form: HTMLFormElement, resetSource: boolean = false): FormData
+function extractFormData(form: HTMLFormElement, resetSource: boolean = false): FormData
 {
     const formData: FormData = new FormData;
 
@@ -14,7 +14,7 @@ function ExtractFormData(form: HTMLFormElement, resetSource: boolean = false): F
     }
 
     if (resetSource)
-        ResetForm(form);
+        resetForm(form);
 
     return formData;
 }
@@ -24,7 +24,7 @@ interface FormHiddenDefault {
     Value: string;
 }
 
-function ResetForm(form: HTMLFormElement, defaults: FormHiddenDefault[] = []): void
+function resetForm(form: HTMLFormElement, defaults: FormHiddenDefault[] = []): void
 {
     for (let i = 0; i < form.length; i++) {
         let input: HTMLInputElement = form[i] as HTMLInputElement;
@@ -44,5 +44,69 @@ function ResetForm(form: HTMLFormElement, defaults: FormHiddenDefault[] = []): v
             default:
                 input.value = '';
         }
+    }
+}
+
+class CSRFToken {
+    realm: string;
+    token: string;
+}
+
+const CSRFTokenStore: CSRFToken[] = [];
+
+function initCSRF(): void {
+    const csrfTokens: NodeListOf<HTMLInputElement> = document.querySelectorAll('[name^="csrf["]'),
+        regex = /\[([a-z]+)\]/iu,
+        handled: string[] = [];
+
+    for (let i = 0; i < csrfTokens.length; i++) {
+        let csrfToken: HTMLInputElement = csrfTokens[i],
+            realm: string = csrfToken.name.match(regex)[1] || '';
+
+        if (handled.indexOf(realm) >= 0)
+            continue;
+        handled.push(realm);
+
+        setCSRF(realm, csrfToken.value);
+    }
+}
+
+function getCSRF(realm: string): CSRFToken {
+    return CSRFTokenStore.find(i => i.realm.toLowerCase() === realm.toLowerCase());
+}
+
+function getCSRFToken(realm: string): string {
+    return getCSRF(realm).token || '';
+}
+
+function setCSRF(realm: string, token: string): void {
+    let csrf: CSRFToken = getCSRF(realm);
+
+    if (csrf) {
+        csrf.token = token;
+    } else {
+        csrf = new CSRFToken;
+        csrf.realm = realm;
+        csrf.token = token;
+        CSRFTokenStore.push(csrf);
+    }
+}
+
+function updateCSRF(token: string, realm: string = null, name: string = 'csrf'): void
+{
+    const tokenSplit: string[] = token.split(';');
+
+    if (tokenSplit.length > 1) {
+        token = tokenSplit[1];
+
+        if (!realm) {
+            realm = tokenSplit[0];
+        }
+    }
+
+    const elements: NodeListOf<HTMLInputElement> = document.getElementsByName(`${name}[${realm}]`) as NodeListOf<HTMLInputElement>;
+
+    for (let i = 0; i < elements.length; i++) {
+        elements[i].value = token;
     }
 }

@@ -1,26 +1,5 @@
 /// <reference path="FormUtilities.ts" />
 
-
-let globalCommentLock = false;
-
-function commentsLocked(): boolean
-{
-    return globalCommentLock;
-}
-
-function commentsRequestLock(): boolean
-{
-    if (commentsLocked())
-        return false;
-
-    return globalCommentLock = true;
-}
-
-function commentsFreeLock(): void
-{
-    globalCommentLock = false;
-}
-
 enum CommentVoteType {
     Indifferent = 0,
     Like = 1,
@@ -33,7 +12,7 @@ interface CommentNotice {
 }
 
 interface CommentDeletionInfo extends CommentNotice {
-    comment_id: number;
+    id: number; // minor inconsistency, deal with it
 }
 
 interface CommentPostInfo extends CommentNotice {
@@ -57,32 +36,49 @@ interface CommentVotesInfo extends CommentNotice {
     dislikes: number;
 }
 
-function commentDelete(ev: Event): void
-{
-    if (!checkUserPerm('comments', CommentPermission.Delete) || !commentsRequestLock())
-        return;
+function commentDeleteEventHandler(ev: Event): void {
+    const target: HTMLAnchorElement = ev.target as HTMLAnchorElement,
+        commentId: number = parseInt(target.dataset.commentId);
 
-    const xhr: XMLHttpRequest = new XMLHttpRequest(),
-        target: HTMLAnchorElement = ev.target as HTMLAnchorElement;
+    commentDelete(
+        commentId,
+        info => {
+            let elem = document.getElementById('comment-' + info.id);
+
+            if (elem)
+                elem.parentNode.removeChild(elem);
+        },
+        message => {
+            alert(message);
+        }
+    );
+}
+
+function commentDelete(commentId: number, onSuccess: (info: CommentDeletionInfo) => void = null, onFail: (message: string) => void = null): void
+{
+    if (!checkUserPerm('comments', CommentPermission.Delete)) {
+        if (onFail)
+            onFail("You aren't allowed to delete comments.");
+        return;
+    }
+
+    const xhr: XMLHttpRequest = new XMLHttpRequest;
 
     xhr.addEventListener('readystatechange', () => {
         if (xhr.readyState !== 4)
             return;
-        commentsFreeLock();
+
+        updateCSRF(xhr.getResponseHeader('X-Misuzu-CSRF'));
 
         let json: CommentDeletionInfo = JSON.parse(xhr.responseText) as CommentDeletionInfo,
             message = json.error || json.message;
 
-        if (message)
-            alert(message);
-        else {
-            let elem = document.getElementById('comment-' + json.comment_id);
-
-            if (elem)
-                elem.parentNode.removeChild(elem);
-        }
+        if (message && onFail)
+            onFail(message);
+        else if (!message && onSuccess)
+            onSuccess(json);
     });
-    xhr.open('GET', target.dataset.href);
+    xhr.open('GET', `/comments.php?m=delete&c=${commentId}&csrf=${getCSRFToken('comments')}`);
     xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
     xhr.send();
 }
@@ -91,17 +87,25 @@ function commentPostEventHandler(ev: Event): void
 {
     const form: HTMLFormElement = ev.target as HTMLFormElement;
 
+    if (form.dataset.disabled)
+        return;
+    form.dataset.disabled = '1';
+    form.style.opacity = '0.5';
+
     commentPost(
-        ExtractFormData(form, true),
+        extractFormData(form, true),
         info => commentPostSuccess(form, info),
-        commentPostFail
+        message => commentPostFail(form, message)
     );
 }
 
 function commentPost(formData: FormData, onSuccess: (comment: CommentPostInfo) => void = null, onFail: (message: string) => void = null): void
 {
-    if (!checkUserPerm('comments', CommentPermission.Create) || !commentsRequestLock())
+    if (!checkUserPerm('comments', CommentPermission.Create)) {
+        if (onFail)
+            onFail("You aren't allowed to post comments.");
         return;
+    }
 
     const xhr = new XMLHttpRequest();
 
@@ -109,9 +113,7 @@ function commentPost(formData: FormData, onSuccess: (comment: CommentPostInfo) =
         if (xhr.readyState !== 4)
             return;
 
-        commentsFreeLock();
-
-        console.log(xhr.getResponseHeader('X-Misuzu-CSRF'));
+        updateCSRF(xhr.getResponseHeader('X-Misuzu-CSRF'));
 
         const json: CommentPostInfo = JSON.parse(xhr.responseText) as CommentPostInfo,
             message: string = json.error || json.message;
@@ -132,17 +134,21 @@ function commentPostSuccess(form: HTMLFormElement, comment: CommentPostInfo): vo
         (form.parentNode.parentNode.querySelector('label.comment__action') as HTMLLabelElement).click();
 
     commentInsert(comment, form);
+    form.style.opacity = '1';
+    form.dataset.disabled = '';
 }
 
-function commentPostFail(message: string): void {
+function commentPostFail(form: HTMLFormElement, message: string): void {
     alert(message);
+    form.style.opacity = '1';
+    form.dataset.disabled = '';
 }
 
 function commentsInit(): void {
     const commentDeletes: HTMLCollectionOf<HTMLAnchorElement> = document.getElementsByClassName('comment__action--delete') as HTMLCollectionOf<HTMLAnchorElement>;
 
     for (let i = 0; i < commentDeletes.length; i++) {
-        commentDeletes[i].addEventListener('click', commentDelete);
+        commentDeletes[i].addEventListener('click', commentDeleteEventHandler);
         commentDeletes[i].dataset.href = commentDeletes[i].href;
         commentDeletes[i].href = 'javascript:void(0);';
     }
@@ -152,16 +158,26 @@ function commentsInit(): void {
     for (let i = 0; i < commentInputs.length; i++) {
         commentInputs[i].form.action = 'javascript:void(0);';
         commentInputs[i].form.addEventListener('submit', commentPostEventHandler);
-        commentInputs[i].addEventListener('keydown', ev => {
-            if (ev.keyCode === 13 && ev.ctrlKey && !ev.altKey && !ev.shiftKey) {
-                let form = commentInputs[i].form;
-                commentPost(
-                    ExtractFormData(form, true),
-                    info => commentPostSuccess(form, info),
-                    message => commentPostFail
-                );
-            }
-        });
+        commentInputs[i].addEventListener('keydown', commentInputEventHandler);
+    }
+
+    const voteButtons: HTMLCollectionOf<HTMLAnchorElement> = document.getElementsByClassName('comment__action--vote') as HTMLCollectionOf<HTMLAnchorElement>;
+
+    for (var i = 0; i < voteButtons.length; i++)
+    {
+        voteButtons[i].href = 'javascript:void(0);';
+        voteButtons[i].addEventListener('click', commentVoteEventHandler);
+    }
+}
+
+function commentInputEventHandler(ev: KeyboardEvent): void {
+    if (ev.keyCode === 13 && ev.ctrlKey && !ev.altKey && !ev.shiftKey) {
+        const form: HTMLFormElement = (ev.target as HTMLTextAreaElement).form;
+        commentPost(
+            extractFormData(form, true),
+            info => commentPostSuccess(form, info),
+            message => commentPostFail
+        );
     }
 }
 
@@ -226,16 +242,20 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     // actions
     if (checkUserPerm('comments', CommentPermission.Vote)) {
         const commentLike: HTMLAnchorElement = commentActions.appendChild(document.createElement('a'));
-        commentLike.className = 'comment__action comment__action--link comment__action--like';
+        commentLike.dataset['commentId'] = comment.comment_id.toString();
+        commentLike.dataset['commentVote'] = CommentVoteType.Like.toString();
+        commentLike.className = 'comment__action comment__action--link comment__action--vote comment__action--like';
         commentLike.href = 'javascript:void(0);';
         commentLike.textContent = 'Like';
         commentLike.addEventListener('click', commentVoteEventHandler);
 
         const commentDislike: HTMLAnchorElement = commentActions.appendChild(document.createElement('a'));
-        commentDislike.className = 'comment__action comment__action--link comment__action--dislike';
+        commentDislike.dataset['commentId'] = comment.comment_id.toString();
+        commentDislike.dataset['commentVote'] = CommentVoteType.Dislike.toString();
+        commentDislike.className = 'comment__action comment__action--link comment__action--vote comment__action--dislike';
         commentDislike.href = 'javascript:void(0);';
         commentDislike.textContent = 'Dislike';
-        commentLike.addEventListener('click', commentVoteEventHandler);
+        commentDislike.addEventListener('click', commentVoteEventHandler);
     }
 
     // if we're executing this it's fairly obvious that we can reply,
@@ -265,8 +285,8 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     replyCategory.type = 'hidden';
 
     const replyCsrf: HTMLInputElement = commentReplyInput.appendChild(document.createElement('input'));
-    replyCsrf.name = 'csrf';
-    replyCsrf.value = '{{ csrf_token("comments") }}';
+    replyCsrf.name = 'csrf[comments]';
+    replyCsrf.value = getCSRFToken('comments');
     replyCsrf.type = 'hidden';
 
     const replyId: HTMLInputElement = commentReplyInput.appendChild(document.createElement('input'));
@@ -301,6 +321,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     replyText.className = 'comment__text input__textarea comment__text--input';
     replyText.name = 'comment[text]';
     replyText.placeholder = 'Share your extensive insights...';
+    replyText.addEventListener('keydown', commentInputEventHandler);
 
     const replyActions: HTMLDivElement = replyContent.appendChild(document.createElement('div'));
     replyActions.className = 'comment__actions';
@@ -335,24 +356,70 @@ function commentInsert(comment: CommentPostInfo, form: HTMLFormElement): void
 }
 
 function commentVoteEventHandler(ev: Event): void {
-    //
+    const target: HTMLAnchorElement = ev.target as HTMLAnchorElement,
+        commentId: number = parseInt(target.dataset.commentId),
+        voteType: CommentVoteType = parseInt(target.dataset.commentVote),
+        buttons: NodeListOf<HTMLAnchorElement> = document.querySelectorAll(`.comment__action--vote[data-comment-id="${commentId}"]`),
+        likeButton: HTMLAnchorElement = document.querySelector(`.comment__action--like[data-comment-id="${commentId}"]`),
+        dislikeButton: HTMLAnchorElement = document.querySelector(`.comment__action--dislike[data-comment-id="${commentId}"]`),
+        classVoted: string = 'comment__action--voted';
+
+    for (let i = 0; i < buttons.length; i++) {
+        let button: HTMLAnchorElement = buttons[i];
+
+        button.textContent = button === target ? '...' : '';
+        button.classList.remove(classVoted);
+
+        if (button === likeButton) {
+            button.dataset.commentVote = (voteType === CommentVoteType.Like ? CommentVoteType.Indifferent : CommentVoteType.Like).toString();
+        } else if (button === dislikeButton) {
+            button.dataset.commentVote = (voteType === CommentVoteType.Dislike ? CommentVoteType.Indifferent : CommentVoteType.Dislike).toString();
+        }
+    }
+
+    commentVote(
+        commentId,
+        voteType,
+        (info) => {
+            switch (voteType) {
+                case CommentVoteType.Like:
+                    likeButton.classList.add(classVoted);
+                    break;
+
+                case CommentVoteType.Dislike:
+                    dislikeButton.classList.add(classVoted);
+                    break;
+            }
+
+            likeButton.textContent = info.likes > 0 ? `Like (${info.likes.toLocaleString()})` : 'Like';
+            dislikeButton.textContent = info.dislikes > 0 ? `Dislike (${info.dislikes.toLocaleString()})` : 'Dislike';
+        },
+        (message) => {
+            likeButton.textContent = 'Like';
+            dislikeButton.textContent = 'Dislike';
+            alert(message);
+        }
+    );
 }
 
-function commentVoteV2(
+function commentVote(
     commentId: number,
     vote: CommentVoteType,
-    onSuccess: (voteInfo: CommentVotesInfo, userVote: CommentVoteType) => void,
-    onFail: (message: string) => void
+    onSuccess: (voteInfo: CommentVotesInfo) => void = null,
+    onFail: (message: string) => void = null
 ): void {
-    if (!checkUserPerm('comments', CommentPermission.Vote) || !commentsRequestLock())
+    if (!checkUserPerm('comments', CommentPermission.Vote)) {
+        if (onFail)
+            onFail("You aren't allowed to vote on comments.");
         return;
+    }
 
     const xhr: XMLHttpRequest = new XMLHttpRequest;
     xhr.onreadystatechange = () => {
         if (xhr.readyState !== 4)
             return;
 
-        commentsFreeLock();
+        updateCSRF(xhr.getResponseHeader('X-Misuzu-CSRF'));
 
         const json: CommentVotesInfo = JSON.parse(xhr.responseText),
             message: string = json.error || json.message;
@@ -360,9 +427,9 @@ function commentVoteV2(
         if (message && onFail)
             onFail(message);
         else if (!message && onSuccess)
-            onSuccess(json, vote);
+            onSuccess(json);
     };
-    xhr.open('GET', `/comments.php?m=vote&c=${commentId}&v=${vote}&csrf={{ csrf_token("comments") }}`);
+    xhr.open('GET', `/comments.php?m=vote&c=${commentId}&v=${vote}&csrf=${getCSRFToken('comments')}`);
     xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
     xhr.send();
 }

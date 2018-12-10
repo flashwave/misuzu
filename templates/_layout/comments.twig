@@ -83,15 +83,15 @@
                     {% if comment.comment_deleted is null and user is not null %}
                         <div class="comment__actions">
                             {% if perms.can_vote %}
-                                <a class="comment__action comment__action--link comment__action--like{% if comment.comment_user_vote == 'Like' %} comment__action--voted{% endif %}"
-                                    href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Like' ? '0' : '1' }}&amp;csrf={{ csrf_token('comments') }}">
+                                <a class="comment__action comment__action--link comment__action--vote comment__action--like{% if comment.comment_user_vote == 'Like' %} comment__action--voted{% endif %}" data-comment-id="{{ comment.comment_id }}" data-comment-vote="{{ comment.comment_user_vote == 'Like' ? '0' : '1' }}"
+                                href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Like' ? '0' : '1' }}&amp;csrf={{ csrf_token('comments') }}">
                                     Like
                                     {% if comment.comment_likes > 0 %}
                                         ({{ comment.comment_likes|number_format }})
                                     {% endif %}
                                 </a>
-                                <a class="comment__action comment__action--link comment__action--dislike{% if comment.comment_user_vote == 'Dislike' %} comment__action--voted{% endif %}"
-                                    href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Dislike' ? '0' : '-1' }}&amp;csrf={{ csrf_token('comments') }}">
+                                <a class="comment__action comment__action--link comment__action--vote comment__action--dislike{% if comment.comment_user_vote == 'Dislike' %} comment__action--voted{% endif %}" data-comment-id="{{ comment.comment_id }}" data-comment-vote="{{ comment.comment_user_vote == 'Dislike' ? '0' : '-1' }}"
+                                href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Dislike' ? '0' : '-1' }}&amp;csrf={{ csrf_token('comments') }}">
                                     Dislike
                                     {% if comment.comment_dislikes > 0 %}
                                         ({{ comment.comment_dislikes|number_format }})
@@ -102,7 +102,7 @@
                                 <label class="comment__action comment__action--link" for="comment-reply-toggle-{{ comment.comment_id }}">Reply</label>
                             {% endif %}
                             {% if perms.can_delete_any or (comment.user_id == user.user_id and perms.can_delete) %}
-                                <a class="comment__action comment__action--link comment__action--hide comment__action--delete"
+                                <a class="comment__action comment__action--link comment__action--hide comment__action--delete" data-comment-id="{{ comment.comment_id }}"
                                     href="/comments.php?m=delete&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token('comments') }}">Delete</a>
                             {% endif %}
                             {# if user is not null %}
@@ -179,89 +179,4 @@
             {% endif %}
         </div>
     </div>
-
-    <script>
-        window.addEventListener('load', function () {
-            var likeButtons = document.getElementsByClassName('comment__action--like'),
-                dislikeButtons = document.getElementsByClassName('comment__action--dislike');
-
-            for (var i = 0; i < likeButtons.length; i++) // there's gonna be an equal amount of like and dislike buttons
-            {
-                likeButtons[i].href = 'javascript:void(0);';
-                likeButtons[i].onclick = commentVote;
-                dislikeButtons[i].href = 'javascript:void(0);';
-                dislikeButtons[i].onclick = commentVote;
-            }
-        });
-
-        var commentVoteLock = false,
-            commentLikeClass = 'comment__action--like',
-            commentDislikeClass = 'comment__action--dislike',
-            commentVotedClass = 'comment__action--voted',
-            commentLikeText = 'Like',
-            commentDislikeText = 'Dislike',
-            commentVoteCountSuffix = ' ({0})';
-
-        // DEBUG THIS IF YOU MAKE MAJOR DOM CHANGES TO COMMENTS
-        function commentVote(ev)
-        {
-            var elem = ev.target,
-                id = elem.parentNode.parentNode.parentNode.parentNode.id.substr(8); // STACK UP
-
-            // the moment we find the id we engage vote lock
-            if (id < 1 || commentVoteLock)
-                return;
-            commentVoteLock = true;
-            elem.textContent = '.';
-
-            var isLike = elem.classList.contains(commentLikeClass),
-                isDislike = elem.classList.contains(commentDislikeClass),
-                isIndifferent = elem.classList.contains(commentVotedClass),
-                vote = isIndifferent ? 0 : (isLike ? 1 : -1);
-
-            elem.textContent += '.';
-
-            // find friendo (the other vote button), this'll fuck up if the parent element is fucked with
-            for (var i = 0; i < elem.parentNode.childNodes.length; i++) {
-                var current = elem.parentNode.childNodes[i];
-                if (current.nodeName.toLowerCase() === 'a' && current !== elem) {
-                    var friend = current;
-                    break;
-                }
-            }
-
-            if (typeof friend !== 'object') {
-                console.error('something happened');
-                return;
-            }
-
-            friend.classList.remove(commentVotedClass);
-
-            friend.textContent = '';
-
-            elem.textContent += '.';
-
-            commentVoteV2(
-                id, vote,
-                (vInfo, uVote) => {
-                    if (vote)
-                        elem.classList.add(commentVotedClass);
-                    else
-                        elem.classList.remove(commentVotedClass);
-
-                    var likes = vInfo.likes || 0,
-                        dislikes = vInfo.dislikes || 0;
-
-                    if (isLike) { // somewhat implicitly defined, like will always come before dislike
-                        elem.textContent = commentLikeText + (likes > 0 ? commentVoteCountSuffix.replace('{0}', likes.toLocaleString()) : '');
-                        friend.textContent = commentDislikeText + (dislikes > 0 ? commentVoteCountSuffix.replace('{0}', dislikes.toLocaleString()) : '');
-                    } else {
-                        elem.textContent = commentDislikeText + (dislikes > 0 ? commentVoteCountSuffix.replace('{0}', dislikes.toLocaleString()) : '');
-                        friend.textContent = commentLikeText + (likes > 0 ? commentVoteCountSuffix.replace('{0}', likes.toLocaleString()) : '');
-                    }
-                },
-                alert
-            );
-        }
-    </script>
 {% endmacro %}
