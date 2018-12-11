@@ -290,16 +290,6 @@ function manage_perms_list(array $rawPerms): array
                     'perm' => MSZ_PERM_COMMENTS_CREATE,
                 ],
                 [
-                    'section' => 'edit-own',
-                    'title' => 'Can edit own comments.',
-                    'perm' => MSZ_PERM_COMMENTS_EDIT_OWN,
-                ],
-                [
-                    'section' => 'edit-any',
-                    'title' => 'Can edit anyone\'s comments.',
-                    'perm' => MSZ_PERM_COMMENTS_EDIT_ANY,
-                ],
-                [
                     'section' => 'delete-own',
                     'title' => 'Can delete own comments.',
                     'perm' => MSZ_PERM_COMMENTS_DELETE_OWN,

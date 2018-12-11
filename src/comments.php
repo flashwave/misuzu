@@ -2,8 +2,8 @@
 require_once 'Users/validation.php';
 
 define('MSZ_PERM_COMMENTS_CREATE', 1);
-define('MSZ_PERM_COMMENTS_EDIT_OWN', 1 << 1);
-define('MSZ_PERM_COMMENTS_EDIT_ANY', 1 << 2);
+//define('MSZ_PERM_COMMENTS_EDIT_OWN', 1 << 1);
+//define('MSZ_PERM_COMMENTS_EDIT_ANY', 1 << 2);
 define('MSZ_PERM_COMMENTS_DELETE_OWN', 1 << 3);
 define('MSZ_PERM_COMMENTS_DELETE_ANY', 1 << 4);
 define('MSZ_PERM_COMMENTS_PIN', 1 << 5);
@@ -70,8 +70,6 @@ function comments_get_perms(int $userId): array
     $perms = perms_get_user(MSZ_PERMS_COMMENTS, $userId);
     return [
         'can_comment' => perms_check($perms, MSZ_PERM_COMMENTS_CREATE),
-        'can_edit' => perms_check($perms, MSZ_PERM_COMMENTS_EDIT_OWN | MSZ_PERM_COMMENTS_EDIT_ANY),
-        'can_edit_any' => perms_check($perms, MSZ_PERM_COMMENTS_EDIT_ANY),
         'can_delete' => perms_check($perms, MSZ_PERM_COMMENTS_DELETE_OWN | MSZ_PERM_COMMENTS_DELETE_ANY),
         'can_delete_any' => perms_check($perms, MSZ_PERM_COMMENTS_DELETE_ANY),
         'can_pin' => perms_check($perms, MSZ_PERM_COMMENTS_PIN),
