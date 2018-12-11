@@ -56,12 +56,16 @@ const CSRFTokenStore: CSRFToken[] = [];
 
 function initCSRF(): void {
     const csrfTokens: NodeListOf<HTMLInputElement> = document.querySelectorAll('[name^="csrf["]'),
-        regex = /\[([a-z]+)\]/iu,
+        regex = /\[([A-Za-z0-9_-]+)\]/iu,
         handled: string[] = [];
 
     for (let i = 0; i < csrfTokens.length; i++) {
         let csrfToken: HTMLInputElement = csrfTokens[i],
-            realm: string = csrfToken.name.match(regex)[1] || '';
+            matches: string[] = csrfToken.name.match(regex);
+
+        if (matches.length < 2)
+            continue;
+        let realm: string = matches[1];
 
         if (handled.indexOf(realm) >= 0)
             continue;
