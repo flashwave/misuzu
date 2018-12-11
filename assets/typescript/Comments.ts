@@ -312,9 +312,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     const replyUser: HTMLDivElement = document.createElement('div');
     replyUser.className = 'comment__user';
     replyUser.textContent = comment.username;
-    replyUser.style.color = comment.user_colour == null || (comment.user_colour & 0x40000000) > 0
-        ? 'inherit'
-        : '#' + (comment.user_colour & 0xFFFFFF).toString(16);
+    replyUser.style.color = colourGetCSS(comment.user_colour);
     replyInfo.appendChild(replyUser);
 
     const replyText: HTMLTextAreaElement = replyContent.appendChild(document.createElement('textarea'));

@@ -23,7 +23,7 @@ function colourSetInherit(colour: number, enabled: boolean): number {
 }
 
 function colourGetInherit(colour: number): boolean {
-    return (colour & MSZ_COLOUR_INHERIT) > 0;
+    return colour === null || (colour & MSZ_COLOUR_INHERIT) > 0;
 }
 
 function colourGetRed(colour: number): number {
