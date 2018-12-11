@@ -5,6 +5,6 @@
 {% block manage_content %}
     <div class="container">
         {{ container_title((forum is defined ? forum.forum_name ~ ' ' : '') ~ 'Permissions for ' ~ role.role_name) }}
-        {{ permissions_table(perms) }}
+        {{ permissions_table(perms, true) }}
     </div>
 {% endblock %}

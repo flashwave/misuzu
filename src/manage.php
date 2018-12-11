@@ -97,15 +97,16 @@ function manage_perms_apply(array $list, array $post): ?array
             continue;
         }
 
-        $allowKey = perms_get_key($section['section'], 'allow');
-        $denyKey = perms_get_key($section['section'], 'deny');
+        $allowKey = perms_get_key($section['section'], MSZ_PERMS_ALLOW);
+        $denyKey = perms_get_key($section['section'], MSZ_PERMS_DENY);
+        $overrideKey = perms_get_key($section['section'], MSZ_PERMS_OVERRIDE);
 
         foreach ($section['perms'] as $perm) {
-            if (empty($post[$section['section']][$perm['section']])) {
+            if (empty($post[$section['section']][$perm['section']]['value'])) {
                 continue;
             }
 
-            switch ($post[$section['section']][$perm['section']]) {
+            switch ($post[$section['section']][$perm['section']]['value']) {
                 case 'yes':
                     $perms[$allowKey] |= $perm['perm'];
                     $perms[$denyKey] &= ~$perm['perm'];
@@ -121,6 +122,12 @@ function manage_perms_apply(array $list, array $post): ?array
                     $perms[$allowKey] &= ~$perm['perm'];
                     $perms[$denyKey] &= ~$perm['perm'];
                     break;
+            }
+
+            if (!empty($post[$section['section']][$perm['section']]['override'])) {
+                $perms[$overrideKey] |= $perm['perm'];
+            } else {
+                $perms[$overrideKey] &= ~$perm['perm'];
             }
         }
     }
@@ -138,9 +145,27 @@ function manage_perms_apply(array $list, array $post): ?array
     return $perms;
 }
 
+function manage_perms_calculate(array $rawPerms, array $perms): array
+{
+    for ($i = 0; $i < count($perms); $i++) {
+        $section = $perms[$i]['section'];
+        $allowKey = perms_get_key($section, MSZ_PERMS_ALLOW);
+        $denyKey = perms_get_key($section, MSZ_PERMS_DENY);
+        $overrideKey = perms_get_key($section, MSZ_PERMS_OVERRIDE);
+
+        for ($j = 0; $j < count($perms[$i]['perms']); $j++) {
+            $permission = $perms[$i]['perms'][$j]['perm'];
+            $perms[$i]['perms'][$j]['override'] = perms_check($rawPerms[$overrideKey], $permission);
+            $perms[$i]['perms'][$j]['value'] = manage_perms_value($permission, $rawPerms[$allowKey], $rawPerms[$denyKey]);
+        }
+    }
+
+    return $perms;
+}
+
 function manage_perms_list(array $rawPerms): array
 {
-    return [
+    return manage_perms_calculate($rawPerms, [
         [
             'section' => 'general',
             'title' => 'General',
@@ -149,51 +174,26 @@ function manage_perms_list(array $rawPerms): array
                     'section' => 'can-manage',
                     'title' => 'Can access the management panel.',
                     'perm' => MSZ_PERM_GENERAL_CAN_MANAGE,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_GENERAL_CAN_MANAGE,
-                        $rawPerms['general_perms_allow'],
-                        $rawPerms['general_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'view-logs',
                     'title' => 'Can view audit logs.',
                     'perm' => MSZ_PERM_GENERAL_VIEW_LOGS,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_GENERAL_VIEW_LOGS,
-                        $rawPerms['general_perms_allow'],
-                        $rawPerms['general_perms_deny']
-                    )
                 ],
                 [
                     'section' => 'manage-emotes',
                     'title' => 'Can manage emoticons.',
                     'perm' => MSZ_PERM_GENERAL_MANAGE_EMOTICONS,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_GENERAL_MANAGE_EMOTICONS,
-                        $rawPerms['general_perms_allow'],
-                        $rawPerms['general_perms_deny']
-                    )
                 ],
                 [
                     'section' => 'manage-settings',
                     'title' => 'Can manage general Misuzu settings.',
                     'perm' => MSZ_PERM_GENERAL_MANAGE_SETTINGS,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_GENERAL_MANAGE_SETTINGS,
-                        $rawPerms['general_perms_allow'],
-                        $rawPerms['general_perms_deny']
-                    )
                 ],
                 [
                     'section' => 'tester',
                     'title' => 'Can use experimental features.',
                     'perm' => MSZ_PERM_GENERAL_TESTER,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_GENERAL_TESTER,
-                        $rawPerms['general_perms_allow'],
-                        $rawPerms['general_perms_deny']
-                    )
                 ],
             ],
         ],
@@ -205,101 +205,51 @@ function manage_perms_list(array $rawPerms): array
                     'section' => 'edit-profile',
                     'title' => 'Can edit own profile.',
                     'perm' => MSZ_PERM_USER_EDIT_PROFILE,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_USER_EDIT_PROFILE,
-                        $rawPerms['user_perms_allow'],
-                        $rawPerms['user_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'change-avatar',
                     'title' => 'Can change own avatar.',
                     'perm' => MSZ_PERM_USER_CHANGE_AVATAR,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_USER_CHANGE_AVATAR,
-                        $rawPerms['user_perms_allow'],
-                        $rawPerms['user_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'change-background',
                     'title' => 'Can change own background.',
                     'perm' => MSZ_PERM_USER_CHANGE_BACKGROUND,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_USER_CHANGE_BACKGROUND,
-                        $rawPerms['user_perms_allow'],
-                        $rawPerms['user_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'edit-about',
                     'title' => 'Can change own about section.',
                     'perm' => MSZ_PERM_USER_EDIT_ABOUT,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_USER_EDIT_ABOUT,
-                        $rawPerms['user_perms_allow'],
-                        $rawPerms['user_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'manage-users',
                     'title' => 'Can manage other users.',
                     'perm' => MSZ_PERM_USER_MANAGE_USERS,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_USER_MANAGE_USERS,
-                        $rawPerms['user_perms_allow'],
-                        $rawPerms['user_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'manage-roles',
                     'title' => 'Can manage roles.',
                     'perm' => MSZ_PERM_USER_MANAGE_ROLES,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_USER_MANAGE_ROLES,
-                        $rawPerms['user_perms_allow'],
-                        $rawPerms['user_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'manage-perms',
                     'title' => 'Can manage permissions.',
                     'perm' => MSZ_PERM_USER_MANAGE_PERMS,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_USER_MANAGE_PERMS,
-                        $rawPerms['user_perms_allow'],
-                        $rawPerms['user_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'manage-reports',
                     'title' => 'Can handle reports.',
                     'perm' => MSZ_PERM_USER_MANAGE_REPORTS,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_USER_MANAGE_REPORTS,
-                        $rawPerms['user_perms_allow'],
-                        $rawPerms['user_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'manage-restrictions',
                     'title' => 'Can manage restrictions.',
                     'perm' => MSZ_PERM_USER_MANAGE_RESTRICTIONS,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_USER_MANAGE_RESTRICTIONS,
-                        $rawPerms['user_perms_allow'],
-                        $rawPerms['user_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'manage-blacklistings',
                     'title' => 'Can manage blacklistings.',
                     'perm' => MSZ_PERM_USER_MANAGE_BLACKLISTS,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_USER_MANAGE_BLACKLISTS,
-                        $rawPerms['user_perms_allow'],
-                        $rawPerms['user_perms_deny']
-                    ),
                 ],
             ],
         ],
@@ -311,21 +261,11 @@ function manage_perms_list(array $rawPerms): array
                     'section' => 'manage-posts',
                     'title' => 'Can manage posts.',
                     'perm' => MSZ_PERM_NEWS_MANAGE_POSTS,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_NEWS_MANAGE_POSTS,
-                        $rawPerms['news_perms_allow'],
-                        $rawPerms['news_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'manage-cats',
                     'title' => 'Can manage catagories.',
                     'perm' => MSZ_PERM_NEWS_MANAGE_CATEGORIES,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_NEWS_MANAGE_CATEGORIES,
-                        $rawPerms['news_perms_allow'],
-                        $rawPerms['news_perms_deny']
-                    ),
                 ],
             ],
         ],
@@ -337,11 +277,6 @@ function manage_perms_list(array $rawPerms): array
                     'section' => 'manage-forums',
                     'title' => 'Can manage forum sections.',
                     'perm' => MSZ_PERM_FORUM_MANAGE_FORUMS,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_FORUM_MANAGE_FORUMS,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    )
                 ],
             ],
         ],
@@ -353,81 +288,41 @@ function manage_perms_list(array $rawPerms): array
                     'section' => 'create',
                     'title' => 'Can post comments.',
                     'perm' => MSZ_PERM_COMMENTS_CREATE,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_COMMENTS_CREATE,
-                        $rawPerms['comments_perms_allow'],
-                        $rawPerms['comments_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'edit-own',
                     'title' => 'Can edit own comments.',
                     'perm' => MSZ_PERM_COMMENTS_EDIT_OWN,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_COMMENTS_EDIT_OWN,
-                        $rawPerms['comments_perms_allow'],
-                        $rawPerms['comments_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'edit-any',
                     'title' => 'Can edit anyone\'s comments.',
                     'perm' => MSZ_PERM_COMMENTS_EDIT_ANY,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_COMMENTS_EDIT_ANY,
-                        $rawPerms['comments_perms_allow'],
-                        $rawPerms['comments_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'delete-own',
                     'title' => 'Can delete own comments.',
                     'perm' => MSZ_PERM_COMMENTS_DELETE_OWN,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_COMMENTS_DELETE_OWN,
-                        $rawPerms['comments_perms_allow'],
-                        $rawPerms['comments_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'delete-any',
                     'title' => 'Can delete anyone\'s comments.',
                     'perm' => MSZ_PERM_COMMENTS_DELETE_ANY,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_COMMENTS_DELETE_ANY,
-                        $rawPerms['comments_perms_allow'],
-                        $rawPerms['comments_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'pin',
                     'title' => 'Can pin comments.',
                     'perm' => MSZ_PERM_COMMENTS_PIN,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_COMMENTS_PIN,
-                        $rawPerms['comments_perms_allow'],
-                        $rawPerms['comments_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'lock',
                     'title' => 'Can lock comment threads.',
                     'perm' => MSZ_PERM_COMMENTS_LOCK,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_COMMENTS_LOCK,
-                        $rawPerms['comments_perms_allow'],
-                        $rawPerms['comments_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'vote',
                     'title' => 'Can like or dislike comments.',
                     'perm' => MSZ_PERM_COMMENTS_VOTE,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_COMMENTS_VOTE,
-                        $rawPerms['comments_perms_allow'],
-                        $rawPerms['comments_perms_deny']
-                    ),
                 ],
             ],
         ],
@@ -439,40 +334,25 @@ function manage_perms_list(array $rawPerms): array
                     'section' => 'manage-changes',
                     'title' => 'Can manage changes.',
                     'perm' => MSZ_PERM_CHANGELOG_MANAGE_CHANGES,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_CHANGELOG_MANAGE_CHANGES,
-                        $rawPerms['changelog_perms_allow'],
-                        $rawPerms['changelog_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'manage-tags',
                     'title' => 'Can manage tags.',
                     'perm' => MSZ_PERM_CHANGELOG_MANAGE_TAGS,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_CHANGELOG_MANAGE_TAGS,
-                        $rawPerms['changelog_perms_allow'],
-                        $rawPerms['changelog_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'manage-actions',
                     'title' => 'Can manage action types.',
                     'perm' => MSZ_PERM_CHANGELOG_MANAGE_ACTIONS,
-                    'value' => manage_perms_value(
-                        MSZ_PERM_CHANGELOG_MANAGE_ACTIONS,
-                        $rawPerms['changelog_perms_allow'],
-                        $rawPerms['changelog_perms_deny']
-                    ),
                 ],
             ],
         ],
-    ];
+    ]);
 }
 
 function manage_forum_perms_list(array $rawPerms): array
 {
-    return [
+    return manage_perms_calculate($rawPerms, [
         [
             'section' => 'forum',
             'title' => 'Forum',
@@ -481,143 +361,73 @@ function manage_forum_perms_list(array $rawPerms): array
                     'section' => 'can-list',
                     'title' => 'Can see the forum listed, but not access it.',
                     'perm' => MSZ_FORUM_PERM_LIST_FORUM,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_LIST_FORUM,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-view',
                     'title' => 'Can view and access the forum.',
                     'perm' => MSZ_FORUM_PERM_VIEW_FORUM,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_VIEW_FORUM,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-create-topic',
                     'title' => 'Can create topics.',
                     'perm' => MSZ_FORUM_PERM_CREATE_TOPIC,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_CREATE_TOPIC,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-delete-topic',
                     'title' => 'Can delete topics (required a post delete permission).',
                     'perm' => MSZ_FORUM_PERM_DELETE_TOPIC,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_DELETE_TOPIC,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-move-topic',
                     'title' => 'Can move topics between forums.',
                     'perm' => MSZ_FORUM_PERM_MOVE_TOPIC,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_MOVE_TOPIC,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-lock-topic',
                     'title' => 'Can lock topics.',
                     'perm' => MSZ_FORUM_PERM_LOCK_TOPIC,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_LOCK_TOPIC,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-sticky-topic',
                     'title' => 'Can make topics sticky.',
                     'perm' => MSZ_FORUM_PERM_STICKY_TOPIC,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_STICKY_TOPIC,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-announce-topic',
                     'title' => 'Can make topics announcements.',
                     'perm' => MSZ_FORUM_PERM_ANNOUNCE_TOPIC,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_ANNOUNCE_TOPIC,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-global-announce-topic',
                     'title' => 'Can make topics global announcements.',
                     'perm' => MSZ_FORUM_PERM_GLOBAL_ANNOUNCE_TOPIC,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_GLOBAL_ANNOUNCE_TOPIC,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-create-post',
                     'title' => 'Can make posts (reply only, if create topic is disallowed).',
                     'perm' => MSZ_FORUM_PERM_CREATE_POST,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_CREATE_POST,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-edit-post',
                     'title' => 'Can edit their own posts.',
                     'perm' => MSZ_FORUM_PERM_EDIT_POST,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_EDIT_POST,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-edit-any-post',
                     'title' => 'Can edit any posts.',
                     'perm' => MSZ_FORUM_PERM_EDIT_ANY_POST,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_EDIT_ANY_POST,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-delete-post',
                     'title' => 'Can delete own posts.',
                     'perm' => MSZ_FORUM_PERM_DELETE_POST,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_DELETE_POST,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
                 [
                     'section' => 'can-delete-any-post',
                     'title' => 'Can delete any posts.',
                     'perm' => MSZ_FORUM_PERM_DELETE_ANY_POST,
-                    'value' => manage_perms_value(
-                        MSZ_FORUM_PERM_DELETE_ANY_POST,
-                        $rawPerms['forum_perms_allow'],
-                        $rawPerms['forum_perms_deny']
-                    ),
                 ],
             ],
         ],
-    ];
+    ]);
 }

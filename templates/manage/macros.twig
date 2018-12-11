@@ -46,17 +46,17 @@
                         {{ perm.title }}
                     </div>
                     <div class="permissions__choice__wrapper">
-                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ ']', '', perm.value == 'yes', 'permissions__choice permissions__choice--radio permissions__choice--yes', 'yes', true) }}
+                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'yes', 'permissions__choice permissions__choice--radio permissions__choice--yes', 'yes', true) }}
                     </div>
                     <div class="permissions__choice__wrapper">
-                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ ']', '', perm.value == 'no', 'permissions__choice permissions__choice--radio permissions__choice--no', 'no', true) }}
+                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'no', 'permissions__choice permissions__choice--radio permissions__choice--no', 'no', true) }}
                     </div>
                     <div class="permissions__choice__wrapper">
-                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ ']', '', perm.value == 'never', 'permissions__choice permissions__choice--radio permissions__choice--never', 'never', true) }}
+                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'never', 'permissions__choice permissions__choice--radio permissions__choice--never', 'never', true) }}
                     </div>
                     {% if display_override %}
                         <div class="permissions__choice__wrapper">
-                            {{ input_checkbox('perms[override][' ~ perms.section ~ '][' ~ perm.section ~ ']', '', false, 'permissions__choice permissions__choice--radio', 'never') }}
+                            {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ '][override]', '', perm.override, 'permissions__choice permissions__choice--radio', 'never') }}
                         </div>
                     {% endif %}
                 </div>

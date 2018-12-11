@@ -89,7 +89,7 @@
         {% if can_manage_perms %}
             <div class="container">
                 {{ container_title('Permissions') }}
-                {{ permissions_table(permissions) }}
+                {{ permissions_table(permissions, true) }}
             </div>
         {% endif %}
 

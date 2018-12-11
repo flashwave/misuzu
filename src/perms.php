@@ -13,9 +13,10 @@ define('MSZ_PERM_MODES', [
 
 define('MSZ_PERMS_ALLOW', 'allow');
 define('MSZ_PERMS_DENY', 'deny');
+define('MSZ_PERMS_OVERRIDE', 'override');
 
 define('MSZ_PERM_SETS', [
-    MSZ_PERMS_ALLOW, MSZ_PERMS_DENY
+    MSZ_PERMS_ALLOW, MSZ_PERMS_DENY, MSZ_PERMS_OVERRIDE,
 ]);
 
 function perms_get_keys(): array
@@ -53,18 +54,39 @@ function perms_get_user(string $prefix, int $user): int
         return 0;
     }
 
+    if ($user === 1) {
+        return 0x7FFFFFFF;
+    }
+
+    $allowKey = perms_get_key($prefix, MSZ_PERMS_ALLOW);
+    $denyKey = perms_get_key($prefix, MSZ_PERMS_DENY);
+    $overrideKey = perms_get_key($prefix, MSZ_PERMS_OVERRIDE);
+
     $getPerms = db_prepare("
-        SELECT BIT_OR(`{$prefix}_perms_allow`) &~ BIT_OR(`{$prefix}_perms_deny`)
-        FROM `msz_permissions`
-        WHERE (`user_id` = :user_id_1 AND `role_id` IS NULL)
-        OR (
-            `user_id` IS NULL
-            AND `role_id` IN (
-                SELECT `role_id`
-                FROM `msz_user_roles`
-                WHERE `user_id` = :user_id_2
+        SELECT
+            (user.`{$allowKey}` &~ user.`{$denyKey}`) | (
+                (
+                    SELECT
+                        (BIT_OR(roles.`{$allowKey}`) &~ BIT_OR(roles.`{$denyKey}`)) | (
+                            (
+                                SELECT global.{$allowKey} | global.{$denyKey}
+                                FROM `msz_permissions` as global
+                                WHERE global.`user_id` IS NULL
+                                AND global.`role_id` IS NULL
+                            ) &~ BIT_OR(roles.`{$overrideKey}`)
+                        )
+                    FROM `msz_permissions` as roles
+                    WHERE roles.`user_id` IS NULL
+                    AND roles.`role_id` IN (
+                        SELECT `role_id`
+                        FROM `msz_user_roles`
+                        WHERE `user_id` = :user_id_2
+                    )
+                ) &~ user.`{$overrideKey}`
             )
-        )
+        FROM `msz_permissions` as user
+        WHERE user.`user_id` = :user_id_1
+        AND user.`role_id` IS NULL
     ");
     $getPerms->bindValue('user_id_1', $user);
     $getPerms->bindValue('user_id_2', $user);
@@ -77,8 +99,11 @@ function perms_get_role(string $prefix, int $role): int
         return 0;
     }
 
+    $allowKey = perms_get_key($prefix, MSZ_PERMS_ALLOW);
+    $denyKey = perms_get_key($prefix, MSZ_PERMS_DENY);
+
     $getPerms = db_prepare("
-        SELECT `{$prefix}_perms_allow` &~ `{$prefix}_perms_deny`
+        SELECT `{$allowKey}` &~ `{$denyKey}`
         FROM `msz_permissions`
         WHERE `role_id` = :role_id
         AND `user_id` IS NULL
@@ -95,13 +120,12 @@ function perms_get_user_raw(int $user): array
         return $emptyPerms;
     }
 
-    $getPerms = db_prepare('
-        SELECT
-            `' . implode('`, `', perms_get_keys()) . '`
+    $getPerms = db_prepare(sprintf('
+        SELECT `%s`
         FROM `msz_permissions`
         WHERE `user_id` = :user_id
         AND `role_id` IS NULL
-    ');
+    ', implode('`, `', perms_get_keys())));
     $getPerms->bindValue('user_id', $user);
 
     if (!$getPerms->execute()) {
@@ -125,13 +149,12 @@ function perms_get_role_raw(int $role): array
         return $emptyPerms;
     }
 
-    $getPerms = db_prepare('
-        SELECT
-            `' . implode('`, `', perms_get_keys()) . '`
+    $getPerms = db_prepare(sprintf('
+        SELECT `%s`
         FROM `msz_permissions`
         WHERE `user_id` IS NULL
         AND `role_id` = :role_id
-    ');
+    ', implode('`, `', perms_get_keys())));
     $getPerms->bindValue('role_id', $role);
 
     if (!$getPerms->execute()) {
