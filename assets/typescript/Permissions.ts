@@ -1,8 +1,8 @@
 enum CommentPermission {
     Create = 1,
-    EditOwn = 1 << 1,
-    EditAny = 1 << 2,
-    Edit = EditOwn | EditAny,
+    //EditOwn = 1 << 1,
+    //EditAny = 1 << 2,
+    //Edit = EditOwn | EditAny,
     DeleteOwn = 1 << 3,
     DeleteAny = 1 << 4,
     Delete = DeleteOwn | DeleteAny,
