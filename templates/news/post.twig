@@ -1,57 +1,14 @@
 {% extends 'news/master.twig' %}
 {% from 'macros.twig' import container_title %}
 {% from '_layout/comments.twig' import comments_section %}
+{% from 'news/macros.twig' import news_post %}
 
 {% set title = post.post_title ~ ' :: News' %}
 {% set canonical_url = '/news.php?p=' ~ post.post_id %}
 {% set manage_link = '/manage/news.php?v=post&p=' ~ post.post_id %}
 
 {% block content %}
-    <div class="container news__post">
-        {{ container_title(post.post_title) }}
-
-        <div class="news__post__content">
-            <div class="news__post__text markdown">
-                {{ post.post_text|parse_text(constant('MSZ_PARSER_MARKDOWN'))|raw }}
-            </div>
-
-            <div class="news__sidebar news__post__details">
-                <a class="news__post__detail news__post__user" href="/profile.php?u={{ post.user_id }}">
-                    <div class="news__post__username" style="{{ post.user_colour|html_colour }}">{{ post.username }}</div>
-                    <div class="avatar news__post__avatar" style="background-image:url('/profile.php?u={{ post.user_id }}&amp;m=avatar');"></div>
-                </a>
-
-                <a class="news__post__detail news__post__info news__post__info--link" href="/news.php?c={{ post.category_id }}">
-                    <div class="news__post__info__name">
-                        Category
-                    </div>
-                    <div class="news__post__info__value">
-                        {{ post.category_name }}
-                    </div>
-                </a>
-
-                <div class="news__post__detail news__post__info">
-                    <div class="news__post__info__name">
-                        Posted
-                    </div>
-                    <time class="news__post__info__value" datetime="{{ post.post_created|date('c') }}" title="{{ post.post_created|date('r') }}">
-                        {{ post.post_created|time_diff }}
-                    </time>
-                </div>
-
-                {% if post.post_updated|date('U') > post.post_created|date('U') %}
-                    <div class="news__post__detail news__post__info">
-                        <div class="news__post__info__name">
-                            Updated
-                        </div>
-                        <time class="news__post__info__value" datetime="{{ post.post_updated|date('c') }}" title="{{ post.post_updated|date('r') }}">
-                            {{ post.post_updated|time_diff }}
-                        </time>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+    {{ news_post(post) }}
 
     {% if comments is defined %}
         <div class="container">

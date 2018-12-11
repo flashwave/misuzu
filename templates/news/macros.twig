@@ -34,3 +34,50 @@
         </div>
     </div>
 {% endmacro %}
+
+{% macro news_post(post) %}
+    <div class="container news__post" style="{% if post.user_colour is not null %}{{ post.user_colour|html_colour('--accent-colour') }}{% endif %}">
+        <div class="news__post__info">
+            <div class="news__post__info__background"></div>
+            <div class="news__post__info__content">
+                {% if post.user_id is not null %}
+                    <div class="news__post__user">
+                        <a class="avatar news__post__avatar"
+                            style="background-image:url('/profile.php?u={{ post.user_id }}&amp;m=avatar');"
+                            href="/profile.php?u={{ post.user_id }}">
+                        </a>
+
+                        <div class="news__post__user__details">
+                            <a class="news__post__username" href="/profile.php?u={{ post.user_id }}">{{ post.username }}</a>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <a class="news__post__category" href="/news.php?c={{ post.category_id }}">
+                    {{ post.category_name }}
+                </a>
+
+                <div class="news__post__date">
+                    Posted
+                    <time datetime="{{ post.post_created|date('c') }}" title="{{ post.post_created|date('r') }}">
+                        {{ post.post_created|time_diff }}
+                    </time>
+                </div>
+
+                {% if post.post_updated|date('U') > post.post_created|date('U') %}
+                    <div class="news__post__date">
+                        Updated
+                        <time datetime="{{ post.post_updated|date('c') }}" title="{{ post.post_updated|date('r') }}">
+                            {{ post.post_updated|time_diff }}
+                        </time>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="news__post__text markdown">
+            <h1>{{ post.post_title }}</h1>
+            {{ post.post_text|parse_text(constant('MSZ_PARSER_MARKDOWN'))|raw }}
+        </div>
+    </div>
+{% endmacro %}
