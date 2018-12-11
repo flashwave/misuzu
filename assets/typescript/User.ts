@@ -3,7 +3,6 @@ interface CurrentUserInfo {
     username: string;
     user_background_settings: number;
     user_colour: number;
-    colour: Colour;
 }
 
 let userInfo: CurrentUserInfo;
@@ -21,9 +20,6 @@ function getRawCurrentUserInfo(): CurrentUserInfo
 function refreshCurrentUserInfo(): void
 {
     userInfo = getRawCurrentUserInfo();
-
-    if (userInfo)
-        userInfo.colour = new Colour(userInfo.user_colour);
 }
 
 function getCurrentUser(attribute: string = null)
@@ -42,5 +38,5 @@ function getCurrentUser(attribute: string = null)
 function userInit(): void
 {
     refreshCurrentUserInfo();
-    console.log(`You are ${getCurrentUser('username')} with user id ${getCurrentUser('user_id')} and colour ${getCurrentUser('colour').hex}.`);
+    console.log(`You are ${getCurrentUser('username')} with user id ${getCurrentUser('user_id')} and colour ${colourGetCSS(getCurrentUser('user_colour'))}.`);
 }

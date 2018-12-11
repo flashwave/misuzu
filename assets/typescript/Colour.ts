@@ -1,77 +1,134 @@
-class Colour {
-    public static readonly INHERIT: number = 0x40000000;
-    public static readonly READABILITY_THRESHOLD: number = 186;
-    public static readonly LUMINANCE_WEIGHT_RED: number = 0.299;
-    public static readonly LUMINANCE_WEIGHT_GREEN: number = 0.587;
-    public static readonly LUMINANCE_WEIGHT_BLUE: number = 0.114;
+const MSZ_COLOUR_INHERIT = 0x40000000,
+    MSZ_COLOUR_READABILITY_THRESHOLD = 186,
+    MSZ_COLOUR_LUMINANCE_WEIGHT_RED = 0.299,
+    MSZ_COLOUR_LUMINANCE_WEIGHT_GREEN = 0.587,
+    MSZ_COLOUR_LUMINANCE_WEIGHT_BLUE = 0.114;
 
-    public raw: number;
+function colourCreate(): number {
+    return 0;
+}
 
-    public constructor(rawColour: number = 0)
-    {
-        this.raw = rawColour === null ? Colour.INHERIT : rawColour;
+function colourNone(): number {
+    return MSZ_COLOUR_INHERIT;
+}
+
+function colourSetInherit(colour: number, enabled: boolean): number {
+    if (enabled) {
+        colour |= MSZ_COLOUR_INHERIT;
+    } else {
+        colour &= ~MSZ_COLOUR_INHERIT;
     }
 
-    public static none(): Colour {
-        return new Colour(Colour.INHERIT);
+    return colour;
+}
+
+function colourGetInherit(colour: number): boolean {
+    return (colour & MSZ_COLOUR_INHERIT) > 0;
+}
+
+function colourGetRed(colour: number): number {
+    return (colour >> 16) & 0xFF;
+}
+
+function colourSetRed(colour: number, red: number): number {
+    red = red & 0xFF;
+    colour &= ~0xFF0000;
+    colour |= red << 16;
+    return colour;
+}
+
+function colourGetGreen(colour: number): number {
+    return (colour >> 8) & 0xFF;
+}
+
+function colourSetGreen(colour: number, green: number): number {
+    green = green & 0xFF;
+    colour &= ~0xFF00;
+    colour |= green << 8;
+    return colour;
+}
+
+function colourGetBlue(colour: number): number {
+    return colour & 0xFF;
+}
+
+function colourSetBlue(colour: number, blue: number): number {
+    blue = blue & 0xFF;
+    colour &= ~0xFF;
+    colour |= blue;
+    return colour;
+}
+
+function colourGetLuminance(colour: number): number {
+    return MSZ_COLOUR_LUMINANCE_WEIGHT_RED * colourGetRed(colour)
+        + MSZ_COLOUR_LUMINANCE_WEIGHT_GREEN * colourGetGreen(colour)
+        + MSZ_COLOUR_LUMINANCE_WEIGHT_BLUE * colourGetBlue(colour);
+}
+
+function colourGetHex(colour: number): string {
+    return '#' + (colour & 0xFFFFFF).toString(16);
+}
+
+function colourGetCSS(colour: number): string {
+    if (colourGetInherit(colour)) {
+        return 'inherit';
     }
 
-    public get inherit(): boolean {
-        return (this.raw & Colour.INHERIT) > 0;
+    return colourGetHex(colour);
+}
+
+function colourGetCSSContrast(
+    colour: number,
+    dark: string = 'dark',
+    light: string = 'light',
+    inheritIsDark: boolean = true
+): string {
+    if (colourGetInherit(colour)) {
+        return inheritIsDark ? dark : light;
     }
 
-    public set inherit(inherit: boolean) {
-        if (inherit) {
-            this.raw |= Colour.INHERIT;
-        } else {
-            this.raw &= ~Colour.INHERIT;
-        }
+    return colourGetLuminance(colour) > MSZ_COLOUR_READABILITY_THRESHOLD
+        ? dark
+        : light;
+}
+
+function colourFromRGB(red: number, green: number, blue: number): number {
+    let colour: number = colourCreate();
+    colour = colourSetRed(colour, red);
+    colour = colourSetGreen(colour, green);
+    colour = colourSetBlue(colour, blue);
+    return colour;
+}
+
+function colourFromHex(hex: string): number {
+    if (hex.startsWith('#'))
+        hex = hex.substr(1);
+
+    const length: number = hex.length;
+
+    if (length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    } else if (length !== 6) {
+        return 0;
     }
 
-    public get red(): number {
-        return (this.raw >> 16) & 0xFF;
-    }
+    return parseInt(hex, 16);
+}
 
-    public set red(red: number) {
-        red = red & 0xFF;
-        this.raw &= ~0xFF0000;
-        this.raw |= red << 16;
-    }
+class ColourProperties {
+    red: number;
+    green: number;
+    blue: number;
+    inherit: boolean;
+    luminance: number;
+}
 
-    public get green(): number {
-        return (this.raw >> 8) & 0xFF;
-    }
-
-    public set green(green: number) {
-        green = green & 0xFF;
-        this.raw &= ~0xFF00;
-        this.raw |= green << 8;
-    }
-
-    public get blue(): number {
-        return this.raw & 0xFF;
-    }
-
-    public set blue(blue: number) {
-        blue = blue & 0xFF;
-        this.raw &= ~0xFF;
-        this.raw |= blue;
-    }
-
-    public get luminance(): number {
-        return Colour.LUMINANCE_WEIGHT_RED * this.red
-            + Colour.LUMINANCE_WEIGHT_GREEN * this.green
-            + Colour.LUMINANCE_WEIGHT_BLUE * this.blue;
-    }
-
-    public get hex(): string
-    {
-        let hex: string = (this.raw & 0xFFFFFF).toString(16);
-
-        if (hex.length < 6)
-            for (let i = 0; i < 6 - hex.length; i++)
-                hex = '0' + hex;
-
-        return '#' + hex;
-    }
+function colourGetProperties(colour: number): ColourProperties {
+    const props: ColourProperties = new ColourProperties;
+    props.red = colourGetRed(colour);
+    props.green = colourGetGreen(colour);
+    props.blue = colourGetBlue(colour);
+    props.inherit = colourGetInherit(colour);
+    props.luminance = colourGetLuminance(colour);
+    return props;
 }
