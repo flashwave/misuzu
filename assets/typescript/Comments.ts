@@ -223,9 +223,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     commentUser.className = 'comment__user comment__user--link';
     commentUser.textContent = comment.username;
     commentUser.href = '/profile?u=' + comment.user_id;
-    commentUser.style.color = comment.user_colour == null || (comment.user_colour & 0x40000000) > 0
-        ? 'inherit'
-        : '#' + (comment.user_colour & 0xFFFFFF).toString(16);
+    commentUser.style.setProperty('--user-colour', colourGetCSS(comment.user_colour));
 
     const commentLink: HTMLAnchorElement = commentInfo.appendChild(document.createElement('a'));
     commentLink.className = 'comment__link';
@@ -308,12 +306,6 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     // reply content
     const replyInfo: HTMLDivElement = replyContent.appendChild(document.createElement('div'));
     replyInfo.className = 'comment__info';
-
-    const replyUser: HTMLDivElement = document.createElement('div');
-    replyUser.className = 'comment__user';
-    replyUser.textContent = comment.username;
-    replyUser.style.color = colourGetCSS(comment.user_colour);
-    replyInfo.appendChild(replyUser);
 
     const replyText: HTMLTextAreaElement = replyContent.appendChild(document.createElement('textarea'));
     replyText.className = 'comment__text input__textarea comment__text--input';
