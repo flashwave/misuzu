@@ -1,10 +1,6 @@
 .comment {
     margin: 10px;
 
-    &:not(:last-child) {
-        margin-bottom: 4px;
-    }
-
     &__reply-toggle {
         display: none;
 
@@ -87,7 +83,7 @@
     &__replies {
         &--indent {
             &-1, &-2, &-3, &-4, &-5 {
-                margin-left: 50px;
+                margin-left: 20px;
             }
         }
 
@@ -101,7 +97,7 @@
         flex: 0 0 auto;
         height: 50px;
         width: 50px;
-        margin-right: 4px;
+        margin-right: 5px;
     }
 
     &__content {
@@ -110,6 +106,7 @@
         flex-direction: column;
         overflow: hidden;
         word-wrap: break-word;
+        padding-left: 5px;
     }
 
     &__info {
@@ -134,7 +131,7 @@
 
     &__user {
         color: var(--user-colour);
-        font-weight: 700;
+        text-shadow: 0 0 5px var(--user-colour);
         text-decoration: none;
 
         &--link:hover {

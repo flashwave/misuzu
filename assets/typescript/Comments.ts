@@ -354,7 +354,7 @@ function commentInsert(comment: CommentPostInfo, form: HTMLFormElement): void
 }
 
 function commentVoteEventHandler(ev: Event): void {
-    const target: HTMLAnchorElement = ev.target as HTMLAnchorElement,
+    const target: HTMLAnchorElement = this as HTMLAnchorElement,
         commentId: number = parseInt(target.dataset.commentId),
         voteType: CommentVoteType = parseInt(target.dataset.commentVote),
         buttons: NodeListOf<HTMLAnchorElement> = document.querySelectorAll(`.comment__action--vote[data-comment-id="${commentId}"]`),

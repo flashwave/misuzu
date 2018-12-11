@@ -18,10 +18,6 @@
                 style="background-image:url('/profile.php?m=avatar&amp;u={{ user.user_id }}')">
             </div>
             <div class="comment__content">
-                <div class="comment__info">
-                    <div class="comment__user"
-                        style="{{ user.user_colour|html_colour }}">{{ user.username }}</div>
-                </div>
                 <textarea
                     class="comment__text input__textarea comment__text--input"
                     name="comment[text]" placeholder="Share your extensive insights..."></textarea>
@@ -85,6 +81,7 @@
                             {% if perms.can_vote %}
                                 <a class="comment__action comment__action--link comment__action--vote comment__action--like{% if comment.comment_user_vote == 'Like' %} comment__action--voted{% endif %}" data-comment-id="{{ comment.comment_id }}" data-comment-vote="{{ comment.comment_user_vote == 'Like' ? '0' : '1' }}"
                                 href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Like' ? '0' : '1' }}&amp;csrf={{ csrf_token('comments') }}">
+                                    <!--i class="fas fa-thumbs-up"></i-->
                                     Like
                                     {% if comment.comment_likes > 0 %}
                                         ({{ comment.comment_likes|number_format }})
@@ -92,6 +89,7 @@
                                 </a>
                                 <a class="comment__action comment__action--link comment__action--vote comment__action--dislike{% if comment.comment_user_vote == 'Dislike' %} comment__action--voted{% endif %}" data-comment-id="{{ comment.comment_id }}" data-comment-vote="{{ comment.comment_user_vote == 'Dislike' ? '0' : '-1' }}"
                                 href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Dislike' ? '0' : '-1' }}&amp;csrf={{ csrf_token('comments') }}">
+                                    <!--i class="fas fa-thumbs-down"></i-->
                                     Dislike
                                     {% if comment.comment_dislikes > 0 %}
                                         ({{ comment.comment_dislikes|number_format }})
