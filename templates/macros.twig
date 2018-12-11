@@ -23,7 +23,7 @@
         {% set currentPage  = currentOffset // itemRange %}
         {% set useRanges    = useRanges|default(true) %}
         {% set offsetParam  = offsetParam|default(useRanges ? 'o' : 'p') %}
-        {% set pageRange    = pageRange|default(10) %}
+        {% set pageRange    = pageRange|default(5) %}
         {% set urlSuffix    = urlSuffix|default('') %}
 
         <div class="pagination">
