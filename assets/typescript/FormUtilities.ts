@@ -104,6 +104,8 @@ function updateCSRF(token: string, realm: string = null, name: string = 'csrf'):
         }
     }
 
+    setCSRF(realm, token);
+
     const elements: NodeListOf<HTMLInputElement> = document.getElementsByName(`${name}[${realm}]`) as NodeListOf<HTMLInputElement>;
 
     for (let i = 0; i < elements.length; i++) {
