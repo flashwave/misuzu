@@ -152,21 +152,7 @@ $logs = [
     'amount' => audit_log_count(user_session_current('user_id')),
     'offset' => max(0, intval($_GET['logs']['offset'] ?? 0)),
     'take' => clamp($_GET['logs']['take'] ?? 15, 5, 30),
-    'strings' => [
-        'PERSONAL_EMAIL_CHANGE' => 'Changed e-mail address to %s.',
-        'PERSONAL_PASSWORD_CHANGE' => 'Changed account password.',
-        'PERSONAL_SESSION_DESTROY' => 'Ended session #%d.',
-        'PERSONAL_SESSION_DESTROY_ALL' => 'Ended all personal sessions.',
-        'PASSWORD_RESET' => 'Successfully used the password reset form to change password.',
-        'CHANGELOG_ENTRY_CREATE' => 'Created a new changelog entry #%d.',
-        'CHANGELOG_ENTRY_EDIT' => 'Edited changelog entry #%d.',
-        'CHANGELOG_TAG_ADD' => 'Added tag #%2$d to changelog entry #%1$d.',
-        'CHANGELOG_TAG_REMOVE' => 'Removed tag #%2$d from changelog entry #%1$d.',
-        'CHANGELOG_TAG_CREATE' => 'Created new changelog tag #%d.',
-        'CHANGELOG_TAG_EDIT' => 'Edited changelog tag #%d.',
-        'CHANGELOG_ACTION_CREATE' => 'Created new changelog action #%d.',
-        'CHANGELOG_ACTION_EDIT' => 'Edited changelog action #%d.',
-    ],
+    'strings' => MSZ_AUDIT_LOG_STRINGS,
 ];
 
 $sessions['list'] = user_session_list($sessions['offset'], $sessions['take'], user_session_current('user_id'));

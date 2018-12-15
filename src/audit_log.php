@@ -1,4 +1,21 @@
 <?php
+// replace this with a localisation system
+define('MSZ_AUDIT_LOG_STRINGS', [
+    'PERSONAL_EMAIL_CHANGE' => 'Changed e-mail address to %s.',
+    'PERSONAL_PASSWORD_CHANGE' => 'Changed account password.',
+    'PERSONAL_SESSION_DESTROY' => 'Ended session #%d.',
+    'PERSONAL_SESSION_DESTROY_ALL' => 'Ended all personal sessions.',
+    'PASSWORD_RESET' => 'Successfully used the password reset form to change password.',
+    'CHANGELOG_ENTRY_CREATE' => 'Created a new changelog entry #%d.',
+    'CHANGELOG_ENTRY_EDIT' => 'Edited changelog entry #%d.',
+    'CHANGELOG_TAG_ADD' => 'Added tag #%2$d to changelog entry #%1$d.',
+    'CHANGELOG_TAG_REMOVE' => 'Removed tag #%2$d from changelog entry #%1$d.',
+    'CHANGELOG_TAG_CREATE' => 'Created new changelog tag #%d.',
+    'CHANGELOG_TAG_EDIT' => 'Edited changelog tag #%d.',
+    'CHANGELOG_ACTION_CREATE' => 'Created new changelog action #%d.',
+    'CHANGELOG_ACTION_EDIT' => 'Edited changelog action #%d.',
+]);
+
 function audit_log(
     string $action,
     int $userId = 0,
@@ -32,8 +49,8 @@ function audit_log_count($userId = 0): int
     $getCount = db_prepare(sprintf('
         SELECT COUNT(`log_id`)
         FROM `msz_audit_log`
-        WHERE %s
-    ', $userId < 1 ? '1' : '`user_id` = :user_id'));
+        %s
+    ', $userId < 1 ? '' : 'WHERE `user_id` = :user_id'));
 
     if ($userId >= 1) {
         $getCount->bindValue('user_id', $userId);
@@ -46,24 +63,28 @@ function audit_log_list(int $offset, int $take, int $userId = 0): array
 {
     $offset = max(0, $offset);
     $take = max(1, $take);
+    $isGlobal = $userId < 1;
 
-    $getLogs = db_prepare(sprintf('
-        SELECT
-            l.`log_id`, l.`log_action`, l.`log_params`, l.`log_created`, l.`log_country`,
-            u.`user_id`, u.`username`,
-            INET6_NTOA(l.`log_ip`) as `log_ip`,
-            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-        FROM `msz_audit_log` as l
-        LEFT JOIN `msz_users` as u
-        ON u.`user_id` = l.`user_id`
-        LEFT JOIN `msz_roles` as r
-        ON r.`role_id` = u.`display_role`
-        WHERE %s
-        ORDER BY l.`log_id` DESC
-        LIMIT :offset, :take
-    ', $userId < 1 ? '1' : 'l.`user_id` = :user_id'));
+    $getLogs = db_prepare(sprintf(
+        '
+            SELECT
+                l.`log_id`, l.`log_action`, l.`log_params`, l.`log_created`, l.`log_country`,
+                INET6_NTOA(l.`log_ip`) as `log_ip`
+                %2$s
+            FROM `msz_audit_log` as l
+            %1$s
+            ORDER BY l.`log_id` DESC
+            LIMIT :offset, :take
+        ',
+        $isGlobal
+            ? 'LEFT JOIN `msz_users` as u ON u.`user_id` = l.`user_id` LEFT JOIN `msz_roles` as r ON r.`role_id` = u.`display_role`'
+            : 'WHERE l.`user_id` = :user_id',
+        $isGlobal
+            ? ', u.`user_id`, u.`username`, COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`'
+            : ''
+    ));
 
-    if ($userId >= 1) {
+    if (!$isGlobal) {
         $getLogs->bindValue('user_id', $userId);
     }
 

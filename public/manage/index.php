@@ -15,11 +15,26 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        tpl_var('log_dump', print_r(audit_log_list(0, 50), true));
-        echo tpl_render('manage.general.logs');
+        $logTake = 50;
+        $logOffset = (int)($_GET['o'] ?? 0);
+        $logCount = audit_log_count();
+        $logs = audit_log_list($logOffset, $logTake);
+
+        echo tpl_render('manage.general.logs', [
+            'global_logs' => $logs,
+            'global_logs_take' => $logTake,
+            'global_logs_offset' => $logOffset,
+            'global_logs_count' => $logCount,
+            'global_logs_strings' => MSZ_AUDIT_LOG_STRINGS,
+        ]);
         break;
 
     case 'quotes':
+        if (!perms_check($generalPerms, MSZ_PERM_GENERAL_VIEW_LOGS)) {
+            echo render_error(403);
+            break;
+        }
+
         $setId = (int)($_GET['s'] ?? '');
         $quoteId = (int)($_GET['q'] ?? '');
 

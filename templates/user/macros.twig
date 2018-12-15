@@ -179,6 +179,13 @@
 
 {% macro user_account_log(data, strings) %}
     <div class="settings__account-log" id="account-log-{{ data.log_id }}">
+        {% if data.user_id is defined %}
+            <a href="/profile.php?u={{ data.user_id }}" class="settings__account-log__user" style="{{ data.user_colour|html_colour }}">
+                <div class="avatar settings__account-log__user__avatar" style="background-image:url('/profile.php?u={{ data.user_id }}&amp;m=avatar');"></div>
+                <div class="settings__account-log__user__name">{{ data.username }}</div>
+            </a>
+        {% endif %}
+
         <div class="settings__account-log__container">
             <div class="settings__account-log__important">
                 <div class="flag flag--{{ data.log_country|lower }} settings__login-attempt__flag" title="{{ data.log_country|country_name }}">{{ data.log_country }}</div>

@@ -1,7 +1,31 @@
 {% extends 'manage/general/master.twig' %}
+{% from 'macros.twig' import container_title, pagination %}
+{% from 'user/macros.twig' import user_account_log %}
 
 {% block manage_content %}
-<pre>
-    {{ log_dump }}
-</pre>
+    <div class="container settings__container">
+        {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Global Log', '', true) }}
+        {% set glp = pagination(
+            global_logs_count,
+            global_logs_take,
+            global_logs_offset,
+            url_construct('/manage/index.php', {
+                'v': 'logs',
+            })
+        ) %}
+
+        <div class="settings__account-logs">
+            <div class="settings__account-logs__pagination">
+                {{ glp }}
+            </div>
+
+            {% for log in global_logs %}
+                {{ user_account_log(log, global_logs_strings) }}
+            {% endfor %}
+
+            <div class="settings__account-logs__pagination">
+                {{ glp }}
+            </div>
+        </div>
+    </div>
 {% endblock %}
