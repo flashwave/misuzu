@@ -35,14 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     user_session_delete($session['session_id']);
-                    audit_log('PERSONAL_SESSION_DESTROY', user_session_current('user_id'), [
+                    audit_log(MSZ_AUDIT_PERSONAL_SESSION_DESTROY, user_session_current('user_id'), [
                         $session['session_id'],
                     ]);
                 }
             } elseif ($_POST['session'] === 'all') {
                 $currentSessionKilled = true;
                 user_session_purge_all(user_session_current('user_id'));
-                audit_log('PERSONAL_SESSION_DESTROY_ALL', user_session_current('user_id'));
+                audit_log(MSZ_AUDIT_PERSONAL_SESSION_DESTROY_ALL, user_session_current('user_id'));
             }
 
             if ($currentSessionKilled) {
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             }
                         } else {
                             user_email_set(user_session_current('user_id'), $_POST['email']['new']);
-                            audit_log('PERSONAL_EMAIL_CHANGE', user_session_current('user_id'), [
+                            audit_log(MSZ_AUDIT_PERSONAL_EMAIL_CHANGE, user_session_current('user_id'), [
                                 $_POST['email']['new'],
                             ]);
                         }
@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $errors[] = 'The given passwords was too weak.';
                         } else {
                             user_password_set(user_session_current('user_id'), $_POST['password']['new']);
-                            audit_log('PERSONAL_PASSWORD_CHANGE', user_session_current('user_id'));
+                            audit_log(MSZ_AUDIT_PERSONAL_PASSWORD_CHANGE, user_session_current('user_id'));
                         }
                     }
                 }

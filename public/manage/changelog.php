@@ -111,11 +111,11 @@ switch ($_GET['v'] ?? null) {
 
                 if ($changeId < 1) {
                     $changeId = db_last_insert_id();
-                    audit_log('CHANGELOG_ENTRY_CREATE', user_session_current('user_id', 0), [$changeId]);
+                    audit_log(MSZ_AUDIT_CHANGELOG_ENTRY_CREATE, user_session_current('user_id', 0), [$changeId]);
                     header('Location: ?v=change&c=' . $changeId);
                     return;
                 } else {
-                    audit_log('CHANGELOG_ENTRY_EDIT', user_session_current('user_id', 0), [$changeId]);
+                    audit_log(MSZ_AUDIT_CHANGELOG_ENTRY_EDIT, user_session_current('user_id', 0), [$changeId]);
                 }
             }
 
@@ -125,7 +125,7 @@ switch ($_GET['v'] ?? null) {
                 $addTag->bindValue('tag_id', $_POST['add_tag']);
 
                 if ($addTag->execute()) {
-                    audit_log('CHANGELOG_TAG_ADD', user_session_current('user_id', 0), [
+                    audit_log(MSZ_AUDIT_CHANGELOG_TAG_ADD, user_session_current('user_id', 0), [
                         $changeId,
                         $_POST['add_tag']
                     ]);
@@ -142,7 +142,7 @@ switch ($_GET['v'] ?? null) {
                 $removeTag->bindValue('tag_id', $_POST['remove_tag']);
 
                 if ($removeTag->execute()) {
-                    audit_log('CHANGELOG_TAG_REMOVE', user_session_current('user_id', 0), [
+                    audit_log(MSZ_AUDIT_CHANGELOG_TAG_REMOVE, user_session_current('user_id', 0), [
                         $changeId,
                         $_POST['remove_tag']
                     ]);
@@ -286,11 +286,11 @@ switch ($_GET['v'] ?? null) {
 
                 if ($tagId < 1) {
                     $tagId = db_last_insert_id();
-                    audit_log('CHANGELOG_TAG_EDIT', user_session_current('user_id', 0), [$tagId]);
+                    audit_log(MSZ_AUDIT_CHANGELOG_TAG_EDIT, user_session_current('user_id', 0), [$tagId]);
                     header('Location: ?v=tag&t=' . $tagId);
                     return;
                 } else {
-                    audit_log('CHANGELOG_TAG_CREATE', user_session_current('user_id', 0), [$tagId]);
+                    audit_log(MSZ_AUDIT_CHANGELOG_TAG_CREATE, user_session_current('user_id', 0), [$tagId]);
                 }
             }
         }
@@ -360,11 +360,11 @@ switch ($_GET['v'] ?? null) {
 
                 if ($actionId < 1) {
                     $actionId = db_last_insert_id();
-                    audit_log('CHANGELOG_ACTION_CREATE', user_session_current('user_id', 0), [$actionId]);
+                    audit_log(MSZ_AUDIT_CHANGELOG_ACTION_CREATE, user_session_current('user_id', 0), [$actionId]);
                     header('Location: ?v=action&a=' . $actionId);
                     return;
                 } else {
-                    audit_log('CHANGELOG_ACTION_EDIT', user_session_current('user_id', 0), [$actionId]);
+                    audit_log(MSZ_AUDIT_CHANGELOG_ACTION_EDIT, user_session_current('user_id', 0), [$actionId]);
                 }
             }
         }

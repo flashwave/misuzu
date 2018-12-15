@@ -1,19 +1,33 @@
 <?php
+define('MSZ_AUDIT_PERSONAL_EMAIL_CHANGE',           'PERSONAL_EMAIL_CHANGE');
+define('MSZ_AUDIT_PERSONAL_PASSWORD_CHANGE',        'PERSONAL_PASSWORD_CHANGE');
+define('MSZ_AUDIT_PERSONAL_SESSION_DESTROY',        'PERSONAL_SESSION_DESTROY');
+define('MSZ_AUDIT_PERSONAL_SESSION_DESTROY_ALL',    'PERSONAL_SESSION_DESTROY_ALL');
+define('MSZ_AUDIT_PASSWORD_RESET',                  'PASSWORD_RESET');
+define('MSZ_AUDIT_CHANGELOG_ENTRY_CREATE',          'CHANGELOG_ENTRY_CREATE');
+define('MSZ_AUDIT_CHANGELOG_ENTRY_EDIT',            'CHANGELOG_ENTRY_EDIT');
+define('MSZ_AUDIT_CHANGELOG_TAG_ADD',               'CHANGELOG_TAG_ADD');
+define('MSZ_AUDIT_CHANGELOG_TAG_REMOVE',            'CHANGELOG_TAG_REMOVE');
+define('MSZ_AUDIT_CHANGELOG_TAG_CREATE',            'CHANGELOG_TAG_CREATE');
+define('MSZ_AUDIT_CHANGELOG_TAG_EDIT',              'CHANGELOG_TAG_EDIT');
+define('MSZ_AUDIT_CHANGELOG_ACTION_CREATE',         'CHANGELOG_ACTION_CREATE');
+define('MSZ_AUDIT_CHANGELOG_ACTION_EDIT',           'CHANGELOG_ACTION_EDIT');
+
 // replace this with a localisation system
 define('MSZ_AUDIT_LOG_STRINGS', [
-    'PERSONAL_EMAIL_CHANGE' => 'Changed e-mail address to %s.',
-    'PERSONAL_PASSWORD_CHANGE' => 'Changed account password.',
-    'PERSONAL_SESSION_DESTROY' => 'Ended session #%d.',
-    'PERSONAL_SESSION_DESTROY_ALL' => 'Ended all personal sessions.',
-    'PASSWORD_RESET' => 'Successfully used the password reset form to change password.',
-    'CHANGELOG_ENTRY_CREATE' => 'Created a new changelog entry #%d.',
-    'CHANGELOG_ENTRY_EDIT' => 'Edited changelog entry #%d.',
-    'CHANGELOG_TAG_ADD' => 'Added tag #%2$d to changelog entry #%1$d.',
-    'CHANGELOG_TAG_REMOVE' => 'Removed tag #%2$d from changelog entry #%1$d.',
-    'CHANGELOG_TAG_CREATE' => 'Created new changelog tag #%d.',
-    'CHANGELOG_TAG_EDIT' => 'Edited changelog tag #%d.',
-    'CHANGELOG_ACTION_CREATE' => 'Created new changelog action #%d.',
-    'CHANGELOG_ACTION_EDIT' => 'Edited changelog action #%d.',
+    MSZ_AUDIT_PERSONAL_EMAIL_CHANGE         => 'Changed e-mail address to %s.',
+    MSZ_AUDIT_PERSONAL_PASSWORD_CHANGE      => 'Changed account password.',
+    MSZ_AUDIT_PERSONAL_SESSION_DESTROY      => 'Ended session #%d.',
+    MSZ_AUDIT_PERSONAL_SESSION_DESTROY_ALL  => 'Ended all personal sessions.',
+    MSZ_AUDIT_PASSWORD_RESET                => 'Successfully used the password reset form to change password.',
+    MSZ_AUDIT_CHANGELOG_ENTRY_CREATE        => 'Created a new changelog entry #%d.',
+    MSZ_AUDIT_CHANGELOG_ENTRY_EDIT          => 'Edited changelog entry #%d.',
+    MSZ_AUDIT_CHANGELOG_TAG_ADD             => 'Added tag #%2$d to changelog entry #%1$d.',
+    MSZ_AUDIT_CHANGELOG_TAG_REMOVE          => 'Removed tag #%2$d from changelog entry #%1$d.',
+    MSZ_AUDIT_CHANGELOG_TAG_CREATE          => 'Created new changelog tag #%d.',
+    MSZ_AUDIT_CHANGELOG_TAG_EDIT            => 'Edited changelog tag #%d.',
+    MSZ_AUDIT_CHANGELOG_ACTION_CREATE       => 'Created new changelog action #%d.',
+    MSZ_AUDIT_CHANGELOG_ACTION_EDIT         => 'Edited changelog action #%d.',
 ]);
 
 function audit_log(

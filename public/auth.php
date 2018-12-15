@@ -109,7 +109,7 @@ switch ($authMode) {
             }
 
             if (user_password_set($resetUser['user_id'], $authPassword['new'])) {
-                audit_log('PASSWORD_RESET', $resetUser['user_id']);
+                audit_log(MSZ_AUDIT_PASSWORD_RESET, $resetUser['user_id']);
             } else {
                 throw new UnexpectedValueException('Password reset failed.');
             }
