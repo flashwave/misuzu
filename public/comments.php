@@ -114,6 +114,48 @@ switch ($_GET['m'] ?? null) {
         ]);
         break;
 
+    case 'restore':
+        if (!$commentPerms['can_delete_any']) {
+            echo render_info_or_json($isXHR, "You're not allowed to restore deleted comments.", 403);
+            break;
+        }
+
+        $comment = (int)($_GET['c'] ?? 0);
+        $commentInfo = comments_post_get($comment, false);
+
+        if (!$commentInfo) {
+            echo render_info_or_json($isXHR, "This comment doesn't exist.", 400);
+            break;
+        }
+
+        $currentUserId = user_session_current('user_id', 0);
+
+        if ($commentInfo['comment_deleted'] === null) {
+            echo render_info_or_json($isXHR, "This comment isn't in a deleted state.", 400);
+            break;
+        }
+
+        if (!comments_post_delete($comment, false)) {
+            echo render_info_or_json($isXHR, 'Failed to restore comment.', 500);
+            break;
+        }
+
+        audit_log(MSZ_AUDIT_COMMENT_ENTRY_RESTORE, $currentUserId, [
+            $comment,
+            (int)($commentInfo['user_id'] ?? 0),
+            $commentInfo['username'] ?? '(Deleted User)',
+        ]);
+
+        if ($redirect) {
+            header('Location: ' . $redirect . '#comment-' . $comment);
+            break;
+        }
+
+        echo json_encode([
+            'id' => $comment,
+        ]);
+        break;
+
     case 'create':
         if (!$commentPerms['can_comment']) {
             echo render_info_or_json($isXHR, "You're not allowed to post comments.", 403);

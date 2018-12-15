@@ -42,8 +42,8 @@
 {% macro comments_entry(comment, indent, category, user, perms) %}
     {% from '_layout/input.twig' import input_checkbox_raw %}
 
-    {% if comment.comment_deleted is null or comment.comment_replies|length > 0 %}
-        <div class="comment" id="comment-{{ comment.comment_id }}">
+    {% if perms.can_delete_any or (comment.comment_deleted is null or comment.comment_replies|length > 0) %}
+        <div class="comment{% if comment.comment_deleted is not null %} comment--deleted{% endif %}" id="comment-{{ comment.comment_id }}">
             <div class="comment__container">
                 <a class="avatar comment__avatar"
                     href="/profile.php?u={{ comment.user_id }}"
@@ -73,11 +73,11 @@
                             {% endspaceless %}</span>
                         {% endif %}
                     </div>
-                    <div class="comment__text{{ comment.comment_deleted is null ? '' : ' comment__text--deleted' }}">
-                        {{ comment.comment_deleted is null ? (comment.comment_html is defined ? comment.comment_html|raw : comment.comment_text|nl2br) : 'deleted' }}
+                    <div class="comment__text">
+                        {{ comment.comment_deleted is null or perms.can_delete_any ? (comment.comment_html is defined ? comment.comment_html|raw : comment.comment_text|nl2br) : '(deleted)' }}
                     </div>
-                    {% if comment.comment_deleted is null and user is not null %}
-                        <div class="comment__actions">
+                    <div class="comment__actions">
+                        {% if comment.comment_deleted is null and user is not null %}
                             {% if perms.can_vote %}
                                 <a class="comment__action comment__action--link comment__action--vote comment__action--like{% if comment.comment_user_vote == 'Like' %} comment__action--voted{% endif %}" data-comment-id="{{ comment.comment_id }}" data-comment-vote="{{ comment.comment_user_vote == 'Like' ? '0' : '1' }}"
                                 href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Like' ? '0' : '1' }}&amp;csrf={{ csrf_token('comments') }}">
@@ -100,14 +100,15 @@
                                 <label class="comment__action comment__action--link" for="comment-reply-toggle-{{ comment.comment_id }}">Reply</label>
                             {% endif %}
                             {% if perms.can_delete_any or (comment.user_id == user.user_id and perms.can_delete) %}
-                                <a class="comment__action comment__action--link comment__action--hide comment__action--delete" data-comment-id="{{ comment.comment_id }}"
-                                    href="/comments.php?m=delete&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token('comments') }}">Delete</a>
+                                <a class="comment__action comment__action--link comment__action--hide comment__action--delete" data-comment-id="{{ comment.comment_id }}" href="/comments.php?m=delete&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token('comments') }}">Delete</a>
                             {% endif %}
                             {# if user is not null %}
                                 <a class="comment__action comment__action--link comment__action--hide" href="#">Report</a>
                             {% endif #}
-                        </div>
-                    {% endif %}
+                        {% elseif perms.can_delete_any %}
+                                <a class="comment__action comment__action--link comment__action--restore" data-comment-id="{{ comment.comment_id }}" href="/comments.php?m=restore&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token('comments') }}">Restore</a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 

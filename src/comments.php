@@ -213,29 +213,22 @@ define('MSZ_COMMENTS_CATEGORY_QUERY', '
     LEFT JOIN `msz_roles` as r
     ON r.`role_id` = u.`display_role`
     WHERE p.`category_id` = :category
-    AND p.`comment_deleted` IS NULL
-    %s
-    ORDER BY p.`comment_pinned` DESC, p.`comment_id` %s
+    %1$s
+    ORDER BY p.`comment_deleted` ASC, p.`comment_pinned` DESC, p.`comment_id` %2$s
 ');
-define('MSZ_COMMENTS_CATEGORY_QUERY_ROOT', sprintf(
-    MSZ_COMMENTS_CATEGORY_QUERY,
-    'AND p.`comment_reply_to` IS NULL',
-    'DESC'
-));
-define('MSZ_COMMENTS_CATEGORY_QUERY_REPLIES', sprintf(
-    MSZ_COMMENTS_CATEGORY_QUERY,
-    'AND p.`comment_reply_to` = :parent',
-    'ASC'
-));
 
-// heavily recursive
+// The $parent param should never be used outside of this function itself and should always remain the last of the list.
 function comments_category_get(int $category, int $user, ?int $parent = null): array
 {
-    if ($parent !== null) {
-        $getComments = db_prepare(MSZ_COMMENTS_CATEGORY_QUERY_REPLIES);
+    $isParent = $parent === null;
+    $getComments = db_prepare(sprintf(
+        MSZ_COMMENTS_CATEGORY_QUERY,
+        $isParent ? 'AND p.`comment_reply_to` IS NULL' : 'AND p.`comment_reply_to` = :parent',
+        $isParent ? 'DESC' : 'ASC'
+    ));
+
+    if (!$isParent) {
         $getComments->bindValue('parent', $parent);
-    } else {
-        $getComments = db_prepare(MSZ_COMMENTS_CATEGORY_QUERY_ROOT);
     }
 
     $getComments->bindValue('user', $user);

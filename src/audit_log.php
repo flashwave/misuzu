@@ -14,6 +14,7 @@ define('MSZ_AUDIT_CHANGELOG_ACTION_CREATE', 'CHANGELOG_ACTION_CREATE');
 define('MSZ_AUDIT_CHANGELOG_ACTION_EDIT', 'CHANGELOG_ACTION_EDIT');
 define('MSZ_AUDIT_COMMENT_ENTRY_DELETE', 'COMMENT_ENTRY_DELETE');
 define('MSZ_AUDIT_COMMENT_ENTRY_DELETE_MOD', 'COMMENT_ENTRY_DELETE_MOD');
+define('MSZ_AUDIT_COMMENT_ENTRY_RESTORE', 'COMMENT_ENTRY_RESTORE');
 define('MSZ_AUDIT_NEWS_POST_CREATE', 'NEWS_POST_CREATE');
 define('MSZ_AUDIT_NEWS_POST_EDIT', 'NEWS_POST_EDIT');
 define('MSZ_AUDIT_NEWS_CATEGORY_CREATE', 'NEWS_CATEGORY_CREATE');
@@ -36,6 +37,7 @@ define('MSZ_AUDIT_LOG_STRINGS', [
     MSZ_AUDIT_CHANGELOG_ACTION_EDIT         => 'Edited changelog action #%d.',
     MSZ_AUDIT_COMMENT_ENTRY_DELETE          => 'Deleted comment #%d.',
     MSZ_AUDIT_COMMENT_ENTRY_DELETE_MOD      => 'Deleted comment #%d by user #%d %s.',
+    MSZ_AUDIT_COMMENT_ENTRY_RESTORE         => 'Restored comment #%d by user #%d %s.',
     MSZ_AUDIT_NEWS_POST_CREATE              => 'Created news post #%d.',
     MSZ_AUDIT_NEWS_POST_EDIT                => 'Edited news post #%d.',
     MSZ_AUDIT_NEWS_CATEGORY_CREATE          => 'Created news category #%d.',

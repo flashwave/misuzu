@@ -13,6 +13,15 @@
         display: none;
     }
 
+    &--deleted > &__container {
+        opacity: .5;
+        transition: opacity .2s;
+
+        &:hover {
+            opacity: .9;
+        }
+    }
+
     &__container {
         display: flex;
         margin-bottom: 3px;
@@ -122,10 +131,6 @@
             min-height: 50px;
             font: 12px/20px @mio-font-regular;
             margin-right: 1px;
-        }
-
-        &--deleted {
-            font-style: italic;
         }
     }
 
