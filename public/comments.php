@@ -59,9 +59,23 @@ switch ($_GET['m'] ?? null) {
 
     case 'delete':
         $comment = (int)($_GET['c'] ?? 0);
+        $commentInfo = comments_post_get($comment, false);
 
-        if ($comment < 1) {
-            echo render_info_or_json($isXHR, 'Missing data.', 400);
+        if (!$commentInfo) {
+            echo render_info_or_json($isXHR, "This comment doesn't exist.", 400);
+            break;
+        }
+
+        $currentUserId = user_session_current('user_id', 0);
+        $isOwnComment = (int)$commentInfo['user_id'] === $currentUserId;
+        $isModAction = $commentPerms['can_delete_any'] && !$isOwnComment;
+
+        if ($commentInfo['comment_deleted'] !== null) {
+            echo render_info_or_json(
+                $isXHR,
+                $commentPerms['can_delete_any'] ? 'This comment is already marked for deletion.' : "This comment doesn't exist.",
+                400
+            );
             break;
         }
 
@@ -70,8 +84,7 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        if (!$commentPerms['can_delete_any']
-            && !comments_post_check_ownership($comment, user_session_current('user_id', 0))) {
+        if (!$isModAction && !$isOwnComment) {
             echo render_info_or_json($isXHR, "You're not allowed to delete comments made by others.", 403);
             break;
         }
@@ -81,13 +94,23 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
+        if ($isModAction) {
+            audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE_MOD, $currentUserId, [
+                $comment,
+                (int)($commentInfo['user_id'] ?? 0),
+                $commentInfo['username'] ?? '(Deleted User)',
+            ]);
+        } else {
+            audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE, $currentUserId, [$comment]);
+        }
+
         if ($redirect) {
             header('Location: ' . $redirect);
             break;
         }
 
         echo json_encode([
-            'comment_id' => (int)$comment,
+            'id' => $comment,
         ]);
         break;
 

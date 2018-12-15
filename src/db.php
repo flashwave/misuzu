@@ -73,7 +73,7 @@ function db_connect(string $name, ?array $options = null)
         return MSZ_DATABASE_CONNECT_UNSUPPORTED;
     }
 
-    $dsn = $options['driver'] . ':';
+    $dsn = "{$options['driver']}:";
     $pdoOptions = [
         PDO::ATTR_CASE => PDO::CASE_NATURAL,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -98,15 +98,15 @@ function db_connect(string $name, ?array $options = null)
         case 'mysql':
             $options = array_merge(MSZ_DATABASE_MYSQL_DEFAULTS, $options);
 
-            if ($options['unix_socket'] ?? false) {
-                $dsn .= 'unix_socket=' . $options['unix_socket'] . ';';
-            } else {
-                $dsn .= 'host=' . $options['host'] . ';';
-                $dsn .= 'port=' . intval($options['port']) . ';';
-            }
+            $dsn .= empty($options['unix_socket'])
+                ? sprintf('host=%s;port=%d;', $options['host'], $options['port'])
+                : sprintf('unix_socket=%s;', $options['unix_socket']);
 
-            $dsn .= 'charset=' . ($options['charset'] ?? 'utf8mb4') . ';';
-            $dsn .= 'dbname=' . ($options['database'] ?? 'misuzu') . ';';
+            $dsn .= sprintf(
+                'charset=%s;dbname=%s;',
+                $options['charset'] ?? 'utf8mb4',
+                $options['database'] ?? 'misuzu'
+            );
 
             $pdoOptions[PDO::MYSQL_ATTR_INIT_COMMAND] = "
                 SET SESSION
@@ -118,8 +118,8 @@ function db_connect(string $name, ?array $options = null)
 
     $connection = new PDO(
         $dsn,
-        ($options['username'] ?? null),
-        ($options['password'] ?? null),
+        $options['username'] ?? null,
+        $options['password'] ?? null,
         $pdoOptions
     );
 

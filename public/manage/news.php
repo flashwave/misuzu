@@ -48,11 +48,20 @@ switch ($_GET['v'] ?? null) {
         $categoryId = (int)($_GET['c'] ?? null);
 
         if (!empty($_POST['category']) && csrf_verify('news_category', $_POST['csrf'] ?? '')) {
+            $originalCategoryId = (int)($_POST['category']['id'] ?? null);
             $categoryId = news_category_create(
                 $_POST['category']['name'] ?? null,
                 $_POST['category']['description'] ?? null,
                 !empty($_POST['category']['hidden']),
-                (int)($_POST['category']['id'] ?? null)
+                $originalCategoryId
+            );
+
+            audit_log(
+                $originalCategoryId === $categoryId
+                    ? MSZ_AUDIT_NEWS_CATEGORY_EDIT
+                    : MSZ_AUDIT_NEWS_CATEGORY_CREATE,
+                user_session_current('user_id'),
+                [$categoryId]
             );
         }
 
@@ -69,6 +78,8 @@ switch ($_GET['v'] ?? null) {
         $categories = news_categories_get(0, 0, false, false, true);
 
         if (!empty($_POST['post']) && csrf_verify('news_post', $_POST['csrf'] ?? '')) {
+            $originalPostId = (int)($_POST['post']['id'] ?? null);
+            $currentUserId = user_session_current('user_id');
             $postId = news_post_create(
                 $_POST['post']['title'] ?? null,
                 $_POST['post']['text'] ?? null,
@@ -76,7 +87,14 @@ switch ($_GET['v'] ?? null) {
                 user_session_current('user_id'),
                 !empty($_POST['post']['featured']),
                 null,
-                (int)($_POST['post']['id'] ?? null)
+                $originalPostId
+            );
+            audit_log(
+                $originalPostId === $postId
+                    ? MSZ_AUDIT_NEWS_POST_EDIT
+                    : MSZ_AUDIT_NEWS_POST_CREATE,
+                $currentUserId,
+                [$postId]
             );
         }
 

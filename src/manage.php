@@ -74,17 +74,21 @@ function manage_get_menu(int $userId): array
     return $menu;
 }
 
+define('MSZ_MANAGE_PERM_YES', 'yes');
+define('MSZ_MANAGE_PERM_NO', 'no');
+define('MSZ_MANAGE_PERM_NEVER', 'never');
+
 function manage_perms_value(int $perm, int $allow, int $deny): string
 {
     if (perms_check($deny, $perm)) {
-        return 'never';
+        return MSZ_MANAGE_PERM_NEVER;
     }
 
     if (perms_check($allow, $perm)) {
-        return 'yes';
+        return MSZ_MANAGE_PERM_YES;
     }
 
-    return 'no';
+    return MSZ_MANAGE_PERM_NO;
 }
 
 function manage_perms_apply(array $list, array $post): ?array
@@ -107,17 +111,17 @@ function manage_perms_apply(array $list, array $post): ?array
             }
 
             switch ($post[$section['section']][$perm['section']]['value']) {
-                case 'yes':
+                case MSZ_MANAGE_PERM_YES:
                     $perms[$allowKey] |= $perm['perm'];
                     $perms[$denyKey] &= ~$perm['perm'];
                     break;
 
-                case 'never':
+                case MSZ_MANAGE_PERM_NEVER:
                     $perms[$allowKey] &= ~$perm['perm'];
                     $perms[$denyKey] |= $perm['perm'];
                     break;
 
-                case 'no':
+                case MSZ_MANAGE_PERM_NO:
                 default:
                     $perms[$allowKey] &= ~$perm['perm'];
                     $perms[$denyKey] &= ~$perm['perm'];

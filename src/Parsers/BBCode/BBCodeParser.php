@@ -24,11 +24,8 @@ class BBCodeParser implements ParserInterface
                 // Advanced markup
                 new Tags\CodeTag,
                 new Tags\QuoteTag,
-                new Tags\BoxTag,
-                new Tags\MarkdownTag,
 
                 // Slightly more advanced markup
-                new Tags\AudioTag,
                 new Tags\VideoTag,
 
                 // Basic markup
@@ -36,8 +33,6 @@ class BBCodeParser implements ParserInterface
                 new Tags\ItalicsTag,
                 new Tags\UnderlineTag,
                 new Tags\StrikeTag,
-                new Tags\SpoilerTag,
-                new Tags\HeaderTag,
                 new Tags\ImageTag,
 
                 // Finally parse leftover newlines

@@ -29,13 +29,13 @@ define('MSZ_ZALGO_CHARS_MIDDLE', [
     "\u{0337}", "\u{0361}", "\u{0489}",
 ]);
 
-define('MSZ_ZALGO_MODE_MINI', 1);
+define('MSZ_ZALGO_MODE_MINI',   1);
 define('MSZ_ZALGO_MODE_NORMAL', 2);
-define('MSZ_ZALGO_MODE_MAX', 3);
+define('MSZ_ZALGO_MODE_MAX',    3);
 
-define('MSZ_ZALGO_DIR_UP', 0x1);
-define('MSZ_ZALGO_DIR_MID', 0x2);
-define('MSZ_ZALGO_DIR_DOWN', 0x4);
+define('MSZ_ZALGO_DIR_UP',      0x01);
+define('MSZ_ZALGO_DIR_MID',     0x02);
+define('MSZ_ZALGO_DIR_DOWN',    0x04);
 
 function zalgo_strip(string $text): string
 {

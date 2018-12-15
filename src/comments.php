@@ -346,16 +346,3 @@ function comments_post_replies(int $commentId): array
     $getComments->bindValue('id', $commentId);
     return $getComments->execute() ? $getComments->fetchAll(PDO::FETCH_ASSOC) : [];
 }
-
-function comments_post_check_ownership(int $commentId, int $userId): bool
-{
-    $checkUser = db_prepare('
-        SELECT COUNT(`comment_id`) > 0
-        FROM `msz_comments_posts`
-        WHERE `comment_id` = :comment
-        AND `user_id` = :user
-    ');
-    $checkUser->bindValue('comment', $commentId);
-    $checkUser->bindValue('user', $userId);
-    return $checkUser->execute() ? (bool)$checkUser->fetchColumn() : false;
-}
