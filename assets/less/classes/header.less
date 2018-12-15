@@ -1,4 +1,6 @@
 .header {
+    --header-height: 70px;
+
     flex: 0 0 auto;
     margin-bottom: 4px;
 
@@ -8,11 +10,9 @@
         left: 0;
         width: 100%;
         height: 100%;
-        mask-image: linear-gradient(0deg, transparent 10%, var(--background-colour) 100%);
-        -webkit-mask-image: linear-gradient(0deg, transparent 10%, var(--background-colour) 100%);
-        background: var(--background-pattern);
+        background: linear-gradient(0deg, var(--background-colour) 0, transparent var(--header-height)), var(--background-pattern);
         background-color: var(--header-accent-colour);
-        background-blend-mode: multiply;
+        background-blend-mode: normal, multiply;
     }
 
     &__wrapper {
@@ -21,6 +21,8 @@
         align-items: center;
         padding: 3px 1px;
         max-width: var(--site-max-width);
+        height: var(--header-height);
+        transition: height .2s;
 
         @media (max-width: @site-mobile-width) {
             flex-direction: column;
@@ -207,14 +209,13 @@
 
         &__info {
             padding: 1px;
-            margin-right: 4px;
+            padding-right: 5px;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             justify-content: center;
 
             @media (max-width: @site-mobile-width) {
-                margin: 0;
                 padding: 0;
                 display: block;
                 width: 100%;
@@ -226,6 +227,7 @@
             text-shadow: 0 0 5px var(--user-colour);
             font-size: 1.4em;
             line-height: 1.4em;
+            margin-bottom: 2px;
             text-decoration: none;
             display: block;
             text-align: right;
