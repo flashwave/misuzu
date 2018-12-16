@@ -10,9 +10,11 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(0deg, var(--background-colour) 0, transparent var(--header-height)), var(--background-pattern);
+        mask-image: linear-gradient(0deg, transparent 0, var(--background-colour) var(--header-height));
+        -webkit-mask-image: linear-gradient(0deg, transparent 0, var(--background-colour) var(--header-height));
+        background: var(--background-pattern);
         background-color: var(--header-accent-colour);
-        background-blend-mode: normal, multiply;
+        background-blend-mode: multiply;
     }
 
     &__wrapper {
