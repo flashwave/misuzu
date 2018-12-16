@@ -54,39 +54,36 @@ function perms_get_user(string $prefix, int $user): int
         return 0;
     }
 
-    if ($user === 1) {
-        return 0x7FFFFFFF;
-    }
-
     $allowKey = perms_get_key($prefix, MSZ_PERMS_ALLOW);
     $denyKey = perms_get_key($prefix, MSZ_PERMS_DENY);
     $overrideKey = perms_get_key($prefix, MSZ_PERMS_OVERRIDE);
 
     $getPerms = db_prepare("
-        SELECT
-            (user.`{$allowKey}` &~ user.`{$denyKey}`) | (
-                (
-                    SELECT
-                        (BIT_OR(roles.`{$allowKey}`) &~ BIT_OR(roles.`{$denyKey}`)) | (
-                            (
-                                SELECT global.{$allowKey} | global.{$denyKey}
-                                FROM `msz_permissions` as global
-                                WHERE global.`user_id` IS NULL
-                                AND global.`role_id` IS NULL
-                            ) &~ BIT_OR(roles.`{$overrideKey}`)
-                        )
-                    FROM `msz_permissions` as roles
-                    WHERE roles.`user_id` IS NULL
-                    AND roles.`role_id` IN (
-                        SELECT `role_id`
-                        FROM `msz_user_roles`
-                        WHERE `user_id` = :user_id_2
-                    )
-                ) &~ user.`{$overrideKey}`
-            )
-        FROM `msz_permissions` as user
-        WHERE user.`user_id` = :user_id_1
-        AND user.`role_id` IS NULL
+        SELECT BIT_OR(_pu.`{$allowKey}`) &~ BIT_OR(_pu.`{$denyKey}`) | (
+            (
+                SELECT BIT_OR(_pr.`{$allowKey}`) &~ BIT_OR(_pr.`{$denyKey}`) | (
+                    (
+                        SELECT BIT_OR(_pg.`{$allowKey}`) &~ BIT_OR(_pg.`{$denyKey}`)
+                        FROM `msz_permissions` as _pg
+                        WHERE _pg.`user_id` IS NULL
+                        AND _pg.`role_id` IS NULL
+                    ) &~ BIT_OR(_pr.`{$overrideKey}`)
+                )
+                FROM `msz_permissions` as _pr
+                WHERE _pr.`user_id` IS NULL
+                AND _pr.`role_id` IN (
+                    SELECT _prr.`role_id`
+                    FROM `msz_user_roles` as _pru
+                    LEFT JOIN `msz_roles` as _prr
+                    ON _prr.`role_id` = _pru.`role_id`
+                    WHERE _pru.`user_id` = :user_id_2
+                    ORDER BY _prr.`role_hierarchy`
+                )
+            ) &~ BIT_OR(_pu.`{$overrideKey}`)
+        )
+        FROM `msz_permissions` as _pu
+        WHERE _pu.`user_id` = :user_id_1
+        AND _pu.`role_id` IS NULL
     ");
     $getPerms->bindValue('user_id_1', $user);
     $getPerms->bindValue('user_id_2', $user);

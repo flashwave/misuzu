@@ -1,6 +1,24 @@
 <?php
 require_once '../misuzu.php';
 
+if (!empty($_GET['pdump'])) {
+    header('Content-Type: text/plain');
+
+    for ($i = 0; $i < 10; $i++) {
+        $perms = [];
+
+        echo "# USER {$i}\n";
+
+        foreach (MSZ_PERM_MODES as $mode) {
+            $perms = decbin(perms_get_user($mode, $i));
+            echo "{$mode}: {$perms}\n";
+        }
+
+        echo "\n";
+    }
+    return;
+}
+
 if (config_get_default(false, 'Site', 'embed_linked_data')) {
     tpl_var('linked_data', [
         'name' => config_get('Site', 'name'),
