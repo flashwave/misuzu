@@ -41,19 +41,27 @@
 
 {% macro comments_entry(comment, indent, category, user, perms) %}
     {% from '_layout/input.twig' import input_checkbox_raw %}
+    {% set is_deleted = comment.comment_deleted is not null %}
+    {% set hide_details = is_deleted and not perms.can_delete_any %}
 
-    {% if perms.can_delete_any or (comment.comment_deleted is null or comment.comment_replies|length > 0) %}
-        <div class="comment{% if comment.comment_deleted is not null %} comment--deleted{% endif %}" id="comment-{{ comment.comment_id }}">
+    {% if perms.can_delete_any or (not is_deleted or comment.comment_replies|length > 0) %}
+        <div class="comment{% if is_deleted %} comment--deleted{% endif %}" id="comment-{{ comment.comment_id }}">
             <div class="comment__container">
-                <a class="avatar comment__avatar"
-                    href="/profile.php?u={{ comment.user_id }}"
-                    style="background-image:url('/profile.php?m=avatar&amp;u={{ comment.user_id }}')">
-                </a>
+                {% if hide_details %}
+                    <div class="avatar comment__avatar" style="background-image:url('/profile.php?m=avatar')"></div>
+                {% else %}
+                    <a class="avatar comment__avatar"
+                        href="/profile.php?u={{ comment.user_id }}"
+                        style="background-image:url('/profile.php?m=avatar&amp;u={{ comment.user_id }}')">
+                    </a>
+                {% endif %}
                 <div class="comment__content">
                     <div class="comment__info">
-                        <a class="comment__user comment__user--link"
-                            href="/profile.php?u={{ comment.user_id }}"
-                            style="{{ comment.user_colour|html_colour }}">{{ comment.username }}</a>
+                        {% if not hide_details %}
+                            <a class="comment__user comment__user--link"
+                                href="/profile.php?u={{ comment.user_id }}"
+                                style="{{ comment.user_colour|html_colour }}">{{ comment.username }}</a>
+                        {% endif %}
                         <a class="comment__link" href="#comment-{{ comment.comment_id }}">
                             <time class="comment__date"
                                 title="{{ comment.comment_created|date('r') }}"
@@ -74,10 +82,10 @@
                         {% endif %}
                     </div>
                     <div class="comment__text">
-                        {{ comment.comment_deleted is null or perms.can_delete_any ? (comment.comment_html is defined ? comment.comment_html|raw : comment.comment_text|nl2br) : '(deleted)' }}
+                        {{ hide_details ? '(deleted)' : (comment.comment_html is defined ? comment.comment_html|raw : comment.comment_text|nl2br) }}
                     </div>
                     <div class="comment__actions">
-                        {% if comment.comment_deleted is null and user is not null %}
+                        {% if not is_deleted and user is not null %}
                             {% if perms.can_vote %}
                                 <a class="comment__action comment__action--link comment__action--vote comment__action--like{% if comment.comment_user_vote == 'Like' %} comment__action--voted{% endif %}" data-comment-id="{{ comment.comment_id }}" data-comment-vote="{{ comment.comment_user_vote == 'Like' ? '0' : '1' }}"
                                 href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Like' ? '0' : '1' }}&amp;csrf={{ csrf_token('comments') }}">
