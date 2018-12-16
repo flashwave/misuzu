@@ -69,13 +69,18 @@
         justify-content: center;
         flex-direction: column;
         line-height: 1.5em;
-        white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis;
+
+        @media (max-width: @site-mobile-width) {
+            max-width: 70%;
+        }
     }
 
     &__title {
         font-size: 1.3em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     &__info {
@@ -98,6 +103,7 @@
             border-left-width: 0;
             align-self: flex-start;
             align-items: flex-end;
+            flex: 1 1 auto;
         }
     }
 
@@ -138,6 +144,7 @@
             @media (max-width: @site-mobile-width) {
                 margin: 1px 4px 0;
                 flex-direction: row;
+                justify-content: space-between;
             }
         }
 
@@ -152,11 +159,6 @@
 
             &:hover {
                 text-decoration: underline;
-            }
-
-            @media (max-width: @site-mobile-width) {
-                flex: 1 1 auto;
-                text-align: left;
             }
         }
     }
