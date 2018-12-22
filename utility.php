@@ -342,3 +342,14 @@ function is_user_int($value): bool
 {
     return ctype_digit(strval($value));
 }
+
+function decbin_str(string $str): string
+{
+    $out = '';
+
+    for ($i = 0; $i < strlen($str); $i++) {
+        $out .= str_pad(decbin(ord($str[$i])), 8, '0');
+    }
+
+    return $out;
+}

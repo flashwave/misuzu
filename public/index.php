@@ -1,22 +1,53 @@
 <?php
 require_once '../misuzu.php';
 
-if (!empty($_GET['pdump'])) {
-    header('Content-Type: text/plain');
+if (MSZ_DEBUG) {
+    if (!empty($_GET['pdump'])) {
+        header('Content-Type: text/plain');
 
-    for ($i = 0; $i < 10; $i++) {
-        $perms = [];
+        for ($i = 0; $i < 10; $i++) {
+            $perms = [];
 
-        echo "# USER {$i}\n";
+            echo "# USER {$i}\n";
 
-        foreach (MSZ_PERM_MODES as $mode) {
-            $perms = decbin(perms_get_user($mode, $i));
-            echo "{$mode}: {$perms}\n";
+            foreach (MSZ_PERM_MODES as $mode) {
+                $perms = decbin(perms_get_user($mode, $i));
+                echo "{$mode}: {$perms}\n";
+            }
+
+            echo "\n";
         }
-
-        echo "\n";
+        return;
     }
-    return;
+
+    if (!empty($_GET['cidr'])) {
+        header('Content-Type: text/plain');
+
+        $checks = [
+            [
+                'cidr' => '104.16.0.0/12',
+                'addrs' => [
+                    '104.28.8.4',
+                    '104.28.9.4',
+                    '94.211.73.13',
+                ],
+            ],
+        ];
+
+        foreach ($checks as $check) {
+            $mask = ip_cidr_to_mask($check['cidr']);
+
+            echo 'MASK> ' .  inet_ntop($mask) . "\t" . decbin_str($mask) . PHP_EOL;
+
+            foreach ($check['addrs'] as $addr) {
+                $addr = inet_pton($addr);
+                echo 'ADDR> ' . inet_ntop($addr) . "\t" . decbin_str($addr) . "\t" . ip_match_mask($addr, $mask) . PHP_EOL;
+            }
+
+            echo PHP_EOL;
+        }
+        return;
+    }
 }
 
 if (config_get_default(false, 'Site', 'embed_linked_data')) {

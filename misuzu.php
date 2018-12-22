@@ -51,7 +51,6 @@ require_once 'src/Forum/perms.php';
 require_once 'src/Forum/post.php';
 require_once 'src/Forum/topic.php';
 require_once 'src/Forum/validate.php';
-require_once 'src/Net/cidr.php';
 require_once 'src/Net/geoip.php';
 require_once 'src/Net/ip.php';
 require_once 'src/Parsers/parse.php';
