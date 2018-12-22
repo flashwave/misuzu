@@ -28,17 +28,18 @@ $commentPerms = comments_get_perms(user_session_current('user_id', 0));
 
 switch ($_GET['m'] ?? null) {
     case 'vote':
-        $comment = (int)($_GET['c'] ?? 0);
-
-        if ($comment < 1) {
-            echo render_info_or_json($isXHR, 'Missing data.', 400);
-            break;
-        }
-
         $vote = (int)($_GET['v'] ?? 0);
 
         if (!array_key_exists($vote, MSZ_COMMENTS_VOTE_TYPES)) {
             echo render_info_or_json($isXHR, 'Invalid vote action.', 400);
+            break;
+        }
+
+        $comment = (int)($_GET['c'] ?? 0);
+        $commentInfo = comments_post_get($comment, false);
+
+        if (!$commentInfo || $commentInfo['comment_deleted'] !== null) {
+            echo render_info_or_json($isXHR, "This comment doesn't exist!", 400);
             break;
         }
 
