@@ -255,7 +255,7 @@
         {% endif %}
     {% endif %}
 
-    <div class="forum__topic">
+    <div class="forum__topic{% if topic.topic_deleted is not null %} forum__topic--deleted{% endif %}">
         <a href="/forum/topic.php?t={{ topic.topic_id }}" class="forum__topic__link"></a>
 
         <div class="forum__topic__container">
@@ -324,7 +324,7 @@
     {% set is_original_post = is_original_post|default(false) %}
     {% set is_original_poster = is_original_poster|default(false) %}
 
-    <div class="container forum__post" id="p{{ post.post_id }}" style="{{ post.poster_colour|html_colour('--accent-colour') }}">
+    <div class="container forum__post{% if post.post_deleted is not null %} forum__post--deleted{% endif %}" id="p{{ post.post_id }}" style="{{ post.poster_colour|html_colour('--accent-colour') }}">
         <div class="forum__post__info">
             <div class="forum__post__info__background"></div>
             <div class="forum__post__info__content">

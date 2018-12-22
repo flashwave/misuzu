@@ -34,7 +34,13 @@ if ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK) {
 
 $forumMayHaveTopics = forum_may_have_topics($forum['forum_type']);
 $topics = $forumMayHaveTopics
-    ? forum_topic_listing($forum['forum_id'], user_session_current('user_id', 0), $topicsOffset, $topicsRange)
+    ? forum_topic_listing(
+        $forum['forum_id'],
+        user_session_current('user_id', 0),
+        $topicsOffset,
+        $topicsRange,
+        perms_check($perms, MSZ_FORUM_PERM_DELETE_TOPIC)
+    )
     : [];
 
 $forumMayHaveChildren = forum_may_have_children($forum['forum_type']);

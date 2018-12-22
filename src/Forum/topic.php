@@ -27,8 +27,8 @@ function forum_topic_fetch(int $topicId): array
 {
     $getTopic = db_prepare('
         SELECT
-            t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`,
-            f.`forum_archived` as `topic_archived`,
+            t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`, t.`topic_created`,
+            f.`forum_archived` as `topic_archived`, t.`topic_deleted`, t.`topic_bumped`,
             (
                 SELECT MIN(`post_id`)
                 FROM `msz_forum_posts`
@@ -43,12 +43,9 @@ function forum_topic_fetch(int $topicId): array
         LEFT JOIN `msz_forum_categories` as f
         ON f.`forum_id` = t.`forum_id`
         WHERE t.`topic_id` = :topic_id
-        AND t.`topic_deleted` IS NULL
     ');
     $getTopic->bindValue('topic_id', $topicId);
-    $getTopic->execute();
-    $topic = $getTopic->fetch();
-
+    $topic = $getTopic->execute() ? $getTopic->fetch(PDO::FETCH_ASSOC) : false;
     return $topic ? $topic : [];
 }
 
@@ -81,73 +78,72 @@ function forum_topic_mark_read(int $userId, int $topicId, int $forumId): void
     $markAsRead->execute();
 }
 
-define('MSZ_TOPIC_LISTING_QUERY_STANDARD', '
-    SELECT
-        :user_id as `target_user_id`,
-        t.`topic_id`, t.`topic_title`, t.`topic_locked`, t.`topic_type`, t.`topic_created`,
-        au.`user_id` as `author_id`, au.`username` as `author_name`,
-        COALESCE(au.`user_colour`, ar.`role_colour`) as `author_colour`,
-        lp.`post_id` as `response_id`,
-        lp.`post_created` as `response_created`,
-        lu.`user_id` as `respondent_id`,
-        lu.`username` as `respondent_name`,
-        COALESCE(lu.`user_colour`, lr.`role_colour`) as `respondent_colour`,
-        (
-            SELECT COUNT(`post_id`)
-            FROM `msz_forum_posts`
-            WHERE `topic_id` = t.`topic_id`
-        ) as `topic_post_count`,
-        (
-            SELECT COUNT(`user_id`)
-            FROM `msz_forum_topics_track`
-            WHERE `topic_id` = t.`topic_id`
-        ) as `topic_view_count`,
-        (
-            SELECT
-                `target_user_id` > 0
-            AND
-                t.`topic_bumped` > NOW() - INTERVAL 1 MONTH
-            AND (
-                SELECT COUNT(ti.`topic_id`) < 1
-                FROM `msz_forum_topics_track` as tt
-                RIGHT JOIN `msz_forum_topics` as ti
-                ON ti.`topic_id` = tt.`topic_id`
-                WHERE ti.`topic_id` = t.`topic_id`
-                AND tt.`user_id` = `target_user_id`
-                AND  `track_last_read` >= `topic_bumped`
-            )
-        ) as `topic_unread`
-    FROM `msz_forum_topics` as t
-    LEFT JOIN `msz_users` as au
-    ON t.`user_id` = au.`user_id`
-    LEFT JOIN `msz_roles` as ar
-    ON ar.`role_id` = au.`display_role`
-    LEFT JOIN `msz_forum_posts` as lp
-    ON lp.`post_id` = (
-        SELECT `post_id`
-        FROM `msz_forum_posts`
-        WHERE `topic_id` = t.`topic_id`
-        ORDER BY `post_id` DESC
-        LIMIT 1
-    )
-    LEFT JOIN `msz_users` as lu
-    ON lu.`user_id` = lp.`user_id`
-    LEFT JOIN `msz_roles` as lr
-    ON lr.`role_id` = lu.`display_role`
-    WHERE t.`forum_id` = :forum_id
-    AND t.`topic_deleted` IS NULL
-    ORDER BY t.`topic_type` DESC, t.`topic_bumped` DESC
-');
-define('MSZ_TOPIC_LISTING_QUERY_PAGINATED', MSZ_TOPIC_LISTING_QUERY_STANDARD . ' LIMIT :offset, :take');
-
-function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $take = 0): array
+function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $take = 0, bool $showDeleted = false): array
 {
     $hasPagination = $offset >= 0 && $take > 0;
-    $getTopics = db_prepare(
-        $hasPagination
-        ? MSZ_TOPIC_LISTING_QUERY_PAGINATED
-        : MSZ_TOPIC_LISTING_QUERY_STANDARD
-    );
+    $getTopics = db_prepare(sprintf(
+        '
+            SELECT
+                :user_id as `target_user_id`,
+                t.`topic_id`, t.`topic_title`, t.`topic_locked`, t.`topic_type`, t.`topic_created`,
+                t.`topic_bumped`, t.`topic_deleted`,
+                au.`user_id` as `author_id`, au.`username` as `author_name`,
+                COALESCE(au.`user_colour`, ar.`role_colour`) as `author_colour`,
+                lp.`post_id` as `response_id`,
+                lp.`post_created` as `response_created`,
+                lu.`user_id` as `respondent_id`,
+                lu.`username` as `respondent_name`,
+                COALESCE(lu.`user_colour`, lr.`role_colour`) as `respondent_colour`,
+                (
+                    SELECT COUNT(`post_id`)
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = t.`topic_id`
+                ) as `topic_post_count`,
+                (
+                    SELECT COUNT(`user_id`)
+                    FROM `msz_forum_topics_track`
+                    WHERE `topic_id` = t.`topic_id`
+                ) as `topic_view_count`,
+                (
+                    SELECT
+                        `target_user_id` > 0
+                    AND
+                        t.`topic_bumped` > NOW() - INTERVAL 1 MONTH
+                    AND (
+                        SELECT COUNT(ti.`topic_id`) < 1
+                        FROM `msz_forum_topics_track` as tt
+                        RIGHT JOIN `msz_forum_topics` as ti
+                        ON ti.`topic_id` = tt.`topic_id`
+                        WHERE ti.`topic_id` = t.`topic_id`
+                        AND tt.`user_id` = `target_user_id`
+                        AND  `track_last_read` >= `topic_bumped`
+                    )
+                ) as `topic_unread`
+            FROM `msz_forum_topics` as t
+            LEFT JOIN `msz_users` as au
+            ON t.`user_id` = au.`user_id`
+            LEFT JOIN `msz_roles` as ar
+            ON ar.`role_id` = au.`display_role`
+            LEFT JOIN `msz_forum_posts` as lp
+            ON lp.`post_id` = (
+                SELECT `post_id`
+                FROM `msz_forum_posts`
+                WHERE `topic_id` = t.`topic_id`
+                ORDER BY `post_id` DESC
+                LIMIT 1
+            )
+            LEFT JOIN `msz_users` as lu
+            ON lu.`user_id` = lp.`user_id`
+            LEFT JOIN `msz_roles` as lr
+            ON lr.`role_id` = lu.`display_role`
+            WHERE t.`forum_id` = :forum_id
+            %1$s
+            ORDER BY t.`topic_type` DESC, t.`topic_bumped` DESC
+            %2$s
+        ',
+        $showDeleted ? '' : 'AND t.`topic_deleted` IS NULL',
+        $hasPagination ? 'LIMIT :offset, :take' : ''
+    ));
     $getTopics->bindValue('forum_id', $forumId);
     $getTopics->bindValue('user_id', $userId);
 

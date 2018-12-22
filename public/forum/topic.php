@@ -16,13 +16,14 @@ if ($topicId < 1 && $postId > 0) {
 }
 
 $topic = forum_topic_fetch($topicId);
+$perms = $topic
+    ? forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], user_session_current('user_id', 0))
+    : 0;
 
-if (!$topic) {
+if (!$topic || !perms_check($perms, MSZ_FORUM_PERM_DELETE_TOPIC)) {
     echo render_error(404);
     return;
 }
-
-$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], user_session_current('user_id', 0));
 
 if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     echo render_error(403);
@@ -31,7 +32,12 @@ if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
 
 tpl_var('topic_perms', $perms);
 
-$posts = forum_post_listing($topic['topic_id'], $postsOffset, $postsRange);
+$posts = forum_post_listing(
+    $topic['topic_id'],
+    $postsOffset,
+    $postsRange,
+    perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST)
+);
 
 if (!$posts) {
     echo render_error(404);
