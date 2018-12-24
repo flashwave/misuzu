@@ -13,17 +13,17 @@ function ip_remote_address(string $fallback = '::1'): string
     return $_SERVER['REMOTE_ADDR'] ?? $fallback;
 }
 
-function ip_country_code(string $ipAddr, string $fallback = 'XX'): string
+function ip_country_code(string $address, string $fallback = 'XX'): string
 {
     try {
-        return geoip_country($ipAddr)->country->isoCode ?? $fallback;
+        return geoip_country($address)->country->isoCode ?? $fallback;
     } catch (Exception $e) {
     }
 
     return $fallback;
 }
 
-function ip_detect_string_version(string $address): int
+function ip_get_string_version(string $address): int
 {
     if (filter_var($address, FILTER_VALIDATE_IP) === false) {
         return MSZ_IP_UNKNOWN;
@@ -40,13 +40,13 @@ function ip_detect_string_version(string $address): int
     return MSZ_IP_UNKNOWN;
 }
 
-function ip_detect_raw_version(string $raw, bool $returnWidth = false): int
+function ip_get_raw_version(string $raw): int
 {
     $rawLength = strlen($raw);
 
     foreach (MSZ_IP_SIZES as $version => $length) {
         if ($rawLength === $length) {
-            return $returnWidth ? $length : $version;
+            return $version;
         }
     }
 
@@ -58,54 +58,42 @@ function ip_get_raw_width(int $version): int
     return MSZ_IP_SIZES[$version] ?? 0;
 }
 
-// Takes 1.2.3.4/n notation, returns subnet mask in raw bytes
-function ip_cidr_to_mask(string $ipRange): string
+function ip_match_cidr_raw(string $address, string $subnet, int $mask = 0): bool
 {
-    [$address, $bits] = explode('/', $ipRange, 2);
+    $version = ip_get_raw_version($subnet);
+    $bits = ip_get_raw_width($version) * 8;
 
-    $address = inet_pton($address);
-    $width = ip_detect_raw_version($address, true) * 8;
-
-    if ($bits < 1 || $bits > $width) {
-        return str_repeat(chr(0), $width);
+    if (empty($mask)) {
+        $mask = $bits;
     }
 
-    $mask = '';
+    if ($mask < 1 || $mask > $bits || $version !== ip_get_raw_version($subnet)) {
+        return false;
+    }
 
-    for ($i = 0; $i < floor($width / 8); $i++) {
-        $addressByte = ord($address[$i]);
-        $maskByte = 0;
+    for ($i = 0; $i < ceil($mask / 8); $i++) {
+        $byteMask = (0xFF00 >> min(8, $mask - ($i * 8))) & 0xFF;
+        $addressByte = ord($address[$i]) & $byteMask;
+        $subnetByte = ord($subnet[$i]) & $byteMask;
 
-        for ($j = 0; $j < 8; $j++) {
-            $offset = (8 * $i) + $j;
-            $bit = 0x80 >> $j;
-
-            if ($offset < $bits && ($addressByte & $bit) > 0) {
-                $maskByte |= $bit;
-            } else {
-                $maskByte &= ~$bit;
-            }
+        if ($addressByte !== $subnetByte) {
+            return false;
         }
-
-        $mask .= chr($maskByte);
     }
 
-    return $mask;
+    return true;
 }
 
-// Takes a RAW IP and a RAW MASK
-function ip_match_mask(string $ipAddress, string $mask): int
+function ip_match_cidr(string $address, string $cidr): bool
 {
-    $width = strlen($mask);
-    $result = false;
-
-    if (strlen($ipAddress) !== $width) {
-        return $result;
+    if (strpos($cidr, '/') !== false) {
+        [$subnet, $mask] = explode('/', $cidr, 2);
+    } else {
+        $subnet = $cidr;
     }
 
-    for ($i = 0; $i < $width; $i++) {
-        $result &= ($ipAddress[$i] & ~$mask[$i]) === 0;
-    }
+    $address = inet_pton($address);
+    $subnet = inet_pton($subnet);
 
-    return $result;
+    return ip_match_cidr_raw($address, $subnet, $mask ?? 0);
 }

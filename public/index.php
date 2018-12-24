@@ -19,35 +19,6 @@ if (MSZ_DEBUG) {
         }
         return;
     }
-
-    if (!empty($_GET['cidr'])) {
-        header('Content-Type: text/plain');
-
-        $checks = [
-            [
-                'cidr' => '104.16.0.0/12',
-                'addrs' => [
-                    '104.28.8.4',
-                    '104.28.9.4',
-                    '94.211.73.13',
-                ],
-            ],
-        ];
-
-        foreach ($checks as $check) {
-            $mask = ip_cidr_to_mask($check['cidr']);
-
-            echo 'MASK> ' .  inet_ntop($mask) . "\t" . decbin_str($mask) . PHP_EOL;
-
-            foreach ($check['addrs'] as $addr) {
-                $addr = inet_pton($addr);
-                echo 'ADDR> ' . inet_ntop($addr) . "\t" . decbin_str($addr) . "\t" . ip_match_mask($addr, $mask) . PHP_EOL;
-            }
-
-            echo PHP_EOL;
-        }
-        return;
-    }
 }
 
 if (config_get_default(false, 'Site', 'embed_linked_data')) {
