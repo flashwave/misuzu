@@ -1,0 +1,46 @@
+.profile__warning {
+    margin: 2px;
+    padding: 1px;
+    border-radius: 2px;
+    border: 1px solid var(--accent-colour);
+
+    &--warning {
+        --accent-colour: #666;
+    }
+
+    &--silence {
+        --accent-colour: #f70;
+    }
+
+    &--ban {
+        --accent-colour: #c33;
+    }
+
+    &__public {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    &__type {
+        min-width: 60px;
+        text-align: center;
+        background-color: var(--accent-colour);
+        border-radius: 1px;
+        padding: 0 4px;
+    }
+
+    &__datetime {
+        min-width: 100px;
+        padding: 0 4px;
+    }
+
+    &__note {
+        padding: 1px 4px;
+    }
+
+    &__private {
+        border-top: 1px solid var(--accent-colour);
+        margin-top: 1px;
+        padding: 1px 4px;
+    }
+}

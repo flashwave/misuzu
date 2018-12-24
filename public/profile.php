@@ -89,6 +89,7 @@ switch ($mode) {
             break;
         }
 
+        $warnings = user_warning_fetch($userId, 90);
         $notices = [];
 
         if ($isEditing) {
@@ -323,6 +324,8 @@ switch ($mode) {
             'profile_notices' => $notices,
             'can_edit' => $canEdit,
             'is_editing' => $isEditing,
+            'warnings' => $warnings,
+            'can_view_private_note' => $viewingOwnProfile,
             'profile_fields' => user_session_active() ? user_profile_fields_display($profile, !$isEditing) : [],
             'friend_info' => user_session_active() ? user_relation_info(user_session_current('user_id', 0), $profile['user_id']) : [],
         ]);

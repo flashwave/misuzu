@@ -64,6 +64,7 @@ require_once 'src/Users/role.php';
 require_once 'src/Users/session.php';
 require_once 'src/Users/user.php';
 require_once 'src/Users/validation.php';
+require_once 'src/Users/warning.php';
 
 config_load(MSZ_ROOT . '/config/config.ini');
 mail_prepare(config_get_default([], 'Mail'));
