@@ -1,8 +1,11 @@
 .profile__warning {
     margin: 2px;
-    padding: 1px;
     border-radius: 2px;
     border: 1px solid var(--accent-colour);
+
+    &__container {
+        margin: 2px 0;
+    }
 
     &--warning {
         --accent-colour: #666;
@@ -16,31 +19,58 @@
         --accent-colour: #c33;
     }
 
-    &__public {
+    &__background {
+        background-color: var(--accent-colour);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    &__content {
+        background-color: var(--background-colour-translucent);
         display: flex;
-        flex-wrap: wrap;
+        padding: 1px;
+    }
+
+    &__type,
+    &__created,
+    &__duration {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     &__type {
-        min-width: 60px;
-        text-align: center;
+        min-width: 80px;
         background-color: var(--accent-colour);
         border-radius: 1px;
         padding: 0 4px;
     }
 
-    &__datetime {
+    &__created,
+    &__duration {
         min-width: 100px;
         padding: 0 4px;
     }
 
     &__note {
         padding: 1px 4px;
+        flex: 1 1 auto;
     }
 
     &__private {
         border-top: 1px solid var(--accent-colour);
         margin-top: 1px;
-        padding: 1px 4px;
+        width: 100%;
+        opacity: .5;
+        transition: opacity .2s;
+
+        &:hover,
+        &:active,
+        &:focus {
+            opacity: 1;
+        }
     }
 }

@@ -23,6 +23,7 @@ $authEmail = $isSubmission ? ($_POST['auth']['email'] ?? '') : ($_GET['email'] ?
 $authPassword = $_POST['auth']['password'] ?? '';
 $authVerification = $_POST['auth']['verification'] ?? '';
 $authRedirect = $_POST['auth']['redirect'] ?? $_GET['redirect'] ?? $_SERVER['HTTP_REFERER'] ?? '/';
+$authRestricted = ip_blacklist_check(ip_remote_address());
 
 tpl_vars([
     'can_create_account' => $canCreateAccount,
@@ -31,6 +32,7 @@ tpl_vars([
     'auth_username' => $authUsername,
     'auth_email' => $authEmail,
     'auth_redirect' => $authRedirect,
+    'auth_restricted' => $authRestricted,
 ]);
 
 switch ($authMode) {
@@ -300,7 +302,7 @@ MSG;
         $authRegistrationError = '';
 
         while ($isSubmission) {
-            if (!$canCreateAccount) {
+            if (!$canCreateAccount || $authRestricted) {
                 $authRegistrationError = 'You may not create an account right now.';
                 break;
             }

@@ -1,10 +1,11 @@
 <?php
 define('MSZ_WARN_NOTE', 0);
-define('MSZ_WARN_SILENCE', 1);
-define('MSZ_WARN_BAN', 2);
+define('MSZ_WARN_WARNING', 1);
+define('MSZ_WARN_SILENCE', 2);
+define('MSZ_WARN_BAN', 3);
 
 define('MSZ_WARN_TYPES', [
-    MSZ_WARN_NOTE, MSZ_WARN_SILENCE, MSZ_WARN_BAN,
+    MSZ_WARN_NOTE, MSZ_WARN_WARNING, MSZ_WARN_SILENCE, MSZ_WARN_BAN,
 ]);
 
 function user_warning_add(
@@ -78,7 +79,8 @@ function user_warning_fetch(
         '
             SELECT
                 uw.`warning_id`, uw.`warning_created`, uw.`warning_type`, uw.`warning_note`,
-                uw.`warning_note_private`, uw.`user_id`, uw.`issuer_id`,
+                uw.`warning_note_private`, uw.`user_id`, uw.`issuer_id`, uw.`warning_duration`,
+                TIMESTAMPDIFF(SECOND, uw.`warning_created`, uw.`warning_duration`) AS `warning_duration_secs`,
                 INET6_NTOA(uw.`user_ip`) AS `user_ip`, INET6_NTOA(uw.`issuer_ip`) AS `issuer_ip`,
                 iu.`username` AS `issuer_username`
             FROM `msz_user_warnings` AS uw

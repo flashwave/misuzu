@@ -58,7 +58,7 @@ function ip_get_raw_width(int $version): int
     return MSZ_IP_SIZES[$version] ?? 0;
 }
 
-function ip_match_cidr_raw(string $address, string $subnet, int $mask = 0): bool
+function ip_match_cidr_raw(string $address, string $subnet, ?int $mask = null): bool
 {
     $version = ip_get_raw_version($subnet);
     $bits = ip_get_raw_width($version) * 8;
@@ -72,7 +72,7 @@ function ip_match_cidr_raw(string $address, string $subnet, int $mask = 0): bool
     }
 
     for ($i = 0; $i < ceil($mask / 8); $i++) {
-        $byteMask = (0xFF00 >> min(8, $mask - ($i * 8))) & 0xFF;
+        $byteMask = (0xFF00 >> max(0, min(8, $mask - ($i * 8)))) & 0xFF;
         $addressByte = ord($address[$i]) & $byteMask;
         $subnetByte = ord($subnet[$i]) & $byteMask;
 
@@ -86,14 +86,71 @@ function ip_match_cidr_raw(string $address, string $subnet, int $mask = 0): bool
 
 function ip_match_cidr(string $address, string $cidr): bool
 {
+    $address = inet_pton($address);
+    [$subnet, $mask] = ['', 0];
+    extract(ip_cidr_to_raw($cidr));
+
+    return ip_match_cidr_raw($address, $subnet, $mask);
+}
+
+function ip_cidr_to_raw(string $cidr): array
+{
     if (strpos($cidr, '/') !== false) {
         [$subnet, $mask] = explode('/', $cidr, 2);
     } else {
         $subnet = $cidr;
     }
 
-    $address = inet_pton($address);
     $subnet = inet_pton($subnet);
+    $mask = empty($mask) ? null : $mask;
 
-    return ip_match_cidr_raw($address, $subnet, $mask ?? 0);
+    return compact('subnet', 'mask');
+}
+
+function ip_blacklist_check(string $address): bool
+{
+    $checkBlacklist = db_prepare("
+        SELECT COUNT(*) > 0
+        FROM `msz_ip_blacklist`
+        WHERE LENGTH(`ip_subnet`) = LENGTH(INET6_ATON(:ip1))
+        AND `ip_subnet`         & LPAD('', LENGTH(`ip_subnet`), X'FF') << LENGTH(`ip_subnet`) * 8 - `ip_mask`
+            = INET6_ATON(:ip2)  & LPAD('', LENGTH(`ip_subnet`), X'FF') << LENGTH(`ip_subnet`) * 8 - `ip_mask`
+    ");
+    $checkBlacklist->bindValue('ip1', $address);
+    $checkBlacklist->bindValue('ip2', $address);
+    return (bool)($checkBlacklist->execute() ? $checkBlacklist->fetchColumn() : false);
+}
+
+function ip_blacklist_add_raw(string $subnet, ?int $mask = null): bool
+{
+    $version = ip_get_raw_version($subnet);
+
+    if ($version === 0) {
+        return false;
+    }
+
+    $bits = ip_get_raw_width($version) * 8;
+
+    if (empty($mask)) {
+        $mask = $bits;
+    } elseif ($mask < 1 || $mask > $bits) {
+        return false;
+    }
+
+    $addBlacklist = db_prepare('
+        INSERT INTO `msz_ip_blacklist`
+            (`ip_subnet`, `ip_mask`)
+        VALUES
+            (:subnet, :mask)
+    ');
+    $addBlacklist->bindValue('subnet', $subnet);
+    $addBlacklist->bindValue('mask', $mask);
+    return $addBlacklist->execute();
+}
+
+function ip_blacklist_add(string $cidr): bool
+{
+    [$subnet, $mask] = ['', 0];
+    extract(ip_cidr_to_raw($cidr));
+    return ip_blacklist_add_raw($subnet, $mask);
 }

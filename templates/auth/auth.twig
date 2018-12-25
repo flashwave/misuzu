@@ -19,22 +19,30 @@
 
             {{ container_title('Register') }}
 
-            {% if auth_register_error is defined %}
+            {% if auth_restricted %}
                 <div class="warning auth__warning">
                     <div class="warning__content">
-                        {{ auth_register_error }}
+                        The IP address from which you are visiting the website appears on our blacklist, you are not allowed to register from this address but if you already have an account you can log in just fine using the form above. If you think this blacklisting is a mistake, please <a href="/info.php/contact" class="warning__link">contact us</a>!
                     </div>
                 </div>
+            {% else %}
+                {% if auth_register_error is defined %}
+                    <div class="warning auth__warning">
+                        <div class="warning__content">
+                            {{ auth_register_error }}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="auth__form">
+                    {{ input_text('auth[username]', 'auth__input', auth_username|default(''), 'text', 'Username', true, null, 0, auth_mode == 'register') }}
+                    {{ input_text('auth[password]', 'auth__input', '', 'password', 'Password', true) }}
+                    {{ input_text('auth[email]', 'auth__input', auth_email|default(''), 'text', 'E-mail', true) }}
+                    {{ input_text('auth[meow]', 'auth__input', '', 'text', 'What is the outcome of nine plus ten?', true) }}
+
+                    <button class="input__button">Sign up</button>
+                </div>
             {% endif %}
-
-            <div class="auth__form">
-                {{ input_text('auth[username]', 'auth__input', auth_username|default(''), 'text', 'Username', true, null, 0, auth_mode == 'register') }}
-                {{ input_text('auth[password]', 'auth__input', '', 'password', 'Password', true) }}
-                {{ input_text('auth[email]', 'auth__input', auth_email|default(''), 'text', 'E-mail', true) }}
-                {{ input_text('auth[meow]', 'auth__input', '', 'text', 'What is the outcome of nine plus ten?', true) }}
-
-                <button class="input__button">Sign up</button>
-            </div>
         </form>
     {% endif %}
 

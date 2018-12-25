@@ -156,47 +156,6 @@
                                 {% endfor %}
                             </div>
                         </div>
-
-                        {% if warnings|length > 0 %}
-                            <div class="container">
-                                {{ container_title('Account Standing') }}
-
-                                {% for warning in warnings %}
-                                    {% if warning.warning_type == constant('MSZ_WARN_SILENCE') %}
-                                        {% set warning_text = 'Silence' %}
-                                        {% set warning_class = 'silence' %}
-                                    {% elseif warning.warning_type == constant('MSZ_WARN_BAN') %}
-                                        {% set warning_text = 'Ban' %}
-                                        {% set warning_class = 'ban' %}
-                                    {% else %}
-                                        {% set warning_text = 'Warning' %}
-                                        {% set warning_class = 'warning' %}
-                                    {% endif %}
-
-                                    <div class="profile__warning profile__warning--{{ warning_class }}" id="warning-{{ warning.warning_id }}">
-                                        <div class="profile__warning__public">
-                                            <div class="profile__warning__type">
-                                                {{ warning_text }}
-                                            </div>
-
-                                            <time datetime="{{ warning.warning_created|date('c') }}" title="{{ warning.warning_created|date('r') }}" class="profile__warning__datetime">
-                                                {{ warning.warning_created|time_diff }}
-                                            </time>
-
-                                            <div class="profile__warning__note">
-                                                {{ warning.warning_note }}
-                                            </div>
-                                        </div>
-
-                                        {% if can_view_private_note and warning.warning_note_private|length > 0 %}
-                                            <div class="profile__warning__private">
-                                                {{ warning.warning_note_private|nl2br }}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
                     {% endif %}
                 </div>
 
@@ -216,6 +175,81 @@
                         </div>
                     {% endif %}
 
+                    {% if warnings|length > 0 %}
+                        <div class="container profile__warning__container">
+                            {{ container_title('Account Standing') }}
+
+                            <div class="profile__warning">
+                                <div class="profile__warning__background"></div>
+
+                                <div class="profile__warning__content">
+                                    <div class="profile__warning__type">
+                                        Type
+                                    </div>
+
+                                    <div class="profile__warning__created">
+                                        Created
+                                    </div>
+
+                                    <div class="profile__warning__duration">
+                                        Expires
+                                    </div>
+
+                                    <div class="profile__warning__note">
+                                        Note
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% for warning in warnings %}
+                                {% if warning.warning_type == constant('MSZ_WARN_SILENCE') %}
+                                    {% set warning_text = 'Silence' %}
+                                    {% set warning_class = 'silence' %}
+                                {% elseif warning.warning_type == constant('MSZ_WARN_BAN') %}
+                                    {% set warning_text = 'Ban' %}
+                                    {% set warning_class = 'ban' %}
+                                {% elseif warning.warning_type == constant('MSZ_WARN_WARNING') %}
+                                    {% set warning_text = 'Warning' %}
+                                    {% set warning_class = 'warning' %}
+                                {% else %}
+                                    {% set warning_text = 'Note' %}
+                                    {% set warning_class = 'note' %}
+                                {% endif %}
+
+                                <div class="profile__warning profile__warning--{{ warning_class }}">
+                                    <div class="profile__warning__background"></div>
+
+                                    <div class="profile__warning__content">
+                                        <div class="profile__warning__type">
+                                            {{ warning_text }}
+                                        </div>
+
+                                        <time datetime="{{ warning.warning_created|date('c') }}" title="{{ warning.warning_created|date('r') }}" class="profile__warning__created">
+                                            {{ warning.warning_created|time_diff }}
+                                        </time>
+
+                                        {% if warning.warning_duration_secs > 0 %}
+                                            <time datetime="{{ warning.warning_duration|date('c') }}" title="{{ warning.warning_duration|date('r') }}" class="profile__warning__duration">
+                                                {{ warning.warning_created|time_diff }}
+                                            </time>
+                                        {% else %}
+                                            <div class="profile__warning__duration"></div>
+                                        {% endif %}
+
+                                        <div class="profile__warning__note">
+                                            {{ warning.warning_note }}
+
+                                            {% if can_view_private_note and warning.warning_note_private|length > 0 %}
+                                                <div class="profile__warning__private">
+                                                    {{ warning.warning_note_private|nl2br }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
     {% if is_editing %}
