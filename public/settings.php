@@ -170,10 +170,6 @@ $getUserRoles = db_prepare('
 $getUserRoles->bindValue('user_id', user_session_current('user_id'));
 $userRoles = $getUserRoles->execute() ? $getUserRoles->fetchAll(PDO::FETCH_ASSOC) : [];
 
-if (empty($errors)) { // delete this in 2019
-    $errors[] = 'A few of the elements on this page have been moved to the on-profile editor. To find them, go to your profile and hit the "Edit Profile" button below your avatar.';
-}
-
 echo tpl_render('user.settings', [
     'errors' => $errors,
     'disable_account_options' => $disableAccountOptions,
