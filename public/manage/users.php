@@ -9,6 +9,7 @@ tpl_vars([
     'can_manage_users' => $canManageUsers = perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS),
     'can_manage_roles' => $canManageRoles = perms_check($userPerms, MSZ_PERM_USER_MANAGE_ROLES),
     'can_manage_perms' => $canManagePerms = perms_check($userPerms, MSZ_PERM_USER_MANAGE_PERMS),
+    'can_manage_warns' => $canManageWarnings = perms_check($userPerms, MSZ_PERM_USER_MANAGE_WARNINGS),
 ]);
 
 switch ($_GET['v'] ?? null) {
@@ -460,5 +461,26 @@ switch ($_GET['v'] ?? null) {
         }
 
         echo tpl_render('manage.users.role');
+        break;
+
+    case 'warnings':
+        if (!$canManageWarnings) {
+            echo render_error(403);
+            break;
+        }
+
+        $warningsCount = user_warning_global_count();
+        $warningsTake = 50;
+        $warningsOffset = max(0, (int)($_GET['o'] ?? 0));
+        $warningsList = user_warning_global_fetch($warningsOffset, $warningsTake);
+
+        echo tpl_render('manage.users.warnings', [
+            'warnings' => [
+                'count' => $warningsCount,
+                'take' => $warningsTake,
+                'offset' => $warningsOffset,
+                'list' => $warningsList,
+            ],
+        ]);
         break;
 }

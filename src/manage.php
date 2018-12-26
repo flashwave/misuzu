@@ -43,8 +43,8 @@ function manage_get_menu(int $userId): array
         $menu['Users']['Reports'] = '/manage/users.php?v=reports';
     }
 
-    if (perms_check($perms['user'], MSZ_PERM_USER_MANAGE_RESTRICTIONS)) {
-        $menu['Users']['Restrictions'] = '/manage/users.php?v=restrictions';
+    if (perms_check($perms['user'], MSZ_PERM_USER_MANAGE_WARNINGS)) {
+        $menu['Users']['Warnings'] = '/manage/users.php?v=warnings';
     }
 
     if (perms_check($perms['news'], MSZ_PERM_NEWS_MANAGE_POSTS)) {
@@ -251,9 +251,9 @@ function manage_perms_list(array $rawPerms): array
                     'perm' => MSZ_PERM_USER_MANAGE_REPORTS,
                 ],
                 [
-                    'section' => 'manage-restrictions',
-                    'title' => 'Can manage restrictions.',
-                    'perm' => MSZ_PERM_USER_MANAGE_RESTRICTIONS,
+                    'section' => 'manage-warnings',
+                    'title' => 'Can manage warnings, silences and bans.',
+                    'perm' => MSZ_PERM_USER_MANAGE_WARNINGS,
                 ],
             ],
         ],

@@ -88,6 +88,7 @@ function user_warning_fetch(
             ON iu.`user_id` = uw.`issuer_id`
             WHERE uw.`user_id` = :user_id
             %s
+            ORDER BY uw.`warning_id` DESC
         ',
         $days !== null ? 'AND uw.`warning_created` >= NOW() - INTERVAL :days DAY' : ''
     ));
@@ -97,6 +98,38 @@ function user_warning_fetch(
         $fetchWarnings->bindValue('days', $days);
     }
 
+    $warnings = $fetchWarnings->execute() ? $fetchWarnings->fetchAll(PDO::FETCH_ASSOC) : false;
+    return $warnings ? $warnings : [];
+}
+
+function user_warning_global_count(): int
+{
+    $countWarnings = db_query('
+        SELECT COUNT(`warning_id`)
+        FROM `msz_user_warnings`
+    ');
+    return (int)$countWarnings->fetchColumn();
+}
+
+function user_warning_global_fetch(int $offset, int $take): array
+{
+    $fetchWarnings = db_prepare('
+        SELECT
+            uw.`warning_id`, uw.`warning_created`, uw.`warning_type`, uw.`warning_note`,
+            uw.`warning_note_private`, uw.`user_id`, uw.`issuer_id`, uw.`warning_duration`,
+            TIMESTAMPDIFF(SECOND, uw.`warning_created`, uw.`warning_duration`) AS `warning_duration_secs`,
+            INET6_NTOA(uw.`user_ip`) AS `user_ip`, INET6_NTOA(uw.`issuer_ip`) AS `issuer_ip`,
+            iu.`username` AS `issuer_username`, wu.`username` AS `username`
+        FROM `msz_user_warnings` AS uw
+        LEFT JOIN `msz_users` AS iu
+        ON iu.`user_id` = uw.`issuer_id`
+        LEFT JOIN `msz_users` AS wu
+        ON wu.`user_id` = uw.`user_id`
+        ORDER BY uw.`warning_id` DESC
+        LIMIT :offset, :take
+    ');
+    $fetchWarnings->bindValue('offset', $offset);
+    $fetchWarnings->bindValue('take', $take);
     $warnings = $fetchWarnings->execute() ? $fetchWarnings->fetchAll(PDO::FETCH_ASSOC) : false;
     return $warnings ? $warnings : [];
 }

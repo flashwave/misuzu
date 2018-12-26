@@ -1,0 +1,64 @@
+{% extends 'manage/users/master.twig' %}
+{% from 'macros.twig' import pagination, container_title %}
+{% from 'user/macros.twig' import user_profile_warning %}
+
+{% block manage_content %}
+    <div class="container">
+        {{ container_title('<i class="fas fa-exclamation-circle"></i> Warnings', '', true) }}
+        {% set warnpag = pagination(warnings.count, warnings.take, warnings.offset, '/manage/users.php?v=warnings') %}
+
+        {{ warnpag }}
+
+        <div class="profile__warnings__container">
+            <div class="profile__warning">
+                <div class="profile__warning__background"></div>
+
+                <div class="profile__warning__content">
+                    <div class="profile__warning__type">
+                        Type
+                    </div>
+
+                    <div class="profile__warning__created">
+                        Created
+                    </div>
+
+                    <div class="profile__warning__duration">
+                        Expires
+                    </div>
+
+                    <div class="profile__warning__note">
+                        Note
+                    </div>
+                </div>
+            </div>
+
+            {% for warning in warnings.list %}
+                {{ user_profile_warning(warning) }}
+            {% endfor %}
+
+            <div class="profile__warning">
+                <div class="profile__warning__background"></div>
+
+                <div class="profile__warning__content">
+                    <div class="profile__warning__type">
+                        Type
+                    </div>
+
+                    <div class="profile__warning__created">
+                        Created
+                    </div>
+
+                    <div class="profile__warning__duration">
+                        Expires
+                    </div>
+
+                    <div class="profile__warning__note">
+                        Note
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{ warnpag }}
+    </div>
+{% endblock %}

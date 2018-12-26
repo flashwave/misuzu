@@ -1,5 +1,6 @@
 {% extends 'user/master.twig' %}
 {% from 'macros.twig' import container_title %}
+{% from 'user/macros.twig' import user_profile_warning %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox, input_file, input_file_raw, input_select %}
 
 {% set image = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
@@ -202,51 +203,7 @@
                             </div>
 
                             {% for warning in warnings %}
-                                {% if warning.warning_type == constant('MSZ_WARN_SILENCE') %}
-                                    {% set warning_text = 'Silence' %}
-                                    {% set warning_class = 'silence' %}
-                                {% elseif warning.warning_type == constant('MSZ_WARN_BAN') %}
-                                    {% set warning_text = 'Ban' %}
-                                    {% set warning_class = 'ban' %}
-                                {% elseif warning.warning_type == constant('MSZ_WARN_WARNING') %}
-                                    {% set warning_text = 'Warning' %}
-                                    {% set warning_class = 'warning' %}
-                                {% else %}
-                                    {% set warning_text = 'Note' %}
-                                    {% set warning_class = 'note' %}
-                                {% endif %}
-
-                                <div class="profile__warning profile__warning--{{ warning_class }}">
-                                    <div class="profile__warning__background"></div>
-
-                                    <div class="profile__warning__content">
-                                        <div class="profile__warning__type">
-                                            {{ warning_text }}
-                                        </div>
-
-                                        <time datetime="{{ warning.warning_created|date('c') }}" title="{{ warning.warning_created|date('r') }}" class="profile__warning__created">
-                                            {{ warning.warning_created|time_diff }}
-                                        </time>
-
-                                        {% if warning.warning_duration_secs > 0 %}
-                                            <time datetime="{{ warning.warning_duration|date('c') }}" title="{{ warning.warning_duration|date('r') }}" class="profile__warning__duration">
-                                                {{ warning.warning_created|time_diff }}
-                                            </time>
-                                        {% else %}
-                                            <div class="profile__warning__duration"></div>
-                                        {% endif %}
-
-                                        <div class="profile__warning__note">
-                                            {{ warning.warning_note }}
-
-                                            {% if can_view_private_note and warning.warning_note_private|length > 0 %}
-                                                <div class="profile__warning__private">
-                                                    {{ warning.warning_note_private|nl2br }}
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
+                                {{ user_profile_warning(warning, can_view_private_note) }}
                             {% endfor %}
                         </div>
                     {% endif %}
