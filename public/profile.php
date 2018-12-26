@@ -253,8 +253,6 @@ switch ($mode) {
                     return;
                 }
             }
-        } elseif ($viewingOwnProfile) {
-            $notices[] = 'The profile pages are still under much construction, more things will eventually populate the area where this container current exists.';
         }
 
         $getProfile = db_prepare(
