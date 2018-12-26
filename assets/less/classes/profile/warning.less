@@ -32,6 +32,10 @@
         background-color: var(--background-colour-translucent);
         display: flex;
         padding: 1px;
+
+        @media (max-width: @site-mobile-width) {
+            flex-wrap: wrap;
+        }
     }
 
     &__type,
