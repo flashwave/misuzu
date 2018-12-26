@@ -93,7 +93,7 @@ function ip_match_cidr(string $address, string $cidr): bool
     return ip_match_cidr_raw($address, $subnet, $mask);
 }
 
-function ip_cidr_to_raw(string $cidr): array
+function ip_cidr_to_raw(string $cidr): ?array
 {
     if (strpos($cidr, '/') !== false) {
         [$subnet, $mask] = explode('/', $cidr, 2);
@@ -101,8 +101,13 @@ function ip_cidr_to_raw(string $cidr): array
         $subnet = $cidr;
     }
 
-    $subnet = inet_pton($subnet);
-    $mask = empty($mask) ? null : $mask;
+    try {
+        $subnet = inet_pton($subnet);
+    } catch (Exception $ex) {
+        return null;
+    }
+
+    $mask = empty($mask) ? null : (int)$mask;
 
     return compact('subnet', 'mask');
 }
@@ -138,7 +143,7 @@ function ip_blacklist_add_raw(string $subnet, ?int $mask = null): bool
     }
 
     $addBlacklist = db_prepare('
-        INSERT INTO `msz_ip_blacklist`
+        REPLACE INTO `msz_ip_blacklist`
             (`ip_subnet`, `ip_mask`)
         VALUES
             (:subnet, :mask)
@@ -150,7 +155,48 @@ function ip_blacklist_add_raw(string $subnet, ?int $mask = null): bool
 
 function ip_blacklist_add(string $cidr): bool
 {
-    [$subnet, $mask] = ['', 0];
-    extract(ip_cidr_to_raw($cidr));
-    return ip_blacklist_add_raw($subnet, $mask);
+    $raw = ip_cidr_to_raw($cidr);
+
+    if (empty($raw)) {
+        return false;
+    }
+
+    return ip_blacklist_add_raw($raw['subnet'], $raw['mask']);
+}
+
+function ip_blacklist_remove_raw(string $subnet, ?int $mask = null): bool
+{
+    $removeBlacklist = db_prepare('
+        DELETE FROM `msz_ip_blacklist`
+        WHERE `ip_subnet` = :subnet
+        AND `ip_mask` = :mask
+    ');
+    $removeBlacklist->bindValue('subnet', $subnet);
+    $removeBlacklist->bindValue('mask', $mask);
+    return $removeBlacklist->execute();
+}
+
+function ip_blacklist_remove(string $cidr): bool
+{
+    $raw = ip_cidr_to_raw($cidr);
+
+    if (empty($raw)) {
+        return false;
+    }
+
+    return ip_blacklist_remove_raw($raw['subnet'], $raw['mask']);
+}
+
+function ip_blacklist_list(): array
+{
+    $getBlacklist = db_query("
+        SELECT
+            INET6_NTOA(`ip_subnet`) AS `ip_subnet`,
+            `ip_mask`,
+            LENGTH(`ip_subnet`) AS `ip_bytes`,
+            CONCAT(INET6_NTOA(`ip_subnet`), '/', `ip_mask`) as `ip_cidr`
+        FROM `msz_ip_blacklist`
+    ");
+    $blacklist = $getBlacklist->execute() ? $getBlacklist->fetchAll(PDO::FETCH_ASSOC) : false;
+    return $blacklist ? $blacklist : [];
 }

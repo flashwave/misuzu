@@ -27,6 +27,10 @@ function manage_get_menu(int $userId): array
         $menu['General']['Settings'] = '/manage/index.php?v=settings';
     }
 
+    if (perms_check($perms['general'], MSZ_PERM_GENERAL_MANAGE_BLACKLIST)) {
+        $menu['General']['IP Blacklist'] = '/manage/index.php?v=blacklist';
+    }
+
     if (perms_check($perms['user'], MSZ_PERM_USER_MANAGE_USERS | MSZ_PERM_USER_MANAGE_PERMS)) {
         $menu['Users']['Listing'] = '/manage/users.php?v=listing';
     }
@@ -41,10 +45,6 @@ function manage_get_menu(int $userId): array
 
     if (perms_check($perms['user'], MSZ_PERM_USER_MANAGE_RESTRICTIONS)) {
         $menu['Users']['Restrictions'] = '/manage/users.php?v=restrictions';
-    }
-
-    if (perms_check($perms['user'], MSZ_PERM_USER_MANAGE_BLACKLISTS)) {
-        $menu['Users']['Blacklisting'] = '/manage/users.php?v=blacklisting';
     }
 
     if (perms_check($perms['news'], MSZ_PERM_NEWS_MANAGE_POSTS)) {
@@ -199,6 +199,11 @@ function manage_perms_list(array $rawPerms): array
                     'title' => 'Can use experimental features.',
                     'perm' => MSZ_PERM_GENERAL_TESTER,
                 ],
+                [
+                    'section' => 'manage-blacklist',
+                    'title' => 'Can manage blacklistings.',
+                    'perm' => MSZ_PERM_GENERAL_MANAGE_BLACKLIST,
+                ],
             ],
         ],
         [
@@ -249,11 +254,6 @@ function manage_perms_list(array $rawPerms): array
                     'section' => 'manage-restrictions',
                     'title' => 'Can manage restrictions.',
                     'perm' => MSZ_PERM_USER_MANAGE_RESTRICTIONS,
-                ],
-                [
-                    'section' => 'manage-blacklistings',
-                    'title' => 'Can manage blacklistings.',
-                    'perm' => MSZ_PERM_USER_MANAGE_BLACKLISTS,
                 ],
             ],
         ],

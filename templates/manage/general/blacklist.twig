@@ -1,0 +1,40 @@
+{% extends 'manage/general/master.twig' %}
+{% from 'macros.twig' import container_title, pagination %}
+{% from '_layout/input.twig' import input_csrf, input_text, input_checkbox, input_file, input_select %}
+
+{% block manage_content %}
+    <div class="container">
+        {{ container_title('<i class="fas fa-shield-alt"></i> IP Blacklist', '', true) }}
+
+        <div class="manage__description">
+            Here you can add or remove CIDR ranges to the IP Blacklist, these ranges are allowed to log into the site but cannot create accounts.
+        </div>
+
+        {% if notices|length > 0 %}
+            <div class="warning">
+                <div class="warning__content">
+                    {% for notice in notices %}
+                        {{ notice }}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="manage__blacklist">
+            <form action="" method="post" class="manage__blacklist__form">
+                {{ input_csrf('ip_blacklist') }}
+                <textarea name="blacklist[add]" class="input__textarea manage__blacklist__textarea" placeholder="Enter CIDR (subnet/mask), each line will be processed. Addresses without a mask will just be blacklisted alone."></textarea>
+                <button class="input__button input__button--save manage__blacklist__button">Add</button>
+            </form>
+
+            <form action="" method="post" class="manage__blacklist__form">
+                {{ input_csrf('ip_blacklist') }}
+                {{ input_select('blacklist[remove][]', blacklist, null, 'ip_cidr', null, true, 'manage__blacklist__select', {
+                    'multiple': true,
+                    'size': 10,
+                }) }}
+                <button class="input__button input__button--destroy manage__blacklist__button">Remove</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

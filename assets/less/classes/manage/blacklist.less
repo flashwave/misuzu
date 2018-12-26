@@ -1,0 +1,31 @@
+.manage__blacklist {
+    display: flex;
+    justify-content: space-evenly;
+
+    @media (max-width: @site-mobile-width) {
+        flex-direction: column;
+    }
+
+    &__form {
+        margin: 2px;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+    }
+
+    &__select,
+    &__textarea {
+        margin: 0;
+        padding: 5px 10px;
+        font-family: monospace;
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+        min-height: 400px;
+    }
+
+    &__button {
+        margin-top: 1px;
+    }
+}
