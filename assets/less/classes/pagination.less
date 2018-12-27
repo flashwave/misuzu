@@ -3,13 +3,14 @@
     justify-content: space-between;
     align-items: stretch;
     width: 100%;
-    scrollbar-color: var(--accent-colour) var(--background-colour);
 
     &__section {
         display: flex;
         align-items: stretch;
         overflow: auto;
         flex: 0 0 auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--accent-colour) var(--background-colour);
 
         &--pages {
             flex-shrink: 1;
