@@ -151,6 +151,17 @@ function user_bump_last_active(int $userId, string $ipAddress = null): void
     $bumpUserLast->execute();
 }
 
+function user_get_last_ip(int $userId): string
+{
+    $getAddress = db_prepare('
+        SELECT INET6_NTOA(`last_ip`)
+        FROM `msz_users`
+        WHERE `user_id` = :user_id
+    ');
+    $getAddress->bindValue('user_id', $userId);
+    return $getAddress->execute() ? $getAddress->fetchColumn() : '';
+}
+
 define('MSZ_USER_ABOUT_MAX_LENGTH', 0xFFFF);
 
 define('MSZ_USER_ABOUT_OK', 0);

@@ -8,6 +8,39 @@ define('MSZ_WARN_TYPES', [
     MSZ_WARN_NOTE, MSZ_WARN_WARNING, MSZ_WARN_SILENCE, MSZ_WARN_BAN,
 ]);
 
+define('MSZ_WARN_TYPES_PUBLIC', [
+    MSZ_WARN_WARNING,
+    MSZ_WARN_SILENCE,
+    MSZ_WARN_BAN,
+]);
+
+define('MSZ_WARN_TYPE_NAMES', [
+    MSZ_WARN_NOTE => 'Note',
+    MSZ_WARN_WARNING => 'Warning',
+    MSZ_WARN_SILENCE => 'Silence',
+    MSZ_WARN_BAN => 'Ban',
+]);
+
+function user_warning_type_is_valid(int $type): bool
+{
+    return in_array($type, MSZ_WARN_TYPES, true);
+}
+
+function user_warning_type_get_name(int $type): string
+{
+    return user_warning_type_is_valid($type) ? MSZ_WARN_TYPE_NAMES[$type] : '';
+}
+
+function user_warning_get_types(): array
+{
+    return MSZ_WARN_TYPE_NAMES;
+}
+
+function user_warning_is_public(int $type): bool
+{
+    return in_array($type, MSZ_WARN_TYPES_PUBLIC, true);
+}
+
 function user_warning_add(
     int $userId,
     string $userIp,

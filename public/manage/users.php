@@ -111,6 +111,10 @@ switch ($_GET['v'] ?? null) {
             tpl_var('permissions', $permissions = manage_perms_list(perms_get_user_raw($userId)));
         }
 
+        if ($canManageWarnings) {
+            tpl_var('warning_types', $warnTypes = user_warning_get_types());
+        }
+
         if ($isPostRequest) {
             if (!csrf_verify('users_edit', $_POST['csrf'] ?? '')) {
                 echo 'csrf err';
@@ -232,6 +236,18 @@ switch ($_GET['v'] ?? null) {
                     $deletePermissions->bindValue('user_id', $userId);
                     $deletePermissions->execute();
                 }
+            }
+
+            if (!empty($warnTypes) && !empty($_POST['warning']) && is_array($_POST['warning'])) {
+                user_warning_add(
+                    $userId,
+                    user_get_last_ip($userId),
+                    user_session_current('user_id'),
+                    ip_remote_address(),
+                    $_POST['warning']['type'],
+                    $_POST['warning']['note'],
+                    $_POST['warning']['private']
+                );
             }
 
             header("Location: ?v=view&u={$manageUser['user_id']}");
