@@ -78,7 +78,7 @@ $onlineUsers = cache_get('index:online:v1', function () {
         ORDER BY RAND()
         LIMIT 104
     ')->fetchAll(PDO::FETCH_ASSOC);
-}, -1);
+}, 30);
 
 echo tpl_render('home.' . (user_session_active() ? 'home' : 'landing'), [
     'users_count' => $statistics['users'],
