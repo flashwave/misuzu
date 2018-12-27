@@ -20,7 +20,7 @@
 
 {% block content %}
     <form class="container" onchange="this.submit()" style="{{ role.role_colour|html_colour('--accent-colour') }}">
-        {{ container_title('Member Listing') }}
+        {{ container_title('<i class="fas fa-users fa-fw"></i> Member Listing') }}
 
         <div class="userlist__selection">
             {{ input_select('r', roles, role.role_id, 'role_name', 'role_id') }}

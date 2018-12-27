@@ -23,7 +23,7 @@
 
 {% block content %}
     <div class="container">
-        {{ container_title(title) }}
+        {{ container_title('<i class="fas fa-wrench fa-fw"></i> ' ~ title) }}
 
         <div class="changelog__content">
             {{ changelog_listing(changes, is_date) }}
@@ -41,7 +41,7 @@
 
     {% if comments is defined %}
         <div class="container">
-            {{ container_title('Comments') }}
+            {{ container_title('<i class="fas fa-comments fa-fw"></i> Comments') }}
             {{ comments_section(comments, comments_category, current_user|default(null), comments_perms) }}
         </div>
     {% endif %}

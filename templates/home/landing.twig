@@ -11,13 +11,13 @@
         <div class="index__sidebar">
             {% if chat_quote is defined and chat_quote is iterable and chat_quote|length > 0 %}
                 <div class="container index__container">
-                    {{ container_title('Chat quote from ' ~ (chat_quote[0].quote_timestamp|date('Y-m-d'))) }}
+                    {{ container_title('<i class="fas fa-quote-left fa-fw"></i> Chat quote from ' ~ (chat_quote[0].quote_timestamp|date('Y-m-d'))) }}
                     {{ chat_quote_display(chat_quote) }}
                 </div>
             {% endif %}
 
             <div class="container index__container">
-                {{ container_title('Statistics') }}
+                {{ container_title('<i class="fas fa-chart-bar fa-fw"></i> Statistics') }}
                 <div class="container__content">
                     {% if users_count < 1 %}
                         This is a fresh installation, <a href="/auth.php?m=register" class="index__stats__emphasis index__stats__link">create an account</a>!
@@ -31,7 +31,7 @@
 
             {% if online_users|length > 0 %}
                 <div class="container index__container">
-                    {{ container_title('Online users') }}
+                    {{ container_title('<i class="fas fa-users fa-fw"></i> Online users') }}
 
                     <div class="index__online">
                         {% for user in online_users %}
@@ -44,7 +44,7 @@
             {% endif %}
 
             <div class="container index__container">
-                {{ container_title('Changelog', '/changelog.php') }}
+                {{ container_title('<i class="fas fa-wrench fa-fw"></i> Changelog', false, '/changelog.php') }}
                 <div class="changelog__content">
                     {{ changelog_listing(featured_changelog) }}
                 </div>

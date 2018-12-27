@@ -20,7 +20,7 @@ $perms = $topic
     ? forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], user_session_current('user_id', 0))
     : 0;
 
-if (!$topic || !perms_check($perms, MSZ_FORUM_PERM_DELETE_TOPIC)) {
+if (!$topic || ($topic['topic_deleted'] !== null && !perms_check($perms, MSZ_FORUM_PERM_DELETE_TOPIC))) {
     echo render_error(404);
     return;
 }

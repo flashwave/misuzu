@@ -17,7 +17,7 @@
             {{ input_hidden('auth[mode]', 'register') }}
             {{ input_csrf('register') }}
 
-            {{ container_title('Register') }}
+            {{ container_title('<i class="fas fa-user-check fa-fw"></i> Register') }}
 
             {% if auth_restricted %}
                 <div class="warning auth__warning">
@@ -40,7 +40,7 @@
                     {{ input_text('auth[email]', 'auth__input', auth_email|default(''), 'text', 'E-mail', true) }}
                     {{ input_text('auth[meow]', 'auth__input', '', 'text', 'What is the outcome of nine plus ten?', true) }}
 
-                    <button class="input__button">Sign up</button>
+                    <button class="input__button">Create your account</button>
                 </div>
             {% endif %}
         </form>
@@ -51,7 +51,7 @@
             {{ input_hidden('auth[mode]', 'forgot') }}
             {{ input_csrf('passforgot') }}
 
-            {{ container_title('Forgot password') }}
+            {{ container_title('<i class="fas fa-user-lock fa-fw"></i> Forgot password') }}
 
             {% if auth_forgot_error is defined %}
                 <div class="warning auth__warning">

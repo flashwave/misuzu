@@ -29,7 +29,7 @@
     {{ forum_post_listing(topic_posts, topic_info.topic_first_post_id) }}
 
     {% if can_reply %}
-        {{ forum_posting_form('Reply', topic_info.topic_id, true, 'reply', true) }}
+        {{ forum_posting_form('<i class="fas fa-comment fa-fw"></i> Reply', topic_info.topic_id, true, 'reply', true) }}
     {% endif %}
 
     {{ topic_tools }}

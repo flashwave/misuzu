@@ -39,7 +39,7 @@
 
         <div class="settings__wrapper__content">
             <form action="" method="post" class="container settings__container" id="account">
-                {{ container_title('<i class="fas fa-user fa-fw"></i> Account', '', true) }}
+                {{ container_title('<i class="fas fa-user fa-fw"></i> Account') }}
                 {{ input_csrf('settings') }}
 
                 <div class="settings__description">
@@ -109,7 +109,7 @@
             </form>
 
             <div class="container settings__container" id="roles">
-                {{ container_title('<i class="fas fa-user-check"></i> Roles', '', true) }}
+                {{ container_title('<i class="fas fa-user-check fa-fw"></i> Roles') }}
 
                 <div class="settings__description">
                     <p>This is a listing of the user roles you're a part of, you can select which you want to leave or which one you want to boast as your main role which will change your username colour accordingly.</p>
@@ -153,7 +153,7 @@
             </div>
 
             <div class="container settings__container" id="sessions">
-                {{ container_title('<i class="fas fa-key fa-fw"></i> Sessions', '', true) }}
+                {{ container_title('<i class="fas fa-key fa-fw"></i> Sessions') }}
                 {% set spagination = pagination(
                     sessions.amount,
                     sessions.take,
@@ -203,7 +203,7 @@
             </div>
 
             <div class="container settings__container" id="login-attempts">
-                {{ container_title('<i class="fas fa-user-lock fa-fw"></i> Login Attempts', '', true) }}
+                {{ container_title('<i class="fas fa-user-lock fa-fw"></i> Login Attempts') }}
                 {% set lhpagination = pagination(
                     logins.amount,
                     logins.take,
@@ -242,7 +242,7 @@
             </div>
 
             <div class="container settings__container" id="account-log">
-                {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Account Log', '', true) }}
+                {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Account Log') }}
                 {% set alpagination = pagination(
                     logs.amount,
                     logs.take,

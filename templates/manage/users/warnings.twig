@@ -4,7 +4,7 @@
 
 {% block manage_content %}
     <div class="container">
-        {{ container_title('<i class="fas fa-exclamation-circle"></i> Warnings', '', true) }}
+        {{ container_title('<i class="fas fa-exclamation-circle fa-fw"></i> Warnings') }}
         {% set warnpag = pagination(warnings.count, warnings.take, warnings.offset, '/manage/users.php?v=warnings') %}
 
         {{ warnpag }}

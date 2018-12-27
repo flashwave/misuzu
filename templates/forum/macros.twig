@@ -3,7 +3,7 @@
     {% from 'macros.twig' import container_title %}
 
     <div class="container forum__categories"{% if colour is not null %} style="{{ colour|html_colour('--accent-colour') }}"{% endif %}>
-        {{ container_title(title) }}
+        {{ container_title('<i class="fas fa-folder fa-fw"></i> ' ~ title) }}
 
         {% if forums|length > 0 %}
             <div class="forum__categories__list">
@@ -219,7 +219,7 @@
     {% from 'macros.twig' import container_title %}
 
     <div class="container forum__topics">
-        {{ container_title('Topics') }}
+        {{ container_title('<i class="fas fa-comments fa-fw"></i> Topics') }}
 
         <div class="forum__topics__list">
             {% if topics|length > 0 %}

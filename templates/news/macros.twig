@@ -2,7 +2,7 @@
     {% from 'macros.twig' import container_title %}
 
     <div class="container news__preview">
-        {{ container_title(post.post_title, '/news.php?p=' ~ post.post_id) }}
+        {{ container_title(post.post_title, true, '/news.php?p=' ~ post.post_id) }}
 
         <div class="news__preview__container">
             <div class="news__preview__content">

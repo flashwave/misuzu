@@ -52,7 +52,7 @@ final class WhoopsReporter extends Handler
             <div class="container">
                 <div class="container__title">
                     <div class="container__title__background"></div>
-                    <div class="container__title__text">Something broke!</div>
+                    <div class="container__title__text"><i class="fas fa-bug fa-fw"></i> Something broke!</div>
                 </div>
                 <div class="container__content">
                     <p>{$text}</p>

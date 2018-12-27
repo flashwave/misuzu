@@ -4,7 +4,7 @@
 
 {% block manage_content %}
     <div class="container settings__container">
-        {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Global Log', '', true) }}
+        {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Global Log') }}
         {% set glp = pagination(
             global_logs_count,
             global_logs_take,
