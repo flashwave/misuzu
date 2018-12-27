@@ -6,9 +6,7 @@ if (!user_session_active()) {
     return;
 }
 
-$postRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
-
-if ($postRequest) {
+if (!empty($_POST)) {
     $topicId = max(0, (int)($_POST['post']['topic'] ?? 0));
     $forumId = max(0, (int)($_POST['post']['forum'] ?? 0));
 } else {
@@ -29,7 +27,7 @@ if (!empty($postId)) {
         WHERE `post_id` = :post_id
     ');
     $getPost->bindValue('post_id', $postId);
-    $post = $getPost->execute() ? $getPost->fetch() : false;
+    $post = $getPost->execute() ? $getPost->fetch(PDO::FETCH_ASSOC) : false;
 
     if (isset($post['topic_id'])) { // should automatic cross-quoting be a thing? if so, check if $topicId is < 1 first
         $topicId = (int)$post['topic_id'];
@@ -43,7 +41,7 @@ if (!empty($topicId)) {
         WHERE `topic_id` = :topic_id
     ');
     $getTopic->bindValue('topic_id', $topicId);
-    $topic = $getTopic->execute() ? $getTopic->fetch() : false;
+    $topic = $getTopic->execute() ? $getTopic->fetch(PDO::FETCH_ASSOC) : false;
 
     if (isset($topic['forum_id'])) {
         $forumId = (int)$topic['forum_id'];
@@ -57,7 +55,7 @@ if (!empty($forumId)) {
         WHERE `forum_id` = :forum_id
     ');
     $getForum->bindValue('forum_id', $forumId);
-    $forum = $getForum->execute() ? $getForum->fetch() : false;
+    $forum = $getForum->execute() ? $getForum->fetch(PDO::FETCH_ASSOC) : false;
 }
 
 if (empty($forum)) {
@@ -80,63 +78,88 @@ if (!forum_may_have_topics($forum['forum_type'])) {
     return;
 }
 
-if ($postRequest) {
+$notices = [];
+
+if (!empty($_POST)) {
     if (!csrf_verify('forum_post', $_POST['csrf'] ?? '')) {
-        echo 'Could not verify request.';
-        return;
-    }
-
-    $topicTitle = $_POST['post']['title'] ?? '';
-    $topicTitleValidate = forum_validate_title($topicTitle);
-    $postText = $_POST['post']['text'] ?? '';
-    $postTextValidate = forum_validate_post($postText);
-
-    switch ($postTextValidate) {
-        case 'too-short':
-            echo 'Post content was too short.';
-            return;
-
-        case 'too-long':
-            echo 'Post content was too long.';
-            return;
-    }
-
-    if (isset($topic)) {
-        forum_topic_bump($topic['topic_id']);
+        $notices[] = 'Could not verify request.';
     } else {
-        switch ($topicTitleValidate) {
-            case 'too-short':
-                echo 'Topic title was too short.';
-                return;
+        $topicTitle = $_POST['post']['title'] ?? '';
+        $topicTitleValidate = forum_validate_title($topicTitle);
+        $postText = $_POST['post']['text'] ?? '';
+        $postTextValidate = forum_validate_post($postText);
+        $postParser = (int)($_POST['post']['parser'] ?? MSZ_PARSER_BBCODE);
 
-            case 'too-long':
-                echo 'Topic title was too long.';
-                return;
+        if (!parser_is_valid($postParser)) {
+            $notices[] = 'Invalid parser selected.';
         }
 
-        $topicId = forum_topic_create($forum['forum_id'], user_session_current('user_id', 0), $topicTitle);
+        switch ($postTextValidate) {
+            case 'too-short':
+                $notices[] = 'Post content was too short.';
+                break;
+
+            case 'too-long':
+                $notices[] = 'Post content was too long.';
+                break;
+        }
+
+        if (empty($topic)) {
+            switch ($topicTitleValidate) {
+                case 'too-short':
+                    $notices[] = 'Topic title was too short.';
+                    break;
+
+                case 'too-long':
+                    $notices[] = 'Topic title was too long.';
+                    break;
+            }
+        }
+
+        if (empty($notices)) {
+            if (!empty($topic)) {
+                forum_topic_bump($topic['topic_id']);
+            } else {
+                $topicId = forum_topic_create($forum['forum_id'], user_session_current('user_id', 0), $topicTitle);
+            }
+
+            $postId = forum_post_create(
+                $topicId,
+                $forum['forum_id'],
+                user_session_current('user_id', 0),
+                ip_remote_address(),
+                $postText,
+                $postParser
+            );
+            forum_topic_mark_read(user_session_current('user_id', 0), $topicId, $forum['forum_id']);
+
+            header("Location: /forum/topic.php?p={$postId}#p{$postId}");
+            return;
+        }
     }
-
-    $postId = forum_post_create(
-        $topicId,
-        $forum['forum_id'],
-        user_session_current('user_id', 0),
-        ip_remote_address(),
-        $postText,
-        MSZ_PARSER_BBCODE
-    );
-    forum_topic_mark_read(user_session_current('user_id', 0), $topicId, $forum['forum_id']);
-
-    header("Location: /forum/topic.php?p={$postId}#p{$postId}");
-    return;
 }
 
 if (!empty($topic)) {
     tpl_var('posting_topic', $topic);
 }
 
+// fetches additional data for simulating a forum post
+$getDisplayInfo = db_prepare('
+    SELECT u.`user_country`, u.`user_created`, (
+        SELECT COUNT(`post_id`)
+        FROM `msz_forum_posts`
+        WHERE `user_id` = u.`user_id`
+    ) AS `user_forum_posts`
+    FROM `msz_users` as u
+    WHERE `user_id` = :user_id
+');
+$getDisplayInfo->bindValue('user_id', user_session_current('user_id'));
+$displayInfo = $getDisplayInfo->execute() ? $getDisplayInfo->fetch(PDO::FETCH_ASSOC) : [];
+
 echo tpl_render('forum.posting', [
     'posting_breadcrumbs' => forum_get_breadcrumbs($forumId),
     'global_accent_colour' => forum_get_colour($forumId),
     'posting_forum' => $forum,
+    'posting_info' => $displayInfo,
+    'posting_notices' => $notices,
 ]);

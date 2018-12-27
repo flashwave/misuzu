@@ -75,7 +75,7 @@
     <div class="container forum__actions">
         <div class="forum__actions__buttons">
             {% if can_reply %}
-                <a href="#reply" class="input__button">Reply</a>
+                <a href="/forum/posting.php?t={{ info.topic_id }}" class="input__button">Reply</a>
             {% endif %}
         </div>
 
@@ -366,40 +366,4 @@
             </div>
         </div>
     </div>
-{% endmacro %}
-
-{% macro forum_posting_form(title, target_id, is_reply, element_id) %}
-    {% from 'macros.twig' import container_title %}
-    {% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
-    {% set is_reply = is_reply ? true : false %}
-
-    <form{% if element_id is defined %} id="{{ element_id }}"{% endif %}
-        class="container forum__posting"
-        method="post"
-        action="/forum/posting.php">
-        {{ container_title(title) }}
-
-        <div class="forum__posting__content">
-            {{ input_hidden('post[' ~ (is_reply ? 'topic' : 'forum') ~ ']', target_id) }}
-            {{ input_csrf('forum_post') }}
-
-            {#<div class="forum__posting__errors">
-                <p class="forum__posting__error">Error: Your post contained too much text, shorten it a bit or split it out in two posts.</p>
-            </div>#}
-
-            {% if not is_reply %}
-                <div class="forum__posting__title">
-                    {{ input_text('post[title]', 'forum__posting__title__input', '', 'text', 'Topic title') }}
-                </div>
-            {% endif %}
-
-            <div class="forum__posting__text">
-                <textarea class="input__textarea forum__posting__text__input" name="post[text]"></textarea>
-            </div>
-
-            <div class="forum__posting__buttons">
-                <button class="input__button">Submit</button>
-            </div>
-        </div>
-    </form>
 {% endmacro %}

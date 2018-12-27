@@ -6,7 +6,6 @@
         forum_post_listing,
         forum_topic_buttons,
         forum_topic_locked,
-        forum_posting_form,
         forum_header,
         forum_topic_tools
 %}
@@ -22,15 +21,8 @@
 
 {% block content %}
     {{ forum_header(topic_info.topic_title, topic_breadcrumbs) }}
-
     {{ forum_topic_locked(topic_info.topic_locked, topic_info.topic_archived) }}
-
     {{ topic_tools }}
     {{ forum_post_listing(topic_posts, topic_info.topic_first_post_id) }}
-
-    {% if can_reply %}
-        {{ forum_posting_form('<i class="fas fa-comment fa-fw"></i> Reply', topic_info.topic_id, true, 'reply', true) }}
-    {% endif %}
-
     {{ topic_tools }}
 {% endblock %}

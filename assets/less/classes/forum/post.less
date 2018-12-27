@@ -52,6 +52,21 @@
             font-size: 1.2em;
             line-height: 1.3em;
         }
+
+        &--edit {
+            // figure out why this is needed
+            max-width: calc(100% - 4px);
+            min-width: calc(100% - 4px);
+            margin: 2px 2px 0;
+            min-height: 400px;
+            height: 100%;
+            border: 0;
+            padding: 2px 5px;
+            font-size: inherit;
+            color: inherit;
+            background-color: rgba(0, 0, 0, .2);
+            font-family: inherit;
+        }
     }
 
     &__info {
@@ -148,5 +163,19 @@
             text-align: left;
             margin: 0 4px;
         }
+    }
+
+    &__options {
+        margin: 2px;
+        display: flex;
+        justify-content: space-between;
+
+        @media (max-width: @site-mobile-width) {
+            flex-direction: column;
+        }
+    }
+
+    &__parser {
+        margin: 0;
     }
 }

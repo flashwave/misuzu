@@ -1,17 +1,58 @@
 {% extends 'forum/master.twig' %}
-{% from 'forum/macros.twig' import forum_posting_form, forum_header %}
+{% from 'forum/macros.twig' import forum_header %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_button, input_select %}
 
 {% set title = 'Posting' %}
-
-{% if posting_topic is defined %}
-    {% set form_title = 'Replying » ' ~ posting_topic.topic_title %}
-    {% set form_target_id = posting_topic.topic_id %}
-{% else %}
-    {% set form_title = 'Creating Topic » ' ~ posting_forum.forum_name %}
-    {% set form_target_id = posting_forum.forum_id %}
-{% endif %}
+{% set is_reply = posting_topic is defined %}
 
 {% block content %}
-    {{ forum_header('Creating Topic', posting_breadcrumbs) }}
-    {{ forum_posting_form('<i class="fas fa-edit fa-fw"></i> ' ~ form_title, form_target_id, posting_topic is defined) }}
+    <form method="post" action="/forum/posting.php">
+        {{ input_hidden('post[' ~ (is_reply ? 'topic' : 'forum') ~ ']', is_reply ? posting_topic.topic_id : posting_forum.forum_id) }}
+        {{ input_csrf('forum_post') }}
+        {{ forum_header(is_reply ? posting_topic.topic_title : input_text('post[title]', 'forum__header__input', '', 'text', 'Enter your title here...'), posting_breadcrumbs) }}
+
+        {% if posting_notices|length > 0 %}
+            <div class="warning">
+                <div class="warning__content">
+                    {% for notice in posting_notices %}
+                        <p>{{ notice }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="container forum__post" style="{{ current_user.user_colour|html_colour('--accent-colour') }}">
+            <div class="forum__post__info">
+                <div class="forum__post__info__background"></div>
+                <div class="forum__post__info__content">
+                    <span class="avatar forum__post__avatar" style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');"></span>
+
+                    <span class="forum__post__username">{{ current_user.username }}</span>
+
+                    <div class="forum__post__icons">
+                        <div class="flag flag--{{ posting_info.user_country|lower }}" title="{{ posting_info.user_country|country_name }}"></div>
+                        <div class="forum__post__posts-count">{{ posting_info.user_forum_posts|number_format }} posts</div>
+                    </div>
+
+                    <div class="forum__post__joined">
+                        joined <time datetime="{{ posting_info.user_created|date('c') }}" title="{{ posting_info.user_created|date('r') }}">{{ posting_info.user_created|time_diff }}</time>
+                    </div>
+                </div>
+            </div>
+
+            <div class="forum__post__content">
+                <textarea name="post[text]" class="forum__post__text forum__post__text--edit" placeholder="Type your post content here..."></textarea>
+
+                <div class="forum__post__options">
+                    <div class="forum__post__settings">
+                        {{ input_select('post[parser]', constant('MSZ_PARSERS_NAMES'), constant('MSZ_PARSER_BBCODE'), null, null, null, 'forum__post__parser') }}
+                    </div>
+
+                    <div class="forum__post__buttons">
+                        <button class="input__button">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 {% endblock %}
