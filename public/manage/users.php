@@ -111,10 +111,6 @@ switch ($_GET['v'] ?? null) {
             tpl_var('permissions', $permissions = manage_perms_list(perms_get_user_raw($userId)));
         }
 
-        if ($canManageWarnings) {
-            tpl_var('warning_types', $warnTypes = user_warning_get_types());
-        }
-
         if ($isPostRequest) {
             if (!csrf_verify('users_edit', $_POST['csrf'] ?? '')) {
                 echo 'csrf err';
@@ -238,18 +234,6 @@ switch ($_GET['v'] ?? null) {
                 }
             }
 
-            if (!empty($warnTypes) && !empty($_POST['warning']) && is_array($_POST['warning'])) {
-                user_warning_add(
-                    $userId,
-                    user_get_last_ip($userId),
-                    user_session_current('user_id'),
-                    ip_remote_address(),
-                    $_POST['warning']['type'],
-                    $_POST['warning']['note'],
-                    $_POST['warning']['private']
-                );
-            }
-
             header("Location: ?v=view&u={$manageUser['user_id']}");
             break;
         }
@@ -290,13 +274,12 @@ switch ($_GET['v'] ?? null) {
         $getManageRoles->bindValue('take', $rolesTake);
         $manageRoles = $getManageRoles->execute() ? $getManageRoles->fetchAll() : [];
 
-        tpl_vars([
+        echo tpl_render('manage.users.roles', [
             'manage_roles' => $manageRoles,
             'manage_roles_count' => $manageRolesCount,
             'manage_roles_range' => $rolesTake,
             'manage_roles_offset' => $queryQffset,
         ]);
-        echo tpl_render('manage.users.roles');
         break;
 
     case 'role':
@@ -485,10 +468,49 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
+        if (!empty($_POST['warning']) && is_array($_POST['warning'])) {
+            $warningType = (int)($_POST['warning']['type'] ?? 0);
+
+            if (user_warning_type_is_valid($warningType)) {
+                $warningsUser = max(0, (int)($_POST['warning']['user'] ?? 0));
+                $warningId = user_warning_add(
+                    $warningsUser,
+                    user_get_last_ip($warningsUser),
+                    user_session_current('user_id'),
+                    ip_remote_address(),
+                    $warningType,
+                    $_POST['warning']['note'],
+                    $_POST['warning']['private']
+                );
+            }
+        } elseif (!empty($_POST['lookup']) && is_string($_POST['lookup'])) {
+            $userId = user_id_from_username($_POST['lookup']);
+            header("Location: ?v=warnings&u={$userId}");
+            return;
+        } elseif (!empty($_GET['m'])) {
+            $warningId = (int)($_GET['w'] ?? 0);
+            $modeName = $_GET['m'] ?? '';
+            $csrfRealm = "warning-{$modeName}[{$warningId}]";
+
+            if (csrf_verify($csrfRealm, $_GET['c'] ?? '')) {
+                switch ($modeName) {
+                    case 'delete':
+                        user_warning_remove($warningId);
+                        break;
+                }
+                header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? '?m=warnings' . (empty($_GET['u']) ? '' : '&u=' . (int)($_GET['u']))));
+                return;
+            }
+        }
+
+        if (empty($warningsUser)) {
+            $warningsUser = max(0, (int)($_GET['u'] ?? 0));
+        }
+
         $warningsCount = user_warning_global_count();
         $warningsTake = 50;
         $warningsOffset = max(0, (int)($_GET['o'] ?? 0));
-        $warningsList = user_warning_global_fetch($warningsOffset, $warningsTake);
+        $warningsList = user_warning_global_fetch($warningsOffset, $warningsTake, $warningsUser);
 
         echo tpl_render('manage.users.warnings', [
             'warnings' => [
@@ -496,6 +518,9 @@ switch ($_GET['v'] ?? null) {
                 'take' => $warningsTake,
                 'offset' => $warningsOffset,
                 'list' => $warningsList,
+                'user_id' => $warningsUser,
+                'username' => user_username_from_id($warningsUser),
+                'types' => user_warning_get_types(),
             ],
         ]);
         break;

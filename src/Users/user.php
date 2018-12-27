@@ -138,6 +138,13 @@ function user_id_from_username(string $username): int
     return $getId->execute() ? (int)$getId->fetchColumn() : 0;
 }
 
+function user_username_from_id(int $userId): string
+{
+    $getName = db_prepare('SELECT `username` FROM `msz_users` WHERE `user_id` = :user_id');
+    $getName->bindValue('user_id', $userId);
+    return $getName->execute() ? $getName->fetchColumn() : '';
+}
+
 function user_bump_last_active(int $userId, string $ipAddress = null): void
 {
     $bumpUserLast = db_prepare('

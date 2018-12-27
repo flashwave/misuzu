@@ -139,20 +139,6 @@
         </form>
     {% endif %}
 
-    {% if can_manage_warns %}
-        <form class="container" method="post" action="">
-            {{ container_title('Add Warning') }}
-            {{ input_csrf('users_edit') }}
-
-            {{ input_select('warning[type]', warning_types) }}
-            {{ input_text('warning[note]', '', '', 'text', 'Public note') }}
-            {{ input_text('warning[until]', '', ''|date('c'), 'datetime-local') }} (empty to set null)
-            <button class="input__button">Add</button><br>
-
-            <textarea class="input__textarea" name="warning[private]" placeholder="Private note"></textarea>
-        </form>
-    {% endif %}
-
     {% if can_manage_users %}
         {% if has_roles|length > 0 %}
             <form method="post" action="" class="container">

@@ -222,7 +222,7 @@
     </div>
 {% endmacro %}
 
-{% macro user_profile_warning(warning, show_private_note) %}
+{% macro user_profile_warning(warning, show_private_note, show_user, show_issuer, show_ips, delete_csrf) %}
     {% if warning.warning_type == constant('MSZ_WARN_SILENCE') %}
         {% set warning_text = 'Silence' %}
         {% set warning_class = 'silence' %}
@@ -237,8 +237,48 @@
         {% set warning_class = 'note' %}
     {% endif %}
 
-    <div class="profile__warning profile__warning--{{ warning_class }}">
+    <div class="profile__warning profile__warning--{{ warning_class }}{% if show_user or show_issuer or delete_csrf %} profile__warning--extendo{% endif %}">
         <div class="profile__warning__background"></div>
+
+        {% if show_user or show_issuer or delete_csrf %}
+            <div class="profile__warning__tools">
+                {% if show_user %}
+                    <div class="profile__warning__user">
+                        <div class="avatar profile__warning__user__avatar" style="background-image:url('/profile.php?m=avatar&amp;u={{ warning.user_id }}');"></div>
+                        <div class="profile__warning__user__username">
+                            {{ warning.username }}
+                        </div>
+
+                        {% if show_ips %}
+                            <div class="profile__warning__user__ip">
+                                {{ warning.user_ip }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if show_issuer %}
+                    <div class="profile__warning__user">
+                        <div class="avatar profile__warning__user__avatar" style="background-image:url('/profile.php?m=avatar&amp;u={{ warning.issuer_id }}');"></div>
+                        <div class="profile__warning__user__username">
+                            {{ warning.issuer_username }}
+                        </div>
+
+                        {% if show_ips %}
+                            <div class="profile__warning__user__ip">
+                                {{ warning.issuer_ip }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if delete_csrf %}
+                    <div class="profile__warning__options">
+                        <a href="/manage/users.php?v=warnings&amp;u={{ warning.user_id }}&amp;w={{ warning.warning_id }}&amp;m=delete&amp;c={{ delete_csrf }}" class="profile__warning__option"><i class="far fa-trash-alt"></i> Delete</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
 
         <div class="profile__warning__content">
             <div class="profile__warning__type">
