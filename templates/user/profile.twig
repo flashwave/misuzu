@@ -105,60 +105,66 @@
             {% endif %}
 
             <div class="profile__container">
-                <div class="profile__container__side">
-                    {% if is_editing and perms.edit_background %}
-                        <div class="container profile__background-settings">
-                            {{ container_title('Background') }}
+                {% set show_profile_fields = is_editing ? perms.edit_profile : profile_fields|default([])|length > 0 %}
+                {% set show_background_settings = is_editing and perms.edit_background %}
+                {% set show_sidebar = current_user is not defined or show_profile_fields or show_background_settings %}
 
-                            <div class="profile__background-settings__content">
-                                {{ input_file('background[file]', '', ['image/png', 'image/jpeg', 'image/gif'], {'id':'background-selection'}) }}
+                {% if show_sidebar %}
+                    <div class="profile__container__side">
+                        {% if show_background_settings %}
+                            <div class="container profile__background-settings">
+                                {{ container_title('Background') }}
 
-                                {{ input_checkbox('background[attach]', 'None', true, '', 0, true, {'onchange':'profileChangeBackgroundAttach(this.value)'}) }}
-                                {% for key, value in background_attachments %}
-                                    {{ input_checkbox('background[attach]', value|capitalize, key == profile.user_background_attachment, '', key, true, {'onchange':'profileChangeBackgroundAttach(this.value)'}) }}
-                                {% endfor %}
+                                <div class="profile__background-settings__content">
+                                    {{ input_file('background[file]', '', ['image/png', 'image/jpeg', 'image/gif'], {'id':'background-selection'}) }}
 
-                                {{ input_checkbox('background[attr][blend]', 'Blend', profile.user_background_blend, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'blend\', this.checked)'}) }}
-                                {{ input_checkbox('background[attr][slide]', 'Slide', profile.user_background_slide, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'slide\', this.checked)'}) }}
+                                    {{ input_checkbox('background[attach]', 'None', true, '', 0, true, {'onchange':'profileChangeBackgroundAttach(this.value)'}) }}
+                                    {% for key, value in background_attachments %}
+                                        {{ input_checkbox('background[attach]', value|capitalize, key == profile.user_background_attachment, '', key, true, {'onchange':'profileChangeBackgroundAttach(this.value)'}) }}
+                                    {% endfor %}
+
+                                    {{ input_checkbox('background[attr][blend]', 'Blend', profile.user_background_blend, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'blend\', this.checked)'}) }}
+                                    {{ input_checkbox('background[attr][slide]', 'Slide', profile.user_background_slide, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'slide\', this.checked)'}) }}
+                                </div>
                             </div>
-                        </div>
-                    {% endif %}
-                    {% if current_user is not defined %}
-                        <div class="container">
-                            <div class="profile__accounts__notice">
-                                You must <a href="/auth.php?m=login" class="profile__accounts__link">log in</a> to view full profiles!
+                        {% endif %}
+                        {% if current_user is not defined %}
+                            <div class="container">
+                                <div class="profile__accounts__notice">
+                                    You must <a href="/auth.php?m=login" class="profile__accounts__link">log in</a> to view full profiles!
+                                </div>
                             </div>
-                        </div>
-                    {% elseif is_editing ? perms.edit_profile : profile_fields|default([])|length > 0 %}
-                        <div class="container profile__accounts">
-                            {{ container_title('Elsewhere') }}
+                        {% elseif show_profile_fields %}
+                            <div class="container profile__accounts">
+                                {{ container_title('Elsewhere') }}
 
-                            <div class="profile__accounts__content">
-                                {% for name, data in profile_fields %}
-                                    <label class="profile__accounts__item">
-                                        <div class="profile__accounts__title">
-                                            {{ data.name }}
-                                        </div>
-
-                                        {% if is_editing %}
-                                            {{ input_text('profile[' ~ name ~ ']', 'profile__accounts__input', profile['user_' ~ name], data.type|default('text')) }}
-                                        {% else %}
-                                            <div class="profile__accounts__value"
-                                                {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>
-                                                {% set profile_field_value = (data.format is defined ? data.format : '%s')|format(data.value) %}
-                                                {% if data.link is defined %}
-                                                    {{ data.link|format(data.value)|html_link(profile_field_value, 'profile__accounts__link')|raw }}
-                                                {% else %}
-                                                    {{ profile_field_value }}
-                                                {% endif %}
+                                <div class="profile__accounts__content">
+                                    {% for name, data in profile_fields %}
+                                        <label class="profile__accounts__item">
+                                            <div class="profile__accounts__title">
+                                                {{ data.name }}
                                             </div>
-                                        {% endif %}
-                                    </label>
-                                {% endfor %}
+
+                                            {% if is_editing %}
+                                                {{ input_text('profile[' ~ name ~ ']', 'profile__accounts__input', profile['user_' ~ name], data.type|default('text')) }}
+                                            {% else %}
+                                                <div class="profile__accounts__value"
+                                                    {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>
+                                                    {% set profile_field_value = (data.format is defined ? data.format : '%s')|format(data.value) %}
+                                                    {% if data.link is defined %}
+                                                        {{ data.link|format(data.value)|html_link(profile_field_value, 'profile__accounts__link')|raw }}
+                                                    {% else %}
+                                                        {{ profile_field_value }}
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        </label>
+                                    {% endfor %}
+                                </div>
                             </div>
-                        </div>
-                    {% endif %}
-                </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
 
                 <div class="profile__container__main">
                     {% if (is_editing and perms.edit_about) or profile.user_about_content|length > 0 %}
