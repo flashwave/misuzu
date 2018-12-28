@@ -169,6 +169,28 @@ function user_get_last_ip(int $userId): string
     return $getAddress->execute() ? $getAddress->fetchColumn() : '';
 }
 
+function user_check_authority(int $userId, int $subjectId): bool
+{
+    $checkHierarchy = db_prepare('
+        SELECT (
+            SELECT MAX(r.`role_hierarchy`)
+            FROM `msz_roles` AS r
+            LEFT JOIN `msz_user_roles` AS ur
+            ON ur.`role_id` = r.`role_id`
+            WHERE ur.`user_id` = :user_id
+        ) > (
+            SELECT MAX(r.`role_hierarchy`)
+            FROM `msz_roles` AS r
+            LEFT JOIN `msz_user_roles` AS ur
+            ON ur.`role_id` = r.`role_id`
+            WHERE ur.`user_id` = :subject_id
+        )
+    ');
+    $checkHierarchy->bindValue('user_id', $userId);
+    $checkHierarchy->bindValue('subject_id', $subjectId);
+    return (bool)($checkHierarchy->execute() ? $checkHierarchy->fetchColumn() : false);
+}
+
 define('MSZ_USER_ABOUT_MAX_LENGTH', 0xFFFF);
 
 define('MSZ_USER_ABOUT_OK', 0);

@@ -514,6 +514,10 @@ switch ($_GET['v'] ?? null) {
 
                 $warningsUser = (int)($_POST['warning']['user'] ?? 0);
 
+                if (!user_check_authority(user_session_current('user_id'), $warningsUser)) {
+                    $notices[] = 'You do not have authority over this user.';
+                }
+
                 if (empty($notices) && $warningsUser > 0) {
                     $warningId = user_warning_add(
                         $warningsUser,
