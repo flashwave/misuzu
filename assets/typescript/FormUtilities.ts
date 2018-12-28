@@ -98,6 +98,10 @@ function setCSRF(realm: string, token: string): void {
 
 function updateCSRF(token: string, realm: string = null, name: string = 'csrf'): void
 {
+    if (token === null) {
+        return;
+    }
+
     const tokenSplit: string[] = token.split(';');
 
     if (tokenSplit.length > 1) {

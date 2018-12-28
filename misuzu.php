@@ -309,6 +309,8 @@ MIG;
 
         if ($userDisplayInfo) {
             $userDisplayInfo['comments_perms'] = perms_get_user(MSZ_PERMS_COMMENTS, $mszUserId);
+            $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_BAN);
+            $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_SILENCE);
         }
     }
 
@@ -343,7 +345,9 @@ MIG;
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
-    $hasManageAccess = perms_check(perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'] ?? 0), MSZ_PERM_GENERAL_CAN_MANAGE);
+    $hasManageAccess = !empty($userDisplayInfo['user_id'])
+        && !user_warning_check_restriction($userDisplayInfo['user_id'])
+        && perms_check(perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']), MSZ_PERM_GENERAL_CAN_MANAGE);
     tpl_var('has_manage_access', $hasManageAccess);
 
     if ($inManageMode) {

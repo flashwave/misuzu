@@ -177,11 +177,30 @@
                     {% endif %}
 
                     {% if warnings|length > 0 %}
-                        <div class="container profile__warning__container">
-                            {{ container_title('Account Standing') }}
+                        <div class="container profile__warning__container" id="account-standing">
+                            {{ container_title('Account Standing', false, can_manage_warnings ? '/manage/users.php?v=warnings&u=' ~ profile.user_id : '') }}
 
                             <div class="profile__warning">
                                 <div class="profile__warning__background"></div>
+
+                                {% if can_manage_warnings %}
+                                    <div class="profile__warning__tools">
+                                        <div class="profile__warning__user">
+                                            <div class="profile__warning__user__ip">
+                                                User IP
+                                            </div>
+                                        </div>
+
+                                        <div class="profile__warning__user">
+                                            <div class="profile__warning__user__username">
+                                                Issuer
+                                            </div>
+                                            <div class="profile__warning__user__ip">
+                                                Issuer IP
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
 
                                 <div class="profile__warning__content">
                                     <div class="profile__warning__type">
@@ -203,7 +222,7 @@
                             </div>
 
                             {% for warning in warnings %}
-                                {{ user_profile_warning(warning, can_view_private_note) }}
+                                {{ user_profile_warning(warning, can_view_private_note, can_manage_warnings, can_manage_warnings ? csrf_token('warning-delete[%d]'|format(warning.warning_id)) : '') }}
                             {% endfor %}
                         </div>
                     {% endif %}

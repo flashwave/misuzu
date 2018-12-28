@@ -7,6 +7,11 @@ if (empty($_SERVER['HTTP_REFERER']) || !is_local_url($_SERVER['HTTP_REFERER'])) 
 }
 
 if (!user_session_active()) {
+    echo render_error(401);
+    return;
+}
+
+if (user_warning_check_expiration(user_session_current('user_id', 0), MSZ_WARN_BAN) > 0) {
     echo render_error(403);
     return;
 }

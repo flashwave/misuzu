@@ -17,12 +17,19 @@
         {% endif %}
     </head>
 
-    <body
-        class="main{% if site_background is defined %} {{ site_background.settings|bg_settings('main--bg-%s')|join(' ') }}{% endif %}"
+    <body class="main{% if site_background is defined %} {{ site_background.settings|bg_settings('main--bg-%s')|join(' ') }}{% endif %}"
         style="{% if global_accent_colour is defined %}{{ global_accent_colour|html_colour('--accent-colour') }}{% endif %}">
         {% include '_layout/header.twig' %}
 
         <div class="main__wrapper">
+            {% if current_user.ban_expiration|default(0) > 0 or current_user.silence_expiration|default(0) > 0 %}
+                <div class="warning">
+                    <div class="warning__content">
+                        You have been {{ current_user.silence_expiration ? 'silenced' : 'banned' }} until <strong>{{ (current_user.silence_expiration ? current_user.silence_expiration : current_user.ban_expiration)|date('r') }}</strong>, view the account standing table on <a href="/profile.php?u={{ current_user.user_id }}#account-standing" class="warning__link">your profile</a> to view why.
+                    </div>
+                </div>
+            {% endif %}
+
             {% block content %}
                 This page has no content!
             {% endblock %}

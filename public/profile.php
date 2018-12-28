@@ -7,41 +7,55 @@ require_once '../misuzu.php';
 switch ($mode) {
     case 'avatar':
         $userId = (int)($_GET['u'] ?? 0);
-        $avatar_filename = build_path(
-            MSZ_ROOT,
-            config_get_default('public/images/no-avatar.png', 'Avatar', 'default_path')
-        );
-        $user_avatar = "{$userId}.msz";
-        $cropped_avatar = build_path(
-            create_directory(build_path(MSZ_STORAGE, 'avatars/200x200')),
-            $user_avatar
-        );
 
-        if (is_file($cropped_avatar)) {
-            $avatar_filename = $cropped_avatar;
+        if (user_warning_check_expiration($userId, MSZ_WARN_BAN) > 0) {
+            $avatarFilename = build_path(
+                MSZ_ROOT,
+                config_get_default('public/images/banned-avatar.png', 'Avatar', 'banned_path')
+            );
         } else {
-            $original_avatar = build_path(MSZ_STORAGE, 'avatars/original', $user_avatar);
+            $avatarFilename = build_path(
+                MSZ_ROOT,
+                config_get_default('public/images/no-avatar.png', 'Avatar', 'default_path')
+            );
+            $userAvatar = "{$userId}.msz";
+            $croppedAvatar = build_path(
+                create_directory(build_path(MSZ_STORAGE, 'avatars/200x200')),
+                $userAvatar
+            );
 
-            if (is_file($original_avatar)) {
-                try {
-                    file_put_contents(
-                        $cropped_avatar,
-                        crop_image_centred_path($original_avatar, 200, 200)->getImagesBlob(),
-                        LOCK_EX
-                    );
+            if (is_file($croppedAvatar)) {
+                $avatarFilename = $croppedAvatar;
+            } else {
+                $original_avatar = build_path(MSZ_STORAGE, 'avatars/original', $userAvatar);
 
-                    $avatar_filename = $cropped_avatar;
-                } catch (Exception $ex) {
+                if (is_file($original_avatar)) {
+                    try {
+                        file_put_contents(
+                            $croppedAvatar,
+                            crop_image_centred_path($original_avatar, 200, 200)->getImagesBlob(),
+                            LOCK_EX
+                        );
+
+                        $avatarFilename = $croppedAvatar;
+                    } catch (Exception $ex) {
+                    }
                 }
             }
         }
 
-        header('Content-Type: ' . mime_content_type($avatar_filename));
-        echo file_get_contents($avatar_filename);
+        header('Content-Type: ' . mime_content_type($avatarFilename));
+        echo file_get_contents($avatarFilename);
         break;
 
     case 'background':
         $userId = (int)($_GET['u'] ?? 0);
+
+        if (user_warning_check_expiration($userId, MSZ_WARN_BAN) > 0) {
+            echo render_error(404);
+            break;
+        }
+
         $user_background = build_path(
             create_directory(build_path(MSZ_STORAGE, 'backgrounds/original')),
             "{$userId}.msz"
@@ -77,9 +91,12 @@ switch ($mode) {
             break;
         }
 
+        $viewingAsGuest = user_session_current('user_id', 0) === 0;
         $viewingOwnProfile = user_session_current('user_id', 0) === $userId;
+        $isRestricted = user_warning_check_restriction($userId);
         $userPerms = perms_get_user(MSZ_PERMS_USER, user_session_current('user_id', 0));
-        $canEdit = user_session_active() && (
+        $canManageWarnings = perms_check($userPerms, MSZ_PERM_USER_MANAGE_WARNINGS);
+        $canEdit = !$isRestricted && user_session_active() && (
             $viewingOwnProfile || perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS)
         );
         $isEditing = $mode === 'edit';
@@ -89,7 +106,19 @@ switch ($mode) {
             break;
         }
 
-        $warnings = user_warning_fetch($userId, 90);
+        $warnings = $viewingAsGuest
+            ? []
+            : user_warning_fetch(
+                $userId,
+                90,
+                $canManageWarnings
+                    ? MSZ_WARN_TYPES_VISIBLE_TO_STAFF
+                    : (
+                        $viewingOwnProfile
+                            ? MSZ_WARN_TYPES_VISIBLE_TO_USER
+                            : MSZ_WARN_TYPES_VISIBLE_TO_PUBLIC
+                    )
+            );
         $notices = [];
 
         if ($isEditing) {
@@ -324,6 +353,8 @@ switch ($mode) {
             'is_editing' => $isEditing,
             'warnings' => $warnings,
             'can_view_private_note' => $viewingOwnProfile,
+            'can_manage_warnings' => $canManageWarnings,
+            'is_restricted' => $isRestricted,
             'profile_fields' => user_session_active() ? user_profile_fields_display($profile, !$isEditing) : [],
             'friend_info' => user_session_active() ? user_relation_info(user_session_current('user_id', 0), $profile['user_id']) : [],
         ]);

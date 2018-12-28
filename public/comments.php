@@ -23,11 +23,27 @@ if (!user_session_active()) {
     return;
 }
 
+$currentUserId = user_session_current('user_id', 0);
+
+if (user_warning_check_expiration($currentUserId, MSZ_WARN_BAN) > 0) {
+    echo render_info_or_json($isXHR, 'You have been banned, check your profile for more information.', 403);
+    return;
+}
+if (user_warning_check_expiration($currentUserId, MSZ_WARN_SILENCE) > 0) {
+    echo render_info_or_json($isXHR, 'You have been silenced, check your profile for more information.', 403);
+    return;
+}
+
 header(csrf_http_header('comments'));
-$commentPerms = comments_get_perms(user_session_current('user_id', 0));
+$commentPerms = comments_get_perms($currentUserId);
 
 switch ($_GET['m'] ?? null) {
     case 'vote':
+        if (!$commentPerms['can_vote']) {
+            echo render_info_or_json($isXHR, "You're not allowed to vote on comments.", 403);
+            break;
+        }
+
         $vote = (int)($_GET['v'] ?? 0);
 
         if (!array_key_exists($vote, MSZ_COMMENTS_VOTE_TYPES)) {
@@ -59,6 +75,11 @@ switch ($_GET['m'] ?? null) {
         break;
 
     case 'delete':
+        if (!$commentPerms['can_delete']) {
+            echo render_info_or_json($isXHR, "You're not allowed to delete comments.", 403);
+            break;
+        }
+
         $comment = (int)($_GET['c'] ?? 0);
         $commentInfo = comments_post_get($comment, false);
 
@@ -67,7 +88,6 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        $currentUserId = user_session_current('user_id', 0);
         $isOwnComment = (int)$commentInfo['user_id'] === $currentUserId;
         $isModAction = $commentPerms['can_delete_any'] && !$isOwnComment;
 
@@ -77,11 +97,6 @@ switch ($_GET['m'] ?? null) {
                 $commentPerms['can_delete_any'] ? 'This comment is already marked for deletion.' : "This comment doesn't exist.",
                 400
             );
-            break;
-        }
-
-        if (!$commentPerms['can_delete']) {
-            echo render_info_or_json($isXHR, "You're not allowed to delete comments.", 403);
             break;
         }
 
@@ -128,8 +143,6 @@ switch ($_GET['m'] ?? null) {
             echo render_info_or_json($isXHR, "This comment doesn't exist.", 400);
             break;
         }
-
-        $currentUserId = user_session_current('user_id', 0);
 
         if ($commentInfo['comment_deleted'] === null) {
             echo render_info_or_json($isXHR, "This comment isn't in a deleted state.", 400);

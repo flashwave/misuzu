@@ -20,6 +20,10 @@ $perms = $topic
     ? forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], user_session_current('user_id', 0))
     : 0;
 
+if (user_warning_check_restriction(user_session_current('user_id', 0))) {
+    $perms &= ~MSZ_FORUM_PERM_SET_WRITE;
+}
+
 if (!$topic || ($topic['topic_deleted'] !== null && !perms_check($perms, MSZ_FORUM_PERM_DELETE_TOPIC))) {
     echo render_error(404);
     return;
@@ -44,6 +48,9 @@ if (!$posts) {
     return;
 }
 
+$canReply = empty($topic['topic_archived']) && empty($topic['topic_locked']) && empty($topic['topic_deleted'])
+    && perms_check($perms, MSZ_FORUM_PERM_CREATE_POST);
+
 forum_topic_mark_read(user_session_current('user_id', 0), $topic['topic_id'], $topic['forum_id']);
 
 echo tpl_render('forum.topic', [
@@ -53,4 +60,5 @@ echo tpl_render('forum.topic', [
     'topic_posts' => $posts,
     'topic_offset' => $postsOffset,
     'topic_range' => $postsRange,
+    'can_reply' => $canReply,
 ]);

@@ -2,6 +2,11 @@
 require_once '../../misuzu.php';
 
 if (!user_session_active()) {
+    echo render_error(401);
+    return;
+}
+
+if (user_warning_check_restriction(user_session_current('user_id', 0))) {
     echo render_error(403);
     return;
 }

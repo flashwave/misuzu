@@ -24,6 +24,10 @@ if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     return;
 }
 
+if (user_warning_check_restriction(user_session_current('user_id', 0))) {
+    $perms &= ~MSZ_FORUM_PERM_SET_WRITE;
+}
+
 tpl_var('forum_perms', $perms);
 
 if ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK) {

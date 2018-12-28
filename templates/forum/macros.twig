@@ -48,49 +48,58 @@
 {% macro forum_category_tools(info, perms, take, offset) %}
     {% from 'macros.twig' import pagination %}
 
-    <div class="container forum__actions">
-        <div class="forum__actions__buttons">
-            {% if perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
-                <a href="{{ url_construct('/forum/posting.php', {'f':info.forum_id}) }}" class="input__button">New Topic</a>
-            {% endif %}
-        </div>
+    {% set can_topic = perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
+    {% set pag = pagination(
+        info.forum_topic_count,
+        take,
+        offset,
+        url_construct('/forum/forum.php', {'f':info.forum_id}),
+        false,
+        null,
+        5
+    ) %}
 
-        <div class="forum__actions__pagination">
-            {{ pagination(
-                info.forum_topic_count,
-                take,
-                offset,
-                url_construct('/forum/forum.php', {'f':info.forum_id}),
-                false,
-                null,
-                5
-            ) }}
+    {% if can_topic or pag|trim|length > 0 %}
+        <div class="container forum__actions">
+            <div class="forum__actions__buttons">
+                {% if can_topic %}
+                    <a href="{{ url_construct('/forum/posting.php', {'f':info.forum_id}) }}" class="input__button">New Topic</a>
+                {% endif %}
+            </div>
+
+            <div class="forum__actions__pagination">
+                {{ pag }}
+            </div>
         </div>
-    </div>
+    {% endif %}
 {% endmacro %}
 
 {% macro forum_topic_tools(info, take, offset, can_reply) %}
     {% from 'macros.twig' import pagination %}
 
-    <div class="container forum__actions">
-        <div class="forum__actions__buttons">
-            {% if can_reply %}
-                <a href="/forum/posting.php?t={{ info.topic_id }}" class="input__button">Reply</a>
-            {% endif %}
-        </div>
+    {% set pag = pagination(
+        info.topic_post_count,
+        take,
+        offset,
+        url_construct('/forum/topic.php', {'t':info.topic_id}),
+        false,
+        null,
+        5
+    ) %}
 
-        <div class="forum__actions__pagination">
-            {{ pagination(
-                info.topic_post_count,
-                take,
-                offset,
-                url_construct('/forum/topic.php', {'t':info.topic_id}),
-                false,
-                null,
-                5
-            ) }}
+    {% if can_reply or pag|trim|length > 0 %}
+        <div class="container forum__actions">
+            <div class="forum__actions__buttons">
+                {% if can_reply %}
+                    <a href="/forum/posting.php?t={{ info.topic_id }}" class="input__button">Reply</a>
+                {% endif %}
+            </div>
+
+            <div class="forum__actions__pagination">
+                {{ pag }}
+            </div>
         </div>
-    </div>
+    {% endif %}
 {% endmacro %}
 
 {% macro forum_category_entry(forum, forum_unread, forum_type) %}

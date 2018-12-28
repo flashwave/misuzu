@@ -16,7 +16,6 @@
     'o': topic_offset,
 }) %}
 
-{% set can_reply = current_user is defined and topic_info.topic_locked is null and not topic_info.topic_archived %}
 {% set topic_tools = forum_topic_tools(topic_info, topic_range, topic_offset, can_reply) %}
 
 {% block content %}

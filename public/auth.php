@@ -23,7 +23,13 @@ $authEmail = $isSubmission ? ($_POST['auth']['email'] ?? '') : ($_GET['email'] ?
 $authPassword = $_POST['auth']['password'] ?? '';
 $authVerification = $_POST['auth']['verification'] ?? '';
 $authRedirect = $_POST['auth']['redirect'] ?? $_GET['redirect'] ?? $_SERVER['HTTP_REFERER'] ?? '/';
-$authRestricted = ip_blacklist_check(ip_remote_address());
+$authRestricted = ip_blacklist_check(ip_remote_address())
+    ? 1
+    : (
+        user_warning_check_ip(ip_remote_address())
+            ? 2
+            : 0
+    );
 
 tpl_vars([
     'can_create_account' => $canCreateAccount,

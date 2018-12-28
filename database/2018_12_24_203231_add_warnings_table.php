@@ -20,7 +20,7 @@ function migrate_up(PDO $conn): void
             PRIMARY KEY (`warning_id`),
             INDEX `user_warnings_user_foreign`      (`user_id`),
             INDEX `user_warnings_issuer_foreign`    (`issuer_id`),
-            INDEX `user_warnings_indices`           (`warning_created`, `warning_type`, `warning_duration`),
+            INDEX `user_warnings_indices`           (`warning_created`, `warning_type`, `warning_duration`, `user_ip`),
             CONSTRAINT `user_warnings_issuer_foreign`
                 FOREIGN KEY (`issuer_id`)
                 REFERENCES `msz_users` (`user_id`)

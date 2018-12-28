@@ -222,7 +222,7 @@
     </div>
 {% endmacro %}
 
-{% macro user_profile_warning(warning, show_private_note, show_user, show_issuer, show_ips, delete_csrf) %}
+{% macro user_profile_warning(warning, show_private_note, show_user_info, delete_csrf) %}
     {% if warning.warning_type == constant('MSZ_WARN_SILENCE') %}
         {% set warning_text = 'Silence' %}
         {% set warning_class = 'silence' %}
@@ -237,38 +237,37 @@
         {% set warning_class = 'note' %}
     {% endif %}
 
-    <div class="profile__warning profile__warning--{{ warning_class }}{% if show_user or show_issuer or delete_csrf %} profile__warning--extendo{% endif %}">
+    <div class="profile__warning profile__warning--{{ warning_class }}{% if show_user_info or delete_csrf %} profile__warning--extendo{% endif %}">
         <div class="profile__warning__background"></div>
 
-        {% if show_user or show_issuer or delete_csrf %}
+        {% if show_user_info or delete_csrf %}
             <div class="profile__warning__tools">
-                {% if show_user %}
-                    <div class="profile__warning__user">
-                        <div class="avatar profile__warning__user__avatar" style="background-image:url('/profile.php?m=avatar&amp;u={{ warning.user_id }}');"></div>
-                        <div class="profile__warning__user__username">
-                            {{ warning.username }}
+                {% if show_user_info %}
+                    {% if warning.username is defined or warning.user_ip is defined %}
+                        <div class="profile__warning__user">
+                            {% if warning.username is defined %}
+                                <div class="avatar profile__warning__user__avatar" style="background-image:url('/profile.php?m=avatar&amp;u={{ warning.user_id }}');"></div>
+                                <div class="profile__warning__user__username">
+                                    {{ warning.username }}
+                                </div>
+                            {% endif %}
+
+                            {% if warning.user_ip is defined %}
+                                <div class="profile__warning__user__ip">
+                                    {{ warning.user_ip }}
+                                </div>
+                            {% endif %}
                         </div>
+                    {% endif %}
 
-                        {% if show_ips %}
-                            <div class="profile__warning__user__ip">
-                                {{ warning.user_ip }}
-                            </div>
-                        {% endif %}
-                    </div>
-                {% endif %}
-
-                {% if show_issuer %}
                     <div class="profile__warning__user">
                         <div class="avatar profile__warning__user__avatar" style="background-image:url('/profile.php?m=avatar&amp;u={{ warning.issuer_id }}');"></div>
                         <div class="profile__warning__user__username">
                             {{ warning.issuer_username }}
                         </div>
-
-                        {% if show_ips %}
-                            <div class="profile__warning__user__ip">
-                                {{ warning.issuer_ip }}
-                            </div>
-                        {% endif %}
+                        <div class="profile__warning__user__ip">
+                            {{ warning.issuer_ip }}
+                        </div>
                     </div>
                 {% endif %}
 
@@ -289,9 +288,9 @@
                 {{ warning.warning_created|time_diff }}
             </time>
 
-            {% if warning.warning_duration_secs > 0 %}
+            {% if warning_has_duration(warning.warning_type) %}
                 <time datetime="{{ warning.warning_duration|date('c') }}" title="{{ warning.warning_duration|date('r') }}" class="profile__warning__duration">
-                    {{ warning.warning_created|time_diff }}
+                    {{ warning.warning_duration|time_diff }}
                 </time>
             {% else %}
                 <div class="profile__warning__duration"></div>

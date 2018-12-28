@@ -2,7 +2,7 @@
 require_once '../misuzu.php';
 
 if (!user_session_active()) {
-    echo render_error(403);
+    echo render_error(401);
     return;
 }
 
@@ -14,6 +14,7 @@ $disableAccountOptions = !MSZ_DEBUG && (
 );
 
 $currentEmail = user_email_get(user_session_current('user_id'));
+$isRestricted = user_warning_check_restriction(user_session_current('user_id'));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_verify('settings', $_POST['csrf'] ?? '')) {
@@ -51,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if (!empty($_POST['role'])) {
+        if (!empty($_POST['role']) && !$isRestricted) {
             $roleId = (int)($_POST['role']['id'] ?? 0);
 
             if ($roleId > 0 && user_role_has(user_session_current('user_id'), $roleId)) {
@@ -179,4 +180,5 @@ echo tpl_render('user.settings', [
     'logs' => $logs,
     'user_roles' => $userRoles,
     'user_display_role' => user_role_get_display(user_session_current('user_id')),
+    'is_restricted' => $isRestricted,
 ]);
