@@ -14,9 +14,8 @@
     {% endfor %}
 {% endmacro %}
 
-{% macro permissions_table(permissions, display_override) %}
+{% macro permissions_table(permissions) %}
     {% from '_layout/input.twig' import input_checkbox %}
-    {% set display_override = display_override|default(false) %}
 
     <div class="permissions">
         {% for perms in permissions %}
@@ -33,11 +32,6 @@
                 <div class="permissions__choice">
                     Never
                 </div>
-                {% if display_override %}
-                    <div class="permissions__choice">
-                        Override
-                    </div>
-                {% endif %}
             </div>
 
             {% for perm in perms.perms %}
@@ -54,11 +48,6 @@
                     <div class="permissions__choice__wrapper">
                         {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'never', 'permissions__choice permissions__choice--radio permissions__choice--never', 'never', true) }}
                     </div>
-                    {% if display_override %}
-                        <div class="permissions__choice__wrapper">
-                            {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ '][override]', '', perm.override, 'permissions__choice permissions__choice--radio', 'never') }}
-                        </div>
-                    {% endif %}
                 </div>
             {% endfor %}
         {% endfor %}

@@ -13,10 +13,9 @@ define('MSZ_PERM_MODES', [
 
 define('MSZ_PERMS_ALLOW', 'allow');
 define('MSZ_PERMS_DENY', 'deny');
-define('MSZ_PERMS_OVERRIDE', 'override');
 
 define('MSZ_PERM_SETS', [
-    MSZ_PERMS_ALLOW, MSZ_PERMS_DENY, MSZ_PERMS_OVERRIDE,
+    MSZ_PERMS_ALLOW, MSZ_PERMS_DENY,
 ]);
 
 function perms_get_keys(): array
@@ -56,38 +55,24 @@ function perms_get_user(string $prefix, int $user): int
 
     $allowKey = perms_get_key($prefix, MSZ_PERMS_ALLOW);
     $denyKey = perms_get_key($prefix, MSZ_PERMS_DENY);
-    $overrideKey = perms_get_key($prefix, MSZ_PERMS_OVERRIDE);
 
     $getPerms = db_prepare("
-        SELECT BIT_OR(_pu.`{$allowKey}`) &~ BIT_OR(_pu.`{$denyKey}`) | (
-            (
-                SELECT BIT_OR(_pr.`{$allowKey}`) &~ BIT_OR(_pr.`{$denyKey}`) | (
-                    (
-                        SELECT BIT_OR(_pg.`{$allowKey}`) &~ BIT_OR(_pg.`{$denyKey}`)
-                        FROM `msz_permissions` as _pg
-                        WHERE _pg.`user_id` IS NULL
-                        AND _pg.`role_id` IS NULL
-                    ) &~ BIT_OR(_pr.`{$overrideKey}`)
+        SELECT :user_id AS `select_user`, (
+            SELECT BIT_OR(`{$allowKey}`) &~ BIT_OR(`{$denyKey}`)
+            FROM `msz_permissions`
+            WHERE (`user_id` = `select_user` AND `role_id` IS NULL)
+            OR (
+                `user_id` IS NULL
+                AND `role_id` IN (
+                    SELECT `role_id`
+                    FROM `msz_user_roles`
+                    WHERE `user_id` = `select_user`
                 )
-                FROM `msz_permissions` as _pr
-                WHERE _pr.`user_id` IS NULL
-                AND _pr.`role_id` IN (
-                    SELECT _prr.`role_id`
-                    FROM `msz_user_roles` as _pru
-                    LEFT JOIN `msz_roles` as _prr
-                    ON _prr.`role_id` = _pru.`role_id`
-                    WHERE _pru.`user_id` = :user_id_2
-                    ORDER BY _prr.`role_hierarchy`
-                )
-            ) &~ BIT_OR(_pu.`{$overrideKey}`)
+            )
         )
-        FROM `msz_permissions` as _pu
-        WHERE _pu.`user_id` = :user_id_1
-        AND _pu.`role_id` IS NULL
     ");
-    $getPerms->bindValue('user_id_1', $user);
-    $getPerms->bindValue('user_id_2', $user);
-    return $getPerms->execute() ? (int)$getPerms->fetchColumn() : 0;
+    $getPerms->bindValue('user_id', $user);
+    return $getPerms->execute() ? (int)$getPerms->fetchColumn(1) : 0;
 }
 
 function perms_get_role(string $prefix, int $role): int

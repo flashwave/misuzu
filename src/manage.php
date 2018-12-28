@@ -103,7 +103,6 @@ function manage_perms_apply(array $list, array $post): ?array
 
         $allowKey = perms_get_key($section['section'], MSZ_PERMS_ALLOW);
         $denyKey = perms_get_key($section['section'], MSZ_PERMS_DENY);
-        $overrideKey = perms_get_key($section['section'], MSZ_PERMS_OVERRIDE);
 
         foreach ($section['perms'] as $perm) {
             if (empty($post[$section['section']][$perm['section']]['value'])) {
@@ -127,12 +126,6 @@ function manage_perms_apply(array $list, array $post): ?array
                     $perms[$denyKey] &= ~$perm['perm'];
                     break;
             }
-
-            if (!empty($post[$section['section']][$perm['section']]['override'])) {
-                $perms[$overrideKey] |= $perm['perm'];
-            } else {
-                $perms[$overrideKey] &= ~$perm['perm'];
-            }
         }
     }
 
@@ -155,11 +148,9 @@ function manage_perms_calculate(array $rawPerms, array $perms): array
         $section = $perms[$i]['section'];
         $allowKey = perms_get_key($section, MSZ_PERMS_ALLOW);
         $denyKey = perms_get_key($section, MSZ_PERMS_DENY);
-        $overrideKey = perms_get_key($section, MSZ_PERMS_OVERRIDE);
 
         for ($j = 0; $j < count($perms[$i]['perms']); $j++) {
             $permission = $perms[$i]['perms'][$j]['perm'];
-            $perms[$i]['perms'][$j]['override'] = perms_check($rawPerms[$overrideKey], $permission);
             $perms[$i]['perms'][$j]['value'] = manage_perms_value($permission, $rawPerms[$allowKey], $rawPerms[$denyKey]);
         }
     }
