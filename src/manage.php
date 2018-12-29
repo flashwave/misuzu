@@ -91,9 +91,9 @@ function manage_perms_value(int $perm, int $allow, int $deny): string
     return MSZ_MANAGE_PERM_NO;
 }
 
-function manage_perms_apply(array $list, array $post): ?array
+function manage_perms_apply(array $list, array $post, ?array $raw = null): ?array
 {
-    $perms = perms_create();
+    $perms = $raw !== null ? $raw : perms_create();
 
     foreach ($list as $section) {
         if (empty($post[$section['section']])

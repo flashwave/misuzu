@@ -4,8 +4,16 @@ require_once '../../misuzu.php';
 switch ($_GET['v'] ?? null) {
     case 'listing':
         $forums = db_query('SELECT * FROM `msz_forum_categories`');
+        $rawPerms = forum_perms_create();
+        $perms = manage_forum_perms_list($rawPerms);
 
-        echo tpl_render('manage.forum.listing', compact('forums'));
+        if (!empty($_POST['perms']) && is_array($_POST['perms'])) {
+            $finalPerms = manage_perms_apply($perms, $_POST['perms'], $rawPerms);
+            $perms = manage_forum_perms_list($finalPerms);
+            tpl_var('calculated_perms', $finalPerms);
+        }
+
+        echo tpl_render('manage.forum.listing', compact('forums', 'perms'));
         break;
 
     case 'forum':
@@ -22,47 +30,6 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $roles = db_query('SELECT `role_id`, `role_name` FROM `msz_roles`')->fetchAll(PDO::FETCH_ASSOC);
-        $perms = manage_forum_perms_list(forum_perms_get_role_raw($forum['forum_id'], null));
-
-        echo tpl_render('manage.forum.forum', compact('forum', 'roles', 'perms'));
-        break;
-
-    case 'forumperms':
-        $getRole = db_prepare('
-            SELECT `role_id`, `role_name`
-            FROM `msz_roles`
-            WHERE `role_id` = :role_id
-        ');
-        $getRole->bindValue('role_id', (int)($_GET['r'] ?? 0));
-        $role = $getRole->execute() ? $getRole->fetch(PDO::FETCH_ASSOC) : false;
-
-        if (!$role) {
-            echo render_error(404);
-            break;
-        }
-
-        $forumId = empty($_GET['f']) ? null : (int)($_GET['f'] ?? 0);
-
-        if ($forumId) {
-            $getForum = db_prepare('
-                SELECT `forum_name`
-                FROM `msz_forum_categories`
-                WHERE `forum_id` = :forum_id
-            ');
-            $getForum->bindValue('forum_id', $forumId);
-            $forum = $getForum->execute() ? $getForum->fetch(PDO::FETCH_ASSOC) : false;
-
-            if (!$forum) {
-                echo render_error(404);
-                break;
-            }
-
-            tpl_var('forum', $forum);
-        }
-
-        $perms = manage_forum_perms_list(forum_perms_get_role_raw($forumId, $role['role_id']));
-
-        echo tpl_render('manage.forum.forumperms', compact('role', 'perms'));
+        echo tpl_render('manage.forum.forum', compact('forum'));
         break;
 }

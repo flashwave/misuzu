@@ -6,19 +6,6 @@
 {% block manage_content %}
     <div class="container">
         {{ container_title(forum.forum_name) }}
-
-        <div class="container__content">
-            <form action="" method="get">
-                {{ input_hidden('v', 'forumperms') }}
-                {{ input_hidden('f', forum.forum_id) }}
-                {{ input_select('r', roles, '', 'role_name', 'role_id') }}
-                <button class="input__button">Manage permissions</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="container">
-        {{ container_title('Base Permissions') }}
-        {{ permissions_table(perms) }}
+        there's nothing here go away
     </div>
 {% endblock %}

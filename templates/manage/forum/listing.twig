@@ -1,7 +1,37 @@
 {% extends 'manage/users/master.twig' %}
+{% from 'macros.twig' import container_title %}
+{% from 'manage/macros.twig' import permissions_table %}
 
 {% block manage_content %}
-    {% for forum in forums %}
-        <a href="?v=forum&amp;f={{ forum.forum_id }}">{{ forum.forum_name }}</a><br>
-    {% endfor %}
+    <div class="container container--lazy">
+        {{ container_title('Forum Listing') }}
+
+        <div class="container__content">
+            {% for forum in forums %}
+                <a href="?v=forum&amp;f={{ forum.forum_id }}" class="warning__link">{{ forum.forum_name }}</a><br>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="container container--lazy">
+        {{ container_title('Permission Calculator') }}
+
+        Remove this when the permission manager exists.
+
+        {% if calculated_perms is defined %}
+            <table border="1">
+                {% for key, value in calculated_perms %}
+                <tr>
+                    <th>{{ key }}</th>
+                    <td><code>{{ value }}</code></td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+
+        <form method="post" action="">
+            {{ permissions_table(perms) }}
+            <button class="input__button">Calculate</button>
+        </form>
+    </div>
 {% endblock %}
