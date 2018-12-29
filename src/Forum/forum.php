@@ -19,7 +19,7 @@ define('MSZ_FORUM_PERM_DELETE_POST', 1 << 23);
 define('MSZ_FORUM_PERM_DELETE_ANY_POST', 1 << 24);
 
 // shorthands, never use these to SET!!!!!!!
-define('MSZ_FORUM_PERM_CAN_LIST_FORUM', MSZ_FORUM_PERM_LIST_FORUM | MSZ_FORUM_PERM_VIEW_FORUM);
+define('MSZ_FORUM_PERM_SET_READ', MSZ_FORUM_PERM_LIST_FORUM | MSZ_FORUM_PERM_VIEW_FORUM);
 define(
     'MSZ_FORUM_PERM_SET_WRITE',
     MSZ_FORUM_PERM_CREATE_TOPIC
@@ -114,7 +114,7 @@ function forum_get_root_categories(int $userId): array
         ",
         MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql('forum', 'f.`forum_id`'),
-        MSZ_FORUM_PERM_CAN_LIST_FORUM
+        MSZ_FORUM_PERM_SET_READ
     ));
     $getCategories->bindValue('perm_user_id_user', $userId);
     $getCategories->bindValue('perm_user_id_role', $userId);
@@ -132,7 +132,7 @@ function forum_get_root_categories(int $userId): array
         MSZ_FORUM_ROOT,
         MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql('forum', '`forum_id`'),
-        MSZ_FORUM_PERM_CAN_LIST_FORUM
+        MSZ_FORUM_PERM_SET_READ
     ));
     $getRootForumCount->bindValue('perm_user_id_user', $userId);
     $getRootForumCount->bindValue('perm_user_id_role', $userId);
@@ -342,7 +342,7 @@ function forum_get_children_query(bool $small = false): string
         MSZ_FORUM_ROOT,
         MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql('forum', 'f.`forum_id`'),
-        MSZ_FORUM_PERM_CAN_LIST_FORUM
+        MSZ_FORUM_PERM_SET_READ
     );
 }
 
