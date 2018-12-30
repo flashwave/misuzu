@@ -23,7 +23,7 @@ function forum_post_create(
     return $createPost->execute() ? db_last_insert_id() : 0;
 }
 
-function forum_post_edit(
+function forum_post_update(
     int $postId,
     string $ipAddress,
     string $text,
@@ -78,22 +78,27 @@ function forum_post_get(int $postId, bool $allowDeleted = false): array
             SELECT
                 p.`post_id`, p.`post_text`, p.`post_created`, p.`post_parse`,
                 p.`topic_id`, p.`post_deleted`, p.`post_edited`,
-                INET6_NTOA(p.`post_ip`) as `post_ip`,
-                u.`user_id` as `poster_id`,
-                u.`username` as `poster_name`,
-                u.`user_created` as `poster_joined`,
-                u.`user_country` as `poster_country`,
-                COALESCE(u.`user_colour`, r.`role_colour`) as `poster_colour`,
+                INET6_NTOA(p.`post_ip`) AS `post_ip`,
+                u.`user_id` AS `poster_id`,
+                u.`username` AS `poster_name`,
+                u.`user_created` AS `poster_joined`,
+                u.`user_country` AS `poster_country`,
+                COALESCE(u.`user_colour`, r.`role_colour`) AS `poster_colour`,
                 (
                     SELECT COUNT(`post_id`)
                     FROM `msz_forum_posts`
                     WHERE `user_id` = p.`user_id`
                     AND `post_deleted` IS NULL
-                ) as `poster_post_count`
-            FROM `msz_forum_posts` as p
-            LEFT JOIN `msz_users` as u
+                ) AS `poster_post_count`,
+                (
+                    SELECT MIN(`post_id`) = p.`post_id`
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = p.`topic_id`
+                ) AS `is_opening_post`
+            FROM `msz_forum_posts` AS p
+            LEFT JOIN `msz_users` AS u
             ON u.`user_id` = p.`user_id`
-            LEFT JOIN `msz_roles` as r
+            LEFT JOIN `msz_roles` AS r
             ON r.`role_id` = u.`display_role`
             WHERE `post_id` = :post_id
             %1$s
@@ -125,7 +130,12 @@ function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $
                     FROM `msz_forum_posts`
                     WHERE `user_id` = p.`user_id`
                     AND `post_deleted` IS NULL
-                ) as `poster_post_count`
+                ) as `poster_post_count`,
+                (
+                    SELECT MIN(`post_id`) = p.`post_id`
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = p.`topic_id`
+                ) AS `is_opening_post`
             FROM `msz_forum_posts` as p
             LEFT JOIN `msz_users` as u
             ON u.`user_id` = p.`user_id`

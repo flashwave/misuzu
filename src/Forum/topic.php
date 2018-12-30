@@ -23,6 +23,22 @@ function forum_topic_create(int $forumId, int $userId, string $title): int
     return $createTopic->execute() ? (int)db_last_insert_id() : 0;
 }
 
+function forum_topic_update(int $topicId, string $title): bool
+{
+    if ($topicId < 1 || empty($title)) {
+        return false;
+    }
+
+    $updateTopic = db_prepare('
+        UPDATE `msz_forum_topics`
+        SET `topic_title` = :topic_title
+        WHERE `topic_id` = :topic_id
+    ');
+    $updateTopic->bindValue('topic_id', $topicId);
+    $updateTopic->bindValue('topic_title', $title);
+    return $updateTopic->execute();
+}
+
 function forum_topic_fetch(int $topicId): array
 {
     $getTopic = db_prepare('

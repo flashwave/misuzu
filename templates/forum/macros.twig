@@ -327,13 +327,12 @@
     </div>
 {% endmacro %}
 
-{% macro forum_post_listing(posts, opening_post_id, user_id, perms) %}
+{% macro forum_post_listing(posts, user_id, perms) %}
     {% from _self import forum_post_entry %}
 
     {% for post in posts %}
         {{ forum_post_entry(
             post,
-            post.post_id == opening_post_id,
             perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_POST')),
             perms|perms_check(constant(user_id == post.poster_id ? 'MSZ_FORUM_PERM_EDIT_POST' : 'MSZ_FORUM_PERM_EDIT_ANY_POST')),
             perms|perms_check(constant(user_id == post.poster_id ? 'MSZ_FORUM_PERM_DELETE_POST' : 'MSZ_FORUM_PERM_DELETE_ANY_POST'))
@@ -341,7 +340,7 @@
     {% endfor %}
 {% endmacro %}
 
-{% macro forum_post_entry(post, is_original_post, can_post, can_edit, can_delete) %}
+{% macro forum_post_entry(post, can_post, can_edit, can_delete) %}
     {% set is_deleted = post.post_deleted is not null %}
 
     <div class="container forum__post{% if is_deleted %} forum__post--deleted{% endif %}" id="p{{ post.post_id }}" style="{{ post.poster_colour|html_colour('--accent-colour') }}">

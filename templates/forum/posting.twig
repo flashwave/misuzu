@@ -10,7 +10,22 @@
         {{ input_hidden('post[' ~ (is_reply ? 'topic' : 'forum') ~ ']', is_reply ? posting_topic.topic_id : posting_forum.forum_id) }}
         {{ input_hidden('post[mode]', posting_mode) }}
         {{ input_csrf('forum_post') }}
-        {{ forum_header(is_reply ? posting_topic.topic_title : input_text('post[title]', 'forum__header__input', '', 'text', 'Enter your title here...'), posting_breadcrumbs, false, is_reply ? '/forum/topic.php?t=' ~ posting_topic.topic_id : '') }}
+        {{ forum_header(
+            is_reply and not posting_post.is_opening_post|default(false)
+                ? posting_topic.topic_title
+                : input_text(
+                    'post[title]',
+                    'forum__header__input',
+                    posting_topic.topic_title|default(''),
+                    'text',
+                    'Enter your title here...'
+                ),
+            posting_breadcrumbs,
+            false,
+            is_reply and not posting_post.is_opening_post|default(false)
+                ? '/forum/topic.php?t=' ~ posting_topic.topic_id
+                : ''
+        ) }}
 
         {% if posting_post is defined %}
             {{ input_hidden('post[id]', posting_post.post_id) }}

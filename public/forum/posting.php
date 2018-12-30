@@ -110,16 +110,15 @@ if (!empty($_POST)) {
         $notices[] = 'Could not verify request.';
     } else {
         $topicTitle = $_POST['post']['title'] ?? '';
-        $topicTitleValidate = forum_validate_title($topicTitle);
+        $setTopicTitle = empty($topic) || ($mode === 'edit' && $post['is_opening_post'] && $topicTitle !== $topic['topic_title']);
         $postText = $_POST['post']['text'] ?? '';
-        $postTextValidate = forum_validate_post($postText);
         $postParser = (int)($_POST['post']['parser'] ?? MSZ_PARSER_BBCODE);
 
         if (!parser_is_valid($postParser)) {
             $notices[] = 'Invalid parser selected.';
         }
 
-        switch ($postTextValidate) {
+        switch (forum_validate_post($postText)) {
             case 'too-short':
                 $notices[] = 'Post content was too short.';
                 break;
@@ -129,8 +128,8 @@ if (!empty($_POST)) {
                 break;
         }
 
-        if (empty($topic)) {
-            switch ($topicTitleValidate) {
+        if ($setTopicTitle) {
+            switch (forum_validate_title($topicTitle)) {
                 case 'too-short':
                     $notices[] = 'Topic title was too short.';
                     break;
@@ -162,8 +161,14 @@ if (!empty($_POST)) {
                     break;
 
                 case 'edit':
-                    if (!forum_post_edit($postId, ip_remote_address(), $postText, $postParser)) {
+                    if (!forum_post_update($postId, ip_remote_address(), $postText, $postParser)) {
                         $notices[] = 'Post edit failed.';
+                    }
+
+                    if ($setTopicTitle) {
+                        if (!forum_topic_update($topicId, $topicTitle)) {
+                            $notices[] = 'Topic update failed.';
+                        }
                     }
                     break;
             }
