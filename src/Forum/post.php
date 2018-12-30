@@ -27,7 +27,8 @@ function forum_post_update(
     int $postId,
     string $ipAddress,
     string $text,
-    int $parser = MSZ_PARSER_PLAIN
+    int $parser = MSZ_PARSER_PLAIN,
+    bool $bumpUpdate = true
 ): bool {
     if ($postId < 1) {
         return false;
@@ -37,13 +38,15 @@ function forum_post_update(
         UPDATE `msz_forum_posts`
         SET `post_ip` = INET6_ATON(:post_ip),
             `post_text` = :post_text,
-            `post_parse` = :post_parse
+            `post_parse` = :post_parse,
+            `post_edited` = IF(:bump, NOW(), NULL)
         WHERE `post_id` = :post_id
     ');
     $updatePost->bindValue('post_id', $postId);
     $updatePost->bindValue('post_ip', $ipAddress);
     $updatePost->bindValue('post_text', $text);
     $updatePost->bindValue('post_parse', $parser);
+    $updatePost->bindValue('bump', $bumpUpdate ? 1 : 0);
 
     return $updatePost->execute();
 }
