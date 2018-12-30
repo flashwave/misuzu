@@ -1,26 +1,6 @@
 <?php
 require_once '../misuzu.php';
 
-if (MSZ_DEBUG) {
-    if (!empty($_GET['pdump'])) {
-        header('Content-Type: text/plain');
-
-        for ($i = 0; $i < 10; $i++) {
-            $perms = [];
-
-            echo "# USER {$i}\n";
-
-            foreach (MSZ_PERM_MODES as $mode) {
-                $perms = decbin(perms_get_user($mode, $i));
-                echo "{$mode}: {$perms}\n";
-            }
-
-            echo "\n";
-        }
-        return;
-    }
-}
-
 if (config_get_default(false, 'Site', 'embed_linked_data')) {
     tpl_var('linked_data', [
         'name' => config_get('Site', 'name'),
@@ -49,7 +29,7 @@ $statistics = cache_get('index:stats:v1', function () {
             LIMIT 1
         ')->fetch(PDO::FETCH_ASSOC),
     ];
-}, 10800);
+}, 600);
 
 $changelog = cache_get('index:changelog:v1', function () {
     return db_query('
@@ -64,21 +44,19 @@ $changelog = cache_get('index:changelog:v1', function () {
         ORDER BY c.`change_created` DESC
         LIMIT 10
     ')->fetchAll(PDO::FETCH_ASSOC);
-}, 1800);
+}, 300);
 
-$onlineUsers = cache_get('index:online:v1', function () {
-    return db_query('
-        SELECT
-            u.`user_id`, u.`username`,
-            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-        FROM `msz_users` as u
-        LEFT JOIN `msz_roles` as r
-        ON r.`role_id` = u.`display_role`
-        WHERE u.`user_active` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
-        ORDER BY RAND()
-        LIMIT 104
-    ')->fetchAll(PDO::FETCH_ASSOC);
-}, 30);
+$onlineUsers = db_query('
+    SELECT
+        u.`user_id`, u.`username`,
+        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+    FROM `msz_users` as u
+    LEFT JOIN `msz_roles` as r
+    ON r.`role_id` = u.`display_role`
+    WHERE u.`user_active` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
+    ORDER BY RAND()
+    LIMIT 104
+')->fetchAll(PDO::FETCH_ASSOC);
 
 echo tpl_render('home.' . (user_session_active() ? 'home' : 'landing'), [
     'users_count' => $statistics['users'],
