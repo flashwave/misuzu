@@ -159,6 +159,14 @@ if (PHP_SAPI === 'cli') {
                     ON t.`topic_id` = tt.`topic_id`
                     WHERE t.`topic_bumped` < NOW() - INTERVAL 1 MONTH
                 ');
+
+                // Synchronise forum_id
+                db_exec('
+                    UPDATE `msz_forum_posts` AS p
+                    INNER JOIN `msz_forum_topics` AS t
+                    ON t.`topic_id` = p.`topic_id`
+                    SET p.`forum_id` = t.`forum_id`
+                ');
                 break;
 
             case 'migrate':
