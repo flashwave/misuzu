@@ -187,7 +187,7 @@ if (!empty($_POST)) {
                     break;
 
                 case 'edit':
-                    if (!forum_post_update($postId, ip_remote_address(), $postText, $postParser)) {
+                    if (!forum_post_update($postId, ip_remote_address(), $postText, $postParser, $postText !== $post['post_text'])) {
                         $notices[] = 'Post edit failed.';
                     }
 
