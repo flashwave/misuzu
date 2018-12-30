@@ -23,6 +23,31 @@ function forum_post_create(
     return $createPost->execute() ? db_last_insert_id() : 0;
 }
 
+function forum_post_edit(
+    int $postId,
+    string $ipAddress,
+    string $text,
+    int $parser = MSZ_PARSER_PLAIN
+): bool {
+    if ($postId < 1) {
+        return false;
+    }
+
+    $updatePost = db_prepare('
+        UPDATE `msz_forum_posts`
+        SET `post_ip` = INET6_ATON(:post_ip),
+            `post_text` = :post_text,
+            `post_parse` = :post_parse
+        WHERE `post_id` = :post_id
+    ');
+    $updatePost->bindValue('post_id', $postId);
+    $updatePost->bindValue('post_ip', $ipAddress);
+    $updatePost->bindValue('post_text', $text);
+    $updatePost->bindValue('post_parse', $parser);
+
+    return $updatePost->execute();
+}
+
 function forum_post_find(int $postId): array
 {
     $getPostInfo = db_prepare('
@@ -43,7 +68,42 @@ function forum_post_find(int $postId): array
     ');
     $getPostInfo->bindValue('post_id', $postId);
 
-    return $getPostInfo->execute() ? $getPostInfo->fetch() : [];
+    return $getPostInfo->execute() ? $getPostInfo->fetch(PDO::FETCH_ASSOC) : [];
+}
+
+function forum_post_get(int $postId, bool $allowDeleted = false): array
+{
+    $getPost = db_prepare(sprintf(
+        '
+            SELECT
+                p.`post_id`, p.`post_text`, p.`post_created`, p.`post_parse`,
+                p.`topic_id`, p.`post_deleted`, p.`post_edited`,
+                INET6_NTOA(p.`post_ip`) as `post_ip`,
+                u.`user_id` as `poster_id`,
+                u.`username` as `poster_name`,
+                u.`user_created` as `poster_joined`,
+                u.`user_country` as `poster_country`,
+                COALESCE(u.`user_colour`, r.`role_colour`) as `poster_colour`,
+                (
+                    SELECT COUNT(`post_id`)
+                    FROM `msz_forum_posts`
+                    WHERE `user_id` = p.`user_id`
+                    AND `post_deleted` IS NULL
+                ) as `poster_post_count`
+            FROM `msz_forum_posts` as p
+            LEFT JOIN `msz_users` as u
+            ON u.`user_id` = p.`user_id`
+            LEFT JOIN `msz_roles` as r
+            ON r.`role_id` = u.`display_role`
+            WHERE `post_id` = :post_id
+            %1$s
+            ORDER BY `post_id`
+        ',
+        $allowDeleted ? '' : 'AND `post_deleted` IS NULL'
+    ));
+    $getPost->bindValue('post_id', $postId);
+    $post = $getPost->execute() ? $getPost->fetch(PDO::FETCH_ASSOC) : false;
+    return $post ? $post : [];
 }
 
 function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $showDeleted = false): array
@@ -86,5 +146,5 @@ function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $
         $getPosts->bindValue('take', $take);
     }
 
-    return $getPosts->execute() ? $getPosts->fetchAll() : [];
+    return $getPosts->execute() ? $getPosts->fetchAll(PDO::FETCH_ASSOC) : [];
 }

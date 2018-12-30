@@ -321,19 +321,24 @@
     </div>
 {% endmacro %}
 
-{% macro forum_post_listing(posts, opening_post_id) %}
+{% macro forum_post_listing(posts, opening_post_id, user_id, perms) %}
     {% from _self import forum_post_entry %}
 
     {% for post in posts %}
-        {{ forum_post_entry(post, post.post_id == opening_post_id) }}
+        {{ forum_post_entry(
+            post,
+            post.post_id == opening_post_id,
+            perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_POST')),
+            perms|perms_check(constant(user_id == post.poster_id ? 'MSZ_FORUM_PERM_EDIT_POST' : 'MSZ_FORUM_PERM_EDIT_ANY_POST')),
+            perms|perms_check(constant(user_id == post.poster_id ? 'MSZ_FORUM_PERM_DELETE_POST' : 'MSZ_FORUM_PERM_DELETE_ANY_POST'))
+        ) }}
     {% endfor %}
 {% endmacro %}
 
-{% macro forum_post_entry(post, is_original_post, is_original_poster) %}
-    {% set is_original_post = is_original_post|default(false) %}
-    {% set is_original_poster = is_original_poster|default(false) %}
+{% macro forum_post_entry(post, is_original_post, can_post, can_edit, can_delete) %}
+    {% set is_deleted = post.post_deleted is not null %}
 
-    <div class="container forum__post{% if post.post_deleted is not null %} forum__post--deleted{% endif %}" id="p{{ post.post_id }}" style="{{ post.poster_colour|html_colour('--accent-colour') }}">
+    <div class="container forum__post{% if is_deleted %} forum__post--deleted{% endif %}" id="p{{ post.post_id }}" style="{{ post.poster_colour|html_colour('--accent-colour') }}">
         <div class="forum__post__info">
             <div class="forum__post__info__background"></div>
             <div class="forum__post__info__content">
@@ -363,6 +368,9 @@
             <div class="forum__post__details">
                 <a class="forum__post__datetime" href="/forum/topic.php?t={{ post.topic_id }}#p{{ post.post_id }}">
                     <time datetime="{{ post.post_created|date('c') }}" title="{{ post.post_created|date('r') }}">{{ post.post_created|time_diff }}</time>
+                    {% if post.post_edited is not null %}
+                        (edited <time datetime="{{ post.post_edited|date('c') }}" title="{{ post.post_edited|date('r') }}">{{ post.post_edited|time_diff }}</time>)
+                    {% endif %}
                 </a>
 
                 <a class="forum__post__id" href="/forum/topic.php?p={{ post.post_id }}#p{{ post.post_id }}">
@@ -373,6 +381,25 @@
             <div class="forum__post__text{% if post.post_parse == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
                 {{ post.post_text|escape|parse_text(post.post_parse)|raw }}
             </div>
+
+            {% if can_post or can_edit or can_delete %}
+                <div class="forum__post__actions">
+                    {% if is_deleted %}
+                        <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=restore" class="forum__post__action"><i class="fas fa-magic fa-fw"></i> Restore</a>
+                        <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=nuke" class="forum__post__action"><i class="fas fa-radiation-alt fa-fw"></i> Permanently Delete</a>
+                    {% else %}
+                        {# if can_post %}
+                            <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=quote" class="forum__post__action"><i class="fas fa-quote-left fa-fw"></i> Quote</a>
+                        {% endif #}
+                        {% if can_edit %}
+                            <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=edit" class="forum__post__action"><i class="fas fa-edit fa-fw"></i> Edit</a>
+                        {% endif %}
+                        {# if can_delete %}
+                            <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=delete" class="forum__post__action"><i class="far fa-trash-alt fa-fw"></i> Delete</a>
+                        {% endif #}
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endmacro %}

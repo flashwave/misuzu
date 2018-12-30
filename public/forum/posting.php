@@ -11,13 +11,26 @@ if (user_warning_check_restriction(user_session_current('user_id', 0))) {
     return;
 }
 
+$forumPostingModes = [
+    'create',   'edit',     'quote',
+    'delete',   'restore',  'nuke',
+];
+
 if (!empty($_POST)) {
+    $mode = $_POST['post']['mode'] ?? 'create';
+    $postId = max(0, (int)($_POST['post']['id'] ?? 0));
     $topicId = max(0, (int)($_POST['post']['topic'] ?? 0));
     $forumId = max(0, (int)($_POST['post']['forum'] ?? 0));
 } else {
+    $mode = $_GET['m'] ?? 'create';
     $postId = max(0, (int)($_GET['p'] ?? 0));
     $topicId = max(0, (int)($_GET['t'] ?? 0));
     $forumId = max(0, (int)($_GET['f'] ?? 0));
+}
+
+if (!in_array($mode, $forumPostingModes, true)) {
+    echo render_error(400);
+    return;
 }
 
 if (empty($postId) && empty($topicId) && empty($forumId)) {
@@ -26,13 +39,7 @@ if (empty($postId) && empty($topicId) && empty($forumId)) {
 }
 
 if (!empty($postId)) {
-    $getPost = db_prepare('
-        SELECT `post_id`, `topic_id`
-        FROM `msz_forum_posts`
-        WHERE `post_id` = :post_id
-    ');
-    $getPost->bindValue('post_id', $postId);
-    $post = $getPost->execute() ? $getPost->fetch(PDO::FETCH_ASSOC) : false;
+    $post = forum_post_get($postId);
 
     if (isset($post['topic_id'])) { // should automatic cross-quoting be a thing? if so, check if $topicId is < 1 first
         $topicId = (int)$post['topic_id'];
@@ -68,7 +75,7 @@ if (empty($forum)) {
     return;
 }
 
-$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], user_session_current('user_id', 0));
+$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], user_session_current('user_id'));
 
 if ($forum['forum_archived']
     || !empty($topic['topic_locked'])
@@ -81,6 +88,19 @@ if ($forum['forum_archived']
 if (!forum_may_have_topics($forum['forum_type'])) {
     echo render_error(400);
     return;
+}
+
+// edit mode stuff
+if ($mode === 'edit') {
+    if (empty($post)) {
+        echo render_error(404);
+        return;
+    }
+
+    if (!perms_check($perms, $post['poster_id'] === user_session_current('user_id') ? MSZ_FORUM_PERM_EDIT_POST : MSZ_FORUM_PERM_EDIT_ANY_POST)) {
+        echo render_error(403);
+        return;
+    }
 }
 
 $notices = [];
@@ -122,30 +142,46 @@ if (!empty($_POST)) {
         }
 
         if (empty($notices)) {
-            if (!empty($topic)) {
-                forum_topic_bump($topic['topic_id']);
-            } else {
-                $topicId = forum_topic_create($forum['forum_id'], user_session_current('user_id', 0), $topicTitle);
+            switch ($mode) {
+                case 'create':
+                    if (!empty($topic)) {
+                        forum_topic_bump($topic['topic_id']);
+                    } else {
+                        $topicId = forum_topic_create($forum['forum_id'], user_session_current('user_id', 0), $topicTitle);
+                    }
+
+                    $postId = forum_post_create(
+                        $topicId,
+                        $forum['forum_id'],
+                        user_session_current('user_id', 0),
+                        ip_remote_address(),
+                        $postText,
+                        $postParser
+                    );
+                    forum_topic_mark_read(user_session_current('user_id', 0), $topicId, $forum['forum_id']);
+                    break;
+
+                case 'edit':
+                    if (!forum_post_edit($postId, ip_remote_address(), $postText, $postParser)) {
+                        $notices[] = 'Post edit failed.';
+                    }
+                    break;
             }
 
-            $postId = forum_post_create(
-                $topicId,
-                $forum['forum_id'],
-                user_session_current('user_id', 0),
-                ip_remote_address(),
-                $postText,
-                $postParser
-            );
-            forum_topic_mark_read(user_session_current('user_id', 0), $topicId, $forum['forum_id']);
-
-            header("Location: /forum/topic.php?p={$postId}#p{$postId}");
-            return;
+            if (empty($notices)) {
+                header("Location: /forum/topic.php?p={$postId}#p{$postId}");
+                return;
+            }
         }
     }
 }
 
 if (!empty($topic)) {
     tpl_var('posting_topic', $topic);
+}
+
+if ($mode === 'edit') { // $post is pretty much sure to be populated at this point
+    tpl_var('posting_post', $post);
 }
 
 // fetches additional data for simulating a forum post
@@ -167,4 +203,5 @@ echo tpl_render('forum.posting', [
     'posting_forum' => $forum,
     'posting_info' => $displayInfo,
     'posting_notices' => $notices,
+    'posting_mode' => $mode,
 ]);
