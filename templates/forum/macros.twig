@@ -19,7 +19,7 @@
     </div>
 {% endmacro %}
 
-{% macro forum_header(title, breadcrumbs, omit_last_breadcrumb) %}
+{% macro forum_header(title, breadcrumbs, omit_last_breadcrumb, title_url) %}
     <div class="container forum__header">
         {% if breadcrumbs is iterable and breadcrumbs|length > 0 %}
             <div class="forum__header__breadcrumbs">
@@ -38,9 +38,15 @@
         {% endif %}
 
         {% if title|length > 0 %}
-            <div class="forum__header__title">
-                {{ title }}
-            </div>
+            {% if title_url|length > 0 %}
+                <a class="forum__header__title" href="{{ title_url }}">
+                    {{ title }}
+                </a>
+            {% else %}
+                <div class="forum__header__title">
+                    {{ title }}
+                </div>
+            {% endif %}
         {% endif %}
     </div>
 {% endmacro %}
