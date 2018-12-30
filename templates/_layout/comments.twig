@@ -45,6 +45,8 @@
     {% set hide_details = is_deleted and not perms.can_delete_any %}
 
     {% if perms.can_delete_any or (not is_deleted or comment.comment_replies|length > 0) %}
+        {% set is_pinned = comment.comment_pinned is not null %}
+
         <div class="comment{% if is_deleted %} comment--deleted{% endif %}" id="comment-{{ comment.comment_id }}">
             <div class="comment__container">
                 {% if hide_details %}
@@ -69,7 +71,7 @@
                                 {{ comment.comment_created|time_diff }}
                             </time>
                         </a>
-                        {% if comment.comment_pinned is not null %}
+                        {% if is_pinned %}
                             <span class="comment__pin">{% spaceless %}
                                 Pinned
                                 {% if comment.comment_pinned != comment.comment_created %}
@@ -113,8 +115,11 @@
                             {# if user is not null %}
                                 <a class="comment__action comment__action--link comment__action--hide" href="#">Report</a>
                             {% endif #}
+                            {% if comment.comment_reply_to is null and perms.can_pin %}
+                                <a class="comment__action comment__action--link comment__action--hide comment__action--pin" data-comment-id="{{ comment.comment_id }}" data-comment-pinned="{{ is_pinned ? '1' : '0' }}" href="/comments.php?m={{ is_pinned ? 'unpin' : 'pin' }}&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token('comments') }}">{{ is_pinned ? 'Unpin' : 'Pin' }}</a>
+                            {% endif %}
                         {% elseif perms.can_delete_any %}
-                                <a class="comment__action comment__action--link comment__action--restore" data-comment-id="{{ comment.comment_id }}" href="/comments.php?m=restore&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token('comments') }}">Restore</a>
+                            <a class="comment__action comment__action--link comment__action--restore" data-comment-id="{{ comment.comment_id }}" href="/comments.php?m=restore&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token('comments') }}">Restore</a>
                         {% endif %}
                     </div>
                 </div>

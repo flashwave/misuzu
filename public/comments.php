@@ -38,6 +38,49 @@ header(csrf_http_header('comments'));
 $commentPerms = comments_get_perms($currentUserId);
 
 switch ($_GET['m'] ?? null) {
+    case 'pin':
+    case 'unpin':
+        if (!$commentPerms['can_pin']) {
+            echo render_info_or_json($isXHR, "You're not allowed to pin comments.", 403);
+            break;
+        }
+
+        $comment = (int)($_GET['c'] ?? 0);
+        $commentInfo = comments_post_get($comment, false);
+
+        if (!$commentInfo || $commentInfo['comment_deleted'] !== null) {
+            echo render_info_or_json($isXHR, "This comment doesn't exist!", 400);
+            break;
+        }
+
+        if ($commentInfo['comment_reply_to'] !== null) {
+            echo render_info_or_json($isXHR, "You can't pin replies!", 400);
+            break;
+        }
+
+        $isPinning = $_GET['m'] === 'pin';
+
+        if ($isPinning && !empty($commentInfo['comment_pinned'])) {
+            echo render_info_or_json($isXHR, 'This comment is already pinned.', 400);
+            break;
+        } elseif (!$isPinning && empty($commentInfo['comment_pinned'])) {
+            echo render_info_or_json($isXHR, "This comment isn't pinned yet.", 400);
+            break;
+        }
+
+        $commentPinned = comments_pin_status($commentInfo['comment_id'], $isPinning);
+
+        if (!$isXHR) {
+            header('Location: ' . $redirect . '#comment-' . $commentInfo['comment_id']);
+            break;
+        }
+
+        echo json_encode([
+            'comment_id' => $commentInfo['comment_id'],
+            'comment_pinned' => $commentPinned,
+        ]);
+        break;
+
     case 'vote':
         if (!$commentPerms['can_vote']) {
             echo render_info_or_json($isXHR, "You're not allowed to vote on comments.", 403);

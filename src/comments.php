@@ -78,6 +78,26 @@ function comments_get_perms(int $userId): array
     ];
 }
 
+function comments_pin_status(int $comment, bool $mode): ?string
+{
+    if ($comment < 1) {
+        return false;
+    }
+
+    $status = $mode ? date('Y-m-d H:i:s') : null;
+
+    $setPinStatus = db_prepare('
+        UPDATE `msz_comments_posts`
+        SET `comment_pinned` = :status
+        WHERE `comment_id` = :comment
+        AND `comment_reply_to` IS NULL
+    ');
+    $setPinStatus->bindValue('comment', $comment);
+    $setPinStatus->bindValue('status', $status);
+
+    return $setPinStatus->execute() ? $status : null;
+}
+
 function comments_vote_add(int $comment, int $user, ?string $vote): bool
 {
     if (!in_array($vote, MSZ_COMMENTS_VOTE_TYPES, true)) {

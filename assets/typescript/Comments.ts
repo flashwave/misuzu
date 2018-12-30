@@ -163,10 +163,17 @@ function commentsInit(): void {
 
     const voteButtons: HTMLCollectionOf<HTMLAnchorElement> = document.getElementsByClassName('comment__action--vote') as HTMLCollectionOf<HTMLAnchorElement>;
 
-    for (var i = 0; i < voteButtons.length; i++)
+    for (let i = 0; i < voteButtons.length; i++)
     {
         voteButtons[i].href = 'javascript:void(0);';
         voteButtons[i].addEventListener('click', commentVoteEventHandler);
+    }
+
+    const pinButtons: HTMLCollectionOf<HTMLAnchorElement> = document.getElementsByClassName('comment__action--pin') as HTMLCollectionOf<HTMLAnchorElement>;
+
+    for (let i = 0; i < pinButtons.length; i++) {
+        pinButtons[i].href = 'javascript:void(0);';
+        pinButtons[i].addEventListener('click', commentPinEventHandler);
     }
 }
 
@@ -420,6 +427,82 @@ function commentVote(
             onSuccess(json);
     };
     xhr.open('GET', `/comments.php?m=vote&c=${commentId}&v=${vote}&csrf=${getCSRFToken('comments')}`);
+    xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
+    xhr.send();
+}
+
+function commentPinEventHandler(ev: Event): void {
+    const target: HTMLAnchorElement = this as HTMLAnchorElement,
+        commentId: number = parseInt(target.dataset.commentId),
+        isPinned: boolean = target.dataset.commentPinned !== '0';
+
+    target.textContent = '...';
+
+    commentPin(
+        commentId,
+        !isPinned,
+        (info) => {
+            if (info.comment_pinned === null) {
+                target.textContent = 'Pin';
+                target.dataset.commentPinned = '0';
+                const pinElement: HTMLDivElement = document.querySelector(`#comment-${info.comment_id} .comment__pin`);
+                pinElement.parentElement.removeChild(pinElement);
+            } else {
+                target.textContent = 'Unpin';
+                target.dataset.commentPinned = '1';
+
+                const pinInfo: HTMLDivElement = document.querySelector(`#comment-${info.comment_id} .comment__info`),
+                    pinElement: HTMLDivElement = document.createElement('div'),
+                    pinTime: HTMLTimeElement = document.createElement('time'),
+                    pinDateTime = new Date(info.comment_pinned + 'Z');
+
+                pinTime.title = pinDateTime.toLocaleString();
+                pinTime.dateTime = pinDateTime.toISOString();
+                pinTime.textContent = timeago().format(pinDateTime);
+                timeago().render(pinTime);
+
+                pinElement.className = 'comment__pin';
+                pinElement.appendChild(document.createTextNode('Pinned '));
+                pinElement.appendChild(pinTime);
+                pinInfo.appendChild(pinElement);
+            }
+        },
+        (message) => {
+            target.textContent = isPinned ? 'Unpin' : 'Pin';
+            alert(message);
+        }
+    );
+}
+
+function commentPin(
+    commentId: number,
+    pin: boolean,
+    onSuccess: (commentInfo: CommentPostInfo) => void = null,
+    onFail: (message: string) => void = null
+): void {
+    if (!checkUserPerm('comments', CommentPermission.Pin)) {
+        if (onFail)
+            onFail("You aren't allowed to pin comments.");
+        return;
+    }
+
+    const mode: string = pin ? 'pin' : 'unpin';
+    const xhr: XMLHttpRequest = new XMLHttpRequest;
+    xhr.onreadystatechange = () => {
+        if (xhr.readyState !== 4)
+            return;
+
+        updateCSRF(xhr.getResponseHeader('X-Misuzu-CSRF'));
+
+        const json: CommentPostInfo = JSON.parse(xhr.responseText),
+            message: string = json.error || json.message;
+
+        if (message && onFail)
+            onFail(message);
+        else if (!message && onSuccess)
+            onSuccess(json);
+    };
+    xhr.open('GET', `/comments.php?m=${mode}&c=${commentId}&csrf=${getCSRFToken('comments')}`);
     xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
     xhr.send();
 }
