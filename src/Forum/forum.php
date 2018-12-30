@@ -63,6 +63,11 @@ define('MSZ_FORUM_ROOT_DATA', [ // should be compatible with the data fetched in
     'forum_colour' => null,
 ]);
 
+function forum_is_valid_type(int $type): bool
+{
+    return in_array($type, MSZ_FORUM_TYPES, true);
+}
+
 function forum_may_have_children(int $forumType): bool
 {
     return in_array($forumType, MSZ_FORUM_MAY_HAVE_CHILDREN);

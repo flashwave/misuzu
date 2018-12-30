@@ -2,40 +2,70 @@
 define('MSZ_TOPIC_TYPE_DISCUSSION', 0);
 define('MSZ_TOPIC_TYPE_STICKY', 1);
 define('MSZ_TOPIC_TYPE_ANNOUNCEMENT', 2);
+define('MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT', 3);
 define('MSZ_TOPIC_TYPES', [
     MSZ_TOPIC_TYPE_DISCUSSION,
     MSZ_TOPIC_TYPE_STICKY,
     MSZ_TOPIC_TYPE_ANNOUNCEMENT,
+    MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT,
 ]);
 
-function forum_topic_create(int $forumId, int $userId, string $title): int
+define('MSZ_TOPIC_TYPE_ORDER', [ // in which order to display topics, only add types here that should appear above others
+    MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT,
+    MSZ_TOPIC_TYPE_ANNOUNCEMENT,
+    MSZ_TOPIC_TYPE_STICKY,
+]);
+
+function forum_topic_is_valid_type(int $type): bool
 {
+    return in_array($type, MSZ_TOPIC_TYPES, true);
+}
+
+function forum_topic_create(int $forumId, int $userId, string $title, int $type = MSZ_TOPIC_TYPE_DISCUSSION): int
+{
+    if (empty($title) || !forum_topic_is_valid_type($type)) {
+        return 0;
+    }
+
     $createTopic = db_prepare('
         INSERT INTO `msz_forum_topics`
-            (`forum_id`, `user_id`, `topic_title`)
+            (`forum_id`, `user_id`, `topic_title`, `topic_type`)
         VALUES
-            (:forum_id, :user_id, :topic_title)
+            (:forum_id, :user_id, :topic_title, :topic_type)
     ');
     $createTopic->bindValue('forum_id', $forumId);
     $createTopic->bindValue('user_id', $userId);
     $createTopic->bindValue('topic_title', $title);
+    $createTopic->bindValue('topic_type', $type);
 
     return $createTopic->execute() ? (int)db_last_insert_id() : 0;
 }
 
-function forum_topic_update(int $topicId, string $title): bool
+function forum_topic_update(int $topicId, ?string $title, ?int $type = null): bool
 {
-    if ($topicId < 1 || empty($title)) {
+    if ($topicId < 1) {
+        return false;
+    }
+
+    // make sure it's null and not some other kinda empty
+    if (empty($title)) {
+        $title = null;
+    }
+
+    if ($type !== null && !forum_topic_is_valid_type($type)) {
         return false;
     }
 
     $updateTopic = db_prepare('
         UPDATE `msz_forum_topics`
-        SET `topic_title` = :topic_title
+        SET `topic_title` = COALESCE(:topic_title, `topic_title`)
+            `topic_type` = COALESCE(:topic_type, `topic_type`)
         WHERE `topic_id` = :topic_id
     ');
     $updateTopic->bindValue('topic_id', $topicId);
     $updateTopic->bindValue('topic_title', $title);
+    $updateTopic->bindValue('topic_type', $type);
+
     return $updateTopic->execute();
 }
 
@@ -152,13 +182,18 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
             ON lu.`user_id` = lp.`user_id`
             LEFT JOIN `msz_roles` as lr
             ON lr.`role_id` = lu.`display_role`
-            WHERE t.`forum_id` = :forum_id
+            WHERE (
+                t.`forum_id` = :forum_id
+                OR t.`topic_type` = %3$d
+            )
             %1$s
-            ORDER BY t.`topic_type` DESC, t.`topic_bumped` DESC
+            ORDER BY FIELD(t.`topic_type`, %4$s) DESC, t.`topic_bumped` DESC
             %2$s
         ',
         $showDeleted ? '' : 'AND t.`topic_deleted` IS NULL',
-        $hasPagination ? 'LIMIT :offset, :take' : ''
+        $hasPagination ? 'LIMIT :offset, :take' : '',
+        MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT,
+        implode(',', array_reverse(MSZ_TOPIC_TYPE_ORDER))
     ));
     $getTopics->bindValue('forum_id', $forumId);
     $getTopics->bindValue('user_id', $userId);

@@ -115,10 +115,10 @@
     {% if forum_type is null %}
         {% if forum.forum_archived is defined and forum.forum_archived %}
             {% set forum_type = 'fas fa-archive' %}
-        {% elseif forum.forum_type is defined and forum.forum_type != 0 %}
-            {% if forum.forum_type == 2 %}
+        {% elseif forum.forum_type is defined and forum.forum_type != constant('MSZ_FORUM_TYPE_DISCUSSION') %}
+            {% if forum.forum_type == constant('MSZ_FORUM_TYPE_LINK') %}
                 {% set forum_type = 'fas fa-link' %}
-            {% elseif forum.forum_type == 1 %}
+            {% elseif forum.forum_type == constant('MSZ_FORUM_TYPE_CATEGORY') %}
                 {% set forum_type = 'fas fa-folder' %}
             {% endif %}
         {% else %}
@@ -155,22 +155,22 @@
                 {% endif %}
             </div>
 
-            {% if forum.forum_type == 2 %}
+            {% if forum.forum_type == constant('MSZ_FORUM_TYPE_LINK') %}
                 {% if forum.forum_link_clicks is not null %}
                     <div class="forum__category__stats">
                         <div class="forum__category__stat" title="Clicks">{{ forum.forum_link_clicks|number_format }}</div>
                     </div>
                 {% endif %}
-            {% elseif forum.forum_type != 1 %}
+            {% elseif forum.forum_type != constant('MSZ_FORUM_TYPE_CATEGORY') %}
                 <div class="forum__category__stats">
                     <div class="forum__category__stat" title="Topics">{{ forum.forum_topic_count|number_format }}</div>
                     <div class="forum__category__stat" title="Posts">{{ forum.forum_post_count|number_format }}</div>
                 </div>
             {% endif %}
 
-            {% if forum.forum_type == 0 or forum.forum_link_clicks is not null %}
+            {% if forum.forum_type == constant('MSZ_FORUM_TYPE_DISCUSSION') or forum.forum_link_clicks is not null %}
                 <div class="forum__category__activity{% if forum.forum_link_clicks is not null %} forum__category__activity--empty{% endif %}">
-                    {% if forum.forum_type != 2 %}
+                    {% if forum.forum_type != constant('MSZ_FORUM_TYPE_LINK') %}
                         {% if forum.recent_topic_id is null %}
                             <div class="forum__category__activity__none">
                                 There are no posts in this forum yet.
@@ -257,10 +257,10 @@
     {% if topic_type is null %}
         {% if topic.topic_deleted is defined and topic.topic_deleted is not null %}
             {% set topic_type = 'fas fa-trash-alt' %}
-        {% elseif topic.topic_type is defined and topic.topic_type != 0 %}
-            {% if topic.topic_type == 2 %}
+        {% elseif topic.topic_type is defined and topic.topic_type != constant('MSZ_TOPIC_TYPE_DISCUSSION') %}
+            {% if topic.topic_type == constant('MSZ_TOPIC_TYPE_ANNOUNCEMENT') or topic.topic_type == constant('MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT') %}
                 {% set topic_type = 'fas fa-bullhorn' %}
-            {% elseif topic.topic_type == 1 %}
+            {% elseif topic.topic_type == constant('MSZ_TOPIC_TYPE_STICKY') %}
                 {% set topic_type = 'fas fa-thumbtack' %}
             {% endif %}
         {% elseif topic.topic_locked is defined and topic.topic_locked is not null %}
