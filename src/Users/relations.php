@@ -1,23 +1,25 @@
 <?php
+define('MSZ_USER_RELATION_NONE', 0);
 define('MSZ_USER_RELATION_FOLLOW', 1);
 
 define('MSZ_USER_RELATION_TYPES', [
+    MSZ_USER_RELATION_NONE,
     MSZ_USER_RELATION_FOLLOW,
 ]);
 
-define('MSZ_USER_RELATION_E_OK', 0);
-define('MSZ_USER_RELATION_E_USER_ID', 1);
-define('MSZ_USER_RELATION_E_DATABASE', 2);
-define('MSZ_USER_RELATION_E_INVALID_TYPE', 2);
-
-function user_relation_add(int $userId, int $subjectId, int $type = MSZ_USER_RELATION_FOLLOW): int
+function user_relation_is_valid_type(int $type): bool
 {
-    if ($userId < 1 || $subjectId < 1) {
-        return MSZ_USER_RELATION_E_USER_ID;
+    return in_array($type, MSZ_USER_RELATION_TYPES, true);
+}
+
+function user_relation_set(int $userId, int $subjectId, int $type = MSZ_USER_RELATION_FOLLOW): bool
+{
+    if ($type === MSZ_USER_RELATION_NONE) {
+        return user_relation_remove($userId, $subjectId);
     }
 
-    if (!in_array($type, MSZ_USER_RELATION_TYPES, true)) {
-        return MSZ_USER_RELATION_E_INVALID_TYPE;
+    if ($userId < 1 || $subjectId < 1 || !user_relation_is_valid_type($type)) {
+        return false;
     }
 
     $addRelation = db_prepare('
@@ -31,9 +33,7 @@ function user_relation_add(int $userId, int $subjectId, int $type = MSZ_USER_REL
     $addRelation->bindValue('type', $type);
     $addRelation->execute();
 
-    return $addRelation->execute()
-        ? MSZ_USER_RELATION_E_OK
-        : MSZ_USER_RELATION_E_DATABASE;
+    return $addRelation->execute();
 }
 
 function user_relation_remove(int $userId, int $subjectId): bool

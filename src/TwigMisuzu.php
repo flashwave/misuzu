@@ -39,6 +39,7 @@ final class TwigMisuzu extends Twig_Extension
             new Twig_Function('sql_query_count', 'db_query_count'),
             new Twig_Function('url_construct', 'url_construct'),
             new Twig_Function('warning_has_duration', 'user_warning_has_duration'),
+            new Twig_Function('get_csrf_tokens', 'csrf_get_list'),
             new Twig_Function('startup_time', function (float $time = MSZ_STARTUP) {
                 return microtime(true) - $time;
             }),

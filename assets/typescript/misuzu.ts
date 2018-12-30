@@ -5,6 +5,8 @@
 /// <reference path="Comments.ts" />
 /// <reference path="Common.ts" />
 /// <reference path="FormUtilities.ts" />
+/// <reference path="UserRelations.ts" />
+
 
 declare const timeago: any;
 declare const hljs: any;
@@ -18,6 +20,7 @@ window.addEventListener('load', () => {
 
     initCSRF();
     userInit();
+    userRelationsInit();
 
     const changelogChangeAction: HTMLDivElement = document.querySelector('.changelog__change__action') as HTMLDivElement;
 

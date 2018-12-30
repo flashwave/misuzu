@@ -47,32 +47,25 @@ function resetForm(form: HTMLFormElement, defaults: FormHiddenDefault[] = []): v
     }
 }
 
+function getRawCSRFTokenList(): CSRFToken[]
+{
+    const csrfTokenList: HTMLDivElement = document.getElementById('js-csrf-tokens') as HTMLDivElement;
+
+    if (!csrfTokenList)
+        return [];
+
+    return JSON.parse(csrfTokenList.textContent) as CSRFToken[];
+}
+
 class CSRFToken {
     realm: string;
     token: string;
 }
 
-const CSRFTokenStore: CSRFToken[] = [];
+let CSRFTokenStore: CSRFToken[] = [];
 
 function initCSRF(): void {
-    const csrfTokens: NodeListOf<HTMLInputElement> = document.querySelectorAll('[name^="csrf["]'),
-        regex = /\[([A-Za-z0-9_-]+)\]/iu,
-        handled: string[] = [];
-
-    for (let i = 0; i < csrfTokens.length; i++) {
-        let csrfToken: HTMLInputElement = csrfTokens[i],
-            matches: string[] = csrfToken.name.match(regex);
-
-        if (matches.length < 2)
-            continue;
-        let realm: string = matches[1];
-
-        if (handled.indexOf(realm) >= 0)
-            continue;
-        handled.push(realm);
-
-        setCSRF(realm, csrfToken.value);
-    }
+    CSRFTokenStore = getRawCSRFTokenList();
 }
 
 function getCSRF(realm: string): CSRFToken {

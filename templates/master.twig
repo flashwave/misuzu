@@ -42,6 +42,9 @@
                 {{ current_user|json_encode|raw }}
             </script>
         {% endif %}
+        <script type="application/json" id="js-csrf-tokens">
+            {{ get_csrf_tokens()|json_encode|raw }}
+        </script>
         <script src="{{ '/js/libraries.js'|asset_url }}"></script>
         <script src="{{ '/js/misuzu.js'|asset_url }}"></script>
     </body>
