@@ -58,7 +58,7 @@ function forum_topic_update(int $topicId, ?string $title, ?int $type = null): bo
 
     $updateTopic = db_prepare('
         UPDATE `msz_forum_topics`
-        SET `topic_title` = COALESCE(:topic_title, `topic_title`)
+        SET `topic_title` = COALESCE(:topic_title, `topic_title`),
             `topic_type` = COALESCE(:topic_type, `topic_type`)
         WHERE `topic_id` = :topic_id
     ');

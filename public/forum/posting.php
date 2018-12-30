@@ -47,13 +47,7 @@ if (!empty($postId)) {
 }
 
 if (!empty($topicId)) {
-    $getTopic = db_prepare('
-        SELECT `topic_id`, `forum_id`, `topic_title`, `topic_locked`
-        FROM `msz_forum_topics`
-        WHERE `topic_id` = :topic_id
-    ');
-    $getTopic->bindValue('topic_id', $topicId);
-    $topic = $getTopic->execute() ? $getTopic->fetch(PDO::FETCH_ASSOC) : false;
+    $topic = forum_topic_fetch($topicId);
 
     if (isset($topic['forum_id'])) {
         $forumId = (int)$topic['forum_id'];
@@ -78,7 +72,7 @@ if (empty($forum)) {
 $perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], user_session_current('user_id'));
 
 if ($forum['forum_archived']
-    || !empty($topic['topic_locked'])
+    || (!empty($topic['topic_locked']) && !perms_check($perms, MSZ_FORUM_PERM_LOCK_TOPIC))
     || !perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM | MSZ_FORUM_PERM_CREATE_POST)
     || (empty($topic) && !perms_check($perms, MSZ_FORUM_PERM_CREATE_TOPIC))) {
     echo render_error(403);
@@ -88,6 +82,22 @@ if ($forum['forum_archived']
 if (!forum_may_have_topics($forum['forum_type'])) {
     echo render_error(400);
     return;
+}
+
+$topicTypes = [];
+
+if ($mode === 'create' || $mode === 'edit') {
+    $topicTypes[MSZ_TOPIC_TYPE_DISCUSSION] = 'Normal discussion';
+
+    if (perms_check($perms, MSZ_FORUM_PERM_STICKY_TOPIC)) {
+        $topicTypes[MSZ_TOPIC_TYPE_STICKY] = 'Sticky topic';
+    }
+    if (perms_check($perms, MSZ_FORUM_PERM_ANNOUNCE_TOPIC)) {
+        $topicTypes[MSZ_TOPIC_TYPE_ANNOUNCEMENT] = 'Announcement';
+    }
+    if (perms_check($perms, MSZ_FORUM_PERM_GLOBAL_ANNOUNCE_TOPIC)) {
+        $topicTypes[MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT] = 'Global Announcement';
+    }
 }
 
 // edit mode stuff
@@ -109,8 +119,31 @@ if (!empty($_POST)) {
     if (!csrf_verify('forum_post', $_POST['csrf'] ?? '')) {
         $notices[] = 'Could not verify request.';
     } else {
-        $topicTitle = $_POST['post']['title'] ?? '';
-        $setTopicTitle = empty($topic) || ($mode === 'edit' && $post['is_opening_post'] && $topicTitle !== $topic['topic_title']);
+        $isEditingTopic = empty($topic) || ($mode === 'edit' && $post['is_opening_post']);
+
+        if ($isEditingTopic) {
+            $topicTitle = $_POST['post']['title'] ?? '';
+            $originalTopicTitle = $topic['topic_title'] ?? null;
+            $topicTitleChanged = $topicTitle !== $originalTopicTitle;
+            $topicType = (int)($_POST['post']['type'] ?? array_key_first($topicTypes));
+            $originalTopicType = (int)($topic['topic_type'] ?? 0);
+            $topicTypeChanged = $topicType !== $originalTopicType;
+
+            switch (forum_validate_title($topicTitle)) {
+                case 'too-short':
+                    $notices[] = 'Topic title was too short.';
+                    break;
+
+                case 'too-long':
+                    $notices[] = 'Topic title was too long.';
+                    break;
+            }
+
+            if (!array_key_exists($topicType, $topicTypes) && $topicTypeChanged) {
+                $notices[] = 'You are not allowed to set this topic type.';
+            }
+        }
+
         $postText = $_POST['post']['text'] ?? '';
         $postParser = (int)($_POST['post']['parser'] ?? MSZ_PARSER_BBCODE);
 
@@ -128,25 +161,18 @@ if (!empty($_POST)) {
                 break;
         }
 
-        if ($setTopicTitle) {
-            switch (forum_validate_title($topicTitle)) {
-                case 'too-short':
-                    $notices[] = 'Topic title was too short.';
-                    break;
-
-                case 'too-long':
-                    $notices[] = 'Topic title was too long.';
-                    break;
-            }
-        }
-
         if (empty($notices)) {
             switch ($mode) {
                 case 'create':
                     if (!empty($topic)) {
                         forum_topic_bump($topic['topic_id']);
                     } else {
-                        $topicId = forum_topic_create($forum['forum_id'], user_session_current('user_id', 0), $topicTitle);
+                        $topicId = forum_topic_create(
+                            $forum['forum_id'],
+                            user_session_current('user_id', 0),
+                            $topicTitle,
+                            $topicType
+                        );
                     }
 
                     $postId = forum_post_create(
@@ -165,8 +191,8 @@ if (!empty($_POST)) {
                         $notices[] = 'Post edit failed.';
                     }
 
-                    if ($setTopicTitle) {
-                        if (!forum_topic_update($topicId, $topicTitle)) {
+                    if ($isEditingTopic && ($topicTitleChanged || $topicTypeChanged)) {
+                        if (!forum_topic_update($topicId, $topicTitle, $topicType)) {
                             $notices[] = 'Topic update failed.';
                         }
                     }
@@ -209,4 +235,5 @@ echo tpl_render('forum.posting', [
     'posting_info' => $displayInfo,
     'posting_notices' => $notices,
     'posting_mode' => $mode,
+    'posting_types' => $topicTypes,
 ]);

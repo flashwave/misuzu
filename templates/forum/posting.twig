@@ -4,6 +4,7 @@
 
 {% set title = 'Posting' %}
 {% set is_reply = posting_topic is defined %}
+{% set is_opening = not is_reply or posting_post.is_opening_post|default(false) %}
 
 {% block content %}
     <form method="post" action="/forum/posting.php">
@@ -11,7 +12,7 @@
         {{ input_hidden('post[mode]', posting_mode) }}
         {{ input_csrf('forum_post') }}
         {{ forum_header(
-            is_reply and not posting_post.is_opening_post|default(false)
+            is_reply and not is_opening
                 ? posting_topic.topic_title
                 : input_text(
                     'post[title]',
@@ -22,7 +23,7 @@
                 ),
             posting_breadcrumbs,
             false,
-            is_reply and not posting_post.is_opening_post|default(false)
+            is_reply and not is_opening
                 ? '/forum/topic.php?t=' ~ posting_topic.topic_id
                 : ''
         ) }}
@@ -65,7 +66,10 @@
 
                 <div class="forum__post__options">
                     <div class="forum__post__settings">
-                        {{ input_select('post[parser]', constant('MSZ_PARSERS_NAMES'), posting_post.post_parse|default(constant('MSZ_PARSER_BBCODE')), null, null, null, 'forum__post__parser') }}
+                        {{ input_select('post[parser]', constant('MSZ_PARSERS_NAMES'), posting_post.post_parse|default(constant('MSZ_PARSER_BBCODE')), null, null, null, 'forum__post__dropdown') }}
+                        {% if is_opening and posting_types|length > 1 %}
+                            {{ input_select('post[type]', posting_types, posting_topic.topic_type|default(posting_types|keys|first), null, null, null, 'forum__post__dropdown') }}
+                        {% endif %}
                     </div>
 
                     <div class="forum__post__buttons">
