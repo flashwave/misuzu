@@ -1,17 +1,18 @@
 .chat-quote {
     display: block;
-    background-color: #212121;
-    border: 1px solid #808080;
+    background-color: var(--accent-colour);
+    border: 1px solid var(--accent-colour);
     color: #fff;
-    margin: 1px;
+    margin: 2px;
 
     &__line {
         display: flex;
         flex-wrap: wrap;
         padding: 1px 4px;
+        background-color: fade(#000, 80%);
 
         &:nth-child(odd) {
-            background-color: fade(#000, 60%);
+            background-color: fade(#000, 90%);
         }
     }
 

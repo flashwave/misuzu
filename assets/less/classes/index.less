@@ -43,22 +43,75 @@
     &__online {
         display: flex;
         flex-wrap: wrap;
-        justify-content: center;
         overflow: hidden;
+        margin: 6px;
 
         &__user {
             color: var(--user-colour);
             text-decoration: none;
             font-size: 0;
-            width: 30px;
-            height: 30px;
-            background-image: var(--avatar-url);
+            width: 32px;
+            height: 32px;
             margin: 2px;
             transition: box-shadow .2s;
 
             &:hover {
                 box-shadow: 0 0 2px var(--user-colour);
             }
+        }
+    }
+
+    &__statistics {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    &__statistic {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 45%;
+        padding: 4px 0;
+
+        &__name {
+            font-size: 1.3em;
+            line-height: 2em;
+        }
+
+        &__value {
+            font-size: 1.5em;
+            line-height: 1.5em;
+        }
+    }
+
+    &__latest {
+        display: flex;
+        padding: 8px;
+        color: inherit;
+        text-decoration: none;
+
+        &__avatar {
+            width: 50px;
+            height: 50px;
+        }
+
+        &__content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 8px;
+        }
+
+        &__username {
+            font-size: 1.5em;
+            line-height: 1.4em;
+            color: var(--user-colour);
+        }
+
+        &__joined {
+            font-size: .9em;
+            line-height: 1.2em;
         }
     }
 }

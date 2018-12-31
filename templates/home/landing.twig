@@ -18,20 +18,69 @@
 
             <div class="container index__container">
                 {{ container_title('<i class="fas fa-chart-bar fa-fw"></i> Statistics') }}
-                <div class="container__content">
-                    {% if users_count < 1 %}
-                        This is a fresh installation, <a href="/auth.php?m=register" class="index__stats__emphasis index__stats__link">create an account</a>!
-                    {% else %}
-                        We have <span class="index__stats__emphasis">{{ users_count|number_format }}</span> users and
-                        the last person to join was <a href="/profile.php?u={{ last_user.user_id }}" class="index__stats__emphasis index__stats__link" style="{{ last_user.user_colour|html_colour }}">{{ last_user.username }}</a>,
-                        <time datetime="{{ last_user.user_created|date('c') }}" title="{{ last_user.user_created|date('r') }}">{{ last_user.user_created|time_diff }}</time>!
-                    {% endif %}
+
+                <div class="index__statistics">
+
+                    <div class="index__statistic">
+                        <div class="index__statistic__name">
+                            <i class="fas fa-users fa-fw"></i> Users
+                        </div>
+                        <div class="index__statistic__value">
+                            {{ statistics.users.all|number_format }}
+                        </div>
+                    </div>
+
+                    <div class="index__statistic">
+                        <div class="index__statistic__name">
+                            <i class="fas fa-comment-dots fa-fw"></i> Comments
+                        </div>
+                        <div class="index__statistic__value">
+                            {{ statistics.comments|number_format }}
+                        </div>
+                    </div>
+
+                    <div class="index__statistic">
+                        <div class="index__statistic__name">
+                            <i class="fas fa-user-check fa-fw"></i> Online
+                        </div>
+                        <div class="index__statistic__value">
+                            {{ statistics.users.online|number_format }}
+                        </div>
+                    </div>
+
+                    <div class="index__statistic">
+                        <div class="index__statistic__name">
+                            <i class="fas fa-user-clock fa-fw"></i> Active (24 hr)
+                        </div>
+                        <div class="index__statistic__value">
+                            {{ statistics.users.active|number_format }}
+                        </div>
+                    </div>
+
+                    <div class="index__statistic">
+                        <div class="index__statistic__name">
+                            <i class="fas fa-list fa-fw"></i> Topics
+                        </div>
+                        <div class="index__statistic__value">
+                            {{ statistics.forum_topics|number_format }}
+                        </div>
+                    </div>
+
+                    <div class="index__statistic">
+                        <div class="index__statistic__name">
+                            <i class="fas fa-comments fa-fw"></i> Posts
+                        </div>
+                        <div class="index__statistic__value">
+                            {{ statistics.forum_posts|number_format }}
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
             {% if online_users|length > 0 %}
                 <div class="container index__container">
-                    {{ container_title('<i class="fas fa-users fa-fw"></i> Online users') }}
+                    {{ container_title('<i class="fas fa-users fa-fw"></i> Online Users') }}
 
                     <div class="index__online">
                         {% for user in online_users %}
@@ -40,6 +89,24 @@
                             </a>
                         {% endfor %}
                     </div>
+                </div>
+            {% endif %}
+
+            {% if latest_user.user_id|default(0) > 0 %}
+                <div class="container index__container">
+                    {{ container_title('<i class="fas fa-user-plus fa-fw"></i> Newest User') }}
+
+                    <a class="index__latest" style="{{ latest_user.user_colour|html_colour }}" href="/profile.php?u={{ latest_user.user_id }}">
+                        <div class="avatar index__latest__avatar" style="--avatar-url: url('/profile.php?m=avatar&amp;u={{ latest_user.user_id }}')"></div>
+                        <div class="index__latest__content">
+                            <div class="index__latest__username">
+                                {{ latest_user.username }}
+                            </div>
+                            <div class="index__latest__joined">
+                                Joined <time datetime="{{ latest_user.user_created|date('c') }}" title="{{ latest_user.user_created|date('r') }}">{{ latest_user.user_created|time_diff }}</time>
+                            </div>
+                        </div>
+                    </a>
                 </div>
             {% endif %}
 

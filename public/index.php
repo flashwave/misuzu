@@ -12,24 +12,43 @@ if (config_get_default(false, 'Site', 'embed_linked_data')) {
 
 $news = news_posts_get(0, 5, null, true);
 
-$statistics = cache_get('index:stats:v1', function () {
+$stats = cache_get('index:stats:v2', function () {
     return [
-        'users' => (int)db_query('
-            SELECT COUNT(`user_id`)
-            FROM `msz_users`
-        ')->fetchColumn(),
-        'lastUser' => db_query('
+        'users' => db_query('
             SELECT
-                u.`user_id`, u.`username`, u.`user_created`,
-                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-            FROM `msz_users` as u
-            LEFT JOIN `msz_roles` as r
-            ON r.`role_id` = u.`display_role`
-            ORDER BY u.`user_id` DESC
-            LIMIT 1
+                (
+                    SELECT COUNT(`user_id`)
+                    FROM `msz_users`
+                    WHERE `user_deleted` IS NULL
+                ) as `all`,
+                (
+                    SELECT COUNT(`user_id`)
+                    FROM `msz_users`
+                    WHERE `user_active` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
+                ) as `online`,
+                (
+                    SELECT COUNT(`user_id`)
+                    FROM `msz_users`
+                    WHERE `user_active` >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                ) as `active`
         ')->fetch(PDO::FETCH_ASSOC),
+        'comments' => (int)db_query('
+            SELECT COUNT(`comment_id`)
+            FROM `msz_comments_posts`
+            WHERE `comment_deleted` IS NULL
+        ')->fetchColumn(),
+        'forum_topics' => (int)db_query('
+            SELECT COUNT(`topic_id`)
+            FROM `msz_forum_topics`
+            WHERE `topic_deleted` IS NULL
+        ')->fetchColumn(),
+        'forum_posts' => (int)db_query('
+            SELECT COUNT(`post_id`)
+            FROM `msz_forum_posts`
+            WHERE `post_deleted` IS NULL
+        ')->fetchColumn(),
     ];
-}, 600);
+}, 900);
 
 $changelog = cache_get('index:changelog:v1', function () {
     return db_query('
@@ -46,21 +65,37 @@ $changelog = cache_get('index:changelog:v1', function () {
     ')->fetchAll(PDO::FETCH_ASSOC);
 }, 300);
 
-$onlineUsers = db_query('
-    SELECT
-        u.`user_id`, u.`username`,
-        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-    FROM `msz_users` as u
-    LEFT JOIN `msz_roles` as r
-    ON r.`role_id` = u.`display_role`
-    WHERE u.`user_active` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
-    ORDER BY RAND()
-    LIMIT 104
-')->fetchAll(PDO::FETCH_ASSOC);
+$latestUser = cache_get('index:latest_user:v1', function () {
+    return db_query('
+        SELECT
+            u.`user_id`, u.`username`, u.`user_created`,
+            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+        FROM `msz_users` as u
+        LEFT JOIN `msz_roles` as r
+        ON r.`role_id` = u.`display_role`
+        WHERE `user_deleted` IS NULL
+        ORDER BY u.`user_id` DESC
+        LIMIT 1
+    ')->fetch(PDO::FETCH_ASSOC);
+}, 1800);
+
+$onlineUsers = cache_get('index:online_users:v1', function () {
+    return db_query('
+        SELECT
+            u.`user_id`, u.`username`,
+            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+        FROM `msz_users` as u
+        LEFT JOIN `msz_roles` as r
+        ON r.`role_id` = u.`display_role`
+        WHERE u.`user_active` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
+        ORDER BY RAND()
+        LIMIT 104
+    ')->fetchAll(PDO::FETCH_ASSOC);
+}, 30);
 
 echo tpl_render('home.' . (user_session_active() ? 'home' : 'landing'), [
-    'users_count' => $statistics['users'],
-    'last_user' => $statistics['lastUser'],
+    'statistics' => $stats,
+    'latest_user' => $latestUser,
     'online_users' => $onlineUsers,
     'chat_quote' => chat_quotes_random(),
     'featured_changelog' => $changelog,
