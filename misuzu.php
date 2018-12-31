@@ -306,9 +306,9 @@ MIG;
         $getUserDisplayInfo = db_prepare('
             SELECT
                 u.`user_id`, u.`username`, u.`user_background_settings`,
-                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-            FROM `msz_users` as u
-            LEFT JOIN `msz_roles` as r
+                COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
+            FROM `msz_users` AS u
+            LEFT JOIN `msz_roles` AS r
             ON u.`display_role` = r.`role_id`
             WHERE `user_id` = :user_id
         ');
@@ -316,7 +316,8 @@ MIG;
         $userDisplayInfo = $getUserDisplayInfo->execute() ? $getUserDisplayInfo->fetch(\PDO::FETCH_ASSOC) : [];
 
         if ($userDisplayInfo) {
-            $userDisplayInfo['comments_perms'] = perms_get_user(MSZ_PERMS_COMMENTS, $mszUserId);
+            $userDisplayInfo['general_perms'] = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
+            $userDisplayInfo['comments_perms'] = perms_get_user(MSZ_PERMS_COMMENTS, $userDisplayInfo['user_id']);
             $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_BAN);
             $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_SILENCE);
         }

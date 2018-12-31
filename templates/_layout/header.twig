@@ -44,58 +44,96 @@
 
         {{ input_checkbox_raw('', false, 'header__user-toggle', '', false, {'id':'toggle-mobile-header-user'}) }}
         <div class="header__user">
-            {% if current_user is defined %}
-                <a  href="/profile.php?u={{ current_user.user_id }}"
-                    class="avatar header__user__avatar"
-                    style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');"></a>
-            {% else %}
-                <a  href="/auth.php?m=login"
-                    class="avatar header__user__avatar"
-                    style="background-image:url('/profile.php?u=0&amp;m=avatar');"></a>
-            {% endif %}
+            {% set user_is_tester = current_user.general_perms|default(0)|perms_check(constant('MSZ_PERM_GENERAL_TESTER')) %}
 
-            <div class="header__user__info">
-                {% if current_user is defined %}
-                    <a  href="/profile.php?u={{ current_user.user_id }}" class="header__user__name"
-                        style="{{ current_user.user_colour|html_colour }}" title="{{ current_user.username }}">
-                        {{ current_user.username }}
+            {% if current_user is defined %}
+                <a href="/profile.php?u={{ current_user.user_id }}" class="avatar header__user__avatar"
+                    style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');" title="{{ current_user.username }}"></a>
+
+                {% if user_is_tester %}
+                    <a href="/auth.php?m=logout&amp;s={{ csrf_token('logout') }}" title="Log out" class="header__user__button">
+                        <i class="fas fa-sign-out-alt fa-fw"></i>
                     </a>
-                {% else %}
-                    <a href="/auth.php?m=login" class="header__user__name">
-                        Guest
+
+                    {% if has_manage_access %}
+                        {% if in_manage %}
+                            <a href="{{ site_link|default('/') }}" title="Return to the Site" class="header__user__button">
+                                <i class="fas fa-door-open fa-fw"></i>
+                            </a>
+                        {% else %}
+                            <a href="{{ manage_link|default('/manage/index.php') }}" title="Enter Manage" class="header__user__button">
+                                <i class="fas fa-door-closed fa-fw"></i>
+                            </a>
+                        {% endif %}
+                    {% endif %}
+
+                    <a href="/settings.php" title="Settings" class="header__user__button">
+                        <i class="fas fa-cog fa-fw"></i>
+                    </a>
+
+                    <a href="/profile.php?u={{ current_user.user_id }}" title="Profile" class="header__user__button">
+                        <i class="fas fa-user fa-fw"></i>
                     </a>
                 {% endif %}
+            {% else %}
+                <a href="/auth.php?m=login" class="avatar header__user__avatar"
+                    style="background-image:url('/profile.php?m=avatar');"></a>
 
-                <ul class="header__user__actions">
+                {% if user_is_tester %}
+                    <a href="/auth.php?m=login" title="Log in" class="header__user__button">
+                        <i class="fas fa-sign-in-alt fa-fw"></i>
+                    </a>
+
+                    <a href="/auth.php?m=register" title="Register" class="header__user__button">
+                        <i class="fas fa-user-plus fa-fw"></i>
+                    </a>
+                {% endif %}
+            {% endif %}
+
+            {% if not user_is_tester %}
+                <div class="header__user__info">
                     {% if current_user is defined %}
-                        <li class="header__user__action">
-                            <a class="header__user__link" href="/profile.php?u={{ current_user.user_id }}">Profile</a>
-                        </li>
-                        <li class="header__user__action">
-                            <a class="header__user__link" href="/settings.php">Settings</a>
-                        </li>
-                        {% if has_manage_access %}
+                        <a  href="/profile.php?u={{ current_user.user_id }}" class="header__user__name"
+                            style="{{ current_user.user_colour|html_colour }}" title="{{ current_user.username }}">
+                            {{ current_user.username }}
+                        </a>
+                    {% else %}
+                        <a href="/auth.php?m=login" class="header__user__name">
+                            Guest
+                        </a>
+                    {% endif %}
+
+                    <ul class="header__user__actions">
+                        {% if current_user is defined %}
                             <li class="header__user__action">
-                                {% if in_manage %}
-                                    <a class="header__user__link" href="{{ site_link|default('/') }}">Return</a>
-                                {% else %}
-                                    <a class="header__user__link" href="{{ manage_link|default('/manage/index.php') }}">Manage</a>
-                                {% endif %}
+                                <a class="header__user__link" href="/profile.php?u={{ current_user.user_id }}">Profile</a>
+                            </li>
+                            <li class="header__user__action">
+                                <a class="header__user__link" href="/settings.php">Settings</a>
+                            </li>
+                            {% if has_manage_access %}
+                                <li class="header__user__action">
+                                    {% if in_manage %}
+                                        <a class="header__user__link" href="{{ site_link|default('/') }}">Return</a>
+                                    {% else %}
+                                        <a class="header__user__link" href="{{ manage_link|default('/manage/index.php') }}">Manage</a>
+                                    {% endif %}
+                                </li>
+                            {% endif %}
+                            <li class="header__user__action">
+                                <a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token('logout') }}">Log out</a>
+                            </li>
+                        {% else %}
+                            <li class="header__user__action">
+                                <a class="header__user__link" href="/auth.php?m=login">Log in</a>
+                            </li>
+                            <li class="header__user__action">
+                                <a class="header__user__link" href="/auth.php?m=register">Register</a>
                             </li>
                         {% endif %}
-                        <li class="header__user__action">
-                            <a class="header__user__link" href="/auth.php?m=logout&amp;s={{ csrf_token('logout') }}">Log out</a>
-                        </li>
-                    {% else %}
-                        <li class="header__user__action">
-                            <a class="header__user__link" href="/auth.php?m=login">Log in</a>
-                        </li>
-                        <li class="header__user__action">
-                            <a class="header__user__link" href="/auth.php?m=register">Register</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
+                    </ul>
+                </div>
+            {% endif %}
         </div>
     </div>
 </nav>

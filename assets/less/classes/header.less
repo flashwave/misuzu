@@ -92,6 +92,7 @@
             display: none;
             font-size: 1.6em;
             line-height: 1.5em;
+            margin-top: 4px;
 
             &-toggle:checked ~ .header__menu {
                 display: block;
@@ -185,6 +186,7 @@
         display: flex;
         flex-direction: row-reverse;
         order: 3;
+        align-items: center;
 
         &-toggle {
             display: none;
@@ -193,8 +195,7 @@
         @media (max-width: @site-mobile-width) {
             display: none;
             width: 100%;
-            background: var(--header-accent-colour);
-            font-size: 1.1em;
+            margin-top: 4px;
 
             &-toggle:checked ~ .header__user {
                 display: flex;
@@ -204,6 +205,7 @@
         &__avatar {
             width: 60px;
             height: 60px;
+            margin-left: 5px;
 
             @media (max-width: @site-mobile-width) {
                 display: none;
@@ -212,7 +214,6 @@
 
         &__info {
             padding: 1px;
-            padding-right: 5px;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
@@ -222,6 +223,8 @@
                 padding: 0;
                 display: block;
                 width: 100%;
+                background: var(--header-accent-colour);
+                font-size: 1.1em;
             }
         }
 
@@ -299,6 +302,36 @@
                 &:hover {
                     text-decoration: underline;
                 }
+            }
+        }
+
+        &__button {
+            margin: 2px;
+            color: inherit;
+            text-decoration: none;
+            font-size: 1.5em;
+            line-height: 1.7em;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color .2s;
+            border-radius: 4px;
+
+            &:hover,
+            &:focus {
+                background-color: fade(#fff, 20%);
+            }
+
+            &:active {
+                background-color: fade(#fff, 10%);
+            }
+
+            @media (max-width: @site-mobile-width) {
+                width: 40px;
+                height: 40px;
+                font-size: 2em;
             }
         }
     }
