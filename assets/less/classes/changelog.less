@@ -1,18 +1,9 @@
 .changelog {
     display: flex;
-    margin: 1px;
+    margin: 4px;
 
     @media (max-width: @site-mobile-width) {
         flex-wrap: wrap;
-    }
-
-    &:not(:last-child) {
-        margin-bottom: 1px;
-
-        @media (max-width: @site-mobile-width) {
-            border-bottom: 1px solid var(--accent-colour);
-            padding-bottom: 1px;
-        }
     }
 
     &__pagination {
@@ -83,11 +74,13 @@
     }
 
     &__action {
-        min-width: 80px;
-        padding-right: 4px;
+        border-radius: 2px;
+        min-width: 5px;
 
         &__text {
             text-align: right;
+            min-width: 80px;
+            padding-right: 4px;
         }
 
         @media (max-width: @site-mobile-width) {

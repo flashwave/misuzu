@@ -1,6 +1,7 @@
-{% macro changelog_listing(changes, hide_dates, is_manage, change_url, date_url, tag_url, user_url) %}
+{% macro changelog_listing(changes, hide_dates, is_manage, change_url, date_url, tag_url, user_url, is_small) %}
     {% set hide_dates = hide_dates ? true : false %}
     {% set is_manage = is_manage ? true : false %}
+    {% set is_small = is_small ? true : false %}
     {% set last_date = '' %}
     {% set date_url = date_url|default('/changelog.php?d=%s') %}
 
@@ -17,7 +18,7 @@
                 </a>
             {% endif %}
 
-            {{ changelog_entry(change, is_manage, change_url, tag_url, user_url) }}
+            {{ changelog_entry(change, is_manage, change_url, tag_url, user_url, is_small) }}
         {% endfor %}
     {% else %}
         <div class="changelog__none">
@@ -26,8 +27,9 @@
     {% endif %}
 {% endmacro %}
 
-{% macro changelog_entry(change, is_manage, change_url, tag_url, user_url) %}
+{% macro changelog_entry(change, is_manage, change_url, tag_url, user_url, is_small) %}
     {% set is_manage = is_manage ? true : false %}
+    {% set is_small = is_small ? true : false %}
     {% set change_url = change_url|default('/changelog.php?c=%d') %}
     {% set tag_url = tag_url|default('/changelog.php?t=%d') %}
     {% set user_url = user_url|default('/profile.php?u=%d') %}
@@ -49,10 +51,13 @@
 
             <a class="changelog__action{{ change.action_class is defined and change.action_class is not null ? ' changelog__action--' ~ change.action_class : '' }} changelog__action--{{ change.action_colour|colour_contrast }}"
                 href="{{ change_url|format(change.change_id) }}"
-                {% if change.action_colour is defined %}style="{{ change.action_colour|html_colour('--action-colour') }}"{% endif %}>
-                <div class="changelog__action__text">
-                    {{ change.action_name|default('Unknown') }}
-                </div>
+                {% if change.action_colour is defined %}style="{{ change.action_colour|html_colour('--action-colour') }}"{% endif %}
+                {% if is_small %}title="{{ change.action_name|default('Unknown') }}"{% endif %}>
+                {% if not is_small %}
+                    <div class="changelog__action__text">
+                        {{ change.action_name|default('Unknown') }}
+                    </div>
+                {% endif %}
             </a>
 
             {% if change.user_id is defined %}
