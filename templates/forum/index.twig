@@ -9,7 +9,14 @@
     {% if not forum_empty %}
         {% for category in forum_categories %}
             {% if category.forum_children > 0 %}
-                {{ forum_category_listing(category.forum_subforums, category.forum_name, category.forum_colour) }}
+                {{ forum_category_listing(
+                    category.forum_subforums,
+                    category.forum_name,
+                    category.forum_colour,
+                    category.forum_id == constant('MSZ_FORUM_ROOT')
+                        ? ''
+                        : 'f' ~ category.forum_id
+                ) }}
             {% endif %}
         {% endfor %}
 

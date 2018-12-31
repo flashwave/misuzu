@@ -56,7 +56,7 @@ define('MSZ_FORUM_MAY_HAVE_TOPICS', [
 
 define('MSZ_FORUM_ROOT', 0);
 define('MSZ_FORUM_ROOT_DATA', [ // should be compatible with the data fetched in forum_get_root_categories
-    'forum_id' => 0,
+    'forum_id' => MSZ_FORUM_ROOT,
     'forum_name' => 'Forums',
     'forum_children' => 0,
     'forum_type' => MSZ_FORUM_TYPE_CATEGORY,
@@ -151,6 +151,7 @@ function forum_get_root_categories(int $userId): array
 function forum_get_breadcrumbs(
     int $forumId,
     string $linkFormat = '/forum/forum.php?f=%d',
+    string $rootFormat = '/forum/#f%d',
     array $indexLink = ['Forums' => '/forum/']
 ): array {
     $breadcrumbs = [];
@@ -175,7 +176,10 @@ function forum_get_breadcrumbs(
     }
 
     foreach ($breadcrumbsDb as $breadcrumb) {
-        $breadcrumbs[$breadcrumb['forum_name']] = sprintf($linkFormat, $breadcrumb['forum_id']);
+        $breadcrumbs[$breadcrumb['forum_name']] = sprintf(
+            $breadcrumb['forum_parent'] === MSZ_FORUM_ROOT ? $rootFormat : $linkFormat,
+            $breadcrumb['forum_id']
+        );
     }
 
     return array_reverse($breadcrumbs + $indexLink);

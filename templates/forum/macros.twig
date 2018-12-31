@@ -1,8 +1,10 @@
-{% macro forum_category_listing(forums, title, colour) %}
+{% macro forum_category_listing(forums, title, colour, id) %}
     {% from _self import forum_category_entry %}
     {% from 'macros.twig' import container_title %}
 
-    <div class="container forum__categories"{% if colour is not null %} style="{{ colour|html_colour('--accent-colour') }}"{% endif %}>
+    <div class="container forum__categories"
+        {% if colour is not null %}style="{{ colour|html_colour('--accent-colour') }}"{% endif %}
+        {% if id|length > 0 %}id="{{ id }}"{% endif %}>
         {{ container_title('<i class="fas fa-folder fa-fw"></i> ' ~ title) }}
 
         {% if forums|length > 0 %}
