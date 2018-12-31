@@ -125,9 +125,9 @@ if (!empty($_POST)) {
             $topicTitle = $_POST['post']['title'] ?? '';
             $originalTopicTitle = $topic['topic_title'] ?? null;
             $topicTitleChanged = $topicTitle !== $originalTopicTitle;
-            $topicType = (int)($_POST['post']['type'] ?? array_key_first($topicTypes));
-            $originalTopicType = (int)($topic['topic_type'] ?? 0);
-            $topicTypeChanged = $topicType !== $originalTopicType;
+            $originalTopicType = (int)($topic['topic_type'] ?? MSZ_TOPIC_TYPE_DISCUSSION);
+            $topicType = isset($_POST['post']['type']) ? (int)$_POST['post']['type'] : null;
+            $topicTypeChanged = $topicType !== null && $topicType !== $originalTopicType;
 
             switch (forum_validate_title($topicTitle)) {
                 case 'too-short':
@@ -139,7 +139,9 @@ if (!empty($_POST)) {
                     break;
             }
 
-            if (!array_key_exists($topicType, $topicTypes) && $topicTypeChanged) {
+            if ($mode === 'create' && $topicType === null) {
+                $topicType = array_key_first($topicTypes);
+            } elseif (!array_key_exists($topicType, $topicTypes) && $topicTypeChanged) {
                 $notices[] = 'You are not allowed to set this topic type.';
             }
         }
