@@ -88,7 +88,7 @@ $onlineUsers = cache_get('index:online_users:v1', function () {
         LEFT JOIN `msz_roles` as r
         ON r.`role_id` = u.`display_role`
         WHERE u.`user_active` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
-        ORDER BY RAND()
+        ORDER BY u.`user_active` DESC
         LIMIT 104
     ')->fetchAll(PDO::FETCH_ASSOC);
 }, 30);
