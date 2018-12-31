@@ -202,7 +202,8 @@ if (!empty($_POST)) {
             }
 
             if (empty($notices)) {
-                header("Location: /forum/topic.php?p={$postId}#p{$postId}");
+                $redirect = '/forum/topic.php' . (empty($topic) ? "?t={$topicId}" : "?p={$postId}#p{$postId}");
+                header("Location: {$redirect}");
                 return;
             }
         }
