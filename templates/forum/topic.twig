@@ -22,6 +22,6 @@
     {{ forum_header(topic_info.topic_title, topic_breadcrumbs) }}
     {{ forum_topic_locked(topic_info.topic_locked, topic_info.topic_archived) }}
     {{ topic_tools }}
-    {{ forum_post_listing(topic_posts, current_user.user_id, topic_perms) }}
+    {{ forum_post_listing(topic_posts, current_user.user_id|default(0), topic_perms) }}
     {{ topic_tools }}
 {% endblock %}
