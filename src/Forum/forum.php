@@ -156,12 +156,12 @@ function forum_get_breadcrumbs(
 ): array {
     $breadcrumbs = [];
     $getBreadcrumbs = db_prepare('
-        WITH RECURSIVE breadcrumbs(forum_id, forum_name, forum_parent) as (
-            SELECT c.`forum_id`, c.`forum_name`, c.`forum_parent`
+        WITH RECURSIVE breadcrumbs(forum_id, forum_name, forum_parent, forum_type) as (
+            SELECT c.`forum_id`, c.`forum_name`, c.`forum_parent`, c.`forum_type`
             FROM `msz_forum_categories` as c
             WHERE `forum_id` = :forum_id
             UNION ALL
-            SELECT p.`forum_id`, p.`forum_name`, p.`forum_parent`
+            SELECT p.`forum_id`, p.`forum_name`, p.`forum_parent`, p.`forum_type`
             FROM `msz_forum_categories` as p
             INNER JOIN breadcrumbs
             ON p.`forum_id` = breadcrumbs.forum_parent
@@ -177,7 +177,10 @@ function forum_get_breadcrumbs(
 
     foreach ($breadcrumbsDb as $breadcrumb) {
         $breadcrumbs[$breadcrumb['forum_name']] = sprintf(
-            $breadcrumb['forum_parent'] === MSZ_FORUM_ROOT ? $rootFormat : $linkFormat,
+            $breadcrumb['forum_parent'] === MSZ_FORUM_ROOT
+            && $breadcrumb['forum_type'] === MSZ_FORUM_TYPE_CATEGORY
+                ? $rootFormat
+                : $linkFormat,
             $breadcrumb['forum_id']
         );
     }
