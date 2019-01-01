@@ -39,7 +39,7 @@ function forum_post_update(
         SET `post_ip` = INET6_ATON(:post_ip),
             `post_text` = :post_text,
             `post_parse` = :post_parse,
-            `post_edited` = IF(:bump, NOW(), NULL)
+            `post_edited` = IF(:bump, NOW(), `post_edited`)
         WHERE `post_id` = :post_id
     ');
     $updatePost->bindValue('post_id', $postId);
