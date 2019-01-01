@@ -243,6 +243,6 @@ echo tpl_render('forum.posting', [
         'title' => $topicTitle ?? null,
         'type' => $topicType ?? null,
         'text' => $postText ?? null,
-        'parser' => $postParser ?? MSZ_PARSER_BBCODE,
+        'parser' => $postParser ?? null,
     ],
 ]);
