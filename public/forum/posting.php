@@ -239,4 +239,10 @@ echo tpl_render('forum.posting', [
     'posting_notices' => $notices,
     'posting_mode' => $mode,
     'posting_types' => $topicTypes,
+    'posting_defaults' => [
+        'title' => $topicTitle ?? null,
+        'type' => $topicType ?? null,
+        'text' => $postText ?? null,
+        'parser' => $postParser ?? MSZ_PARSER_BBCODE,
+    ],
 ]);

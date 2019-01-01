@@ -17,7 +17,7 @@
                 : input_text(
                     'post[title]',
                     'forum__header__input',
-                    posting_topic.topic_title|default(''),
+                    posting_defaults.title|default(posting_topic.topic_title|default('')),
                     'text',
                     'Enter your title here...'
                 ),
@@ -62,13 +62,23 @@
             </div>
 
             <div class="forum__post__content">
-                <textarea name="post[text]" class="forum__post__text forum__post__text--edit" placeholder="Type your post content here...">{{ posting_post.post_text|default('') }}</textarea>
+                <textarea name="post[text]" class="forum__post__text forum__post__text--edit" placeholder="Type your post content here...">{{ posting_defaults.text|default(posting_post.post_text|default('')) }}</textarea>
 
                 <div class="forum__post__options">
                     <div class="forum__post__settings">
-                        {{ input_select('post[parser]', constant('MSZ_PARSERS_NAMES'), posting_post.post_parse|default(constant('MSZ_PARSER_BBCODE')), null, null, null, 'forum__post__dropdown') }}
+                        {{ input_select(
+                            'post[parser]',
+                            constant('MSZ_PARSERS_NAMES'),
+                            posting_defaults.parser|default(posting_post.post_parse|default(constant('MSZ_PARSER_BBCODE'))),
+                            null, null, null, 'forum__post__dropdown'
+                        ) }}
                         {% if is_opening and posting_types|length > 1 %}
-                            {{ input_select('post[type]', posting_types, posting_topic.topic_type|default(posting_types|keys|first), null, null, null, 'forum__post__dropdown') }}
+                            {{ input_select(
+                                'post[type]',
+                                posting_types,
+                                posting_defaults.type|default(posting_topic.topic_type|default(posting_types|keys|first)),
+                                null, null, null, 'forum__post__dropdown'
+                            ) }}
                         {% endif %}
                     </div>
 
