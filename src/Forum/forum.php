@@ -82,7 +82,7 @@ function forum_fetch(int $forumId): array
 {
     $getForum = db_prepare('
         SELECT
-            `forum_id`, `forum_name`, `forum_type`, `forum_link`,
+            `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_archived`,
             `forum_link_clicks`, `forum_parent`, `forum_colour`,
             (
                 SELECT COUNT(`topic_id`)

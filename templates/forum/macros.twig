@@ -56,7 +56,8 @@
 {% macro forum_category_tools(info, perms, take, offset) %}
     {% from 'macros.twig' import pagination %}
 
-    {% set can_topic = perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
+    {% set is_locked = info.forum_archived is not null %}
+    {% set can_topic = not is_locked and perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
     {% set pag = pagination(
         info.forum_topic_count,
         take,
