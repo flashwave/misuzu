@@ -12,6 +12,6 @@ final class ImageTag extends BBCodeSimpleTag
 
     public function getReplacement(): string
     {
-        return '<a href="$1" target="_blank" rel="noreferrer noopener"><img src="$1" alt="$1" style="max-width:100%;max-height:100%;"></a>';
+        return '<img src="$1" alt="$1" style="max-width:100%;max-height:100%;">';
     }
 }
