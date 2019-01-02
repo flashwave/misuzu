@@ -1,5 +1,4 @@
 .forum__status {
-    border: 1px solid var(--accent-colour);
     display: flex;
     align-items: center;
     min-height: 40px;
@@ -8,13 +7,25 @@
     &__icon {
         height: 40px;
         width: 40px;
-        background-image: linear-gradient(90deg, var(--accent-colour), transparent);
         flex: 0 0 auto;
         display: flex;
         justify-content: center;
         align-items: center;
         font-size: 2em;
         padding-bottom: 1px;
+
+        &__background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            mask-image: linear-gradient(270deg, transparent 10%, var(--background-colour) 100%);
+            -webkit-mask-image: linear-gradient(270deg, transparent 10%, var(--background-colour) 100%);
+            background: var(--background-pattern);
+            background-color: var(--accent-colour);
+            background-blend-mode: multiply;
+        }
     }
 
     &__text {

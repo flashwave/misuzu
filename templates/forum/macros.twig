@@ -215,6 +215,7 @@
     {% if locked is not null or archived %}
         <div class="container forum__status">
             <div class="forum__status__icon">
+                <div class="forum__status__icon__background"></div>
                 <i class="fas fa-{{ archived ? 'archive' : 'lock' }}"></i>
             </div>
             <div class="forum__status__text">
