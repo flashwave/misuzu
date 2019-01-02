@@ -8,7 +8,7 @@
 }) %}
 
 {% block content %}
-    {{ forum_header(forum_info.forum_name, forum_breadcrumbs, true) }}
+    {{ forum_header(forum_info.forum_name, forum_breadcrumbs, true, canonical_url) }}
 
     {% if forum_may_have_children and forum_info.forum_subforums|length > 0 %}
         {{ forum_category_listing(forum_info.forum_subforums, 'Forums') }}
@@ -20,4 +20,6 @@
         {{ forum_topic_listing(forum_topics) }}
         {{ category_tools }}
     {% endif %}
+
+    {{ forum_header('', forum_breadcrumbs) }}
 {% endblock %}
