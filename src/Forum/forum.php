@@ -93,8 +93,7 @@ function forum_fetch(int $forumId): array
         WHERE `forum_id` = :forum_id
     ');
     $getForum->bindValue('forum_id', $forumId);
-    $getForum->execute();
-    $forums = $getForum->fetch();
+    $forums = $getForum->execute() ? $getForum->fetch(PDO::FETCH_ASSOC) : false;
 
     return $forums ? $forums : [];
 }
@@ -141,9 +140,7 @@ function forum_get_root_categories(int $userId): array
     ));
     $getRootForumCount->bindValue('perm_user_id_user', $userId);
     $getRootForumCount->bindValue('perm_user_id_role', $userId);
-    $getRootForumCount->execute();
-
-    $categories[0]['forum_children'] = (int)$getRootForumCount->fetchColumn();
+    $categories[0]['forum_children'] = (int)($getRootForumCount->execute() ? $getRootForumCount->fetchColumn() : 0);
 
     return $categories;
 }
@@ -367,5 +364,5 @@ function forum_get_children(int $parentId, int $userId, bool $small = false): ar
     $getListing->bindValue('user_for_check', $userId);
     $getListing->bindValue('parent_id', $parentId);
 
-    return $getListing->execute() ? $getListing->fetchAll() : [];
+    return $getListing->execute() ? $getListing->fetchAll(PDO::FETCH_ASSOC) : [];
 }
