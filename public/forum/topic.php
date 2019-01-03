@@ -33,7 +33,7 @@ if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
 
 $topicPagination = pagination_create($topic['topic_post_count'], 10);
 
-if (!empty($postInfo['preceeding_post_count'])) {
+if (isset($postInfo['preceeding_post_count'])) {
     $postsPage = floor($postInfo['preceeding_post_count'] / $topicPagination['range']) + 1;
 }
 
