@@ -26,6 +26,7 @@ class BBCodeParser implements ParserInterface
                 new Tags\QuoteTag,
 
                 // Slightly more advanced markup
+                new Tags\AudioTag,
                 new Tags\VideoTag,
 
                 // Basic markup
