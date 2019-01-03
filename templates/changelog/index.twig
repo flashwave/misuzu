@@ -12,7 +12,7 @@
         set canonical_url = url_construct('/changelog.php', {
             'd': changelog_date,
             'u': changelog_user|default(0),
-            'p': changelog_pagination.page > 1 ? changelog_pagination.page : 0,
+            'p': changelog_pagination.page|default(0) > 1 ? changelog_pagination.page : 0,
         })
     %}
 

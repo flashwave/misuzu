@@ -70,8 +70,8 @@ if (!empty($changelogDate)) {
 
 $changesCount = !empty($changelogDate) ? -1 : changelog_count_changes($changelogDate, $changelogUser);
 $changesPagination = pagination_create($changesCount, 30);
-$changesOffset = pagination_offset($changesPagination, pagination_param());
-$changes = pagination_is_valid_offset($changesOffset)
+$changesOffset = $changesCount === -1 ? 0 : pagination_offset($changesPagination, pagination_param());
+$changes = $changesCount === -1 || pagination_is_valid_offset($changesOffset)
     ? changelog_get_changes($changelogDate, $changelogUser, $changesOffset, $changesPagination['range'])
     : [];
 
