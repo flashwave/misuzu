@@ -347,9 +347,9 @@ function is_user_int($value): bool
     return ctype_digit(strval($value));
 }
 
-function proxy_media_url(string $url): string
+function proxy_media_url(?string $url): ?string
 {
-    if (!config_get_default(false, 'Proxy', 'enabled') || is_local_url($url)) {
+    if (empty($url) || !config_get_default(false, 'Proxy', 'enabled') || is_local_url($url)) {
         return $url;
     }
 
