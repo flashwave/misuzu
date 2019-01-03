@@ -5,6 +5,7 @@ $acceptedProtocols = ['http', 'https'];
 $acceptedMimeTypes = [
     'image/png', 'image/jpeg', 'image/bmp', 'image/gif', 'image/svg', 'image/svg+xml', 'image/tiff', 'image/webp',
     'video/mp4', 'video/webm', 'video/x-msvideo', 'video/mpeg', 'video/ogg',
+    'audio/aac', 'audio/ogg', 'audio/mp3', 'audio/mpeg', 'audio/wav',  'audio/webm',
 ];
 
 header('Cache-Control: max-age=600');
