@@ -354,7 +354,7 @@ function proxy_media_url(?string $url): ?string
     }
 
     $secret = config_get_default('insecure', 'Proxy', 'secret_key');
-    $hash = hash_hmac('sha256', $url, $secret);
+    $hash = hash_hmac('sha256', rawurldecode($url), $secret);
     $encodedUrl = rawurlencode($url);
 
     return "/proxy.php?h={$hash}&u={$encodedUrl}";

@@ -27,13 +27,13 @@ switch ($mode) {
             if (is_file($croppedAvatar)) {
                 $avatarFilename = $croppedAvatar;
             } else {
-                $original_avatar = build_path(MSZ_STORAGE, 'avatars/original', $userAvatar);
+                $originalAvatar = build_path(MSZ_STORAGE, 'avatars/original', $userAvatar);
 
-                if (is_file($original_avatar)) {
+                if (is_file($originalAvatar)) {
                     try {
                         file_put_contents(
                             $croppedAvatar,
-                            crop_image_centred_path($original_avatar, 200, 200)->getImagesBlob(),
+                            crop_image_centred_path($originalAvatar, 200, 200)->getImagesBlob(),
                             LOCK_EX
                         );
 
@@ -44,7 +44,16 @@ switch ($mode) {
             }
         }
 
+        $fileTime = filemtime($avatarFilename);
+        $entityTag = "\"avatar-{$userId}-{$fileTime}\"";
+
+        if (!empty($_SERVER['HTTP_IF_NONE_MATCH']) && strtolower($_SERVER['HTTP_IF_NONE_MATCH']) === $entityTag) {
+            http_response_code(304);
+            break;
+        }
+
         header('Content-Type: ' . mime_content_type($avatarFilename));
+        header("ETag: {$entityTag}");
         echo file_get_contents($avatarFilename);
         break;
 
@@ -56,18 +65,27 @@ switch ($mode) {
             break;
         }
 
-        $user_background = build_path(
+        $userBackground = build_path(
             create_directory(build_path(MSZ_STORAGE, 'backgrounds/original')),
             "{$userId}.msz"
         );
 
-        if (!is_file($user_background)) {
+        if (!is_file($userBackground)) {
             echo render_error(404);
             break;
         }
 
-        header('Content-Type: ' . mime_content_type($user_background));
-        echo file_get_contents($user_background);
+        $fileTime = filemtime($userBackground);
+        $entityTag = "\"background-{$userId}-{$fileTime}\"";
+
+        if (!empty($_SERVER['HTTP_IF_NONE_MATCH']) && strtolower($_SERVER['HTTP_IF_NONE_MATCH']) === $entityTag) {
+            http_response_code(304);
+            break;
+        }
+
+        header('Content-Type: ' . mime_content_type($userBackground));
+        header("ETag: {$entityTag}");
+        echo file_get_contents($userBackground);
         break;
 
     default:

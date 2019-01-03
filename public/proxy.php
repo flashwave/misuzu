@@ -56,6 +56,13 @@ curl_setopt_array($curl, [
 $curlBody = curl_exec($curl);
 curl_close($curl);
 
+$entityTag = '"' . hash('sha256', $curlBody) . '"';
+
+if (!empty($_SERVER['HTTP_IF_NONE_MATCH']) && strtolower($_SERVER['HTTP_IF_NONE_MATCH']) === $entityTag) {
+    http_response_code(304);
+    return;
+}
+
 $finfo = finfo_open(FILEINFO_MIME_TYPE);
 $fileMime = finfo_buffer($finfo, $curlBody);
 finfo_close($finfo);
@@ -71,5 +78,6 @@ $fileName = basename($parsedUrl['path'] ?? "proxied-image-{$expectedHash}");
 header("Content-Type: {$fileMime}");
 header("Content-Length: {$fileSize}");
 header("Content-Disposition: inline; filename=\"{$fileName}\"");
+header("ETag: {$entityTag}");
 
 echo $curlBody;
