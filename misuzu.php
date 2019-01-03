@@ -293,7 +293,9 @@ MIG;
 
     if (!$misuzuBypassLockdown && boolval(config_get_default(false, 'Auth', 'lockdown'))) {
         http_response_code(503);
-        echo tpl_render('auth.lockdown');
+        echo tpl_render('auth.lockdown', [
+            'message' => config_get_default(null, 'Auth', 'lockdown_msg'),
+        ]);
         exit;
     }
 

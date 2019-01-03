@@ -6,7 +6,7 @@
         {{ container_title('<i class="fas fa-lock fa-fw"></i> Unavailable') }}
 
         <div class="container__content">
-            The site is currently unavailable, try again later.
+            {{ message|default('The site is currently unavailable, try again later.') }}
         </div>
     </div>
 {% endblock %}
