@@ -69,27 +69,32 @@ function forum_topic_update(int $topicId, ?string $title, ?int $type = null): bo
     return $updateTopic->execute();
 }
 
-function forum_topic_fetch(int $topicId): array
+function forum_topic_fetch(int $topicId, bool $showDeleted = false): array
 {
-    $getTopic = db_prepare('
-        SELECT
-            t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`, t.`topic_created`,
-            f.`forum_archived` as `topic_archived`, t.`topic_deleted`, t.`topic_bumped`,
-            (
-                SELECT MIN(`post_id`)
-                FROM `msz_forum_posts`
-                WHERE `topic_id` = t.`topic_id`
-            ) as `topic_first_post_id`,
-            (
-                SELECT COUNT(`post_id`)
-                FROM `msz_forum_posts`
-                WHERE `topic_id` = t.`topic_id`
-            ) as `topic_post_count`
-        FROM `msz_forum_topics` as t
-        LEFT JOIN `msz_forum_categories` as f
-        ON f.`forum_id` = t.`forum_id`
-        WHERE t.`topic_id` = :topic_id
-    ');
+    $getTopic = db_prepare(sprintf(
+        '
+            SELECT
+                t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`, t.`topic_created`,
+                f.`forum_archived` as `topic_archived`, t.`topic_deleted`, t.`topic_bumped`,
+                (
+                    SELECT MIN(`post_id`)
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = t.`topic_id`
+                    %1$s
+                ) as `topic_first_post_id`,
+                (
+                    SELECT COUNT(`post_id`)
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = t.`topic_id`
+                    %1$s
+                ) as `topic_post_count`
+            FROM `msz_forum_topics` as t
+            LEFT JOIN `msz_forum_categories` as f
+            ON f.`forum_id` = t.`forum_id`
+            WHERE t.`topic_id` = :topic_id
+        ',
+        $showDeleted ? '' : 'AND `post_deleted` IS NULL'
+    ));
     $getTopic->bindValue('topic_id', $topicId);
     $topic = $getTopic->execute() ? $getTopic->fetch(PDO::FETCH_ASSOC) : false;
     return $topic ? $topic : [];
@@ -101,6 +106,7 @@ function forum_topic_bump(int $topicId): bool
         UPDATE `msz_forum_topics`
         SET `topic_bumped` = NOW()
         WHERE `topic_id` = :topic_id
+        AND `topic_deleted` IS NULL
     ');
     $bumpTopic->bindValue('topic_id', $topicId);
     return $bumpTopic->execute();
@@ -144,6 +150,7 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
                     SELECT COUNT(`post_id`)
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = t.`topic_id`
+                    %5$s
                 ) as `topic_post_count`,
                 (
                     SELECT COUNT(`user_id`)
@@ -162,7 +169,7 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
                         ON ti.`topic_id` = tt.`topic_id`
                         WHERE ti.`topic_id` = t.`topic_id`
                         AND tt.`user_id` = `target_user_id`
-                        AND  `track_last_read` >= `topic_bumped`
+                        AND `track_last_read` >= `topic_bumped`
                     )
                 ) as `topic_unread`
             FROM `msz_forum_topics` as t
@@ -175,6 +182,7 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
                 SELECT `post_id`
                 FROM `msz_forum_posts`
                 WHERE `topic_id` = t.`topic_id`
+                %5$s
                 ORDER BY `post_id` DESC
                 LIMIT 1
             )
@@ -193,7 +201,8 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
         $showDeleted ? '' : 'AND t.`topic_deleted` IS NULL',
         $hasPagination ? 'LIMIT :offset, :take' : '',
         MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT,
-        implode(',', array_reverse(MSZ_TOPIC_TYPE_ORDER))
+        implode(',', array_reverse(MSZ_TOPIC_TYPE_ORDER)),
+        $showDeleted ? '' : 'AND `post_deleted` IS NULL'
     ));
     $getTopics->bindValue('forum_id', $forumId);
     $getTopics->bindValue('user_id', $userId);

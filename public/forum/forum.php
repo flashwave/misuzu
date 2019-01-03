@@ -49,7 +49,7 @@ $topics = $forumMayHaveTopics
         user_session_current('user_id', 0),
         $topicsOffset,
         $forumPagination['range'],
-        perms_check($perms, MSZ_FORUM_PERM_DELETE_TOPIC)
+        perms_check($perms, MSZ_FORUM_PERM_DELETE_TOPIC | MSZ_FORUM_PERM_DELETE_ANY_POST)
     )
     : [];
 

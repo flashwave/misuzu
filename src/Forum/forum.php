@@ -61,6 +61,7 @@ define('MSZ_FORUM_ROOT_DATA', [ // should be compatible with the data fetched in
     'forum_children' => 0,
     'forum_type' => MSZ_FORUM_TYPE_CATEGORY,
     'forum_colour' => null,
+    'forum_permissions' => MSZ_FORUM_PERM_SET_READ,
 ]);
 
 function forum_is_valid_type(int $type): bool
@@ -78,20 +79,24 @@ function forum_may_have_topics(int $forumType): bool
     return in_array($forumType, MSZ_FORUM_MAY_HAVE_TOPICS);
 }
 
-function forum_fetch(int $forumId): array
+function forum_fetch(int $forumId, bool $showDeleted = false): array
 {
-    $getForum = db_prepare('
-        SELECT
-            `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_archived`,
-            `forum_link_clicks`, `forum_parent`, `forum_colour`,
-            (
-                SELECT COUNT(`topic_id`)
-                FROM `msz_forum_topics`
-                WHERE `forum_id` = f.`forum_id`
-            ) as `forum_topic_count`
-        FROM `msz_forum_categories` as f
-        WHERE `forum_id` = :forum_id
-    ');
+    $getForum = db_prepare(sprintf(
+        '
+            SELECT
+                `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_archived`,
+                `forum_link_clicks`, `forum_parent`, `forum_colour`,
+                (
+                    SELECT COUNT(`topic_id`)
+                    FROM `msz_forum_topics`
+                    WHERE `forum_id` = f.`forum_id`
+                    %1$s
+                ) as `forum_topic_count`
+            FROM `msz_forum_categories` as f
+            WHERE `forum_id` = :forum_id
+        ',
+        $showDeleted ? '' : 'AND `topic_deleted` IS NULL'
+    ));
     $getForum->bindValue('forum_id', $forumId);
     $forums = $getForum->execute() ? $getForum->fetch(PDO::FETCH_ASSOC) : false;
 
@@ -101,21 +106,23 @@ function forum_fetch(int $forumId): array
 function forum_get_root_categories(int $userId): array
 {
     $getCategories = db_prepare(sprintf(
-        "
+        '
             SELECT
                 f.`forum_id`, f.`forum_name`, f.`forum_type`, f.`forum_colour`,
                 (
                     SELECT COUNT(`forum_id`)
-                    FROM `msz_forum_categories` as sf
+                    FROM `msz_forum_categories` AS sf
                     WHERE sf.`forum_parent` = f.`forum_id`
-                ) as `forum_children`
-            FROM `msz_forum_categories` as f
+                ) AS `forum_children`,
+                (%2$s) AS `forum_permissions`
+            FROM `msz_forum_categories` AS f
             WHERE f.`forum_parent` = 0
-            AND f.`forum_type` = %d
+            AND f.`forum_type` = %1$d
             AND f.`forum_hidden` = 0
-            AND (%s & %d) > 0
+            GROUP BY f.`forum_id`
+            HAVING (`forum_permissions` & %3$d) > 0
             ORDER BY f.`forum_order`
-        ",
+        ',
         MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql('forum', 'f.`forum_id`'),
         MSZ_FORUM_PERM_SET_READ
@@ -264,11 +271,12 @@ define(
     'MSZ_FORUM_GET_CHILDREN_QUERY_SMALL',
     '
         SELECT
-            :user_id as `target_user_id`,
+            :user_id AS `target_user_id`,
             f.`forum_id`, f.`forum_name`,
-            (%1$s) as `forum_unread`
-        FROM `msz_forum_categories` as f
-        LEFT JOIN `msz_forum_topics` as t
+            (%1$s) AS `forum_unread`,
+            (%4$s) AS `forum_permissions`
+        FROM `msz_forum_categories` AS f
+        LEFT JOIN `msz_forum_topics` AS t
         ON t.`topic_id` = (
             SELECT `topic_id`
             FROM `msz_forum_topics`
@@ -279,7 +287,8 @@ define(
         )
         WHERE `forum_parent` = :parent_id
         AND `forum_hidden` = false
-        AND (%4$s & %5$d) > 0
+        GROUP BY f.`forum_id`
+        HAVING (`forum_permissions` & %5$d) > 0
         ORDER BY f.`forum_order`
     '
 );
@@ -288,60 +297,65 @@ define(
     'MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD',
     '
         SELECT
-            :user_id as `target_user_id`,
+            :user_id AS `target_user_id`,
             f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`,
             f.`forum_link`, f.`forum_link_clicks`, f.`forum_archived`, f.`forum_colour`,
-            t.`topic_id` as `recent_topic_id`, p.`post_id` as `recent_post_id`,
-            t.`topic_title` as `recent_topic_title`, t.`topic_bumped` as `recent_topic_bumped`,
-            p.`post_created` as `recent_post_created`,
-            u.`user_id` as `recent_post_user_id`,
-            u.`username` as `recent_post_username`,
-            COALESCE(u.`user_colour`, r.`role_colour`) as `recent_post_user_colour`,
+            t.`topic_id` AS `recent_topic_id`, p.`post_id` AS `recent_post_id`,
+            t.`topic_title` AS `recent_topic_title`, t.`topic_bumped` AS `recent_topic_bumped`,
+            p.`post_created` AS `recent_post_created`,
+            u.`user_id` AS `recent_post_user_id`,
+            u.`username` AS `recent_post_username`,
+            COALESCE(u.`user_colour`, r.`role_colour`) AS `recent_post_user_colour`,
             (
                 SELECT COUNT(`topic_id`)
                 FROM `msz_forum_topics`
                 WHERE `forum_id` = f.`forum_id`
-            ) as `forum_topic_count`,
+                %6$s
+            ) AS `forum_topic_count`,
             (
                 SELECT COUNT(`post_id`)
                 FROM `msz_forum_posts`
                 WHERE `forum_id` = f.`forum_id`
-            ) as `forum_post_count`,
-            (%1$s) as `forum_unread`
-        FROM `msz_forum_categories` as f
-        LEFT JOIN `msz_forum_topics` as t
+                %7$s
+            ) AS `forum_post_count`,
+            (%1$s) AS `forum_unread`,
+            (%4$s) AS `forum_permissions`
+        FROM `msz_forum_categories` AS f
+        LEFT JOIN `msz_forum_topics` AS t
         ON t.`topic_id` = (
             SELECT `topic_id`
             FROM `msz_forum_topics`
             WHERE `forum_id` = f.`forum_id`
-            AND `topic_deleted` IS NULL
+            %6$s
             ORDER BY `topic_bumped` DESC
             LIMIT 1
         )
-        LEFT JOIN `msz_forum_posts` as p
+        LEFT JOIN `msz_forum_posts` AS p
         ON p.`post_id` = (
             SELECT `post_id`
             FROM `msz_forum_posts`
             WHERE `topic_id` = t.`topic_id`
+            %7$s
             ORDER BY `post_id` DESC
             LIMIT 1
         )
-        LEFT JOIN `msz_users` as u
+        LEFT JOIN `msz_users` AS u
         ON u.`user_id` = p.`user_id`
-        LEFT JOIN `msz_roles` as r
+        LEFT JOIN `msz_roles` AS r
         ON r.`role_id` = u.`display_role`
         WHERE f.`forum_parent` = :parent_id
         AND f.`forum_hidden` = 0
-        AND (%4$s & %5$d) > 0
         AND (
             (f.`forum_parent` = %2$d AND f.`forum_type` != %3$d)
             OR f.`forum_parent` != %2$d
         )
+        GROUP BY f.`forum_id`
+        HAVING (`forum_permissions` & %5$d) > 0
         ORDER BY f.`forum_order`
     '
 );
 
-function forum_get_children_query(bool $small = false): string
+function forum_get_children_query(bool $showDeleted = false, bool $small = false): string
 {
     return sprintf(
         $small
@@ -351,13 +365,15 @@ function forum_get_children_query(bool $small = false): string
         MSZ_FORUM_ROOT,
         MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql('forum', 'f.`forum_id`'),
-        MSZ_FORUM_PERM_SET_READ
+        MSZ_FORUM_PERM_SET_READ,
+        $showDeleted ? '' : 'AND `topic_deleted` IS NULL',
+        $showDeleted ? '' : 'AND `post_deleted` IS NULL'
     );
 }
 
-function forum_get_children(int $parentId, int $userId, bool $small = false): array
+function forum_get_children(int $parentId, int $userId, bool $showDeleted = false, bool $small = false): array
 {
-    $getListing = db_prepare(forum_get_children_query($small));
+    $getListing = db_prepare(forum_get_children_query($showDeleted, $small));
     $getListing->bindValue('user_id', $userId);
     $getListing->bindValue('perm_user_id_user', $userId);
     $getListing->bindValue('perm_user_id_role', $userId);
