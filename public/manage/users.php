@@ -585,7 +585,7 @@ switch ($_GET['v'] ?? null) {
         }
 
         $warningsPagination = pagination_create(user_warning_global_count($warningsUser), 50);
-        $warningsOffset = pagination_offset($warningsPagination, pagination_param());
+        $warningsOffset = $warningsPagination['count'] > 0 ? pagination_offset($warningsPagination, pagination_param()) : 0;
 
         if (!pagination_is_valid_offset($warningsOffset)) {
             echo render_error(404);
