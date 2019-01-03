@@ -18,7 +18,8 @@ final class VideoTag extends BBCodeTag
                         . '?rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
                 }
 
-                return "<video controls src='{$matches[1]}'></video>";
+                $mediaUrl = proxy_media_url($matches[1]);
+                return "<video controls src='{$mediaUrl}'></video>";
             },
             $text
         );

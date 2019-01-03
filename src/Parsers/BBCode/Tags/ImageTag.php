@@ -1,17 +1,15 @@
 <?php
 namespace Misuzu\Parsers\BBCode\Tags;
 
-use Misuzu\Parsers\BBCode\BBCodeSimpleTag;
+use Misuzu\Parsers\BBCode\BBCodeTag;
 
-final class ImageTag extends BBCodeSimpleTag
+final class ImageTag extends BBCodeTag
 {
-    public function getPattern(): string
+    public function parseText(string $text): string
     {
-        return "/\[img\]((?:https?:\/\/).*)\[\/img\]/";
-    }
-
-    public function getReplacement(): string
-    {
-        return '<img src="$1" alt="$1" style="max-width:100%;max-height:100%;">';
+        return preg_replace_callback("/\[img\]((?:https?:\/\/).*)\[\/img\]/", function ($matches) {
+            $mediaUrl = proxy_media_url($matches[1]);
+            return sprintf('<img src="%s" alt="%s" style="max-width:100%%;max-height:100%%;">', $mediaUrl, $matches[1]);
+        }, $text);
     }
 }
