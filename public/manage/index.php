@@ -15,16 +15,19 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $logTake = 50;
-        $logOffset = (int)($_GET['o'] ?? 0);
-        $logCount = audit_log_count();
-        $logs = audit_log_list($logOffset, $logTake);
+        $logsPagination = pagination_create(audit_log_count(), 50);
+        $logsOffset = pagination_offset($logsPagination, pagination_param());
+
+        if (!pagination_is_valid_offset($logsOffset)) {
+            echo render_error(404);
+            break;
+        }
+
+        $logs = audit_log_list($logsOffset, $logsPagination['range']);
 
         echo tpl_render('manage.general.logs', [
             'global_logs' => $logs,
-            'global_logs_take' => $logTake,
-            'global_logs_offset' => $logOffset,
-            'global_logs_count' => $logCount,
+            'global_logs_pagination' => $logsPagination,
             'global_logs_strings' => MSZ_AUDIT_LOG_STRINGS,
         ]);
         break;
@@ -65,13 +68,19 @@ switch ($_GET['v'] ?? null) {
             tpl_var('quote_set', chat_quotes_set($setId));
         }
 
-        $quoteCount = chat_quotes_count(true);
-        $quotes = chat_quotes_parents($_GET['o'] ?? 0);
+        $quotesPagination = pagination_create(chat_quotes_count(true), 15);
+        $quotesOffset = pagination_offset($quotesPagination, pagination_param());
+
+        if (!pagination_is_valid_offset($quotesOffset)) {
+            echo render_error(404);
+            break;
+        }
+
+        $quotes = chat_quotes_parents($quotesPagination['offset']);
 
         echo tpl_render('manage.general.quotes', [
-            'quote_count' => $quoteCount,
-            'quote_offset' => (int)($_GET['o'] ?? 0),
             'quote_parents' => $quotes,
+            'quotes_pagination' => $quotesPagination,
         ]);
         break;
 

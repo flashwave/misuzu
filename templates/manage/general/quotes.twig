@@ -68,7 +68,7 @@
                 </div>
             {% endfor %}
 
-            {{ pagination(quote_count, 15, quote_offset, '?v=quotes') }}
+            {{ pagination(quotes_pagination, '/manage/index.php', null, {'v': 'quotes'}) }}
         {% endif %}
     </div>
 {% endblock %}

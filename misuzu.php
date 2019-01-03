@@ -42,6 +42,7 @@ require_once 'src/git.php';
 require_once 'src/mail.php';
 require_once 'src/manage.php';
 require_once 'src/news.php';
+require_once 'src/pagination.php';
 require_once 'src/perms.php';
 require_once 'src/string.php';
 require_once 'src/tpl.php';

@@ -321,21 +321,25 @@ function html_colour(?int $colour, $attribs = '--user-colour'): string
     return $css;
 }
 
-function url_construct(string $path, array $query = [], string $host = ''): string
+function url_construct(string $url, array $query = [], ?string $fragment = null): string
 {
-    $url = $host . $path;
-
     if (count($query)) {
-        $url .= mb_strpos($path, '?') !== false ? '&' : '?';
+        $url .= mb_strpos($url, '?') !== false ? '&' : '?';
 
         foreach ($query as $key => $value) {
             if ($value) {
                 $url .= rawurlencode($key) . '=' . rawurlencode($value) . '&';
             }
         }
+
+        $url = mb_substr($url, 0, -1);
     }
 
-    return mb_substr($url, 0, -1);
+    if (!empty($fragment)) {
+        $url .= "#{$fragment}";
+    }
+
+    return $url;
 }
 
 function is_user_int($value): bool

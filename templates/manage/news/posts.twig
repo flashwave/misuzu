@@ -22,6 +22,6 @@
             </p>
         {% endfor %}
 
-        {{ pagination(posts_count, posts_take, posts_offset, '?v=categories') }}
+        {{ pagination(posts_pagination, '/manage/news.php', null, {'v': 'posts'}) }}
     </div>
 {% endblock %}

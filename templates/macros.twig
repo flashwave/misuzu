@@ -11,24 +11,15 @@
     </ul>
 {% endmacro %}
 
-{# Sort this mess out. #}
-{% macro pagination(itemCount, itemRange, currentOffset, baseUrl, alwaysRender, offsetParam, useRanges, pageRange, urlSuffix) %}
-    {% set alwaysRender = alwaysRender|default(false) %}
-
-    {% if alwaysRender or itemCount > itemRange %}
-        {% set separator    = '%3F' in baseUrl|default('')|url_encode ? '&' : '?' %}
-        {% set originalUrl  = baseUrl %}
-        {% set baseUrl      = baseUrl ~ separator %}
-        {% set pageCount    = (itemCount / itemRange)|round(0, 'ceil') %}
-        {% set currentPage  = currentOffset // itemRange %}
-        {% set useRanges    = useRanges|default(true) %}
-        {% set offsetParam  = offsetParam|default(useRanges ? 'o' : 'p') %}
-        {% set pageRange    = pageRange|default(5) %}
-        {% set urlSuffix    = urlSuffix|default('') %}
+{% macro pagination(info, path, page_range, params, page_param, url_fragment) %}
+    {% if info.page is defined and info.pages > 1 %}
+        {% set params = params is iterable ? params : [] %}
+        {% set page_param = page_param|default('p') %}
+        {% set page_range = page_range|default(5) %}
 
         <div class="pagination">
             <div class="pagination__section pagination__section--first">
-                {% if currentPage < 1 %}
+                {% if info.page <= 1 %}
                     <div class="pagination__link pagination__link--first pagination__link--disabled">
                         <i class="fas fa-angle-double-left"></i>
                     </div>
@@ -36,30 +27,30 @@
                         <i class="fas fa-angle-left"></i>
                     </div>
                 {% else %}
-                    <a href="{{ originalUrl ~ urlSuffix }}" class="pagination__link pagination__link--first" rel="first">
+                    <a href="{{ url_construct(path, params, url_fragment) }}" class="pagination__link pagination__link--first" rel="first">
                         <i class="fas fa-angle-double-left"></i>
                     </a>
-                    <a href="{{ currentPage < 2 ? originalUrl ~ urlSuffix : baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((currentPage - 1) * itemRange) : currentPage) ~ urlSuffix }}" class="pagination__link pagination__link--prev" rel="prev">
+                    <a href="{{ url_construct(path, info.page <= 2 ? params : params|merge({(page_param): info.page - 1}), url_fragment) }}" class="pagination__link pagination__link--prev" rel="prev">
                         <i class="fas fa-angle-left"></i>
                     </a>
                 {% endif %}
             </div>
 
             <div class="pagination__section pagination__section--pages">
-                {% set paginationStart = currentPage - pageRange %}
-                {% set paginationStop = currentPage + pageRange %}
+                {% set p_start = info.page - page_range %}
+                {% set p_stop = info.page + page_range %}
 
-                {% for i in paginationStart..paginationStop %}
-                    {% if i >= 0 and i < pageCount %}
-                        <a href="{{ i == 0 ? originalUrl ~ urlSuffix : baseUrl ~ offsetParam ~ '=' ~ (useRanges ? i * itemRange : i + 1) ~ urlSuffix }}" class="pagination__link{{ currentPage == i ? ' pagination__link--current' : '' }}">
-                            {{ i + 1 }}
+                {% for i in p_start..p_stop %}
+                    {% if i >= 1 and i <= info.pages %}
+                        <a href="{{ url_construct(path, i <= 1 ? params : params|merge({(page_param): i}), url_fragment) }}" class="pagination__link{{ info.page == i ? ' pagination__link--current' : '' }}">
+                            {{ i }}
                         </a>
                     {% endif %}
                 {% endfor %}
             </div>
 
             <div class="pagination__section pagination__section--last">
-                {% if currentPage >= pageCount - 1 %}
+                {% if info.page >= info.pages %}
                     <div class="pagination__link pagination__link--next pagination__link--disabled">
                         <i class="fas fa-angle-right"></i>
                     </div>
@@ -67,10 +58,10 @@
                         <i class="fas fa-angle-double-right"></i>
                     </div>
                 {% else %}
-                    <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((currentPage + 1) * itemRange) : currentPage + 2) ~ urlSuffix }}" class="pagination__link pagination__link--next" rel="next">
+                    <a href="{{ url_construct(path, params|merge({(page_param): info.page + 1}), url_fragment) }}" class="pagination__link pagination__link--next" rel="next">
                         <i class="fas fa-angle-right"></i>
                     </a>
-                    <a href="{{ baseUrl ~ offsetParam ~ '=' ~ (useRanges ? ((pageCount - 1) * itemRange) : pageCount) ~ urlSuffix }}" class="pagination__link pagination__link--last" rel="last">
+                    <a href="{{ url_construct(path, params|merge({(page_param): info.pages}), url_fragment) }}" class="pagination__link pagination__link--last" rel="last">
                         <i class="fas fa-angle-double-right"></i>
                     </a>
                 {% endif %}

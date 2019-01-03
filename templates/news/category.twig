@@ -6,7 +6,7 @@
 {% set manage_link = url_construct('/manage/news.php', {'v':'category','c':category.category_id}) %}
 {% set canonical_url = url_construct('/news.php', {
     'c': category.category_id,
-    'o': posts_offset,
+    'p': news_pagination.page > 2 ? news_pagination.page : 0,
 }) %}
 
 {% block content %}
@@ -16,8 +16,8 @@
                 {{ news_preview(post) }}
             {% endfor %}
 
-            <div class="container" style="padding: 5px;">
-                {{ pagination(category.posts_count, posts_take, posts_offset, url_construct('/news.php', {'c':category.category_id}), true) }}
+            <div class="container" style="padding: 4px; display: {{ news_pagination.pages > 1 ? 'block' : 'none' }}">
+                {{ pagination(news_pagination, '/news.php', null, {'c':category.category_id}, 'page') }}
             </div>
         </div>
 

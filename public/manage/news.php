@@ -11,16 +11,19 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $postTake = 15;
-        $postOffset = (int)($_GET['o'] ?? 0);
-        $posts = news_posts_get($postOffset, $postTake, null, false, true, false);
-        $postsCount = news_posts_count(null, false, true, false);
+        $postsPagination = pagination_create(news_posts_count(null, false, true, false), 15);
+        $postsOffset = pagination_offset($postsPagination, pagination_param());
+
+        if (!pagination_is_valid_offset($postsOffset)) {
+            echo render_error(404);
+            break;
+        }
+
+        $posts = news_posts_get($postsOffset, $postsPagination['range'], null, false, true, false);
 
         echo tpl_render('manage.news.posts', [
             'news_posts' => $posts,
-            'posts_offset' => $postOffset,
-            'posts_take' => $postTake,
-            'posts_count' => $postsCount,
+            'posts_pagination' => $postsPagination,
         ]);
         break;
 
@@ -30,16 +33,19 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $catTake = 15;
-        $catOffset = (int)($_GET['o'] ?? 0);
-        $categories = news_categories_get($catOffset, $catTake, true, false, true);
-        $categoryCount = news_categories_count(true);
+        $categoriesPagination = pagination_create(news_categories_count(true), 15);
+        $categoriesOffset = pagination_offset($categoriesPagination, pagination_param());
+
+        if (!pagination_is_valid_offset($categoriesOffset)) {
+            echo render_error(404);
+            break;
+        }
+
+        $categories = news_categories_get($categoriesOffset, $categoriesPagination['range'], true, false, true);
 
         echo tpl_render('manage.news.categories', [
             'news_categories' => $categories,
-            'categories_offset' => $catOffset,
-            'categories_take' => $catTake,
-            'categories_count' => $categoryCount,
+            'categories_pagination' => $categoriesPagination,
         ]);
         break;
 

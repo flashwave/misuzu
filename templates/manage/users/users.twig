@@ -16,5 +16,5 @@
         {% endfor %}
     </div>
 
-    {{ pagination(manage_users_count, manage_users_range, manage_users_offset, '?v=listing') }}
+    {{ pagination(manage_users_pagination, '/manage/users.php', null, {'v': 'listing'}) }}
 {% endblock %}

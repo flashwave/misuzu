@@ -49,5 +49,5 @@
         {% endfor %}
     </div>
 
-    {{ pagination(manage_roles_count, manage_roles_range, manage_roles_offset, '?v=roles') }}
+    {{ pagination(manage_roles_pagination, '/manage/users.php', null, {'v': 'roles'}) }}
 {% endblock %}

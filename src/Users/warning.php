@@ -162,13 +162,19 @@ function user_warning_fetch(
     return $warnings ? $warnings : [];
 }
 
-function user_warning_global_count(): int
+function user_warning_global_count(?int $userId = null): int
 {
-    $countWarnings = db_query('
+    $countWarnings = db_prepare(sprintf('
         SELECT COUNT(`warning_id`)
         FROM `msz_user_warnings`
-    ');
-    return (int)$countWarnings->fetchColumn();
+        %s
+    ', $userId > 0 ? 'WHERE `user_id` = :user_id' : ''));
+
+    if ($userId > 0) {
+        $countWarnings->bindValue('user_id', $userId);
+    }
+
+    return (int)($countWarnings->execute() ? $countWarnings->fetchColumn() : 0);
 }
 
 function user_warning_global_fetch(int $offset = 0, int $take = 50, ?int $userId = null): array

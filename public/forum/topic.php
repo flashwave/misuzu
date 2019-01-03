@@ -3,15 +3,12 @@ require_once '../../misuzu.php';
 
 $postId = (int)($_GET['p'] ?? 0);
 $topicId = (int)($_GET['t'] ?? 0);
-$postsOffset = max((int)($_GET['o'] ?? 0), 0);
-$postsRange = max(min((int)($_GET['r'] ?? 10), 25), 5);
 
 if ($topicId < 1 && $postId > 0) {
     $postInfo = forum_post_find($postId);
 
-    if ($postInfo) {
+    if (!empty($postInfo['target_topic_id'])) {
         $topicId = (int)$postInfo['target_topic_id'];
-        $postsOffset = floor($postInfo['preceeding_post_count'] / $postsRange) * $postsRange;
     }
 }
 
@@ -34,12 +31,25 @@ if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     return;
 }
 
+$topicPagination = pagination_create($topic['topic_post_count'], 10);
+
+if (!empty($postInfo['preceeding_post_count'])) {
+    $postsPage = floor($postInfo['preceeding_post_count'] / $topicPagination['range']) + 1;
+}
+
+$postsOffset = pagination_offset($topicPagination, $postsPage ?? pagination_param());
+
+if (!pagination_is_valid_offset($postsOffset)) {
+    echo render_error(404);
+    return;
+}
+
 tpl_var('topic_perms', $perms);
 
 $posts = forum_post_listing(
     $topic['topic_id'],
     $postsOffset,
-    $postsRange,
+    $topicPagination['range'],
     perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST)
 );
 
@@ -58,7 +68,6 @@ echo tpl_render('forum.topic', [
     'global_accent_colour' => forum_get_colour($topic['forum_id']),
     'topic_info' => $topic,
     'topic_posts' => $posts,
-    'topic_offset' => $postsOffset,
-    'topic_range' => $postsRange,
     'can_reply' => $canReply,
+    'topic_pagination' => $topicPagination,
 ]);

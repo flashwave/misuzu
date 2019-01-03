@@ -3,17 +3,14 @@
 {% from '_layout/input.twig' import input_select %}
 {% from 'user/macros.twig' import user_card %}
 
+{% set url_role = role.role_id != 1 ? role.role_id : 0 %}
+{% set url_sort = order_field == order_default ? '' : order_field %}
+{% set url_direction = order_fields[order_field]['default-dir'] == order_direction ? '' : order_direction %}
 {% set canonical_url = url_construct('/members.php', {
-    'r': role.role_id != 1 ? role.role_id : 0,
-    'ss': order_field == order_default ? '' : order_field,
-    'sd': order_fields[order_field]['default-dir'] == order_direction ? '' : order_direction,
-    'o': users_offset,
-    't': users_take == 15 ? 0 : users_take,
-}) %}
-{% set full_url = url_construct('/members.php', {
-    'r': role.role_id != 1 ? role.role_id : 0,
-    'ss': order_field == order_default ? '' : order_field,
-    'sd': order_fields[order_field]['default-dir'] == order_direction ? '' : order_direction,
+    'r': url_role,
+    'ss': url_sort,
+    'sd': url_direction,
+    'p': users_pagination.page > 2 ? users_pagination.page : 0,
 }) %}
 {% set title = role.role_id == 1 ? 'Members' : 'Role » ' ~ role.role_name  %}
 {% set manage_link = '/manage/users.php?v=listing' %}
@@ -33,7 +30,9 @@
         </div>
     </form>
 
-    {% set mpagination = pagination(role.role_user_count, users_take, users_offset, full_url) %}
+    {% set mpagination = pagination(users_pagination, '/members.php', null, {
+        'r': url_role, 'ss': url_sort, 'sd': url_direction,
+    }) %}
 
     {{ mpagination }}
 

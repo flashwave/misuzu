@@ -158,23 +158,10 @@
 
             <div class="container settings__container" id="sessions">
                 {{ container_title('<i class="fas fa-key fa-fw"></i> Sessions') }}
-                {% set spagination = pagination(
-                    sessions.amount,
-                    sessions.take,
-                    sessions.offset,
-                    url_construct('/settings.php', {
-                        'logins[offset]': logins.offset,
-                        'logins[take]': logins.take == 15 ? 0 : logins.take,
-                        'logs[offset]': logs.offset,
-                        'logs[take]': logs.take == 15 ? 0 : logs.take,
-                        'sessions[take]': sessions.take == 15 ? 0 : sessions.take,
-                    }),
-                    false,
-                    'sessions[offset]',
-                    true,
-                    null,
-                    '#sessions'
-                ) %}
+                {% set spagination = pagination(sessions.pagination, '/settings.php', null, {
+                    'logins_page': logins.pagination.page > 1 ? logins.pagination.page : 0,
+                    'logs_page': logs.pagination.page > 1 ? logs.pagination.page : 0,
+                }, 'sessions_page', 'sessions') %}
 
                 <div class="settings__description">
                     <p>These are the active logins to your account, clicking the Kill button will force a logout on that session. Your current login is highlighted with a different colour so you don't accidentally force yourself to logout.</p>
@@ -208,23 +195,10 @@
 
             <div class="container settings__container" id="login-attempts">
                 {{ container_title('<i class="fas fa-user-lock fa-fw"></i> Login Attempts') }}
-                {% set lhpagination = pagination(
-                    logins.amount,
-                    logins.take,
-                    logins.offset,
-                    url_construct('/settings.php', {
-                        'logins[take]': logins.take == 15 ? 0 : logins.take,
-                        'logs[offset]': logs.offset,
-                        'logs[take]': logs.take == 15 ? 0 : logs.take,
-                        'sessions[offset]': sessions.offset,
-                        'sessions[take]': sessions.take == 15 ? 0 : sessions.take,
-                    }),
-                    false,
-                    'logins[offset]',
-                    true,
-                    null,
-                    '#login-attempts'
-                ) %}
+                {% set lhpagination = pagination(logins.pagination, '/settings.php', null, {
+                    'sessions_page': sessions.pagination.page > 1 ? sessions.pagination.page : 0,
+                    'logs_page': logs.pagination.page > 1 ? logs.pagination.page : 0,
+                }, 'logins_page', 'login-attempts') %}
 
                 <div class="settings__description">
                     <p>These are all the login attempts to your account. If any attempt that you don't recognise is marked as successful your account may be compromised, ask a staff member for advice in this case.</p>
@@ -247,23 +221,10 @@
 
             <div class="container settings__container" id="account-log">
                 {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Account Log') }}
-                {% set alpagination = pagination(
-                    logs.amount,
-                    logs.take,
-                    logs.offset,
-                    url_construct('/settings.php', {
-                        'logins[offset]': logins.offset,
-                        'logins[take]': logins.take == 15 ? 0 : logins.take,
-                        'logs[take]': logs.take == 15 ? 0 : logs.take,
-                        'sessions[offset]': sessions.offset,
-                        'sessions[take]': sessions.take == 15 ? 0 : sessions.take,
-                    }),
-                    false,
-                    'logs[offset]',
-                    true,
-                    null,
-                    '#account-log'
-                ) %}
+                {% set alpagination = pagination(logs.pagination, '/settings.php', null, {
+                    'sessions_page': sessions.pagination.page > 1 ? sessions.pagination.page : 0,
+                    'logins_page': logins.pagination.page > 1 ? logins.pagination.page : 0,
+                }, 'logs_page', 'account-log') %}
 
                 <div class="settings__description">
                     <p>This is a log of all "important" actions that have been done using your account for your review. If you notice anything strange, please alert the staff.</p>

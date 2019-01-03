@@ -3,13 +3,6 @@ require_once '../misuzu.php';
 
 $categoryId = isset($_GET['c']) ? (int)$_GET['c'] : null;
 $postId = isset($_GET['p']) ? (int)$_GET['p'] : (isset($_GET['n']) ? (int)$_GET['n'] : null);
-$postsOffset = (int)($_GET['o'] ?? 0);
-$postsTake = 5;
-
-tpl_vars([
-    'posts_offset' => $postsOffset,
-    'posts_take' => $postsTake,
-]);
 
 if ($postId !== null) {
     $post = news_post_get($postId);
@@ -45,36 +38,45 @@ if ($postId !== null) {
 if ($categoryId !== null) {
     $category = news_category_get($categoryId, true);
 
-    if (!$category || $postsOffset < 0 || $postsOffset >= $category['posts_count']) {
+    if (empty($category)) {
+        echo render_error(404);
+        return;
+    }
+
+    $categoryPagination = pagination_create($category['posts_count'], 5);
+    $postsOffset = pagination_offset($categoryPagination, pagination_param('page'));
+
+    if (!pagination_is_valid_offset($postsOffset)) {
         echo render_error(404);
         return;
     }
 
     $posts = news_posts_get(
         $postsOffset,
-        $postsTake,
+        $categoryPagination['range'],
         $category['category_id']
     );
 
     $featured = news_posts_get(0, 10, $category['category_id'], true);
 
+    tpl_var('news_pagination', $categoryPagination);
     echo tpl_render('news.category', compact('category', 'posts', 'featured'));
     return;
 }
 
 $categories = news_categories_get(0, 0, true);
-$postsCount = news_posts_count(null, true);
 
-tpl_var('posts_count', $postsCount);
+$newsPagination = pagination_create(news_posts_count(null, true), 5);
+$postsOffset = pagination_offset($newsPagination, pagination_param('page'));
 
-if ($postsOffset < 0 || $postsOffset >= $postsCount) {
+if (!pagination_is_valid_offset($postsOffset)) {
     echo render_error(404);
     return;
 }
 
 $posts = news_posts_get(
     $postsOffset,
-    $postsTake,
+    $newsPagination['range'],
     null,
     true
 );
@@ -84,4 +86,5 @@ if (!$posts) {
     return;
 }
 
+tpl_var('news_pagination', $newsPagination);
 echo tpl_render('news.index', compact('categories', 'posts'));

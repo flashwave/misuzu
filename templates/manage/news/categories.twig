@@ -16,6 +16,6 @@
             </p>
         {% endfor %}
 
-        {{ pagination(categories_count, categories_take, categories_offset, '?v=categories') }}
+        {{ pagination(categories_pagination, '/manage/news.php', null, {'v': 'categories'}) }}
     </div>
 {% endblock %}

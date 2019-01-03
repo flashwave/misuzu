@@ -4,7 +4,7 @@
 {% set title = forum_info.forum_name %}
 {% set canonical_url = url_construct('/forum/forum.php', {
     'f': forum_info.forum_id,
-    'o': forum_offset,
+    'p': forum_pagination.page > 1 ? forum_pagination.page : 0,
 }) %}
 
 {% block content %}
@@ -15,7 +15,7 @@
     {% endif %}
 
     {% if forum_may_have_topics %}
-        {% set category_tools = forum_category_tools(forum_info, forum_perms, forum_range, forum_offset) %}
+        {% set category_tools = forum_category_tools(forum_info, forum_perms, forum_pagination) %}
         {{ category_tools }}
         {{ forum_topic_listing(forum_topics) }}
         {{ category_tools }}

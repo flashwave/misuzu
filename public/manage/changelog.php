@@ -2,7 +2,6 @@
 require_once '../../misuzu.php';
 
 $changelogPerms = perms_get_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id', 0));
-$queryOffset = (int)($_GET['o'] ?? 0);
 
 switch ($_GET['v'] ?? null) {
     default:
@@ -12,11 +11,18 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $changesTake = 30;
         $changesCount = (int)db_query('
             SELECT COUNT(`change_id`)
             FROM `msz_changelog_changes`
         ')->fetchColumn();
+
+        $changelogPagination = pagination_create($changesCount, 30);
+        $changelogOffset = pagination_offset($changelogPagination, pagination_param());
+
+        if (!pagination_is_valid_offset($changelogOffset)) {
+            echo render_error(404);
+            break;
+        }
 
         $getChanges = db_prepare('
             SELECT
@@ -36,8 +42,8 @@ switch ($_GET['v'] ?? null) {
             ORDER BY c.`change_id` DESC
             LIMIT :offset, :take
         ');
-        $getChanges->bindValue('take', $changesTake);
-        $getChanges->bindValue('offset', $queryOffset);
+        $getChanges->bindValue('take', $changelogPagination['range']);
+        $getChanges->bindValue('offset', $changelogOffset);
         $changes = $getChanges->execute() ? $getChanges->fetchAll(PDO::FETCH_ASSOC) : [];
 
         $getTags = db_prepare('
@@ -58,8 +64,7 @@ switch ($_GET['v'] ?? null) {
         echo tpl_render('manage.changelog.changes', [
             'changelog_changes' => $changes,
             'changelog_changes_count' => $changesCount,
-            'changelog_offset' => $queryOffset,
-            'changelog_take' => $changesTake,
+            'changelog_pagination' => $changelogPagination,
         ]);
         break;
 

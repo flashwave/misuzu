@@ -38,7 +38,7 @@
 
     <div class="container container--lazy">
         {{ container_title('<i class="fas fa-exclamation-circle fa-fw"></i> Warnings') }}
-        {% set warnpag = pagination(warnings.count, warnings.take, warnings.offset, '/manage/users.php?v=warnings') %}
+        {% set warnpag = pagination(warnings.pagination, '/manage/users.php', null, {'v': 'warnings'}) %}
 
         {{ warnpag }}
 

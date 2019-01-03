@@ -1,21 +1,12 @@
 <?php
 require_once '../misuzu.php';
 
-$changelogOffset = max((int)($_GET['o'] ?? 0), 0);
-$changelogRange = 30;
-
 $changelogChange = (int)($_GET['c'] ?? 0);
 $changelogDate = $_GET['d'] ?? '';
 $changelogUser = (int)($_GET['u'] ?? 0);
 $changelogTags = $_GET['t'] ?? '';
 
-$commentPerms = comments_get_perms(user_session_current('user_id', 0));
-
-tpl_vars([
-    'changelog_offset' => $changelogOffset,
-    'changelog_take' => $changelogRange,
-    'comments_perms' => $commentPerms,
-]);
+tpl_var('comments_perms', $commentPerms = comments_get_perms(user_session_current('user_id', 0)));
 
 if ($changelogChange > 0) {
     $getChange = db_prepare('
@@ -78,7 +69,11 @@ if (!empty($changelogDate)) {
 }
 
 $changesCount = !empty($changelogDate) ? -1 : changelog_count_changes($changelogDate, $changelogUser);
-$changes = changelog_get_changes($changelogDate, $changelogUser, $changelogOffset, $changelogRange);
+$changesPagination = pagination_create($changesCount, 30);
+$changesOffset = pagination_offset($changesPagination, pagination_param());
+$changes = pagination_is_valid_offset($changesOffset)
+    ? changelog_get_changes($changelogDate, $changelogUser, $changesOffset, $changesPagination['range'])
+    : [];
 
 if (!$changes) {
     http_response_code(404);
@@ -96,4 +91,5 @@ echo tpl_render('changelog.index', [
     'changelog_count' => $changesCount,
     'changelog_date' => $changelogDate,
     'changelog_user' => $changelogUser,
+    'changelog_pagination' => $changesPagination,
 ]);

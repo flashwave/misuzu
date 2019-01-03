@@ -2,8 +2,6 @@
 require_once '../../misuzu.php';
 
 $forumId = max((int)($_GET['f'] ?? 0), 0);
-$topicsOffset = max((int)($_GET['o'] ?? 0), 0);
-$topicsRange = max(min((int)($_GET['r'] ?? 20), 50), 10);
 
 if ($forumId === 0) {
     header('Location: /forum/');
@@ -36,13 +34,21 @@ if ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK) {
     return;
 }
 
+$forumPagination = pagination_create($forum['forum_topic_count'], 20);
+$topicsOffset = pagination_offset($forumPagination, pagination_param());
+
+if (!pagination_is_valid_offset($topicsOffset)) {
+    echo render_error(404);
+    return;
+}
+
 $forumMayHaveTopics = forum_may_have_topics($forum['forum_type']);
 $topics = $forumMayHaveTopics
     ? forum_topic_listing(
         $forum['forum_id'],
         user_session_current('user_id', 0),
         $topicsOffset,
-        $topicsRange,
+        $forumPagination['range'],
         perms_check($perms, MSZ_FORUM_PERM_DELETE_TOPIC)
     )
     : [];
@@ -65,6 +71,5 @@ echo tpl_render('forum.forum', [
     'forum_may_have_children' => $forumMayHaveChildren,
     'forum_info' => $forum,
     'forum_topics' => $topics,
-    'forum_offset' => $topicsOffset,
-    'forum_range' => $topicsRange,
+    'forum_pagination' => $forumPagination,
 ]);

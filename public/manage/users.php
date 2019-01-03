@@ -3,7 +3,6 @@ require_once '../../misuzu.php';
 
 $userPerms = perms_get_user(MSZ_PERMS_USER, user_session_current('user_id', 0));
 $isPostRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
-$queryQffset = (int)($_GET['o'] ?? 0);
 
 tpl_vars([
     'can_manage_users' => $canManageUsers = perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS),
@@ -20,11 +19,18 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $usersTake = 30;
         $manageUsersCount = db_query('
             SELECT COUNT(`user_id`)
             FROM `msz_users`
         ')->fetchColumn();
+
+        $usersPagination = pagination_create($manageUsersCount, 30);
+        $usersOffset = pagination_offset($usersPagination, pagination_param());
+
+        if (!pagination_is_valid_offset($usersOffset)) {
+            echo render_error(404);
+            break;
+        }
 
         $getManageUsers = db_prepare('
             SELECT
@@ -37,15 +43,13 @@ switch ($_GET['v'] ?? null) {
             ORDER BY `user_id`
             LIMIT :offset, :take
         ');
-        $getManageUsers->bindValue('offset', $queryQffset);
-        $getManageUsers->bindValue('take', $usersTake);
+        $getManageUsers->bindValue('offset', $usersOffset);
+        $getManageUsers->bindValue('take', $usersPagination['range']);
         $manageUsers = $getManageUsers->execute() ? $getManageUsers->fetchAll() : [];
 
         tpl_vars([
             'manage_users' => $manageUsers,
-            'manage_users_count' => $manageUsersCount,
-            'manage_users_range' => $usersTake,
-            'manage_users_offset' => $queryQffset,
+            'manage_users_pagination' => $usersPagination,
         ]);
         echo tpl_render('manage.users.users');
         break;
@@ -253,11 +257,18 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $rolesTake = 10;
         $manageRolesCount = db_query('
             SELECT COUNT(`role_id`)
             FROM `msz_roles`
         ')->fetchColumn();
+
+        $rolesPagination = pagination_create($manageRolesCount, 10);
+        $rolesOffset = pagination_offset($rolesPagination, pagination_param());
+
+        if (!pagination_is_valid_offset($rolesOffset)) {
+            echo render_error(404);
+            break;
+        }
 
         $getManageRoles = db_prepare('
             SELECT
@@ -270,15 +281,13 @@ switch ($_GET['v'] ?? null) {
             FROM `msz_roles` as r
             LIMIT :offset, :take
         ');
-        $getManageRoles->bindValue('offset', $queryQffset);
-        $getManageRoles->bindValue('take', $rolesTake);
+        $getManageRoles->bindValue('offset', $rolesOffset);
+        $getManageRoles->bindValue('take', $rolesPagination['range']);
         $manageRoles = $getManageRoles->execute() ? $getManageRoles->fetchAll() : [];
 
         echo tpl_render('manage.users.roles', [
             'manage_roles' => $manageRoles,
-            'manage_roles_count' => $manageRolesCount,
-            'manage_roles_range' => $rolesTake,
-            'manage_roles_offset' => $queryQffset,
+            'manage_roles_pagination' => $rolesPagination,
         ]);
         break;
 
@@ -575,10 +584,15 @@ switch ($_GET['v'] ?? null) {
             $warningsUser = max(0, (int)($_GET['u'] ?? 0));
         }
 
-        $warningsCount = user_warning_global_count();
-        $warningsTake = 50;
-        $warningsOffset = max(0, (int)($_GET['o'] ?? 0));
-        $warningsList = user_warning_global_fetch($warningsOffset, $warningsTake, $warningsUser);
+        $warningsPagination = pagination_create(user_warning_global_count($warningsUser), 50);
+        $warningsOffset = pagination_offset($warningsPagination, pagination_param());
+
+        if (!pagination_is_valid_offset($warningsOffset)) {
+            echo render_error(404);
+            break;
+        }
+
+        $warningsList = user_warning_global_fetch($warningsOffset, $warningsPagination['range'], $warningsUser);
 
         // calling array_flip since the input_select macro wants value => display, but this looks cuter
         $warningDurations = array_flip([
@@ -609,9 +623,7 @@ switch ($_GET['v'] ?? null) {
         echo tpl_render('manage.users.warnings', [
             'warnings' => [
                 'notices' => $notices,
-                'count' => $warningsCount,
-                'take' => $warningsTake,
-                'offset' => $warningsOffset,
+                'pagination' => $warningsPagination,
                 'list' => $warningsList,
                 'user_id' => $warningsUser,
                 'username' => user_username_from_id($warningsUser),

@@ -136,29 +136,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $sessions = [
     'list' => [],
     'active' => user_session_current('session_id'),
-    'amount' => user_session_count(user_session_current('user_id')),
-    'offset' => max(0, intval($_GET['sessions']['offset'] ?? 0)),
-    'take' => clamp($_GET['sessions']['take'] ?? 15, 5, 30),
+    'pagination' => pagination_create(user_session_count(user_session_current('user_id')), 15),
 ];
 
 $logins = [
     'list' => [],
-    'amount' => user_login_attempts_count(user_session_current('user_id')),
-    'offset' => max(0, intval($_GET['logins']['offset'] ?? 0)),
-    'take' => clamp($_GET['logins']['take'] ?? 15, 5, 30),
+    'pagination' => pagination_create(user_login_attempts_count(user_session_current('user_id')), 15),
 ];
 
 $logs = [
     'list' => [],
-    'amount' => audit_log_count(user_session_current('user_id')),
-    'offset' => max(0, intval($_GET['logs']['offset'] ?? 0)),
-    'take' => clamp($_GET['logs']['take'] ?? 15, 5, 30),
+    'pagination' => pagination_create(audit_log_count(user_session_current('user_id')), 15),
     'strings' => MSZ_AUDIT_LOG_STRINGS,
 ];
 
-$sessions['list'] = user_session_list($sessions['offset'], $sessions['take'], user_session_current('user_id'));
-$logins['list'] = user_login_attempts_list($logins['offset'], $logins['take'], user_session_current('user_id'));
-$logs['list'] = audit_log_list($logs['offset'], $logs['take'], user_session_current('user_id'));
+foreach (['sessions', 'logins', 'logs'] as $section) {
+    if (!pagination_is_valid_offset(pagination_offset(($$section)['pagination'], pagination_param("{$section}_page")))) {
+        ($$section)['pagination']['offset'] = 0;
+        ($$section)['pagination']['page'] = 1;
+    }
+}
+
+$sessions['list'] = user_session_list(
+    $sessions['pagination']['offset'],
+    $sessions['pagination']['range'],
+    user_session_current('user_id')
+);
+$logins['list'] = user_login_attempts_list(
+    $logins['pagination']['offset'],
+    $logins['pagination']['range'],
+    user_session_current('user_id')
+);
+$logs['list'] = audit_log_list(
+    $logs['pagination']['offset'],
+    $logs['pagination']['range'],
+    user_session_current('user_id')
+);
 
 $getUserRoles = db_prepare('
     SELECT r.`role_id`, r.`role_name`, r.`role_description`, r.`role_colour`, r.`role_can_leave`

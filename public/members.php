@@ -1,9 +1,6 @@
 <?php
 require_once '../misuzu.php';
 
-$usersOffset = max((int)($_GET['o'] ?? 0), 0);
-$usersTake = 30;
-
 $roleId = (int)($_GET['r'] ?? MSZ_ROLE_MAIN);
 $orderBy = mb_strtolower($_GET['ss'] ?? '');
 $orderDir = mb_strtolower($_GET['sd'] ?? '');
@@ -80,6 +77,14 @@ if (!$role) {
     return;
 }
 
+$usersPagination = pagination_create($role['role_user_count'], 30);
+$usersOffset = pagination_offset($usersPagination, pagination_param());
+
+if (!pagination_is_valid_offset($usersOffset)) {
+    echo render_error(404);
+    return;
+}
+
 $roles = db_query('
     SELECT `role_id`, `role_name`, `role_colour`
     FROM `msz_roles`
@@ -109,7 +114,7 @@ $getUsers = db_prepare(sprintf(
 ));
 $getUsers->bindValue('role_id', $role['role_id']);
 $getUsers->bindValue('offset', $usersOffset);
-$getUsers->bindValue('take', $usersTake);
+$getUsers->bindValue('take', $usersPagination['range']);
 $users = $getUsers->execute() ? $getUsers->fetchAll(PDO::FETCH_ASSOC) : [];
 
 echo tpl_render('user.listing', [
@@ -121,7 +126,6 @@ echo tpl_render('user.listing', [
     'order_field' => $orderBy,
     'order_direction' => $orderDir,
     'order_default' => $defaultOrder,
-    'users_offset' => $usersOffset,
-    'users_take' => $usersTake,
     'can_manage_users' => $canManageUsers,
+    'users_pagination' => $usersPagination,
 ]);

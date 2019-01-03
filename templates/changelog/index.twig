@@ -11,8 +11,8 @@
     {%
         set canonical_url = url_construct('/changelog.php', {
             'd': changelog_date,
-            'u': changelog_user ? changelog_user : '',
-            'o': changelog_offset
+            'u': changelog_user|default(0),
+            'p': changelog_pagination.page > 1 ? changelog_pagination.page : 0,
         })
     %}
 
@@ -30,10 +30,7 @@
 
             {% if not is_date %}
                 <div class="changelog__pagination">
-                    {{ pagination(changelog_count, changelog_take, changelog_offset, url_construct('/changelog.php', {
-                        'd': changelog_date,
-                        'u': changelog_user ? changelog_user : ''
-                    })) }}
+                    {{ pagination(changelog_pagination, '/changelog.php', null, {'d':changelog_date, 'u':changelog_user|default(0)})}}
                 </div>
             {% endif %}
         </div>

@@ -3,7 +3,9 @@
 {% from 'news/macros.twig' import news_preview %}
 
 {% set title = 'News' %}
-{% set canonical_url = url_construct('/news.php', {'o':posts_offset}) %}
+{% set canonical_url = url_construct('/news.php', {
+    'p': news_pagination.page > 2 ? news_pagination.page : 0,
+}) %}
 {% set manage_link = '/manage/news.php?v=index' %}
 
 {% block content %}
@@ -13,8 +15,8 @@
                 {{ news_preview(post) }}
             {% endfor %}
 
-            <div class="container" style="padding: 5px;">
-                {{ pagination(posts_count, posts_take, posts_offset, '/news.php', true) }}
+            <div class="container" style="padding: 4px; display: {{ news_pagination.pages > 1 ? 'block' : 'none' }}">
+                {{ pagination(news_pagination, '/news.php', null, null, 'page') }}
             </div>
         </div>
 
