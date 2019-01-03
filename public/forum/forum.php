@@ -37,7 +37,7 @@ if ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK) {
 $forumPagination = pagination_create($forum['forum_topic_count'], 20);
 $topicsOffset = pagination_offset($forumPagination, pagination_param());
 
-if (!pagination_is_valid_offset($topicsOffset)) {
+if (!pagination_is_valid_offset($topicsOffset) && $forum['forum_topic_count'] > 0) {
     echo render_error(404);
     return;
 }

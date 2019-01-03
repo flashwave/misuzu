@@ -4,7 +4,7 @@
 {% set title = forum_info.forum_name %}
 {% set canonical_url = url_construct('/forum/forum.php', {
     'f': forum_info.forum_id,
-    'p': forum_pagination.page > 1 ? forum_pagination.page : 0,
+    'p': forum_pagination.page|default(0) > 1 ? forum_pagination.page : 0,
 }) %}
 
 {% block content %}
