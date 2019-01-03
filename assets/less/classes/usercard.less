@@ -6,6 +6,7 @@
     color: #fff;
     text-shadow: 0 1px 4px #111;
     box-shadow: 0 1px 2px #000;
+    background-color: var(--accent-colour);
 
     &:hover {
         box-shadow: 0 1px 4px #000;
@@ -14,19 +15,19 @@
 
     &__background {
         position: absolute;
-        left: 0;
         top: 0;
-        height: 100%;
+        left: 0;
         width: 100%;
-        background: var(--user-header) center / cover no-repeat, var(--background-pattern);
-        background-color: var(--accent-colour);
-        background-blend-mode: normal, multiply;
+        height: 100%;
+        background: var(--accent-colour) var(--background-pattern);
+        background-blend-mode: multiply;
+        mask-image: linear-gradient(0deg, transparent 0%, var(--background-colour) 90%);
+        -webkit-mask-image: linear-gradient(0deg, transparent 0%, var(--background-colour) 90%);
     }
 
     &__container {
         height: 100%;
         width: 100%;
-        //border: 1px solid var(--accent-colour);
         pointer-events: none;
         display: flex;
         flex-direction: column;

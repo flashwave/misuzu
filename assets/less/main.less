@@ -8,8 +8,19 @@
     --site-max-width: 1200px;
 
     --background-image: initial;
-    --background-colour: #111;
-    --background-colour-translucent: fade(#111, 93%);
+
+    @background-colour: #111;
+    --background-colour: @background-colour;
+    --background-colour-translucent-1: fade(@background-colour, 10%);
+    --background-colour-translucent-2: fade(@background-colour, 20%);
+    --background-colour-translucent-3: fade(@background-colour, 30%);
+    --background-colour-translucent-4: fade(@background-colour, 40%);
+    --background-colour-translucent-5: fade(@background-colour, 50%);
+    --background-colour-translucent-6: fade(@background-colour, 60%);
+    --background-colour-translucent-7: fade(@background-colour, 70%);
+    --background-colour-translucent-8: fade(@background-colour, 80%);
+    --background-colour-translucent-9: fade(@background-colour, 90%);
+    --background-colour-translucent: var(--background-colour-translucent-9); // switch to the numbered ones
     --background-pattern: url('/images/clouds.png') fixed;
 
     --text-colour: #fff;

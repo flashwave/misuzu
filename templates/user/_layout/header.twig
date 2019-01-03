@@ -1,6 +1,8 @@
 {% from '_layout/input.twig' import input_checkbox_raw %}
 
 <div class="container profile__header">
+    <div class="profile__header__background"></div>
+
     <div class="profile__header__details">
         <div class="profile__header__avatar">
             {% if is_editing and perms.edit_avatar %}
