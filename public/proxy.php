@@ -9,13 +9,6 @@ $acceptedMimeTypes = [
 
 header('Cache-Control: max-age=600');
 
-if (!empty($_GET['t'])) {
-    $_hash = hash_hmac('sha256', $_GET['t'], $proxySecret);
-    $_url = rawurlencode($_GET['t']);
-    header("Location: /proxy.php?u={$_url}&h={$_hash}");
-    return;
-}
-
 $proxyUrl = rawurldecode($_GET['u'] ?? '');
 $proxyHash = $_GET['h'] ?? '';
 
