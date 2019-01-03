@@ -1,7 +1,7 @@
 .forum__topic {
     border-radius: 2px;
     background-color: fade(#111, 60%);
-    transition: background-color .2s, box-shadow .2s;
+    transition: background-color .2s, box-shadow .2s, opacity .2s;
 
     &:nth-child(even) {
         background-color: fade(#191919, 60%);
@@ -17,11 +17,18 @@
     }
 
     &--deleted {
-        opacity: .5;
-        transition: opacity .2s;
+        opacity: .4;
 
         &:hover {
             opacity: .8;
+        }
+    }
+
+    &--locked {
+        opacity: .6;
+
+        &:hover {
+            opacity: 1;
         }
     }
 

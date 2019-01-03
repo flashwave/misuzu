@@ -241,6 +241,7 @@
 {% macro forum_topic_entry(topic, topic_type, topic_unread) %}
     {% set topic_type = topic_type|default(null) %}
     {% set topic_unread = topic_unread|default(topic.topic_unread|default(false)) ? 'unread' : 'read' %}
+    {% set topic_important = topic.topic_type == constant('MSZ_TOPIC_TYPE_STICKY') or topic.topic_type == constant('MSZ_TOPIC_TYPE_ANNOUNCEMENT') or topic.topic_type == constant('MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT') %}
 
     {% if topic_type is null %}
         {% if topic.topic_deleted is defined and topic.topic_deleted is not null %}
@@ -258,7 +259,7 @@
         {% endif %}
     {% endif %}
 
-    <div class="forum__topic{% if topic.topic_deleted is not null %} forum__topic--deleted{% endif %}">
+    <div class="forum__topic{% if topic.topic_deleted is not null %} forum__topic--deleted{% elseif topic.topic_locked is not null and not topic_important %} forum__topic--locked{% endif %}">
         <a href="/forum/topic.php?t={{ topic.topic_id }}" class="forum__topic__link"></a>
 
         <div class="forum__topic__container">
