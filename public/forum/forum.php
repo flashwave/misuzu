@@ -9,20 +9,21 @@ if ($forumId === 0) {
 }
 
 $forum = forum_fetch($forumId);
+$forumUserId = user_session_current('user_id', 0);
 
 if (empty($forum) || ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK && empty($forum['forum_link']))) {
     echo render_error(404);
     return;
 }
 
-$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], user_session_current('user_id', 0));
+$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], $forumUserId);
 
 if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     echo render_error(403);
     return;
 }
 
-if (user_warning_check_restriction(user_session_current('user_id', 0))) {
+if (user_warning_check_restriction($forumUserId)) {
     $perms &= ~MSZ_FORUM_PERM_SET_WRITE;
 }
 
@@ -46,7 +47,7 @@ $forumMayHaveTopics = forum_may_have_topics($forum['forum_type']);
 $topics = $forumMayHaveTopics
     ? forum_topic_listing(
         $forum['forum_id'],
-        user_session_current('user_id', 0),
+        $forumUserId,
         $topicsOffset,
         $forumPagination['range'],
         perms_check($perms, MSZ_FORUM_PERM_DELETE_TOPIC | MSZ_FORUM_PERM_DELETE_ANY_POST)
@@ -56,11 +57,11 @@ $topics = $forumMayHaveTopics
 $forumMayHaveChildren = forum_may_have_children($forum['forum_type']);
 
 if ($forumMayHaveChildren) {
-    $forum['forum_subforums'] = forum_get_children($forum['forum_id'], user_session_current('user_id', 0));
+    $forum['forum_subforums'] = forum_get_children($forum['forum_id'], $forumUserId, MSZ_FORUM_POSTS_PER_PAGE);
 
     foreach ($forum['forum_subforums'] as $skey => $subforum) {
         $forum['forum_subforums'][$skey]['forum_subforums']
-            = forum_get_children($subforum['forum_id'], user_session_current('user_id', 0), true);
+            = forum_get_children($subforum['forum_id'], $forumUserId, MSZ_FORUM_POSTS_PER_PAGE, true);
     }
 }
 

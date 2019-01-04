@@ -31,7 +31,7 @@ if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     return;
 }
 
-$topicPagination = pagination_create($topic['topic_post_count'], 10);
+$topicPagination = pagination_create($topic['topic_post_count'], MSZ_FORUM_POSTS_PER_PAGE);
 
 if (isset($postInfo['preceeding_post_count'])) {
     $postsPage = floor($postInfo['preceeding_post_count'] / $topicPagination['range']) + 1;

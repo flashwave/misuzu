@@ -39,6 +39,7 @@ require_once 'src/csrf.php';
 require_once 'src/db.php';
 require_once 'src/general.php';
 require_once 'src/git.php';
+require_once 'src/integer.php';
 require_once 'src/mail.php';
 require_once 'src/manage.php';
 require_once 'src/news.php';

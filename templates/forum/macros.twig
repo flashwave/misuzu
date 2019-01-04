@@ -284,6 +284,33 @@
                     {% endif %}
                     <time datetime="{{ topic.topic_created|date('c') }}" title="{{ topic.topic_created|date('r') }}">{{ topic.topic_created|time_diff }}</time>
                 </div>
+
+                {% if topic.topic_pages|default(0) > 1 %}
+                    <div class="forum__topic__pagination">
+                        <div class="forum__topic__pagination__title">
+                            Page:
+                        </div>
+
+                        {% for i in 1..topic.topic_pages|clamp(0, 3) %}
+                            <a href="/forum/topic.php?t={{ topic.topic_id }}{% if i > 1 %}&amp;page={{ i }}{% endif %}" class="forum__topic__pagination__item">
+                                {{ i }}
+                            </a>
+                        {% endfor %}
+                        {% if topic.topic_pages > 3 %}
+                            {% if topic.topic_pages > 6 %}
+                                <div class="forum__topic__pagination__separator">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </div>
+                            {% endif %}
+
+                            {% for i in (topic.topic_pages - 2)|clamp(4, topic.topic_pages)..topic.topic_pages %}
+                                <a href="/forum/topic.php?t={{ topic.topic_id }}{% if i > 1 %}&amp;page={{ i }}{% endif %}" class="forum__topic__pagination__item">
+                                    {{ i }}
+                                </a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% endif %}
             </div>
 
             <div class="forum__topic__stats">
