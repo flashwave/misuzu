@@ -5,10 +5,10 @@ $postId = (int)($_GET['p'] ?? 0);
 $topicId = (int)($_GET['t'] ?? 0);
 
 if ($topicId < 1 && $postId > 0) {
-    $postInfo = forum_post_find($postId);
+    $postInfo = forum_post_find($postId, user_session_current('user_id', 0));
 
-    if (!empty($postInfo['target_topic_id'])) {
-        $topicId = (int)$postInfo['target_topic_id'];
+    if (!empty($postInfo['topic_id'])) {
+        $topicId = (int)$postInfo['topic_id'];
     }
 }
 
@@ -37,7 +37,7 @@ if (isset($postInfo['preceeding_post_count'])) {
     $postsPage = floor($postInfo['preceeding_post_count'] / $topicPagination['range']) + 1;
 }
 
-$postsOffset = pagination_offset($topicPagination, $postsPage ?? pagination_param());
+$postsOffset = pagination_offset($topicPagination, $postsPage ?? pagination_param('page'));
 
 if (!pagination_is_valid_offset($postsOffset)) {
     echo render_error(404);

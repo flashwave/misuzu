@@ -51,25 +51,30 @@ function forum_post_update(
     return $updatePost->execute();
 }
 
-function forum_post_find(int $postId): array
+function forum_post_find(int $postId, int $userId): array
 {
-    $getPostInfo = db_prepare('
-        SELECT
-        :post_id as `target_post_id`,
-        (
-            SELECT `topic_id`
-            FROM `msz_forum_posts`
-            WHERE `post_id` = `target_post_id`
-        ) as `target_topic_id`,
-        (
-            SELECT COUNT(`post_id`)
-            FROM `msz_forum_posts`
-            WHERE `topic_id` = `target_topic_id`
-            AND `post_id` < `target_post_id`
-            ORDER BY `post_id`
-        ) as `preceeding_post_count`
-    ');
+    $getPostInfo = db_prepare(sprintf(
+        '
+            SELECT
+                p.`post_id`, p.`topic_id`,
+                ((%s) & %d) as `can_view_deleted`,
+                (
+                    SELECT COUNT(`post_id`)
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = p.`topic_id`
+                    AND `post_id` < p.`post_id`
+                    AND (`can_view_deleted` OR `post_deleted` IS NULL)
+                    ORDER BY `post_id`
+                ) as `preceeding_post_count`
+            FROM `msz_forum_posts` AS p
+            WHERE p.`post_id` = :post_id
+        ',
+        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'p.`forum_id`'),
+        MSZ_FORUM_PERM_DELETE_TOPIC | MSZ_FORUM_PERM_DELETE_ANY_POST
+    ));
     $getPostInfo->bindValue('post_id', $postId);
+    $getPostInfo->bindValue('perm_user_id_user', $userId);
+    $getPostInfo->bindValue('perm_user_id_role', $userId);
 
     return $getPostInfo->execute() ? $getPostInfo->fetch(PDO::FETCH_ASSOC) : [];
 }
