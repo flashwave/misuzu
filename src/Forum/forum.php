@@ -124,7 +124,7 @@ function forum_get_root_categories(int $userId): array
             ORDER BY f.`forum_order`
         ',
         MSZ_FORUM_TYPE_CATEGORY,
-        forum_perms_get_user_sql('forum', 'f.`forum_id`'),
+        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'f.`forum_id`'),
         MSZ_FORUM_PERM_SET_READ
     ));
     $getCategories->bindValue('perm_user_id_user', $userId);
@@ -142,7 +142,7 @@ function forum_get_root_categories(int $userId): array
         ",
         MSZ_FORUM_ROOT,
         MSZ_FORUM_TYPE_CATEGORY,
-        forum_perms_get_user_sql('forum', '`forum_id`'),
+        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, '`forum_id`'),
         MSZ_FORUM_PERM_SET_READ
     ));
     $getRootForumCount->bindValue('perm_user_id_user', $userId);
@@ -364,7 +364,7 @@ function forum_get_children_query(bool $showDeleted = false, bool $small = false
         forum_read_status_sql('t.`topic_id`', ':user_for_check'),
         MSZ_FORUM_ROOT,
         MSZ_FORUM_TYPE_CATEGORY,
-        forum_perms_get_user_sql('forum', 'f.`forum_id`'),
+        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'f.`forum_id`'),
         MSZ_FORUM_PERM_SET_READ,
         $showDeleted ? '' : 'AND `topic_deleted` IS NULL',
         $showDeleted ? '' : 'AND `post_deleted` IS NULL'
