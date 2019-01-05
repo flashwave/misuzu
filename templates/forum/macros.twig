@@ -385,7 +385,7 @@
             </div>
         </div>
 
-        <div class="forum__post__content">
+        <div class="forum__post__content{% if null|date('Ym') < 201902 %} forum__post__info__content--tolerate-wide{% endif %}">
             <div class="forum__post__details">
                 <a class="forum__post__datetime" href="/forum/topic.php?t={{ post.topic_id }}#p{{ post.post_id }}">
                     <time datetime="{{ post.post_created|date('c') }}" title="{{ post.post_created|date('r') }}">{{ post.post_created|time_diff }}</time>
