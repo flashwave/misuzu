@@ -386,7 +386,7 @@ function forum_get_children(int $parentId, int $userId, bool $showDeleted = fals
 function forum_timeout(int $forumId, int $userId): int
 {
     $checkTimeout = db_prepare('
-        SELECT TIMESTAMPDIFF(SECOND, MAX(`post_created`), NOW())
+        SELECT TIMESTAMPDIFF(SECOND, COALESCE(MAX(`post_created`), NOW() - INTERVAL 1 YEAR), NOW())
         FROM `msz_forum_posts`
         WHERE `forum_id` = :forum_id
         AND `user_id` = :user_id
