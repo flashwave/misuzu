@@ -77,8 +77,8 @@ function forum_post_find(int $postId, int $userId): array
     $getPostInfo->bindValue('post_id', $postId);
     $getPostInfo->bindValue('perm_user_id_user', $userId);
     $getPostInfo->bindValue('perm_user_id_role', $userId);
-
-    return $getPostInfo->execute() ? $getPostInfo->fetch(PDO::FETCH_ASSOC) : [];
+    $postInfo = $getPostInfo->execute() ? $getPostInfo->fetch(PDO::FETCH_ASSOC) : false;
+    return $postInfo ? $postInfo : [];
 }
 
 function forum_post_get(int $postId, bool $allowDeleted = false): array
