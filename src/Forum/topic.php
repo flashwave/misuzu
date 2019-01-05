@@ -69,33 +69,37 @@ function forum_topic_update(int $topicId, ?string $title, ?int $type = null): bo
     return $updateTopic->execute();
 }
 
-function forum_topic_fetch(int $topicId, bool $showDeleted = false): array
+function forum_topic_fetch(int $topicId, int $userId = 0): array
 {
     $getTopic = db_prepare(sprintf(
         '
             SELECT
                 t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`, t.`topic_created`,
                 f.`forum_archived` as `topic_archived`, t.`topic_deleted`, t.`topic_bumped`,
+                ((%s) & %d) as `can_view_deleted`,
                 (
                     SELECT MIN(`post_id`)
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = t.`topic_id`
-                    %1$s
+                    AND (`can_view_deleted` OR `post_deleted` IS NULL)
                 ) as `topic_first_post_id`,
                 (
                     SELECT COUNT(`post_id`)
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = t.`topic_id`
-                    %1$s
+                    AND (`can_view_deleted` OR `post_deleted` IS NULL)
                 ) as `topic_post_count`
             FROM `msz_forum_topics` as t
             LEFT JOIN `msz_forum_categories` as f
             ON f.`forum_id` = t.`forum_id`
             WHERE t.`topic_id` = :topic_id
         ',
-        $showDeleted ? '' : 'AND `post_deleted` IS NULL'
+        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 't.`forum_id`'),
+        MSZ_FORUM_PERM_DELETE_TOPIC | MSZ_FORUM_PERM_DELETE_ANY_POST
     ));
     $getTopic->bindValue('topic_id', $topicId);
+    $getTopic->bindValue('perm_user_id_user', $userId);
+    $getTopic->bindValue('perm_user_id_role', $userId);
     $topic = $getTopic->execute() ? $getTopic->fetch(PDO::FETCH_ASSOC) : false;
     return $topic ? $topic : [];
 }

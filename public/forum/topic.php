@@ -4,20 +4,22 @@ require_once '../../misuzu.php';
 $postId = (int)($_GET['p'] ?? 0);
 $topicId = (int)($_GET['t'] ?? 0);
 
+$topicUserId = user_session_current('user_id', 0);
+
 if ($topicId < 1 && $postId > 0) {
-    $postInfo = forum_post_find($postId, user_session_current('user_id', 0));
+    $postInfo = forum_post_find($postId, $topicUserId);
 
     if (!empty($postInfo['topic_id'])) {
         $topicId = (int)$postInfo['topic_id'];
     }
 }
 
-$topic = forum_topic_fetch($topicId);
+$topic = forum_topic_fetch($topicId, $topicUserId);
 $perms = $topic
-    ? forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], user_session_current('user_id', 0))
+    ? forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], $topicUserId)
     : 0;
 
-if (user_warning_check_restriction(user_session_current('user_id', 0))) {
+if (user_warning_check_restriction($topicUserId)) {
     $perms &= ~MSZ_FORUM_PERM_SET_WRITE;
 }
 
@@ -61,7 +63,7 @@ if (!$posts) {
 $canReply = empty($topic['topic_archived']) && empty($topic['topic_locked']) && empty($topic['topic_deleted'])
     && perms_check($perms, MSZ_FORUM_PERM_CREATE_POST);
 
-forum_topic_mark_read(user_session_current('user_id', 0), $topic['topic_id'], $topic['forum_id']);
+forum_topic_mark_read($topicUserId, $topic['topic_id'], $topic['forum_id']);
 
 echo tpl_render('forum.topic', [
     'topic_breadcrumbs' => forum_get_breadcrumbs($topic['forum_id']),
