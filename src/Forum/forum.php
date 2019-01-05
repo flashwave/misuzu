@@ -382,3 +382,17 @@ function forum_get_children(int $parentId, int $userId, bool $showDeleted = fals
 
     return $getListing->execute() ? $getListing->fetchAll(PDO::FETCH_ASSOC) : [];
 }
+
+function forum_timeout(int $forumId, int $userId): int
+{
+    $checkTimeout = db_prepare('
+        SELECT TIMESTAMPDIFF(SECOND, MAX(`post_created`), NOW())
+        FROM `msz_forum_posts`
+        WHERE `forum_id` = :forum_id
+        AND `user_id` = :user_id
+    ');
+    $checkTimeout->bindValue('forum_id', $forumId);
+    $checkTimeout->bindValue('user_id', $userId);
+
+    return (int)($checkTimeout->execute() ? $checkTimeout->fetchColumn() : 0);
+}
