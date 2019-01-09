@@ -70,9 +70,9 @@ $getRole = db_prepare('
     WHERE `role_id` = :role_id
 ');
 $getRole->bindValue('role_id', $roleId);
-$role = $getRole->execute() ? $getRole->fetch(PDO::FETCH_ASSOC) : [];
+$role = db_fetch($getRole);
 
-if (!$role) {
+if (empty($role)) {
     echo render_error(404);
     return;
 }
@@ -115,7 +115,7 @@ $getUsers = db_prepare(sprintf(
 $getUsers->bindValue('role_id', $role['role_id']);
 $getUsers->bindValue('offset', $usersOffset);
 $getUsers->bindValue('take', $usersPagination['range']);
-$users = $getUsers->execute() ? $getUsers->fetchAll(PDO::FETCH_ASSOC) : [];
+$users = db_fetch_all($getUsers);
 
 echo tpl_render('user.listing', [
     'roles' => $roles,

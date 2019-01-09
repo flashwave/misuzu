@@ -44,8 +44,7 @@ function user_session_find($sessionId, bool $byKey = false): array
         WHERE `%s` = :session_id
     ', $byKey ? 'session_key' : 'session_id'));
     $findSession->bindValue('session_id', $sessionId);
-    $session = $findSession->execute() ? $findSession->fetch(PDO::FETCH_ASSOC) : false;
-    return $session ? $session : [];
+    return db_fetch($findSession);
 }
 
 function user_session_delete(int $sessionId): void
@@ -109,9 +108,8 @@ function user_session_list(int $offset, int $take, int $userId = 0): array
 
     $getSessions->bindValue('offset', $offset);
     $getSessions->bindValue('take', $take);
-    $sessions = $getSessions->execute() ? $getSessions->fetchAll(PDO::FETCH_ASSOC) : false;
 
-    return $sessions ? $sessions : [];
+    return db_fetch_all($getSessions);
 }
 
 function user_session_bump_active(int $sessionId): void

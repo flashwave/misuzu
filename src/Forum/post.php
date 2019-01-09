@@ -77,8 +77,7 @@ function forum_post_find(int $postId, int $userId): array
     $getPostInfo->bindValue('post_id', $postId);
     $getPostInfo->bindValue('perm_user_id_user', $userId);
     $getPostInfo->bindValue('perm_user_id_role', $userId);
-    $postInfo = $getPostInfo->execute() ? $getPostInfo->fetch(PDO::FETCH_ASSOC) : false;
-    return $postInfo ? $postInfo : [];
+    return db_fetch($getPostInfo);
 }
 
 function forum_post_get(int $postId, bool $allowDeleted = false): array
@@ -117,8 +116,7 @@ function forum_post_get(int $postId, bool $allowDeleted = false): array
         $allowDeleted ? '' : 'AND `post_deleted` IS NULL'
     ));
     $getPost->bindValue('post_id', $postId);
-    $post = $getPost->execute() ? $getPost->fetch(PDO::FETCH_ASSOC) : false;
-    return $post ? $post : [];
+    return db_fetch($getPost);
 }
 
 function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $showDeleted = false): array
@@ -166,5 +164,5 @@ function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $
         $getPosts->bindValue('take', $take);
     }
 
-    return $getPosts->execute() ? $getPosts->fetchAll(PDO::FETCH_ASSOC) : [];
+    return db_fetch_all($getPosts);
 }

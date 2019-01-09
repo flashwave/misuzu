@@ -317,7 +317,7 @@ MIG;
             WHERE `user_id` = :user_id
         ');
         $getUserDisplayInfo->bindValue('user_id', $mszUserId);
-        $userDisplayInfo = $getUserDisplayInfo->execute() ? $getUserDisplayInfo->fetch(\PDO::FETCH_ASSOC) : [];
+        $userDisplayInfo = db_fetch($getUserDisplayInfo);
 
         if ($userDisplayInfo) {
             $userDisplayInfo['general_perms'] = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);

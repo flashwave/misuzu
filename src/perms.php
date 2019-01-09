@@ -96,10 +96,8 @@ function perms_get_role(string $prefix, int $role): int
 
 function perms_get_user_raw(int $user): array
 {
-    $emptyPerms = perms_create();
-
     if ($user < 1) {
-        return $emptyPerms;
+        return perms_create();
     }
 
     $getPerms = db_prepare(sprintf('
@@ -109,15 +107,10 @@ function perms_get_user_raw(int $user): array
         AND `role_id` IS NULL
     ', implode('`, `', perms_get_keys())));
     $getPerms->bindValue('user_id', $user);
+    $perms = db_fetch($getPerms);
 
-    if (!$getPerms->execute()) {
-        return $emptyPerms;
-    }
-
-    $perms = $getPerms->fetch(PDO::FETCH_ASSOC);
-
-    if (!$perms) {
-        return $emptyPerms;
+    if (empty($perms)) {
+        return perms_create();
     }
 
     return $perms;
@@ -125,10 +118,8 @@ function perms_get_user_raw(int $user): array
 
 function perms_get_role_raw(int $role): array
 {
-    $emptyPerms = perms_create();
-
     if ($role < 1) {
-        return $emptyPerms;
+        return perms_create();
     }
 
     $getPerms = db_prepare(sprintf('
@@ -138,15 +129,10 @@ function perms_get_role_raw(int $role): array
         AND `role_id` = :role_id
     ', implode('`, `', perms_get_keys())));
     $getPerms->bindValue('role_id', $role);
+    $perms = db_fetch($getPerms);
 
-    if (!$getPerms->execute()) {
-        return $emptyPerms;
-    }
-
-    $perms = $getPerms->fetch(PDO::FETCH_ASSOC);
-
-    if (!$perms) {
-        return $emptyPerms;
+    if (empty($perms)) {
+        return perms_create();
     }
 
     return $perms;

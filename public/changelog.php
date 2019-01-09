@@ -27,7 +27,7 @@ if ($changelogChange > 0) {
         WHERE `change_id` = :change_id
     ');
     $getChange->bindValue('change_id', $changelogChange);
-    $change = $getChange->execute() ? $getChange->fetch(PDO::FETCH_ASSOC) : [];
+    $change = db_fetch($getChange);
 
     if (!$change) {
         echo render_error(404);
@@ -42,8 +42,7 @@ if ($changelogChange > 0) {
             WHERE ct.`change_id` = :change_id
         ');
         $getTags->bindValue('change_id', $change['change_id']);
-        $tags = $getTags->execute() ? $getTags->fetchAll(PDO::FETCH_ASSOC) : [];
-        tpl_var('tags', $tags);
+        tpl_var('tags', db_fetch_all($getTags));
     }
 
     echo tpl_render('changelog.change', [

@@ -118,7 +118,5 @@ function audit_log_list(int $offset, int $take, int $userId = 0): array
 
     $getLogs->bindValue('offset', $offset);
     $getLogs->bindValue('take', $take);
-    $logs = $getLogs->execute() ? $getLogs->fetchAll(PDO::FETCH_ASSOC) : false;
-
-    return $logs ? $logs : [];
+    return db_fetch_all($getLogs);
 }

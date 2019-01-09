@@ -61,7 +61,7 @@ if (!empty($forumId)) {
         WHERE `forum_id` = :forum_id
     ');
     $getForum->bindValue('forum_id', $forumId);
-    $forum = $getForum->execute() ? $getForum->fetch(PDO::FETCH_ASSOC) : false;
+    $forum = db_fetch($getForum);
 }
 
 if (empty($forum)) {
@@ -236,7 +236,7 @@ $getDisplayInfo = db_prepare('
     WHERE `user_id` = :user_id
 ');
 $getDisplayInfo->bindValue('user_id', user_session_current('user_id'));
-$displayInfo = $getDisplayInfo->execute() ? $getDisplayInfo->fetch(PDO::FETCH_ASSOC) : [];
+$displayInfo = db_fetch($getDisplayInfo);
 
 echo tpl_render('forum.posting', [
     'posting_breadcrumbs' => forum_get_breadcrumbs($forumId),

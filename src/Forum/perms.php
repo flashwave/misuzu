@@ -93,10 +93,8 @@ function forum_perms_get_role(string $prefix, int $forum, int $role): int
 
 function forum_perms_get_user_raw(?int $forum, int $user): array
 {
-    $emptyPerms = forum_perms_create();
-
     if ($user < 1) {
-        return $emptyPerms;
+        return forum_perms_create();
     }
 
     $getPerms = db_prepare(sprintf('
@@ -113,15 +111,10 @@ function forum_perms_get_user_raw(?int $forum, int $user): array
     }
 
     $getPerms->bindValue('user_id', $user);
+    $perms = db_fetch($getPerms);
 
-    if (!$getPerms->execute()) {
-        return $emptyPerms;
-    }
-
-    $perms = $getPerms->fetch(PDO::FETCH_ASSOC);
-
-    if (!$perms) {
-        return $emptyPerms;
+    if (empty($perms)) {
+        return forum_perms_create();
     }
 
     return $perms;
@@ -129,10 +122,8 @@ function forum_perms_get_user_raw(?int $forum, int $user): array
 
 function forum_perms_get_role_raw(?int $forum, ?int $role): array
 {
-    $emptyPerms = forum_perms_create();
-
     if ($role < 1 && $role !== null) {
-        return $emptyPerms;
+        return forum_perms_create();
     }
 
     $getPerms = db_prepare(sprintf(
@@ -156,14 +147,10 @@ function forum_perms_get_role_raw(?int $forum, ?int $role): array
         $getPerms->bindValue('role_id', $role);
     }
 
-    if (!$getPerms->execute()) {
-        return $emptyPerms;
-    }
+    $perms = db_fetch($getPerms);
 
-    $perms = $getPerms->fetch(PDO::FETCH_ASSOC);
-
-    if (!$perms) {
-        return $emptyPerms;
+    if (empty($perms)) {
+        return forum_perms_create();
     }
 
     return $perms;

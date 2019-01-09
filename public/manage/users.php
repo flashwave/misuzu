@@ -45,7 +45,7 @@ switch ($_GET['v'] ?? null) {
         ');
         $getManageUsers->bindValue('offset', $usersOffset);
         $getManageUsers->bindValue('take', $usersPagination['range']);
-        $manageUsers = $getManageUsers->execute() ? $getManageUsers->fetchAll() : [];
+        $manageUsers = db_fetch_all($getManageUsers);
 
         tpl_vars([
             'manage_users' => $manageUsers,
@@ -80,9 +80,9 @@ switch ($_GET['v'] ?? null) {
         ');
         $getUser->bindValue('user_id', $userId);
         $getUser->execute();
-        $manageUser = $getUser->execute() ? $getUser->fetch() : [];
+        $manageUser = db_fetch($getUser);
 
-        if (!$manageUser) {
+        if (empty($manageUser)) {
             echo 'Could not find that user.';
             break;
         }
@@ -97,7 +97,7 @@ switch ($_GET['v'] ?? null) {
             )
         ');
         $getHasRoles->bindValue('user_id', $manageUser['user_id']);
-        $hasRoles = $getHasRoles->execute() ? $getHasRoles->fetchAll() : [];
+        $hasRoles = db_fetch_all($getHasRoles);
 
         $getAvailableRoles = db_prepare('
             SELECT `role_id`, `role_name`
@@ -109,7 +109,7 @@ switch ($_GET['v'] ?? null) {
             )
         ');
         $getAvailableRoles->bindValue('user_id', $manageUser['user_id']);
-        $availableRoles = $getAvailableRoles->execute() ? $getAvailableRoles->fetchAll() : [];
+        $availableRoles = db_fetch_all($getAvailableRoles);
 
         if ($canManagePerms) {
             tpl_var('permissions', $permissions = manage_perms_list(perms_get_user_raw($userId)));
@@ -283,7 +283,7 @@ switch ($_GET['v'] ?? null) {
         ');
         $getManageRoles->bindValue('offset', $rolesOffset);
         $getManageRoles->bindValue('take', $rolesPagination['range']);
-        $manageRoles = $getManageRoles->execute() ? $getManageRoles->fetchAll() : [];
+        $manageRoles = db_fetch_all($getManageRoles);
 
         echo tpl_render('manage.users.roles', [
             'manage_roles' => $manageRoles,
@@ -458,9 +458,9 @@ switch ($_GET['v'] ?? null) {
                 WHERE `role_id` = :role_id
             ');
             $getEditRole->bindValue('role_id', $roleId);
-            $editRole = $getEditRole->execute() ? $getEditRole->fetch() : [];
+            $editRole = db_fetch($getEditRole);
 
-            if (!$editRole) {
+            if (empty($editRole)) {
                 echo 'invalid role';
                 break;
             }

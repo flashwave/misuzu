@@ -101,7 +101,7 @@ switch ($mode) {
                 ) as `user_id`
         ');
         $getUserId->bindValue('user_id', $_GET['u'] ?? 0);
-        $userId = $getUserId->execute() ? ($getUserId->fetch(PDO::FETCH_ASSOC)['user_id'] ?? 0) : 0;
+        $userId = (int)($getUserId->execute() ? $getUserId->fetchColumn(1) : 0);
 
         if ($userId < 1) {
             http_response_code(404);
@@ -347,7 +347,7 @@ switch ($mode) {
             )
         );
         $getProfile->bindValue('user_id', $userId);
-        $profile = $getProfile->execute() ? $getProfile->fetch(PDO::FETCH_ASSOC) : [];
+        $profile = db_fetch($getProfile);
 
         $backgroundPath = build_path(MSZ_STORAGE, 'backgrounds/original', "{$profile['user_id']}.msz");
 

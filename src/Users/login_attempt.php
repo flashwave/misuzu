@@ -68,7 +68,6 @@ function user_login_attempts_list(int $offset, int $take, int $userId = 0): arra
 
     $getAttempts->bindValue('offset', $offset);
     $getAttempts->bindValue('take', $take);
-    $attempts = $getAttempts->execute() ? $getAttempts->fetchAll(PDO::FETCH_ASSOC) : false;
 
-    return $attempts ? $attempts : [];
+    return db_fetch_all($getAttempts);
 }

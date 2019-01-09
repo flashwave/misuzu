@@ -158,8 +158,7 @@ function user_warning_fetch(
         $fetchWarnings->bindValue('days', $days);
     }
 
-    $warnings = $fetchWarnings->execute() ? $fetchWarnings->fetchAll(PDO::FETCH_ASSOC) : false;
-    return $warnings ? $warnings : [];
+    return db_fetch_all($fetchWarnings);
 }
 
 function user_warning_global_count(?int $userId = null): int
@@ -204,8 +203,7 @@ function user_warning_global_fetch(int $offset = 0, int $take = 50, ?int $userId
         $fetchWarnings->bindValue('user_id', $userId);
     }
 
-    $warnings = $fetchWarnings->execute() ? $fetchWarnings->fetchAll(PDO::FETCH_ASSOC) : false;
-    return $warnings ? $warnings : [];
+    return db_fetch_all($fetchWarnings);
 }
 
 function user_warning_check_ip(string $address): bool

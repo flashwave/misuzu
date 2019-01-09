@@ -47,9 +47,9 @@ function comments_parse_for_display(string $text): string
             WHERE `user_id` = :user_id
         ');
         $getInfo->bindValue('user_id', $matches[1]);
-        $info = $getInfo->execute() ? $getInfo->fetch(PDO::FETCH_ASSOC) : [];
+        $info = db_fetch($getInfo);
 
-        if (!$info) {
+        if (empty($info)) {
             return $matches[0];
         }
 
@@ -134,8 +134,7 @@ function comments_votes_get(int $commentId): array
         ) as `dislikes`
     ');
     $getVotes->bindValue('id', $commentId);
-    $votes = $getVotes->execute() ? $getVotes->fetch(PDO::FETCH_ASSOC) : false;
-    return $votes ? $votes : [];
+    return db_fetch($getVotes);
 }
 
 function comments_category_create(string $name): array
@@ -193,7 +192,7 @@ function comments_category_info($category, bool $createIfNone = false): array
     }
 
     $getCategory->bindValue('category', $category);
-    $categoryInfo = $getCategory->execute() ? $getCategory->fetch(PDO::FETCH_ASSOC) : false;
+    $categoryInfo = db_fetch($getCategory);
     return $categoryInfo
         ? $categoryInfo
         : (
@@ -253,7 +252,7 @@ function comments_category_get(int $category, int $user, ?int $parent = null): a
 
     $getComments->bindValue('user', $user);
     $getComments->bindValue('category', $category);
-    $comments = $getComments->execute() ? $getComments->fetchAll(PDO::FETCH_ASSOC) : [];
+    $comments = db_fetch_all($getComments);
 
     $commentsCount = count($comments);
     for ($i = 0; $i < $commentsCount; $i++) {
@@ -319,8 +318,7 @@ function comments_post_get(int $commentId, bool $parse = true): array
         WHERE `comment_id` = :id
     ');
     $fetch->bindValue('id', $commentId);
-    $comment = $fetch->execute() ? $fetch->fetch(PDO::FETCH_ASSOC) : false;
-    $comment = $comment ? $comment : []; // prevent type errors
+    $comment = db_fetch($fetch);
 
     if ($comment && $parse) {
         $comment['comment_html'] = nl2br(comments_parse_for_display(htmlentities($comment['comment_text'])));
@@ -357,5 +355,5 @@ function comments_post_replies(int $commentId): array
         WHERE `comment_reply_to` = :id
     ');
     $getComments->bindValue('id', $commentId);
-    return $getComments->execute() ? $getComments->fetchAll(PDO::FETCH_ASSOC) : [];
+    return db_fetch_all($getComments);
 }

@@ -44,7 +44,7 @@ switch ($_GET['v'] ?? null) {
         ');
         $getChanges->bindValue('take', $changelogPagination['range']);
         $getChanges->bindValue('offset', $changelogOffset);
-        $changes = $getChanges->execute() ? $getChanges->fetchAll(PDO::FETCH_ASSOC) : [];
+        $changes = db_fetch_all($getChanges);
 
         $getTags = db_prepare('
             SELECT
@@ -58,7 +58,7 @@ switch ($_GET['v'] ?? null) {
         // grab tags
         for ($i = 0; $i < count($changes); $i++) {
             $getTags->bindValue('change_id', $changes[$i]['change_id']);
-            $changes[$i]['tags'] = $getTags->execute() ? $getTags->fetchAll(PDO::FETCH_ASSOC) : [];
+            $changes[$i]['tags'] = db_fetch_all($getTags);
         }
 
         echo tpl_render('manage.changelog.changes', [
@@ -170,7 +170,7 @@ switch ($_GET['v'] ?? null) {
                 WHERE `change_id` = :change_id
             ');
             $getChange->bindValue('change_id', $changeId);
-            $change = $getChange->execute() ? $getChange->fetch(PDO::FETCH_ASSOC) : [];
+            $change = db_fetch($getChange);
 
             if ($change) {
                 tpl_var('edit_change', $change);
@@ -185,7 +185,7 @@ switch ($_GET['v'] ?? null) {
                     )
                 ');
                 $assignedTags->bindValue('change_id', $change['change_id']);
-                $assignedTags = $assignedTags->execute() ? $assignedTags->fetchAll(PDO::FETCH_ASSOC) : [];
+                $assignedTags = db_fetch_all($assignedTags);
 
                 $availableTags = db_prepare('
                     SELECT `tag_id`, `tag_name`
@@ -198,7 +198,7 @@ switch ($_GET['v'] ?? null) {
                     )
                 ');
                 $availableTags->bindValue('change_id', $change['change_id']);
-                $availableTags = $availableTags->execute() ? $availableTags->fetchAll(PDO::FETCH_ASSOC) : [];
+                $availableTags = db_fetch_all($availableTags);
 
                 tpl_vars([
                     'edit_change_assigned_tags' => $assignedTags,
@@ -234,7 +234,7 @@ switch ($_GET['v'] ?? null) {
                 FROM `msz_changelog_actions` as a
                 ORDER BY a.`action_id` ASC
             ');
-            tpl_var('changelog_actions', $getActions->execute() ? $getActions->fetchAll(PDO::FETCH_ASSOC) : []);
+            tpl_var('changelog_actions', db_fetch_all($getActions));
         }
 
         if ($canManageTags) {
@@ -249,7 +249,7 @@ switch ($_GET['v'] ?? null) {
                 FROM `msz_changelog_tags` as t
                 ORDER BY t.`tag_id` ASC
             ');
-            tpl_var('changelog_tags', $getTags->execute() ? $getTags->fetchAll(PDO::FETCH_ASSOC) : []);
+            tpl_var('changelog_tags', db_fetch_all($getTags));
         }
 
         echo tpl_render('manage.changelog.actions_tags');
@@ -307,7 +307,7 @@ switch ($_GET['v'] ?? null) {
                 WHERE `tag_id` = :tag_id
             ');
             $getTag->bindValue('tag_id', $tagId);
-            $tag = $getTag->execute() ? $getTag->fetch(PDO::FETCH_ASSOC) : [];
+            $tag = db_fetch($getTag);
 
             if ($tag) {
                 tpl_var('edit_tag', $tag);
@@ -381,7 +381,7 @@ switch ($_GET['v'] ?? null) {
                 WHERE `action_id` = :action_id
             ');
             $getAction->bindValue('action_id', $actionId);
-            $action = $getAction->execute() ? $getAction->fetch(PDO::FETCH_ASSOC) : [];
+            $action = db_fetch($getAction);
 
             if ($action) {
                 tpl_var('edit_action', $action);

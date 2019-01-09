@@ -64,8 +64,7 @@ function chat_quotes_single(int $quoteId): array
         WHERE `quote_id` = :quote
     ');
     $getSingle->bindValue('quote', $quoteId);
-    $single = $getSingle->execute() ? $getSingle->fetch(PDO::FETCH_ASSOC) : [];
-    return $single ? $single : [];
+    return db_fetch($getSingle);
 }
 
 function chat_quotes_parents(int $offset = 0, int $take = MSZ_CHAT_QUOTES_TAKE): array
@@ -85,8 +84,7 @@ function chat_quotes_parents(int $offset = 0, int $take = MSZ_CHAT_QUOTES_TAKE):
         $getParents->bindValue('offset', $offset);
     }
 
-    $parents = $getParents->execute() ? $getParents->fetchAll() : [];
-    return $parents ? $parents : [];
+    return db_fetch_all($getParents);
 }
 
 function chat_quotes_set(int $parentId): array
@@ -98,7 +96,7 @@ function chat_quotes_set(int $parentId): array
         AND `quote_id` = :parent
     ');
     $getParent->bindValue('parent', $parentId);
-    $parent = $getParent->execute() ? $getParent->fetch(PDO::FETCH_ASSOC) : [];
+    $parent = db_fetch($getParent);
     return $parent ? array_merge([$parent], chat_quotes_children($parent['quote_id'])) : [];
 }
 
@@ -110,8 +108,7 @@ function chat_quotes_children(int $parentId): array
         WHERE `quote_parent` = :parent
     ');
     $getChildren->bindValue('parent', $parentId);
-    $children = $getChildren->execute() ? $getChildren->fetchAll(PDO::FETCH_ASSOC) : [];
-    return $children ? $children : [];
+    return db_fetch($getChildren);
 }
 
 function chat_quotes_random(): array

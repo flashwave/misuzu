@@ -82,7 +82,7 @@ switch ($authMode) {
             WHERE `user_id` = :user_id
         ');
         $getResetUser->bindValue('user_id', $resetUser);
-        $resetUser = $getResetUser->execute() ? $getResetUser->fetch(PDO::FETCH_ASSOC) : [];
+        $resetUser = db_fetch($getResetUser);
 
         if (empty($resetUser)) {
             header('Location: /auth.php?m=forgot');
@@ -156,7 +156,7 @@ switch ($authMode) {
                 WHERE LOWER(`email`) = LOWER(:email)
             ');
             $forgotUser->bindValue('email', $authEmail);
-            $forgotUser = $forgotUser->execute() ? $forgotUser->fetch(PDO::FETCH_ASSOC) : [];
+            $forgotUser = db_fetch($forgotUser);
 
             if (empty($forgotUser)) {
                 tpl_var('auth_forgot_error', 'This user is not registered with us.');
@@ -239,7 +239,7 @@ MSG;
             ');
             $getUser->bindValue('email', $authUsername);
             $getUser->bindValue('username', $authUsername);
-            $userData = $getUser->execute() ? $getUser->fetch() : [];
+            $userData = db_fetch($getUser);
             $userId = (int)($userData['user_id'] ?? 0);
 
             $loginFailedError = sprintf(

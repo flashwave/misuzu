@@ -98,9 +98,7 @@ function forum_fetch(int $forumId, bool $showDeleted = false): array
         $showDeleted ? '' : 'AND `topic_deleted` IS NULL'
     ));
     $getForum->bindValue('forum_id', $forumId);
-    $forums = $getForum->execute() ? $getForum->fetch(PDO::FETCH_ASSOC) : false;
-
-    return $forums ? $forums : [];
+    return db_fetch($getForum);
 }
 
 function forum_get_root_categories(int $userId): array
@@ -129,8 +127,7 @@ function forum_get_root_categories(int $userId): array
     ));
     $getCategories->bindValue('perm_user_id_user', $userId);
     $getCategories->bindValue('perm_user_id_role', $userId);
-    $categories = $getCategories->execute() ? $getCategories->fetchAll(PDO::FETCH_ASSOC) : [];
-    $categories = array_merge([MSZ_FORUM_ROOT_DATA], $categories);
+    $categories = array_merge([MSZ_FORUM_ROOT_DATA], db_fetch_all($getCategories));
 
     $getRootForumCount = db_prepare(sprintf(
         "
@@ -173,7 +170,7 @@ function forum_get_breadcrumbs(
         SELECT * FROM breadcrumbs
     ');
     $getBreadcrumbs->bindValue('forum_id', $forumId);
-    $breadcrumbsDb = $getBreadcrumbs->execute() ? $getBreadcrumbs->fetchAll(PDO::FETCH_ASSOC) : [];
+    $breadcrumbsDb = db_fetch_all($getBreadcrumbs);
 
     if (!$breadcrumbsDb) {
         return [$indexLink];
@@ -208,7 +205,7 @@ function forum_get_colour(int $forumId): int
         SELECT * FROM breadcrumbs
     ');
     $getColours->bindValue('forum_id', $forumId);
-    $colours = $getColours->execute() ? $getColours->fetchAll(PDO::FETCH_ASSOC) : [];
+    $colours = db_fetch_all($getColours);
 
     if ($colours) {
         foreach ($colours as $colour) {
@@ -380,7 +377,7 @@ function forum_get_children(int $parentId, int $userId, bool $showDeleted = fals
     $getListing->bindValue('user_for_check', $userId);
     $getListing->bindValue('parent_id', $parentId);
 
-    return $getListing->execute() ? $getListing->fetchAll(PDO::FETCH_ASSOC) : [];
+    return db_fetch_all($getListing);
 }
 
 function forum_timeout(int $forumId, int $userId): int

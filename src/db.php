@@ -52,7 +52,19 @@ function db_last_insert_id(?string $name = null, ?string $connection = null): st
 
 function db_query_count(?string $connection = null): int
 {
-    return (int)db_query('SHOW SESSION STATUS LIKE "Questions"', $connection)->fetch()['Value'];
+    return (int)db_query('SHOW SESSION STATUS LIKE "Questions"', $connection)->fetchColumn(1);
+}
+
+function db_fetch(PDOStatement $stmt, $default = [])
+{
+    $out = $stmt->execute() ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
+    return $out ? $out : $default;
+}
+
+function db_fetch_all(PDOStatement $stmt, $default = [])
+{
+    $out = $stmt->execute() ? $stmt->fetchAll(PDO::FETCH_ASSOC) : false;
+    return $out ? $out : $default;
 }
 
 // starting at 2

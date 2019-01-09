@@ -87,7 +87,7 @@ function changelog_get_changes(string $date, int $user, int $offset, int $take):
         $prep->bindValue('user', $user);
     }
 
-    return $prep->execute() ? $prep->fetchAll(PDO::FETCH_ASSOC) : [];
+    return db_fetch_all($prep);
 }
 
 define('CHANGELOG_COUNT_QUERY', '

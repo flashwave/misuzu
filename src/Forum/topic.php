@@ -100,8 +100,7 @@ function forum_topic_fetch(int $topicId, int $userId = 0): array
     $getTopic->bindValue('topic_id', $topicId);
     $getTopic->bindValue('perm_user_id_user', $userId);
     $getTopic->bindValue('perm_user_id_role', $userId);
-    $topic = $getTopic->execute() ? $getTopic->fetch(PDO::FETCH_ASSOC) : false;
-    return $topic ? $topic : [];
+    return db_fetch($getTopic);
 }
 
 function forum_topic_bump(int $topicId): bool
@@ -223,5 +222,5 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
         $getTopics->bindValue('take', $take);
     }
 
-    return $getTopics->execute() ? $getTopics->fetchAll() : [];
+    return db_fetch_all($getTopics);
 }

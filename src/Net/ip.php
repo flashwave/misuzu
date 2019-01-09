@@ -197,6 +197,5 @@ function ip_blacklist_list(): array
             CONCAT(INET6_NTOA(`ip_subnet`), '/', `ip_mask`) as `ip_cidr`
         FROM `msz_ip_blacklist`
     ");
-    $blacklist = $getBlacklist->execute() ? $getBlacklist->fetchAll(PDO::FETCH_ASSOC) : false;
-    return $blacklist ? $blacklist : [];
+    return db_fetch_all($getBlacklist);
 }

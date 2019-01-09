@@ -79,7 +79,5 @@ function user_relation_info(int $userId, int $subjectId): array
     ');
     $getRelationInfo->bindValue('user_id', $userId);
     $getRelationInfo->bindValue('subject_id', $subjectId);
-    $relationInfo = $getRelationInfo->execute() ? $getRelationInfo->fetch(PDO::FETCH_ASSOC) : false;
-
-    return $relationInfo ? $relationInfo : [];
+    return db_fetch($getRelationInfo);
 }

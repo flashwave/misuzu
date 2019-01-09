@@ -126,8 +126,7 @@ function news_categories_get(
         $getCats->bindValue('take', $take);
     }
 
-    $cats = $getCats->execute() ? $getCats->fetchAll(PDO::FETCH_ASSOC) : false;
-    return $cats ? $cats : [];
+    return db_fetch_all($getCats);
 }
 
 function news_categories_count(bool $includeHidden = false): int
@@ -180,8 +179,7 @@ function news_category_get(
 
     $getCategory = db_prepare($query);
     $getCategory->bindValue('category', $category);
-    $category = $getCategory->execute() ? $getCategory->fetch(PDO::FETCH_ASSOC) : false;
-    return $category ? $category : [];
+    return db_fetch($getCategory);
 }
 
 function news_posts_count(
@@ -263,8 +261,7 @@ function news_posts_get(
         $getPosts->bindValue('offset', $offset);
     }
 
-    $posts = $getPosts->execute() ? $getPosts->fetchAll(PDO::FETCH_ASSOC) : false;
-    return $posts ? $posts : [];
+    return db_fetch_all($getPosts);
 }
 
 function news_post_comments_set(int $postId, int $sectionId): void
@@ -297,9 +294,6 @@ function news_post_get(int $postId): array
         ON u.`display_role` = r.`role_id`
         WHERE `post_id` = :post_id
     ');
-
     $getPost->bindValue(':post_id', $postId);
-    $post = $getPost->execute() ? $getPost->fetch(PDO::FETCH_ASSOC) : false;
-
-    return $post ? $post : [];
+    return db_fetch($getPost);
 }

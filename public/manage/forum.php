@@ -23,7 +23,7 @@ switch ($_GET['v'] ?? null) {
             WHERE `forum_id` = :forum_id
         ');
         $getForum->bindValue('forum_id', (int)($_GET['f'] ?? 0));
-        $forum = $getForum->execute() ? $getForum->fetch(PDO::FETCH_ASSOC) : false;
+        $forum = db_fetch($getForum);
 
         if (!$forum) {
             echo render_error(404);

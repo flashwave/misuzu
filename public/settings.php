@@ -182,7 +182,7 @@ $getUserRoles = db_prepare('
     ORDER BY r.`role_hierarchy` DESC
 ');
 $getUserRoles->bindValue('user_id', user_session_current('user_id'));
-$userRoles = $getUserRoles->execute() ? $getUserRoles->fetchAll(PDO::FETCH_ASSOC) : [];
+$userRoles = db_fetch_all($getUserRoles);
 
 echo tpl_render('user.settings', [
     'errors' => $errors,
