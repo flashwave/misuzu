@@ -15,7 +15,7 @@
     {% endif %}
 
     {% if forum_may_have_topics %}
-        {% set category_tools = forum_category_tools(forum_info, forum_perms, forum_pagination) %}
+        {% set category_tools = forum_category_tools(forum_info, forum_perms, forum_pagination, current_user|default(false)) %}
         {{ category_tools }}
         {{ forum_topic_listing(forum_topics) }}
         {{ category_tools }}

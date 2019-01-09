@@ -393,3 +393,38 @@ function forum_timeout(int $forumId, int $userId): int
 
     return (int)($checkTimeout->execute() ? $checkTimeout->fetchColumn() : 0);
 }
+
+// $forumId == null marks all forums as read
+function forum_mark_read(?int $forumId, int $userId): bool
+{
+    if (($forumId !== null && $forumId < 1) || $userId < 1) {
+        return false;
+    }
+
+    $entireForum = $forumId === null;
+    $doMark = db_prepare(sprintf(
+        '
+            REPLACE INTO `msz_forum_topics_track`
+                (`user_id`, `topic_id`, `forum_id`, `track_last_read`)
+            SELECT u.`user_id`, t.`topic_id`, t.`forum_id`, NOW()
+            FROM `msz_forum_topics` AS t
+            LEFT JOIN `msz_users` AS u
+            ON u.`user_id` = :user
+            WHERE t.`topic_deleted` IS NULL
+            AND t.`topic_bumped` >= NOW() - INTERVAL 1 MONTH
+            %1$s
+            GROUP BY t.`topic_id`
+            HAVING ((%2$s) & %3$d) > 0
+        ',
+        $entireForum ? '' : 'AND t.`forum_id` = :forum',
+        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 't.`forum_id`', 'u.`user_id`', 'u.`user_id`'),
+        MSZ_FORUM_PERM_SET_READ
+    ));
+    $doMark->bindValue('user', $userId);
+
+    if (!$entireForum) {
+        $doMark->bindValue('forum', $forumId);
+    }
+
+    return $doMark->execute();
+}

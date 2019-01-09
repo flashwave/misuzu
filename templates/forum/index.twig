@@ -20,13 +20,13 @@
             {% endif %}
         {% endfor %}
 
-        {#
-        <div class="container forum__actions">
-            <a class="input__button forum__actions__button">Mark All Read</a>
-            <a class="input__button forum__actions__button">Unanswered Posts</a>
-            <a class="input__button forum__actions__button">New Posts</a>
-            <a class="input__button forum__actions__button">Your Posts</a>
-        </div>#}
+        {% if current_user is defined %}
+            <div class="container forum__actions">
+                <a href="?m=mark" class="input__button forum__actions__button">Mark All Read</a>
+                {#<a href="?m=unread" class="input__button forum__actions__button">Unread Posts</a>#}
+                {#<a href="?m=your" class="input__button forum__actions__button">Your Posts</a>#}
+            </div>
+        {% endif %}
     {% else %}
         <div class="container">
             {{ container_title('<i class="fas fa-comment-slash fa-fw"></i> Forums') }}
