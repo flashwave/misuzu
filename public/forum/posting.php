@@ -230,6 +230,7 @@ $getDisplayInfo = db_prepare('
         SELECT COUNT(`post_id`)
         FROM `msz_forum_posts`
         WHERE `user_id` = u.`user_id`
+        AND `post_deleted` IS NULL
     ) AS `user_forum_posts`
     FROM `msz_users` as u
     WHERE `user_id` = :user_id
