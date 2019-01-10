@@ -45,13 +45,13 @@
 
         {{ input_checkbox_raw('', false, 'header__user-toggle', '', false, {'id':'toggle-mobile-header-user'}) }}
         <div class="header__user">
-
             {% if current_user is defined %}
-                <a href="/profile.php?u={{ current_user.user_id }}" class="avatar header__user__avatar"
-                    style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');" title="{{ current_user.username }}"></a>
+                <a href="/profile.php?u={{ current_user.user_id }}" title="Profile" class="header__user__button">
+                    <i class="fas fa-user fa-fw"></i>
+                </a>
 
-                <a href="/auth.php?m=logout&amp;s={{ csrf_token('logout') }}" title="Log out" class="header__user__button">
-                    <i class="fas fa-sign-out-alt fa-fw"></i>
+                <a href="/settings.php" title="Settings" class="header__user__button">
+                    <i class="fas fa-cog fa-fw"></i>
                 </a>
 
                 {% if has_manage_access %}
@@ -66,24 +66,23 @@
                     {% endif %}
                 {% endif %}
 
-                <a href="/settings.php" title="Settings" class="header__user__button">
-                    <i class="fas fa-cog fa-fw"></i>
+                <a href="/auth.php?m=logout&amp;s={{ csrf_token('logout') }}" title="Log out" class="header__user__button">
+                    <i class="fas fa-sign-out-alt fa-fw"></i>
                 </a>
 
-                <a href="/profile.php?u={{ current_user.user_id }}" title="Profile" class="header__user__button">
-                    <i class="fas fa-user fa-fw"></i>
-                </a>
+                <a href="/profile.php?u={{ current_user.user_id }}" class="avatar header__user__avatar"
+                    style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');" title="{{ current_user.username }}"></a>
             {% else %}
-                <a href="/auth.php?m=login" class="avatar header__user__avatar"
-                    style="background-image:url('/profile.php?m=avatar');"></a>
+                <a href="/auth.php?m=register" title="Register" class="header__user__button">
+                    <i class="fas fa-user-plus fa-fw"></i>
+                </a>
 
                 <a href="/auth.php?m=login" title="Log in" class="header__user__button">
                     <i class="fas fa-sign-in-alt fa-fw"></i>
                 </a>
 
-                <a href="/auth.php?m=register" title="Register" class="header__user__button">
-                    <i class="fas fa-user-plus fa-fw"></i>
-                </a>
+                <a href="/auth.php?m=login" class="avatar header__user__avatar"
+                    style="background-image:url('/profile.php?m=avatar');"></a>
             {% endif %}
         </div>
     </div>

@@ -91,15 +91,12 @@
             font-size: 1.6em;
             line-height: 1.5em;
             margin-top: 4px;
+            width: 100%;
+            background: var(--header-accent-colour);
 
             &-toggle:checked ~ .header__menu {
                 display: block;
             }
-        }
-
-        @media (max-width: @site-mobile-width) {
-            width: 100%;
-            background: var(--header-accent-colour);
 
             &__item:not(:last-child) {
                 border-bottom: 1px solid var(--header-accent-colour);
@@ -119,7 +116,9 @@
                 text-align: center;
                 transition: background-color .2s;
 
-                &:hover {
+                &:hover,
+                &:active,
+                &:focus {
                     background-color: var(--header-accent-colour);
 
                     .header__submenu {
@@ -165,7 +164,8 @@
             box-shadow: 0 1px 2px var(--header-accent-colour);
             transition: transform .2s;
 
-            &:hover {
+            &:hover,
+            &:focus {
                 transform: scaleY(1);
             }
 
@@ -182,7 +182,6 @@
     &__user {
         flex: 0 0 auto;
         display: flex;
-        flex-direction: row-reverse;
         order: 3;
         align-items: center;
 
@@ -204,6 +203,14 @@
             width: 60px;
             height: 60px;
             margin-left: 5px;
+            transition: box-shadow .2s;
+            box-shadow: 0 0 4px #111;
+
+            &:hover,
+            &:active,
+            &:focus {
+                box-shadow: 0 0 4px var(--header-accent-colour);
+            }
 
             @media (max-width: @site-mobile-width) {
                 display: none;
