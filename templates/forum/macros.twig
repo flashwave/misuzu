@@ -396,7 +396,7 @@
         </div>
 
         <div class="forum__post__content">
-            {% set post_link = url_construct('/forum/topic.php', post.is_opening_post ? {'t':post.topic_id} : {'p':post.post_id}, post.is_opening_post ? '' : post.post_id) %}
+            {% set post_link = url_construct('/forum/topic.php', post.is_opening_post ? {'t':post.topic_id} : {'p':post.post_id}, post.is_opening_post ? '' : 'p%d'|format(post.post_id)) %}
 
             <div class="forum__post__details">
                 <a class="forum__post__datetime" href="{{ post_link }}">
