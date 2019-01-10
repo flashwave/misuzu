@@ -12,8 +12,7 @@ if (user_warning_check_restriction(user_session_current('user_id', 0))) {
 }
 
 $forumPostingModes = [
-    'create',   'edit',     'quote',
-    'delete',   'restore',  'nuke',
+    'create', 'edit', 'quote',
 ];
 
 if (!empty($_POST)) {

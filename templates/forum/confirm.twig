@@ -1,0 +1,24 @@
+{% extends 'forum/master.twig' %}
+{% from 'forum/macros.twig' import forum_category_listing, forum_topic_listing, forum_category_buttons, forum_header, forum_category_tools %}
+{% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_csrf %}
+
+{% set title = title|default('Confirm your action') %}
+
+{% block content %}
+    <form action="" method="get" class="container forum__confirm">
+        {{ container_title('<i class="' ~ class|default('fas fa-exclamation-circle') ~ ' fa-fw"></i> ' ~ title) }}
+        {{ input_csrf('forum_post') }}
+        <input type="hidden" name="p" value="{{ post.post_id|default(0) }}">
+        <input type="hidden" name="m" value="{{ mode|default('') }}">
+
+        <div class="forum__confirm__message">
+            {{ message|default('Are you sure you w') }}
+        </div>
+
+        <div class="forum__confirm__buttons">
+            <button name="confirm" value="1" class="input__button forum__confirm__button">Yes</button>
+            <button name="confirm" value="0" class="input__button forum__confirm__button">No</button>
+        </div>
+    </form>
+{% endblock %}

@@ -86,7 +86,7 @@ function forum_post_get(int $postId, bool $allowDeleted = false): array
         '
             SELECT
                 p.`post_id`, p.`post_text`, p.`post_created`, p.`post_parse`,
-                p.`topic_id`, p.`post_deleted`, p.`post_edited`,
+                p.`topic_id`, p.`post_deleted`, p.`post_edited`, p.`topic_id`, p.`forum_id`,
                 INET6_NTOA(p.`post_ip`) AS `post_ip`,
                 u.`user_id` AS `poster_id`,
                 u.`username` AS `poster_name`,
@@ -165,4 +165,119 @@ function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $
     }
 
     return db_fetch_all($getPosts);
+}
+
+define('MSZ_E_FORUM_POST_DELETE_OK', 0);        // deleting is fine
+define('MSZ_E_FORUM_POST_DELETE_USER', 1);      // invalid user
+define('MSZ_E_FORUM_POST_DELETE_POST', 2);      // post doesn't exist
+define('MSZ_E_FORUM_POST_DELETE_DELETED', 3);   // post is already marked as deleted
+define('MSZ_E_FORUM_POST_DELETE_OWNER', 4);     // you may only delete your own posts
+define('MSZ_E_FORUM_POST_DELETE_OLD', 5);       // posts has existed for too long to be deleted
+define('MSZ_E_FORUM_POST_DELETE_PERM', 6);      // you aren't allowed to delete posts
+define('MSZ_E_FORUM_POST_DELETE_OP', 7);        // this is the opening post of a topic
+
+// only allow posts made within a week of posting to be deleted by normal users
+define('MSZ_FORUM_POST_DELETE_LIMIT', 60 * 60 * 24 * 7);
+
+// set $userId to null for system request, make sure this is NEVER EVER null on user request
+// $postId can also be a the return value of forum_post_get if you already grabbed it once before
+function forum_post_can_delete($postId, ?int $userId = null): int
+{
+    if (($userId !== null && $userId < 1) || $postId < 1) {
+        return MSZ_E_FORUM_POST_DELETE_USER;
+    }
+
+    if (is_array($postId)) {
+        $post = $postId;
+    } else {
+        $post = forum_post_get((int)$postId, true);
+    }
+
+    if (empty($post)) {
+        return MSZ_E_FORUM_POST_DELETE_POST;
+    }
+
+    $isSystemReq    = $userId === null;
+    $perms          = $isSystemReq ? 0      : forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $post['forum_id'], $userId);
+    $canDeleteAny   = $isSystemReq ? true   : perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST);
+    $canViewPost    = $isSystemReq ? true   : perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM);
+    $postIsDeleted  = !empty($post['post_deleted']);
+
+    if (!$canViewPost) {
+        return MSZ_E_FORUM_POST_DELETE_POST;
+    }
+
+    if ($post['is_opening_post']) {
+        return MSZ_E_FORUM_POST_DELETE_OP;
+    }
+
+    if ($postIsDeleted) {
+        return $canDeleteAny ? MSZ_E_FORUM_POST_DELETE_DELETED : MSZ_E_FORUM_POST_DELETE_POST;
+    }
+
+    if ($isSystemReq) {
+        return MSZ_E_FORUM_POST_DELETE_OK;
+    }
+
+    if (!$canDeleteAny) {
+        if (!perms_check($perms, MSZ_FORUM_PERM_DELETE_POST)) {
+            return MSZ_E_FORUM_POST_DELETE_PERM;
+        }
+
+        if ($post['poster_id'] !== $userId) {
+            return MSZ_E_FORUM_POST_DELETE_OWNER;
+        }
+
+        if (strtotime($post['post_created']) <= time() - MSZ_FORUM_POST_DELETE_LIMIT) {
+            return MSZ_E_FORUM_POST_DELETE_OLD;
+        }
+    }
+
+    return MSZ_E_FORUM_POST_DELETE_OK;
+}
+
+function forum_post_delete(int $postId): bool
+{
+    if ($postId < 1) {
+        return false;
+    }
+
+    $markDeleted = db_prepare('
+        UPDATE `msz_forum_posts`
+        SET `post_deleted` = NOW()
+        WHERE `post_id` = :post
+        AND `post_deleted` IS NULL
+    ');
+    $markDeleted->bindValue('post', $postId);
+    return $markDeleted->execute();
+}
+
+function forum_post_restore(int $postId): bool
+{
+    if ($postId < 1) {
+        return false;
+    }
+
+    $markDeleted = db_prepare('
+        UPDATE `msz_forum_posts`
+        SET `post_deleted` = NULL
+        WHERE `post_id` = :post
+        AND `post_deleted` IS NOT NULL
+    ');
+    $markDeleted->bindValue('post', $postId);
+    return $markDeleted->execute();
+}
+
+function forum_post_nuke(int $postId): bool
+{
+    if ($postId < 1) {
+        return false;
+    }
+
+    $markDeleted = db_prepare('
+        DELETE FROM `msz_forum_posts`
+        WHERE `post_id` = :post
+    ');
+    $markDeleted->bindValue('post', $postId);
+    return $markDeleted->execute();
 }

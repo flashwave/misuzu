@@ -120,6 +120,22 @@ function csrf_http_header(string $realm, string $name = 'X-Misuzu-CSRF'): string
     return "{$name}: {$realm};" . csrf_token($realm);
 }
 
+function csrf_http_header_parse(string $header): array
+{
+    $split = explode(';', $header, 2);
+    $realm = $split[0] ?? '';
+    $token = $split[1] ?? '';
+
+    if (empty($realm) || empty($token)) {
+        [$realm, $token] = ['', ''];
+    }
+
+    return [
+        'realm' => $realm,
+        'token' => $token,
+    ];
+}
+
 function csrf_get_list(): array
 {
     $list = [];

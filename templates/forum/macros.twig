@@ -350,17 +350,24 @@
     {% from _self import forum_post_entry %}
 
     {% for post in posts %}
-        {{ forum_post_entry(
-            post,
-            perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_POST')),
-            perms|perms_check(constant(user_id == post.poster_id ? 'MSZ_FORUM_PERM_EDIT_POST' : 'MSZ_FORUM_PERM_EDIT_ANY_POST')),
-            perms|perms_check(constant(user_id == post.poster_id ? 'MSZ_FORUM_PERM_DELETE_POST' : 'MSZ_FORUM_PERM_DELETE_ANY_POST'))
-        ) }}
+        {{ forum_post_entry(post, user_id, perms) }}
     {% endfor %}
 {% endmacro %}
 
-{% macro forum_post_entry(post, can_post, can_edit, can_delete) %}
-    {% set is_deleted = post.post_deleted is not null %}
+{% macro forum_post_entry(post, user_id, perms) %}
+    {% set is_deleted   = post.post_deleted is not null %}
+    {% set can_post     = perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_POST')) %}
+    {% set can_edit     = perms|perms_check(constant('MSZ_FORUM_PERM_EDIT_ANY_POST')) or (
+        user_id == post.poster_id
+        and perms|perms_check(constant('MSZ_FORUM_PERM_EDIT_POST'))
+    ) %}
+    {% set can_delete   = not post.is_opening_post and (
+        perms|perms_check(constant('MSZ_FORUM_PERM_DELETE_ANY_POST')) or (
+            user_id == post.poster_id
+            and perms|perms_check(constant('MSZ_FORUM_PERM_DELETE_POST'))
+            and post.post_created|date('U') > ''|date('U') - constant('MSZ_FORUM_POST_DELETE_LIMIT')
+        )
+    ) %}
 
     <div class="container forum__post{% if is_deleted %} forum__post--deleted{% endif %}" id="p{{ post.post_id }}" style="{{ post.poster_colour|html_colour('--accent-colour') }}">
         <div class="forum__post__info">
@@ -409,18 +416,18 @@
             {% if can_post or can_edit or can_delete %}
                 <div class="forum__post__actions">
                     {% if is_deleted %}
-                        <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=restore" class="forum__post__action"><i class="fas fa-magic fa-fw"></i> Restore</a>
-                        <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=nuke" class="forum__post__action"><i class="fas fa-radiation-alt fa-fw"></i> Permanently Delete</a>
+                        <a href="/forum/post.php?p={{ post.post_id }}&amp;m=restore" class="forum__post__action forum__post__action--restore"><i class="fas fa-magic fa-fw"></i> Restore</a>
+                        <a href="/forum/post.php?p={{ post.post_id }}&amp;m=nuke" class="forum__post__action forum__post__action--nuke"><i class="fas fa-radiation-alt fa-fw"></i> Permanently Delete</a>
                     {% else %}
                         {# if can_post %}
-                            <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=quote" class="forum__post__action"><i class="fas fa-quote-left fa-fw"></i> Quote</a>
+                            <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=quote" class="forum__post__action forum__post__action--quote"><i class="fas fa-quote-left fa-fw"></i> Quote</a>
                         {% endif #}
                         {% if can_edit %}
-                            <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=edit" class="forum__post__action"><i class="fas fa-edit fa-fw"></i> Edit</a>
+                            <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=edit" class="forum__post__action forum__post__action--edit"><i class="fas fa-edit fa-fw"></i> Edit</a>
                         {% endif %}
-                        {# if can_delete %}
-                            <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=delete" class="forum__post__action"><i class="far fa-trash-alt fa-fw"></i> Delete</a>
-                        {% endif #}
+                        {% if can_delete %}
+                            <a href="/forum/post.php?p={{ post.post_id }}&amp;m=delete" class="forum__post__action forum__post__action--delete"><i class="far fa-trash-alt fa-fw"></i> Delete</a>
+                        {% endif %}
                     {% endif %}
                 </div>
             {% endif %}
