@@ -396,15 +396,17 @@
         </div>
 
         <div class="forum__post__content">
+            {% set post_link = url_construct('/forum/topic.php', post.is_opening_post ? {'t':post.topic_id} : {'p':post.post_id}, post.is_opening_post ? '' : post.post_id) %}
+
             <div class="forum__post__details">
-                <a class="forum__post__datetime" href="/forum/topic.php?t={{ post.topic_id }}#p{{ post.post_id }}">
+                <a class="forum__post__datetime" href="{{ post_link }}">
                     <time datetime="{{ post.post_created|date('c') }}" title="{{ post.post_created|date('r') }}">{{ post.post_created|time_diff }}</time>
                     {% if post.post_edited is not null %}
                         (edited <time datetime="{{ post.post_edited|date('c') }}" title="{{ post.post_edited|date('r') }}">{{ post.post_edited|time_diff }}</time>)
                     {% endif %}
                 </a>
 
-                <a class="forum__post__id" href="/forum/topic.php?p={{ post.post_id }}#p{{ post.post_id }}">
+                <a class="forum__post__id" href="{{ post_link }}">
                     #{{ post.post_id }}
                 </a>
             </div>
