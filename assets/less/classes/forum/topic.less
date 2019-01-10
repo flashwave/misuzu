@@ -211,16 +211,20 @@
         font-size: .9em;
         line-height: 1.2em;
 
-        @media (max-width: @site-mobile-width) {
-            display: none;
-        }
-
         &__title {
             margin-right: 2px;
+
+            @media (max-width: @site-mobile-width) {
+                display: none;
+            }
         }
 
         &__separator {
             margin: 0 4px;
+
+            @media (max-width: @site-mobile-width) {
+                display: none;
+            }
         }
 
         &__item {
@@ -231,6 +235,16 @@
             padding: 2px 4px;
             border-radius: 2px;
             transition: background-color .2s, box-shadow .2s;
+
+            @media (max-width: @site-mobile-width) {
+                background-color: fade(#000, 20%);
+                box-shadow: 0 1px 1px #111;
+                line-height: 25px;
+                text-align: center;
+                min-width: 30px;
+                height: 30px;
+                font-size: 1.2em;
+            }
 
             &:hover,
             &:focus {
