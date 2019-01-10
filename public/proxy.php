@@ -3,22 +3,26 @@ require_once '../misuzu.php';
 
 $acceptedProtocols = ['http', 'https'];
 $acceptedMimeTypes = [
-    'image/png', 'image/jpeg', 'image/bmp', 'image/gif', 'image/svg', 'image/svg+xml', 'image/tiff', 'image/webp',
-    'video/mp4', 'video/webm', 'video/x-msvideo', 'video/mpeg', 'video/ogg',
-    'audio/aac', 'audio/ogg', 'audio/mp3', 'audio/mpeg', 'audio/wav',  'audio/webm',
+    'image/png', 'image/jpeg', 'image/bmp', 'image/x-bmp', 'image/gif', 'image/svg', 'image/svg+xml', 'image/tiff', 'image/tiff-fx', 'image/webp',
+    'video/mp4', 'video/webm', 'video/x-msvideo', 'video/vnd.avi', 'video/msvideo', 'video/avi', 'video/mpeg', 'video/ogg',
+    'audio/aac', 'audio/aacp', 'audio/3gpp', 'audio/3gpp2', 'audio/mp4', 'audio/mp4a-latm', 'audio/mpeg4-generic',
+    'audio/ogg', 'audio/mp3', 'audio/mpeg', 'audio/mpa', 'audio/mpa-robust',
+    'audio/wav', 'audio/vnd.wave', 'audio/wave', 'audio/x-wav',  'audio/webm', 'audio/x-flac', 'audio/flac',
 ];
 
 header('Cache-Control: max-age=600');
 
-$proxyUrl = rawurldecode($_GET['u'] ?? '');
-$proxyHash = $_GET['h'] ?? '';
+$splitPath = explode('/', $_SERVER['PATH_INFO'] ?? '', 3);
+$proxyHash = $splitPath[1] ?? '';
+$proxyUrl = $splitPath[2] ?? '';
 
 if (empty($proxyHash) || empty($proxyUrl)) {
     echo render_error(400);
     return;
 }
 
-$parsedUrl = parse_url($proxyUrl);
+$proxyUrlDecoded = base64url_decode($proxyUrl);
+$parsedUrl = parse_url($proxyUrlDecoded);
 
 if (empty($parsedUrl['scheme'])
     || empty($parsedUrl['host'])
@@ -28,7 +32,7 @@ if (empty($parsedUrl['scheme'])
 }
 
 if (!config_get_default(false, 'Proxy', 'enabled')) {
-    header('Location: ' . $proxyUrl);
+    header('Location: ' . $proxyUrlDecoded);
     return;
 }
 
@@ -40,7 +44,7 @@ if (!hash_equals($expectedHash, $proxyHash)) {
     return;
 }
 
-$curl = curl_init($proxyUrl);
+$curl = curl_init($proxyUrlDecoded);
 curl_setopt_array($curl, [
     CURLOPT_CERTINFO => false,
     CURLOPT_FAILONERROR => false,
@@ -64,7 +68,7 @@ if (!empty($_SERVER['HTTP_IF_NONE_MATCH']) && strtolower($_SERVER['HTTP_IF_NONE_
 }
 
 $finfo = finfo_open(FILEINFO_MIME_TYPE);
-$fileMime = finfo_buffer($finfo, $curlBody);
+$fileMime = strtolower(finfo_buffer($finfo, $curlBody));
 finfo_close($finfo);
 
 if (!in_array($fileMime, $acceptedMimeTypes, true)) {

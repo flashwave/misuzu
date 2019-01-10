@@ -342,6 +342,17 @@ function is_user_int($value): bool
     return ctype_digit(strval($value));
 }
 
+// https://secure.php.net/manual/en/function.base64-encode.php#103849
+function base64url_encode(string $data): string
+{
+    return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+}
+
+function base64url_decode(string $data): string
+{
+    return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
+}
+
 function proxy_media_url(?string $url): ?string
 {
     if (empty($url) || !config_get_default(false, 'Proxy', 'enabled') || is_local_url($url)) {
@@ -349,8 +360,8 @@ function proxy_media_url(?string $url): ?string
     }
 
     $secret = config_get_default('insecure', 'Proxy', 'secret_key');
-    $hash = hash_hmac('sha256', rawurldecode($url), $secret);
-    $encodedUrl = rawurlencode($url);
+    $encodedUrl = base64url_encode($url);
+    $hash = hash_hmac('sha256', $encodedUrl, $secret);
 
-    return "/proxy.php?h={$hash}&u={$encodedUrl}";
+    return "/proxy.php/{$hash}/{$encodedUrl}";
 }
