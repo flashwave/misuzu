@@ -8,7 +8,7 @@ final class QuoteTag extends BBCodeTag
     public function parseText(string $text): string
     {
         return preg_replace_callback(
-            '#\[quote(?:=(.*))?\](.*)\[/quote\]#',
+            '#\[quote(?:=(.+?))?\](.+?)\[/quote\]#',
             function ($matches) {
                 $prefix = '';
 

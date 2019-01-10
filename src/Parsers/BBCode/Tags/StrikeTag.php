@@ -7,7 +7,7 @@ final class StrikeTag extends BBCodeSimpleTag
 {
     public function getPattern(): string
     {
-        return "/\[s\](.*)\[\/s\]/";
+        return "/\[s\](.+?)\[\/s\]/";
     }
 
     public function getReplacement(): string

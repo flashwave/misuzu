@@ -7,7 +7,7 @@ final class BoldTag extends BBCodeSimpleTag
 {
     public function getPattern(): string
     {
-        return "/\[b\](.*)\[\/b\]/";
+        return "/\[b\](.+?)\[\/b\]/";
     }
 
     public function getReplacement(): string

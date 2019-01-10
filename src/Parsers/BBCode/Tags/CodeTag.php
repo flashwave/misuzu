@@ -8,7 +8,7 @@ final class CodeTag extends BBCodeTag
     public function parseText(string $text): string
     {
         return preg_replace_callback(
-            '/\[code(?:\=([a-z]+))?\](.*?)\[\/code\]/s',
+            '/\[code(?:\=([a-z]+))?\](.+?)\[\/code\]/s',
             function ($matches) {
                 $class = strlen($matches[1]) ? "lang-{$matches[1]}" : '';
                 $text = str_replace(['[', ']', '<', '>'], ['&#91;', '&#93;', '&lt;', '&gt;'], $matches[2]);

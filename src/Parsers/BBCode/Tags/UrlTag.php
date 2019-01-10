@@ -7,7 +7,7 @@ final class UrlTag extends BBCodeSimpleTag
 {
     public function getPattern(): string
     {
-        return "/\[url\](.*?)\[\/url\]/s";
+        return "/\[url\](.+?)\[\/url\]/s";
     }
 
     public function getReplacement(): string

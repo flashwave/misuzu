@@ -7,7 +7,7 @@ final class ItalicsTag extends BBCodeSimpleTag
 {
     public function getPattern(): string
     {
-        return "/\[i\](.*)\[\/i\]/";
+        return "/\[i\](.+?)\[\/i\]/";
     }
 
     public function getReplacement(): string

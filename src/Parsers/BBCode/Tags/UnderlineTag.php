@@ -7,7 +7,7 @@ final class UnderlineTag extends BBCodeSimpleTag
 {
     public function getPattern(): string
     {
-        return "/\[u\](.*)\[\/u\]/";
+        return "/\[u\](.+?)\[\/u\]/";
     }
 
     public function getReplacement(): string
