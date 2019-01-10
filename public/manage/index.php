@@ -32,58 +32,6 @@ switch ($_GET['v'] ?? null) {
         ]);
         break;
 
-    case 'quotes':
-        if (!perms_check($generalPerms, MSZ_PERM_GENERAL_VIEW_LOGS)) {
-            echo render_error(403);
-            break;
-        }
-
-        $setId = (int)($_GET['s'] ?? '');
-        $quoteId = (int)($_GET['q'] ?? '');
-
-        if (!empty($_POST['quote']) && csrf_verify('add_quote', $_POST['csrf'] ?? '')) {
-            $quoteTime = strtotime($_POST['quote']['time'] ?? '');
-            $parentId = empty($_POST['quote']['parent']) ? null : (int)($_POST['quote']['parent']);
-
-            $quoteId = chat_quotes_add(
-                $_POST['quote']['text'] ?? null,
-                $_POST['quote']['user']['name'] ?? null,
-                empty($_POST['quote']['user']['colour']) ? MSZ_COLOUR_INHERIT : (int)($_POST['quote']['user']['colour']),
-                empty($_POST['quote']['user']['id']) ? null : (int)($_POST['quote']['user']['id']),
-                empty($_POST['quote']['parent']) || $_POST['quote']['id'] == $parentId ? null : (int)($_POST['quote']['parent']),
-                $quoteTime ? $quoteTime : null,
-                empty($_POST['quote']['id']) ? null : (int)($_POST['quote']['id'])
-            );
-
-            header('Location: ?v=quotes' . ($setId ? '&s=' . $setId : '&q=' . $quoteId));
-            break;
-        }
-
-        if ($quoteId) {
-            tpl_vars([
-                'current_quote' => chat_quotes_single($quoteId),
-                'quote_parent' => $setId,
-            ]);
-        } elseif ($setId > 0) {
-            tpl_var('quote_set', chat_quotes_set($setId));
-        }
-
-        $quotesPagination = pagination_create(chat_quotes_count(true), 15);
-        $quotesOffset = pagination_offset($quotesPagination, pagination_param());
-
-        if (!pagination_is_valid_offset($quotesOffset)) {
-            echo render_error(404);
-            break;
-        }
-
-        $quotes = chat_quotes_parents($quotesPagination['offset']);
-
-        echo tpl_render('manage.general.quotes', [
-            'quote_parents' => $quotes,
-            'quotes_pagination' => $quotesPagination,
-        ]);
-        break;
-
     case 'emoticons':
         if (!perms_check($generalPerms, MSZ_PERM_GENERAL_MANAGE_EMOTICONS)) {
             echo render_error(403);

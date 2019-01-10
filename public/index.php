@@ -97,7 +97,6 @@ echo tpl_render('home.' . (user_session_active() ? 'home' : 'landing'), [
     'statistics' => $stats,
     'latest_user' => $latestUser,
     'online_users' => $onlineUsers,
-    'chat_quote' => chat_quotes_random(),
     'featured_changelog' => $changelog,
     'featured_news' => $news,
 ]);
