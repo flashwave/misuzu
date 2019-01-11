@@ -3,7 +3,7 @@ require_once '../misuzu.php';
 
 $acceptedProtocols = ['http', 'https'];
 $acceptedMimeTypes = [
-    'image/png', 'image/jpeg', 'image/bmp', 'image/x-bmp', 'image/gif', 'image/svg', 'image/svg+xml', 'image/tiff', 'image/tiff-fx', 'image/webp',
+    'image/png', 'image/jpeg', 'image/jpg', 'image/bmp', 'image/x-bmp', 'image/gif', 'image/svg', 'image/svg+xml', 'image/tiff', 'image/tiff-fx', 'image/webp',
     'video/mp4', 'video/webm', 'video/x-msvideo', 'video/vnd.avi', 'video/msvideo', 'video/avi', 'video/mpeg', 'video/ogg',
     'audio/aac', 'audio/aacp', 'audio/3gpp', 'audio/3gpp2', 'audio/mp4', 'audio/mp4a-latm', 'audio/mpeg4-generic',
     'audio/ogg', 'audio/mp3', 'audio/mpeg', 'audio/mpa', 'audio/mpa-robust',
