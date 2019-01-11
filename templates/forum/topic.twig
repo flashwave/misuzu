@@ -16,11 +16,44 @@
     'page': topic_pagination.page > 1 ? topic_pagination.page : 0,
 }) %}
 
+{% set forum_post_csrf = csrf_token('forum_post') %}
 {% set topic_tools = forum_topic_tools(topic_info, topic_pagination, can_reply) %}
 {% set topic_notice = forum_topic_locked(topic_info.topic_locked, topic_info.topic_archived) %}
+{% set topic_actions = [
+    {
+        'html': '<i class="far fa-trash-alt fa-fw"></i> Delete',
+        'url': url_construct('/forum/topic.php', {'t': topic_info.topic_id, 'm': 'delete', 'csrf[forum_post]': forum_post_csrf}),
+        'display': topic_can_delete,
+    },
+    {
+        'html': '<i class="fas fa-magic fa-fw"></i> Restore',
+        'url': url_construct('/forum/topic.php', {'t': topic_info.topic_id, 'm': 'restore', 'csrf[forum_post]': forum_post_csrf}),
+        'display': topic_can_nuke_or_restore,
+    },
+    {
+        'html': '<i class="fas fa-radiation-alt fa-fw"></i> Permanently Delete',
+        'url': url_construct('/forum/topic.php', {'t': topic_info.topic_id, 'm': 'nuke', 'csrf[forum_post]': forum_post_csrf}),
+        'display': topic_can_nuke_or_restore,
+    },
+    {
+        'html': '<i class="fas fa-plus-circle fa-fw"></i> Bump',
+        'url': url_construct('/forum/topic.php', {'t': topic_info.topic_id, 'm': 'bump', 'csrf[forum_post]': forum_post_csrf}),
+        'display': topic_can_bump,
+    },
+    {
+        'html': '<i class="fas fa-lock fa-fw"></i> Lock',
+        'url': url_construct('/forum/topic.php', {'t': topic_info.topic_id, 'm': 'lock', 'csrf[forum_post]': forum_post_csrf}),
+        'display': topic_can_lock and topic_info.topic_locked is null,
+    },
+    {
+        'html': '<i class="fas fa-lock-open fa-fw"></i> Unlock',
+        'url': url_construct('/forum/topic.php', {'t': topic_info.topic_id, 'm': 'unlock', 'csrf[forum_post]': forum_post_csrf}),
+        'display': topic_can_lock and topic_info.topic_locked is not null,
+    },
+] %}
 
 {% block content %}
-    {{ forum_header(topic_info.topic_title, topic_breadcrumbs, false, canonical_url) }}
+    {{ forum_header(topic_info.topic_title, topic_breadcrumbs, false, canonical_url, topic_actions) }}
     {{ topic_notice }}
     {{ topic_tools }}
     {{ forum_post_listing(topic_posts, current_user.user_id|default(0), topic_perms) }}

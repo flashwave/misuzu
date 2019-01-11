@@ -72,7 +72,7 @@ function forum_post_find(int $postId, int $userId): array
             WHERE p.`post_id` = :post_id
         ',
         forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'p.`forum_id`'),
-        MSZ_FORUM_PERM_DELETE_TOPIC | MSZ_FORUM_PERM_DELETE_ANY_POST
+        MSZ_FORUM_PERM_DELETE_ANY_POST
     ));
     $getPostInfo->bindValue('post_id', $postId);
     $getPostInfo->bindValue('perm_user_id_user', $userId);
@@ -183,7 +183,7 @@ define('MSZ_FORUM_POST_DELETE_LIMIT', 60 * 60 * 24 * 7);
 // $postId can also be a the return value of forum_post_get if you already grabbed it once before
 function forum_post_can_delete($postId, ?int $userId = null): int
 {
-    if (($userId !== null && $userId < 1) || $postId < 1) {
+    if ($userId !== null && $userId < 1) {
         return MSZ_E_FORUM_POST_DELETE_USER;
     }
 

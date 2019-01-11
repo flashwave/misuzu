@@ -46,7 +46,7 @@ if (!empty($postId)) {
 }
 
 if (!empty($topicId)) {
-    $topic = forum_topic_fetch($topicId);
+    $topic = forum_topic_get($topicId);
 
     if (isset($topic['forum_id'])) {
         $forumId = (int)$topic['forum_id'];

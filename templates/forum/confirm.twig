@@ -8,9 +8,10 @@
 {% block content %}
     <form action="" method="get" class="container forum__confirm">
         {{ container_title('<i class="' ~ class|default('fas fa-exclamation-circle') ~ ' fa-fw"></i> ' ~ title) }}
-        {{ input_csrf('forum_post') }}
-        <input type="hidden" name="p" value="{{ post.post_id|default(0) }}">
-        <input type="hidden" name="m" value="{{ mode|default('') }}">
+        {{ input_csrf(csrf|default('forum_post')) }}
+        {% for name, value in params %}
+            <input type="hidden" name="{{ name }}" value="{{ value }}">
+        {% endfor %}
 
         <div class="forum__confirm__message">
             {{ message|default('Are you sure you w') }}

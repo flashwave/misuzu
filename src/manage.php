@@ -358,11 +358,6 @@ function manage_forum_perms_list(array $rawPerms): array
                     'perm' => MSZ_FORUM_PERM_CREATE_TOPIC,
                 ],
                 [
-                    'section' => 'can-delete-topic',
-                    'title' => 'Can delete topics (required a post delete permission).',
-                    'perm' => MSZ_FORUM_PERM_DELETE_TOPIC,
-                ],
-                [
                     'section' => 'can-move-topic',
                     'title' => 'Can move topics between forums.',
                     'perm' => MSZ_FORUM_PERM_MOVE_TOPIC,
@@ -386,6 +381,11 @@ function manage_forum_perms_list(array $rawPerms): array
                     'section' => 'can-global-announce-topic',
                     'title' => 'Can make topics global announcements.',
                     'perm' => MSZ_FORUM_PERM_GLOBAL_ANNOUNCE_TOPIC,
+                ],
+                [
+                    'section' => 'can-bump-topic',
+                    'title' => 'Can bump topics without posting a reply.',
+                    'perm' => MSZ_FORUM_PERM_BUMP_TOPIC,
                 ],
                 [
                     'section' => 'can-create-post',

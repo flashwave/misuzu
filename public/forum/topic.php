@@ -14,7 +14,7 @@ if ($topicId < 1 && $postId > 0) {
     }
 }
 
-$topic = forum_topic_fetch($topicId, $topicUserId);
+$topic = forum_topic_get($topicId, true);
 $perms = $topic
     ? forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], $topicUserId)
     : 0;
@@ -23,7 +23,10 @@ if (user_warning_check_restriction($topicUserId)) {
     $perms &= ~MSZ_FORUM_PERM_SET_WRITE;
 }
 
-if (!$topic || ($topic['topic_deleted'] !== null && !perms_check($perms, MSZ_FORUM_PERM_DELETE_TOPIC))) {
+$topicIsDeleted = !empty($topic['topic_deleted']);
+$canDeleteAny = perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST);
+
+if (!$topic || ($topicIsDeleted && !$canDeleteAny)) {
     echo render_error(404);
     return;
 }
@@ -33,7 +36,266 @@ if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     return;
 }
 
-$topicPagination = pagination_create($topic['topic_post_count'], MSZ_FORUM_POSTS_PER_PAGE);
+$topicIsLocked = !empty($topic['topic_locked']);
+$topicIsArchived = !empty($topic['topic_archived']);
+$topicPostsTotal = (int)($topic['topic_post_count'] + $topic['topic_deleted_post_count']);
+$topicIsFrozen = $topicIsArchived || $topicIsDeleted;
+$canDeleteOwn = !$topicIsFrozen && !$topicIsLocked && perms_check($perms, MSZ_FORUM_PERM_DELETE_POST);
+$canBumpTopic = !$topicIsFrozen && perms_check($perms, MSZ_FORUM_PERM_BUMP_TOPIC);
+$canLockTopic = !$topicIsFrozen && perms_check($perms, MSZ_FORUM_PERM_LOCK_TOPIC);
+$canNukeOrRestore = $canDeleteAny && $topicIsDeleted;
+$canDelete = !$topicIsDeleted && (
+    $canDeleteAny || (
+        $topicPostsTotal > 0
+        && $topicPostsTotal <= MSZ_FORUM_TOPIC_DELETE_POST_LIMIT
+        && $canDeleteOwn
+        && $topic['author_user_id'] === $topicUserId
+    )
+);
+
+$moderationMode = (string)($_GET['m'] ?? '');
+$validModerationModes = [
+    'delete', 'restore', 'nuke',
+    'bump', 'lock', 'unlock',
+];
+
+if (in_array($moderationMode, $validModerationModes, true)) {
+    $redirect = !empty($_SERVER['HTTP_REFERER']) && empty($_SERVER['HTTP_X_MISUZU_XHR']) ? $_SERVER['HTTP_REFERER'] : '';
+    $isXHR = !$redirect;
+
+    if ($isXHR) {
+        header('Content-Type: application/json; charset=utf-8');
+    } elseif (!is_local_url($redirect)) {
+        echo render_info('Possible request forgery detected.', 403);
+        return;
+    }
+
+    if (!csrf_verify('forum_post', $_GET['csrf'] ?? '') && !csrf_verify('forum_post', csrf_http_header_parse($_SERVER['HTTP_X_MISUZU_CSRF'] ?? '')['token'])) {
+        echo render_info_or_json($isXHR, "Couldn't verify this request, please refresh the page and try again.", 403);
+        return;
+    }
+
+    header(csrf_http_header('forum_post'));
+
+    if (!user_session_active()) {
+        echo render_info_or_json($isXHR, 'You must be logged in to manage posts.', 401);
+        return;
+    }
+
+    if (user_warning_check_expiration($topicUserId, MSZ_WARN_BAN) > 0) {
+        echo render_info_or_json($isXHR, 'You have been banned, check your profile for more information.', 403);
+        return;
+    }
+    if (user_warning_check_expiration($topicUserId, MSZ_WARN_SILENCE) > 0) {
+        echo render_info_or_json($isXHR, 'You have been silenced, check your profile for more information.', 403);
+        return;
+    }
+
+    switch ($_GET['m'] ?? '') {
+        case 'delete':
+            $canDeleteCode = forum_topic_can_delete($topic, $topicUserId);
+            $canDeleteMsg = '';
+            $responseCode = 200;
+
+            switch ($canDeleteCode) {
+                case MSZ_E_FORUM_TOPIC_DELETE_USER:
+                    $responseCode = 401;
+                    $canDeleteMsg = 'You must be logged in to delete topics.';
+                    break;
+                case MSZ_E_FORUM_TOPIC_DELETE_TOPIC:
+                    $responseCode = 404;
+                    $canDeleteMsg = "This topic doesn't exist.";
+                    break;
+                case MSZ_E_FORUM_TOPIC_DELETE_DELETED:
+                    $responseCode = 404;
+                    $canDeleteMsg = 'This topic has already been marked as deleted.';
+                    break;
+                case MSZ_E_FORUM_TOPIC_DELETE_OWNER:
+                    $responseCode = 403;
+                    $canDeleteMsg = 'You can only delete your own topics.';
+                    break;
+                case MSZ_E_FORUM_TOPIC_DELETE_OLD:
+                    $responseCode = 401;
+                    $canDeleteMsg = 'This topic has existed for too long. Ask a moderator to remove if it absolutely necessary.';
+                    break;
+                case MSZ_E_FORUM_TOPIC_DELETE_PERM:
+                    $responseCode = 401;
+                    $canDeleteMsg = 'You are not allowed to delete topics.';
+                    break;
+                case MSZ_E_FORUM_TOPIC_DELETE_POSTS:
+                    $responseCode = 403;
+                    $canDeleteMsg = 'This topic already has replies, you may no longer delete it. Ask a moderator to remove if it absolutely necessary.';
+                    break;
+                case MSZ_E_FORUM_TOPIC_DELETE_OK:
+                    break;
+                default:
+                    $responseCode = 500;
+                    $canDeleteMsg = sprintf('Unknown error \'%d\'', $canDelete);
+            }
+
+            if ($canDeleteCode !== MSZ_E_FORUM_TOPIC_DELETE_OK) {
+                if ($isXHR) {
+                    http_response_code($responseCode);
+                    echo json_encode([
+                        'success' => false,
+                        'topic_id' => $topic['topic_id'],
+                        'code' => $canDeleteCode,
+                        'message' => $canDeleteMsg,
+                    ]);
+                    break;
+                }
+
+                echo render_info($canDeleteMsg, $responseCode);
+                break;
+            }
+
+            if (!$isXHR) {
+                if (isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
+                    header("Location: /forum/topic.php?t={$topic['topic_id']}");
+                    break;
+                } elseif (!isset($_GET['confirm'])) {
+                    echo tpl_render('forum.confirm', [
+                        'title' => 'Confirm topic deletion',
+                        'class' => 'far fa-trash-alt',
+                        'message' => sprintf('You are about to delete topic #%d. Are you sure about that?', $topic['topic_id']),
+                        'params' => [
+                            't' => $topic['topic_id'],
+                            'm' => 'delete',
+                        ],
+                    ]);
+                    break;
+                }
+            }
+
+            $deleteTopic = forum_topic_delete($topic['topic_id']);
+
+            if ($isXHR) {
+                echo json_encode([
+                    'success' => $deleteTopic,
+                    'topic_id' => $topic['topic_id'],
+                    'message' => $deleteTopic ? 'Topic deleted!' : 'Failed to delete topic.',
+                ]);
+                break;
+            }
+
+            if (!$deleteTopic) {
+                echo render_error(500);
+                break;
+            }
+
+            header('Location: /forum/forum.php?f=' . $topic['forum_id']);
+            break;
+
+        case 'restore':
+            if (!$canNukeOrRestore) {
+                echo render_error(403);
+                break;
+            }
+
+            if (!$isXHR) {
+                if (isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
+                    header("Location: /forum/topic.php?t={$topic['topic_id']}");
+                    break;
+                } elseif (!isset($_GET['confirm'])) {
+                    echo tpl_render('forum.confirm', [
+                        'title' => 'Confirm topic restore',
+                        'class' => 'fas fa-magic',
+                        'message' => sprintf('You are about to restore topic #%d. Are you sure about that?', $topic['topic_id']),
+                        'params' => [
+                            't' => $topic['topic_id'],
+                            'm' => 'restore',
+                        ],
+                    ]);
+                    break;
+                }
+            }
+
+            $restoreTopic = forum_topic_restore($topic['topic_id']);
+
+            if (!$restoreTopic) {
+                echo render_error(500);
+                break;
+            }
+
+            http_response_code(204);
+
+            if (!$isXHR) {
+                header('Location: /forum/forum.php?f=' . $topic['forum_id']);
+            }
+            break;
+
+        case 'nuke':
+            if (!$canNukeOrRestore) {
+                echo render_error(403);
+                break;
+            }
+
+            if (!$isXHR) {
+                if (isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
+                    header("Location: /forum/topic.php?t={$topic['topic_id']}");
+                    break;
+                } elseif (!isset($_GET['confirm'])) {
+                    echo tpl_render('forum.confirm', [
+                        'title' => 'Confirm topic nuke',
+                        'class' => 'fas fa-radiation',
+                        'message' => sprintf('You are about to PERMANENTLY DELETE topic #%d. Are you sure about that?', $topic['topic_id']),
+                        'params' => [
+                            't' => $topic['topic_id'],
+                            'm' => 'nuke',
+                        ],
+                    ]);
+                    break;
+                }
+            }
+
+            $nukeTopic = forum_topic_nuke($topic['topic_id']);
+
+            if (!$nukeTopic) {
+                echo render_error(500);
+                break;
+            }
+
+            http_response_code(204);
+
+            if (!$isXHR) {
+                header('Location: /forum/forum.php?f=' . $topic['forum_id']);
+            }
+            break;
+
+        case 'bump':
+            if ($canBumpTopic) {
+                forum_topic_bump($topic['topic_id']);
+            }
+
+            header('Location: /forum/topic.php?t=' . $topic['topic_id']);
+            break;
+
+        case 'lock':
+            if ($canLockTopic && !$topicIsLocked) {
+                forum_topic_lock($topic['topic_id']);
+            }
+
+            header('Location: /forum/topic.php?t=' . $topic['topic_id']);
+            break;
+
+        case 'unlock':
+            if ($canLockTopic && $topicIsLocked) {
+                forum_topic_unlock($topic['topic_id']);
+            }
+
+            header('Location: /forum/topic.php?t=' . $topic['topic_id']);
+            break;
+    }
+    return;
+}
+
+$topicPosts = $topic['topic_post_count'];
+
+if ($canDeleteAny) {
+    $topicPosts += $topic['topic_deleted_post_count'];
+}
+
+$topicPagination = pagination_create($topicPosts, MSZ_FORUM_POSTS_PER_PAGE);
 
 if (isset($postInfo['preceeding_post_count'])) {
     $postsPage = floor($postInfo['preceeding_post_count'] / $topicPagination['range']) + 1;
@@ -60,8 +322,7 @@ if (!$posts) {
     return;
 }
 
-$canReply = empty($topic['topic_archived']) && empty($topic['topic_locked']) && empty($topic['topic_deleted'])
-    && perms_check($perms, MSZ_FORUM_PERM_CREATE_POST);
+$canReply = !$topicIsArchived && !$topicIsLocked && !$topicIsDeleted && perms_check($perms, MSZ_FORUM_PERM_CREATE_POST);
 
 forum_topic_mark_read($topicUserId, $topic['topic_id'], $topic['forum_id']);
 
@@ -72,4 +333,8 @@ echo tpl_render('forum.topic', [
     'topic_posts' => $posts,
     'can_reply' => $canReply,
     'topic_pagination' => $topicPagination,
+    'topic_can_delete' => $canDelete,
+    'topic_can_nuke_or_restore' => $canNukeOrRestore,
+    'topic_can_bump' => $canBumpTopic,
+    'topic_can_lock' => $canLockTopic,
 ]);

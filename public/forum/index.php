@@ -23,7 +23,7 @@ switch ($_GET['m'] ?? '') {
             $categories[$key]['forum_subforums'] = forum_get_children(
                 $category['forum_id'],
                 user_session_current('user_id', 0),
-                perms_check($category['forum_permissions'], MSZ_FORUM_PERM_DELETE_TOPIC | MSZ_FORUM_PERM_DELETE_ANY_POST)
+                perms_check($category['forum_permissions'], MSZ_FORUM_PERM_DELETE_ANY_POST)
             );
 
             foreach ($categories[$key]['forum_subforums'] as $skey => $sub) {
@@ -35,7 +35,7 @@ switch ($_GET['m'] ?? '') {
                     = forum_get_children(
                         $sub['forum_id'],
                         user_session_current('user_id', 0),
-                        perms_check($sub['forum_permissions'], MSZ_FORUM_PERM_DELETE_TOPIC | MSZ_FORUM_PERM_DELETE_ANY_POST),
+                        perms_check($sub['forum_permissions'], MSZ_FORUM_PERM_DELETE_ANY_POST),
                         true
                     );
             }

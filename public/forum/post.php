@@ -81,7 +81,7 @@ switch ($postMode) {
                 break;
             case MSZ_E_FORUM_POST_DELETE_OLD:
                 $responseCode = 401;
-                $canDeleteMsg = 'This post has existed for too long, ask a moderator to remove if it absolutely necessary.';
+                $canDeleteMsg = 'This post has existed for too long. Ask a moderator to remove if it absolutely necessary.';
                 break;
             case MSZ_E_FORUM_POST_DELETE_PERM:
                 $responseCode = 401;
@@ -122,9 +122,11 @@ switch ($postMode) {
                 echo tpl_render('forum.confirm', [
                     'title' => 'Confirm post deletion',
                     'class' => 'far fa-trash-alt',
-                    'mode' => 'delete',
                     'message' => sprintf('You are about to delete post #%d. Are you sure about that?', $postInfo['post_id']),
-                    'post' => $postInfo,
+                    'params' => [
+                        'p' => $postInfo['post_id'],
+                        'm' => 'delete',
+                    ],
                 ]);
                 break;
             }
@@ -163,9 +165,11 @@ switch ($postMode) {
                 echo tpl_render('forum.confirm', [
                     'title' => 'Confirm post nuke',
                     'class' => 'fas fa-radiation',
-                    'mode' => 'nuke',
                     'message' => sprintf('You are about to PERMANENTLY DELETE post #%d. Are you sure about that?', $postInfo['post_id']),
-                    'post' => $postInfo,
+                    'params' => [
+                        'p' => $postInfo['post_id'],
+                        'm' => 'nuke',
+                    ],
                 ]);
                 break;
             }
@@ -199,9 +203,11 @@ switch ($postMode) {
                 echo tpl_render('forum.confirm', [
                     'title' => 'Confirm post restore',
                     'class' => 'fas fa-magic',
-                    'mode' => 'restore',
                     'message' => sprintf('You are about to restore post #%d. Are you sure about that?', $postInfo['post_id']),
-                    'post' => $postInfo,
+                    'params' => [
+                        'p' => $postInfo['post_id'],
+                        'm' => 'restore',
+                    ],
                 ]);
                 break;
             }

@@ -21,7 +21,7 @@
     </div>
 {% endmacro %}
 
-{% macro forum_header(title, breadcrumbs, omit_last_breadcrumb, title_url) %}
+{% macro forum_header(title, breadcrumbs, omit_last_breadcrumb, title_url, actions) %}
     <div class="container forum__header">
         {% if breadcrumbs is iterable and breadcrumbs|length > 0 %}
             <div class="forum__header__breadcrumbs">
@@ -49,6 +49,18 @@
                     {{ title }}
                 </div>
             {% endif %}
+        {% endif %}
+
+        {% if actions is iterable and actions|length > 0 %}
+            <div class="forum__header__actions">
+                {% for action in actions %}
+                    {% if action.display is not defined or action.display %}
+                        <a class="forum__header__action{% if action.class is defined %}{{ action.class }}{% endif %}" href="{{ action.url }}">
+                            {{ action.html|raw }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
         {% endif %}
     </div>
 {% endmacro %}

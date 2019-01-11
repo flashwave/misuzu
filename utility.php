@@ -258,7 +258,7 @@ function render_info_or_json(bool $json, string $message, int $httpCode = 200, s
     http_response_code($httpCode);
 
     if ($json) {
-        return json_encode([($error ? 'error' : 'message') => $message]);
+        return json_encode([($error ? 'error' : 'message') => $message, 'success' => $error]);
     }
 
     return render_info($message, $httpCode, $template);

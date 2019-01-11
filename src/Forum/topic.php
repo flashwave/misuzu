@@ -69,37 +69,41 @@ function forum_topic_update(int $topicId, ?string $title, ?int $type = null): bo
     return $updateTopic->execute();
 }
 
-function forum_topic_fetch(int $topicId, int $userId = 0): array
+function forum_topic_get(int $topicId, bool $allowDeleted = false): array
 {
     $getTopic = db_prepare(sprintf(
         '
             SELECT
                 t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`, t.`topic_created`,
                 f.`forum_archived` as `topic_archived`, t.`topic_deleted`, t.`topic_bumped`,
-                ((%s) & %d) as `can_view_deleted`,
-                (
-                    SELECT MIN(`post_id`)
-                    FROM `msz_forum_posts`
-                    WHERE `topic_id` = t.`topic_id`
-                    AND (`can_view_deleted` OR `post_deleted` IS NULL)
-                ) as `topic_first_post_id`,
+                fp.`topic_id` as `author_post_id`, fp.`user_id` as `author_user_id`,
                 (
                     SELECT COUNT(`post_id`)
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = t.`topic_id`
-                    AND (`can_view_deleted` OR `post_deleted` IS NULL)
-                ) as `topic_post_count`
+                    AND `post_deleted` IS NULL
+                ) as `topic_post_count`,
+                (
+                    SELECT COUNT(`post_id`)
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = t.`topic_id`
+                    AND `post_deleted` IS NOT NULL
+                ) as `topic_deleted_post_count`
             FROM `msz_forum_topics` as t
             LEFT JOIN `msz_forum_categories` as f
             ON f.`forum_id` = t.`forum_id`
+            LEFT JOIN `msz_forum_posts` as fp
+            ON fp.`post_id` = (
+                SELECT MIN(`post_id`)
+                FROM `msz_forum_posts`
+                WHERE `topic_id` = t.`topic_id`
+            )
             WHERE t.`topic_id` = :topic_id
+            %s
         ',
-        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 't.`forum_id`'),
-        MSZ_FORUM_PERM_DELETE_TOPIC | MSZ_FORUM_PERM_DELETE_ANY_POST
+        $allowDeleted ? '' : 'AND t.`topic_deleted` IS NULL'
     ));
     $getTopic->bindValue('topic_id', $topicId);
-    $getTopic->bindValue('perm_user_id_user', $userId);
-    $getTopic->bindValue('perm_user_id_role', $userId);
     return db_fetch($getTopic);
 }
 
@@ -223,4 +227,192 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
     }
 
     return db_fetch_all($getTopics);
+}
+
+function forum_topic_lock(int $topicId): bool
+{
+    if ($topicId < 1) {
+        return false;
+    }
+
+    $markLocked = db_prepare('
+        UPDATE `msz_forum_topics`
+        SET `topic_locked` = NOW()
+        WHERE `topic_id` = :topic
+        AND `topic_locked` IS NULL
+    ');
+    $markLocked->bindValue('topic', $topicId);
+
+    return $markLocked->execute();
+}
+
+function forum_topic_unlock(int $topicId): bool
+{
+    if ($topicId < 1) {
+        return false;
+    }
+
+    $markUnlocked = db_prepare('
+        UPDATE `msz_forum_topics`
+        SET `topic_locked` = NULL
+        WHERE `topic_id` = :topic
+        AND `topic_locked` IS NOT NULL
+    ');
+    $markUnlocked->bindValue('topic', $topicId);
+
+    return $markUnlocked->execute();
+}
+
+define('MSZ_E_FORUM_TOPIC_DELETE_OK', 0);       // deleting is fine
+define('MSZ_E_FORUM_TOPIC_DELETE_USER', 1);     // invalid user
+define('MSZ_E_FORUM_TOPIC_DELETE_TOPIC', 2);    // topic doesn't exist
+define('MSZ_E_FORUM_TOPIC_DELETE_DELETED', 3);  // topic is already marked as deleted
+define('MSZ_E_FORUM_TOPIC_DELETE_OWNER', 4);    // you may only delete your own topics
+define('MSZ_E_FORUM_TOPIC_DELETE_OLD', 5);      // topic has existed for too long to be deleted
+define('MSZ_E_FORUM_TOPIC_DELETE_PERM', 6);     // you aren't allowed to delete topics
+define('MSZ_E_FORUM_TOPIC_DELETE_POSTS', 7);    // the topic already has replies
+
+// only allow topics made within a day of posting to be deleted by normal users
+define('MSZ_FORUM_TOPIC_DELETE_TIME_LIMIT', 60 * 60 * 24);
+
+// only allow topics with a single post to be deleted, includes soft deleted posts
+define('MSZ_FORUM_TOPIC_DELETE_POST_LIMIT', 1);
+
+// set $userId to null for system request, make sure this is NEVER EVER null on user request
+// $topicId can also be a the return value of forum_topic_get if you already grabbed it once before
+function forum_topic_can_delete($topicId, ?int $userId = null): int
+{
+    if ($userId !== null && $userId < 1) {
+        return MSZ_E_FORUM_TOPIC_DELETE_USER;
+    }
+
+    if (is_array($topicId)) {
+        $topic = $topicId;
+    } else {
+        $topic = forum_topic_get((int)$topicId, true);
+    }
+
+    if (empty($topic)) {
+        return MSZ_E_FORUM_TOPIC_DELETE_TOPIC;
+    }
+
+    $isSystemReq    = $userId === null;
+    $perms          = $isSystemReq ? 0      : forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], $userId);
+    $canDeleteAny   = $isSystemReq ? true   : perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST);
+    $canViewPost    = $isSystemReq ? true   : perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM);
+    $postIsDeleted  = !empty($topic['topic_deleted']);
+
+    if (!$canViewPost) {
+        return MSZ_E_FORUM_TOPIC_DELETE_TOPIC;
+    }
+
+    if ($postIsDeleted) {
+        return $canDeleteAny ? MSZ_E_FORUM_TOPIC_DELETE_DELETED : MSZ_E_FORUM_TOPIC_DELETE_TOPIC;
+    }
+
+    if ($isSystemReq) {
+        return MSZ_E_FORUM_TOPIC_DELETE_OK;
+    }
+
+    if (!$canDeleteAny) {
+        if (!perms_check($perms, MSZ_FORUM_PERM_DELETE_POST)) {
+            return MSZ_E_FORUM_TOPIC_DELETE_PERM;
+        }
+
+        if ($topic['author_user_id'] !== $userId) {
+            return MSZ_E_FORUM_TOPIC_DELETE_OWNER;
+        }
+
+        if (strtotime($topic['topic_created']) <= time() - MSZ_FORUM_TOPIC_DELETE_TIME_LIMIT) {
+            return MSZ_E_FORUM_TOPIC_DELETE_OLD;
+        }
+
+        $totalReplies = $topic['topic_post_count'] + $topic['topic_deleted_post_count'];
+
+        if ($totalReplies > MSZ_E_FORUM_TOPIC_DELETE_POSTS) {
+            return MSZ_E_FORUM_TOPIC_DELETE_POSTS;
+        }
+    }
+
+    return MSZ_E_FORUM_TOPIC_DELETE_OK;
+}
+
+function forum_topic_delete(int $topicId): bool
+{
+    if ($topicId < 1) {
+        return false;
+    }
+
+    $markTopicDeleted = db_prepare('
+        UPDATE `msz_forum_topics`
+        SET `topic_deleted` = NOW()
+        WHERE `topic_id` = :topic
+        AND `topic_deleted` IS NULL
+    ');
+    $markTopicDeleted->bindValue('topic', $topicId);
+
+    if (!$markTopicDeleted->execute()) {
+        return false;
+    }
+
+    $markPostsDeleted = db_prepare('
+        UPDATE `msz_forum_posts` as p
+        SET p.`post_deleted` = (
+            SELECT `topic_deleted`
+            FROM `msz_forum_topics`
+            WHERE `topic_id` = p.`topic_id`
+        )
+        WHERE p.`topic_id` = :topic
+        AND p.`post_deleted` IS NULL
+    ');
+    $markPostsDeleted->bindValue('topic', $topicId);
+
+    return $markPostsDeleted->execute();
+}
+
+function forum_topic_restore(int $topicId): bool
+{
+    if ($topicId < 1) {
+        return false;
+    }
+
+    $markPostsRestored = db_prepare('
+        UPDATE `msz_forum_posts` as p
+        SET p.`post_deleted` = NULL
+        WHERE p.`topic_id` = :topic
+        AND p.`post_deleted` = (
+            SELECT `topic_deleted`
+            FROM `msz_forum_topics`
+            WHERE `topic_id` = p.`topic_id`
+        )
+    ');
+    $markPostsRestored->bindValue('topic', $topicId);
+
+    if (!$markPostsRestored->execute()) {
+        return false;
+    }
+
+    $markTopicRestored = db_prepare('
+        UPDATE `msz_forum_topics`
+        SET `topic_deleted` = NULL
+        WHERE `topic_id` = :topic
+        AND `topic_deleted` IS NOT NULL
+    ');
+    $markTopicRestored->bindValue('topic', $topicId);
+
+    return $markTopicRestored->execute();
+}
+
+function forum_topic_nuke(int $topicId): bool
+{
+    if ($topicId < 1) {
+        return false;
+    }
+
+    $nukeTopic = db_prepare('
+        DELETE FROM `msz_forum_topics`
+        WHERE `topic_id` = :topic
+    ');
+    $nukeTopic->bindValue('topic', $topicId);
+    return $nukeTopic->execute();
 }
