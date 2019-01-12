@@ -19,7 +19,11 @@
 
     <body class="main{% if site_background is defined %} {{ site_background.settings|bg_settings('main--bg-%s')|join(' ') }}{% endif %}"
         style="{% if global_accent_colour is defined %}{{ global_accent_colour|html_colour('--accent-colour') }}{% endif %}">
-        {% include '_layout/header.twig' %}
+        {% if current_user.general_perms|default(0)|perms_check(constant('MSZ_PERM_GENERAL_TESTER')) %}
+            {% include '_layout/header.twig' %}
+        {% else %}
+            {% include '_layout/header-old.twig' %}
+        {% endif %}
 
         <div class="main__wrapper">
             {% if current_user.ban_expiration|default(0) > 0 or current_user.silence_expiration|default(0) > 0 %}

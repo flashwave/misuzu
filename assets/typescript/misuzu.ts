@@ -7,7 +7,6 @@
 /// <reference path="FormUtilities.ts" />
 /// <reference path="UserRelations.ts" />
 
-
 declare const timeago: any;
 declare const hljs: any;
 
@@ -44,6 +43,20 @@ window.addEventListener('load', () => {
     }
 
     commentsInit();
+
+    const siteHeader: HTMLDivElement = document.querySelector('.js-header');
+
+    if (siteHeader) {
+        const siteHeaderFloating: string = 'header--floating';
+
+        window.addEventListener('scroll', () => {
+            if (scrollY > 0 && !siteHeader.classList.contains(siteHeaderFloating)) {
+                siteHeader.classList.add(siteHeaderFloating);
+            } else if (scrollY <= 1 && siteHeader.classList.contains(siteHeaderFloating)) {
+                siteHeader.classList.remove(siteHeaderFloating);
+            }
+        });
+    }
 });
 
 function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTMLInputElement, force: boolean = false): void {

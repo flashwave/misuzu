@@ -1,8 +1,7 @@
 {% from '_layout/input.twig' import input_checkbox_raw %}
 {% set in_manage = manage_menu is defined %}
 
-<nav class="header header--new js-header">
-    <div class="header__filler"></div>
+<nav class="header">
     <div class="header__background"></div>
     <div class="header__wrapper">
         <div class="header__icons">
@@ -18,6 +17,7 @@
                 class="avatar header__icon header__icon--user"
                 for="toggle-mobile-header-user"></label>
         </div>
+        {# set user_is_tester = current_user.general_perms|default(0)|perms_check(constant('MSZ_PERM_GENERAL_TESTER')) #}
 
         {{ input_checkbox_raw('', false, 'header__menu-toggle', '', false, {'id':'toggle-mobile-header-menu'}) }}
         <ul class="header__menu">
