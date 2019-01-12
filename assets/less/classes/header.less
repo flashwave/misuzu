@@ -185,6 +185,10 @@
         order: 3;
         align-items: center;
 
+        @media (max-width: @site-mobile-width) {
+            justify-content: flex-end;
+        }
+
         &-toggle {
             display: none;
         }
