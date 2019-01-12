@@ -8,14 +8,20 @@
 }) %}
 
 {% block content %}
-    {{ forum_header(forum_info.forum_name, forum_breadcrumbs, true, canonical_url) }}
+    {{ forum_header(forum_info.forum_name, forum_breadcrumbs, true, canonical_url, [
+        {
+            'html': '<i class="far fa-check-circle"></i> Mark as Read',
+            'url': url_construct('/forum/index.php', {'m': 'mark', 'f': forum_info.forum_id, 'c': csrf_token('forum_mark')}),
+            'display': current_user is defined,
+        }
+    ]) }}
 
     {% if forum_may_have_children and forum_info.forum_subforums|length > 0 %}
         {{ forum_category_listing(forum_info.forum_subforums, 'Forums') }}
     {% endif %}
 
     {% if forum_may_have_topics %}
-        {% set category_tools = forum_category_tools(forum_info, forum_perms, forum_pagination, current_user|default(false)) %}
+        {% set category_tools = forum_category_tools(forum_info, forum_perms, forum_pagination) %}
         {{ category_tools }}
         {{ forum_topic_listing(forum_topics) }}
         {{ category_tools }}

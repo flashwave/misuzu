@@ -5,7 +5,12 @@ switch ($_GET['m'] ?? '') {
     case 'mark':
         $forumId = (int)($_GET['f'] ?? null);
         $markEntireForum = $forumId === 0;
-        $markAction = forum_mark_read($markEntireForum ? null : $forumId, user_session_current('user_id', 0));
+        $markAction = false;
+
+        if (user_session_active() && csrf_verify('forum_mark', $_GET['c'] ?? '')) {
+            $markAction = forum_mark_read($markEntireForum ? null : $forumId, user_session_current('user_id', 0));
+        }
+
         header('Location: /forum' . (!$markAction || $markEntireForum ? '' : url_construct('/forum.php', ['f' => $forumId])));
         break;
 
