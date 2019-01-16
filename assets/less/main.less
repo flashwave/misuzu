@@ -6,8 +6,9 @@
 
 :root {
     --site-max-width: 1200px;
-    --header-height: 70px;
+    --header-height-static: 70px;
     --header-height-floating: 50px;
+    --header-height: var(--header-height-static);
 
     --background-image: initial;
 
@@ -120,6 +121,7 @@ html {
 // Specific styles
 @import "classes/footer";
 @import "classes/header";
+@import "classes/headerv1";
 @import "classes/index";
 @import "classes/permissions";
 @import "classes/auth";

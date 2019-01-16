@@ -1,17 +1,12 @@
-.header {
+.headerv1 {
     --header-image-px: 60px;
     flex: 0 0 auto;
     transition: height .2s;
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     z-index: 500;
-
-    &--floating {
-        --header-height: var(--header-height-floating);
-        --header-image-px: 40px;
-    }
 
     &__background {
         position: absolute;
@@ -22,13 +17,8 @@
         background: var(--background-pattern);
         background-color: var(--header-accent-colour);
         background-blend-mode: multiply;
-        transition: box-shadow .2s, mask-image .2s, -webkit-mask-image .2s;
-    }
-
-    &:not(&--floating) &__background {
-        --header-background-mask-image: linear-gradient(180deg, var(--background-colour) 0, transparent 100%);
-        mask-image: var(--header-background-mask-image);
-        -webkit-mask-image: var(--header-background-mask-image); // fuck chrome
+        mask-image: linear-gradient(180deg, var(--background-colour) 0, transparent 100%);
+        -webkit-mask-image: linear-gradient(180deg, var(--background-colour) 0, transparent 100%);
     }
 
     &__wrapper {
@@ -111,7 +101,7 @@
             width: 100%;
             background: var(--header-accent-colour);
 
-            &-toggle:checked ~ .header__menu {
+            &-toggle:checked ~ .headerv1__menu {
                 display: block;
             }
 
@@ -131,14 +121,19 @@
         @media (min-width: @site-mobile-width) {
             &__item {
                 text-align: center;
-                transition: background-color .2s;
+                transition: background-color .2s, border-color .2s;
+                margin-right: 1px;
+                border: 1px solid transparent;
+                border-radius: 2px;
 
                 &:hover,
                 &:active,
-                &:focus {
-                    background-color: var(--header-accent-colour);
+                &:focus,
+                &:focus-within {
+                    background-color: var(--background-colour-translucent-9);
+                    border-color: var(--header-accent-colour);
 
-                    .header__submenu {
+                    .headerv1__submenu {
                         transform: scaleY(1);
                     }
                 }
@@ -172,14 +167,17 @@
 
         @media (min-width: @site-mobile-width) {
             position: absolute; // floating
+            left: -1px;
             transform: scaleY(0);
             transform-origin: center top 0;
             background: var(--header-accent-colour);
             overflow: hidden;
             z-index: 100;
             text-align: left;
-            box-shadow: 0 1px 2px var(--header-accent-colour);
+            box-shadow: 0 2px 2px var(--header-accent-colour);
             transition: transform .2s;
+            padding: 1px;
+            border-radius: 2px;
 
             &:hover,
             &:focus {
@@ -192,6 +190,17 @@
                 display: block;
                 padding: 2px 6px;
                 min-width: 100px;
+                background-color: var(--background-colour-translucent-9);
+                transition: background-color .2s;
+
+                &:hover,
+                &:focus {
+                    background-color: var(--background-colour-translucent-7);
+                }
+
+                &:active {
+                    background-color: var(--background-colour-translucent-8);
+                }
             }
         }
     }
@@ -215,7 +224,7 @@
             width: 100%;
             margin-top: 4px;
 
-            &-toggle:checked ~ .header__user {
+            &-toggle:checked ~ .headerv1__user {
                 display: flex;
             }
         }

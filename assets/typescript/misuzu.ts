@@ -47,17 +47,21 @@ window.addEventListener('load', () => {
     const siteHeader: HTMLDivElement = document.querySelector('.js-header');
 
     if (siteHeader) {
-        const siteHeaderFloating: string = 'header--floating';
-
-        window.addEventListener('scroll', () => {
-            if (scrollY > 0 && !siteHeader.classList.contains(siteHeaderFloating)) {
-                siteHeader.classList.add(siteHeaderFloating);
-            } else if (scrollY <= 1 && siteHeader.classList.contains(siteHeaderFloating)) {
-                siteHeader.classList.remove(siteHeaderFloating);
-            }
-        });
+        window.addEventListener('scroll', () => updateHeader(siteHeader));
+        updateHeader(siteHeader); // initial call to bring it in the right state
     }
 });
+
+function updateHeader(element: HTMLDivElement): void
+{
+    const floating: string = 'header--floating';
+
+    if (scrollY > 10 && !element.classList.contains(floating)) {
+        element.classList.add(floating);
+    } else if (scrollY < 10 && element.classList.contains(floating)) {
+        element.classList.remove(floating);
+    }
+}
 
 function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTMLInputElement, force: boolean = false): void {
     if (!force) {
