@@ -63,9 +63,9 @@ curl_setopt_array($curl, [
 $curlBody = curl_exec($curl);
 curl_close($curl);
 
-$entityTag = '"' . hash('sha256', $curlBody) . '"';
+$entityTag = 'W/"' . hash('sha256', $curlBody) . '"';
 
-if (!empty($_SERVER['HTTP_IF_NONE_MATCH']) && strtolower($_SERVER['HTTP_IF_NONE_MATCH']) === $entityTag) {
+if (!empty($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $entityTag) {
     http_response_code(304);
     return;
 }
