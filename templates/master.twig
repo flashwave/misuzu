@@ -15,11 +15,18 @@
                 }
             </style>
         {% endif %}
+        {% if site_logo is defined %}
+            <style>
+                :root {
+                    --site-logo: url('{{ site_logo }}');
+                }
+            </style>
+        {% endif %}
     </head>
 
     <body class="main{% if site_background is defined %} {{ site_background.settings|bg_settings('main--bg-%s')|join(' ') }}{% endif %}"
         style="{% if global_accent_colour is defined %}{{ global_accent_colour|html_colour('--accent-colour') }}{% endif %}">
-        {% if current_user.general_perms|default(0)|perms_check(constant('MSZ_PERM_GENERAL_TESTER')) %}
+        {% if constant('MSZ_DEBUG') or current_user.general_perms|default(0)|perms_check(constant('MSZ_PERM_GENERAL_TESTER')) %}
             {% include '_layout/header.twig' %}
         {% else %}
             {% include '_layout/header-old.twig' %}

@@ -1,88 +1,170 @@
 {% from '_layout/input.twig' import input_checkbox_raw %}
-{% set in_manage = manage_menu is defined %}
+
+{% set site_menu = [
+    {
+        'title': 'Home',
+        'url': '/',
+        'menu': [
+            {
+                'title': 'Members',
+                'url': '/members.php',
+            },
+            {
+                'title': 'Changelog',
+                'url': '/changelog.php',
+            },
+            {
+                'title': 'Contact',
+                'url': '/info.php/contact',
+            },
+            {
+                'title': 'Rules',
+                'url': '/info.php/rules',
+            },
+            {
+                'title': 'Twitter',
+                'url': 'https://twitter.com/flashiinet',
+            },
+        ],
+    },
+    {
+        'title': 'News',
+        'url': '/news.php',
+    },
+    {
+        'title': 'Forum',
+        'url': '/forum',
+    },
+    {
+        'title': 'Chat',
+        'url': 'https://chat.flashii.net',
+    },
+] %}
+
+{% set user_menu =
+    current_user is defined
+    ? [
+        {
+            'title': 'Profile',
+            'url': '/profile.php?u=' ~ current_user.user_id,
+            'icon': 'fas fa-user fa-fw',
+        },
+        {
+            'title': 'Settings',
+            'url': '/settings.php',
+            'icon': 'fas fa-cog fa-fw',
+        },
+        {
+            'title': 'Return to Site',
+            'url': site_link|default('/'),
+            'icon': 'fas fa-door-open fa-fw',
+            'display': has_manage_access and manage_menu is defined
+        },
+        {
+            'title': 'Manage',
+            'url': manage_link|default('/manage/index.php'),
+            'icon': 'fas fa-door-closed fa-fw',
+            'display': has_manage_access and manage_menu is not defined
+        },
+        {
+            'title': 'Log out',
+            'url': '/auth.php?m=logout&s=' ~ csrf_token('logout'),
+            'icon': 'fas fa-sign-out-alt fa-fw',
+        },
+    ]
+    : [
+        {
+            'title': 'Register',
+            'url': '/auth.php?m=register',
+            'icon': 'fas fa-user-plus fa-fw',
+        },
+        {
+            'title': 'Log in',
+            'url': '/auth.php?m=login',
+            'icon': 'fas fa-sign-in-alt fa-fw',
+        },
+    ]
+%}
 
 <nav class="header header--new js-header">
     <div class="header__background"></div>
-    <div class="header__wrapper">
-        <div class="header__icons">
-            <label class="header__icon header__icon--menu" for="toggle-mobile-header-menu">
+
+    <div class="header__desktop">
+        <a class="header__desktop__logo" href="/" title="{{ globals.site_name }}">
+            {{ globals.site_name }}
+        </a>
+
+        <div class="header__desktop__menus">
+            {% for item in site_menu %}
+                <div class="header__desktop__menu">
+                    {{ item.url|html_link(item.title, {'class': 'header__desktop__link header__desktop__link--primary'})|raw }}
+
+                    {% if item.menu is defined and item.menu is iterable %}
+                        {% for subitem in item.menu %}
+                            {{ subitem.url|html_link(subitem.title, {'class': 'header__desktop__link'})|raw }}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="header__desktop__user">
+            {% for item in user_menu %}
+                {% if item.display is not defined or item.display %}
+                    <a href="{{ item.url }}" title="{{ item.title }}" class="header__desktop__user__button">
+                        <i class="{{ item.icon }}"></i>
+                    </a>
+                {% endif %}
+            {% endfor %}
+
+            {% if current_user is defined %}
+                <a href="/profile.php?u={{ current_user.user_id }}" class="avatar header__desktop__user__avatar"
+                    style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');" title="{{ current_user.username }}"></a>
+            {% else %}
+                <a href="/auth.php?m=login" class="avatar header__desktop__user__avatar"
+                    style="background-image:url('/profile.php?m=avatar');"></a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="header__mobile">
+        <div class="header__mobile__icons">
+            <label class="header__mobile__icon" for="toggle-mobile-header">
                 <i class="fas fa-bars"></i>
             </label>
 
-            <a class="header__logo{% if in_manage %} header__logo--manage{% endif %}" href="/">
+            <a class="header__mobile__logo header__mobile__icon" href="/">
                 {{ globals.site_name }}
             </a>
 
-            <label style="background-image:url('/profile.php?u={{ current_user.user_id|default(0) }}&amp;m=avatar');"
-                class="avatar header__icon header__icon--user"
-                for="toggle-mobile-header-user"></label>
+            <label class="header__mobile__icon avatar header__mobile__avatar" for="toggle-mobile-header"
+                style="background-image:url('/profile.php?u={{ current_user.user_id|default(0) }}&amp;m=avatar');">
+            </label>
         </div>
 
-        {{ input_checkbox_raw('', false, 'header__menu-toggle', '', false, {'id':'toggle-mobile-header-menu'}) }}
-        <ul class="header__menu">
-            <li class="header__menu__item">
-                <a href="/" class="header__menu__link">Home</a>
-                <ul class="header__submenu">
-                    <li class="header__submenu__item"><a href="/members.php" class="header__submenu__link">Members</a></li>
-                    <li class="header__submenu__item"><a href="/changelog.php" class="header__submenu__link">Changelog</a></li>
-                    <li class="header__submenu__item"><a href="/info.php/contact" class="header__submenu__link">Contact</a></li>
-                    <li class="header__submenu__item"><a href="/info.php/rules" class="header__submenu__link">Rules</a></li>
-                    <li class="header__submenu__item"><a href="https://twitter.com/flashiinet" class="header__submenu__link">Twitter</a></li>
-                </ul>
-            </li>
-            <li class="header__menu__item"><a href="/news.php" class="header__menu__link">News</a></li>
-            <li class="header__menu__item">
-                <a href="/forum/" class="header__menu__link">Forum</a>
-                {#<ul class="header__submenu">
-                    <li class="header__submenu__item"><a href="#" class="header__submenu__link">Unanswered Posts</a></li>
-                    <li class="header__submenu__item"><a href="#" class="header__submenu__link">New Posts</a></li>
-                    <li class="header__submenu__item"><a href="#" class="header__submenu__link">Your Posts</a></li>
-                </ul>#}
-            </li>
-            <li class="header__menu__item"><a href="https://chat.flashii.net" class="header__menu__link">Chat</a></li>
-        </ul>
-
-        {{ input_checkbox_raw('', false, 'header__user-toggle', '', false, {'id':'toggle-mobile-header-user'}) }}
-        <div class="header__user">
-            {% if current_user is defined %}
-                <a href="/profile.php?u={{ current_user.user_id }}" title="Profile" class="header__user__button">
-                    <i class="fas fa-user fa-fw"></i>
-                </a>
-
-                <a href="/settings.php" title="Settings" class="header__user__button">
-                    <i class="fas fa-cog fa-fw"></i>
-                </a>
-
-                {% if has_manage_access %}
-                    {% if in_manage %}
-                        <a href="{{ site_link|default('/') }}" title="Return to the Site" class="header__user__button">
-                            <i class="fas fa-door-open fa-fw"></i>
-                        </a>
-                    {% else %}
-                        <a href="{{ manage_link|default('/manage/index.php') }}" title="Enter Manage" class="header__user__button">
-                            <i class="fas fa-door-closed fa-fw"></i>
+        {{ input_checkbox_raw('', false, 'header__mobile__toggle', '', false, {'id':'toggle-mobile-header'}) }}
+        <div class="header__mobile__menu">
+            <div class="header__mobile__user">
+                {% for item in user_menu %}
+                    {% if item.display is not defined or item.display %}
+                        <a href="{{ item.url }}" class="header__mobile__link header__mobile__link--user">
+                            <i class="{{ item.icon }}"></i> {{ item.title }}
                         </a>
                     {% endif %}
-                {% endif %}
+                {% endfor %}
+            </div>
 
-                <a href="/auth.php?m=logout&amp;s={{ csrf_token('logout') }}" title="Log out" class="header__user__button">
-                    <i class="fas fa-sign-out-alt fa-fw"></i>
-                </a>
+            <div class="header__mobile__navigation">
+                {% for item in site_menu %}
+                    {{ item.url|html_link(item.title, {'class': 'header__mobile__link header__mobile__link--primary'})|raw }}
 
-                <a href="/profile.php?u={{ current_user.user_id }}" class="avatar header__user__avatar"
-                    style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');" title="{{ current_user.username }}"></a>
-            {% else %}
-                <a href="/auth.php?m=register" title="Register" class="header__user__button">
-                    <i class="fas fa-user-plus fa-fw"></i>
-                </a>
-
-                <a href="/auth.php?m=login" title="Log in" class="header__user__button">
-                    <i class="fas fa-sign-in-alt fa-fw"></i>
-                </a>
-
-                <a href="/auth.php?m=login" class="avatar header__user__avatar"
-                    style="background-image:url('/profile.php?m=avatar');"></a>
-            {% endif %}
+                    {% if item.menu is defined and item.menu is iterable %}
+                        {% for subitem in item.menu %}
+                            {{ subitem.url|html_link(subitem.title, {'class': 'header__mobile__link'})|raw }}
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
     </div>
 </nav>

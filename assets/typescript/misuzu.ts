@@ -56,9 +56,9 @@ function updateHeader(element: HTMLDivElement): void
 {
     const floating: string = 'header--floating';
 
-    if (scrollY > 10 && !element.classList.contains(floating)) {
+    if (scrollY > 0 && !element.classList.contains(floating)) {
         element.classList.add(floating);
-    } else if (scrollY < 10 && element.classList.contains(floating)) {
+    } else if (scrollY <= 0 && element.classList.contains(floating)) {
         element.classList.remove(floating);
     }
 }
