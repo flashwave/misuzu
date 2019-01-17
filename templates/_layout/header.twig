@@ -149,6 +149,8 @@
 
         {{ input_checkbox_raw('', false, 'header__mobile__toggle', '', false, {'id':'toggle-mobile-header'}) }}
         <div class="header__mobile__menu">
+            <div class="header__mobile__menu__spacer"><!-- required because padding is DUMB and OVERRIDES max-height --></div>
+
             <div class="header__mobile__user">
                 {% for item in user_menu %}
                     {% if item.display is not defined or item.display %}

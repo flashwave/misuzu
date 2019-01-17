@@ -243,30 +243,37 @@
 
         &__menu {
             position: absolute;
+            top: 0;
             left: 0;
             right: 0;
             z-index: 99;
-            padding: var(--header-height-mobile) 5px 5px;
             background: var(--background-pattern);
             background-color: var(--header-accent-colour);
             background-blend-mode: multiply;
-            top: -100vh;
-            transition: top .2s;
+            transition: max-height .2s;
             box-shadow: 0 1px 2px #000A;
             text-shadow: 0 1px 4px #000;
+            max-height: 0;
+            overflow: hidden;
+
+            &__spacer {
+                height: var(--header-height-mobile);
+            }
         }
 
         &__toggle:checked ~ &__menu {
-            display: block;
-            top: 0;
+            max-height: 600px;
         }
 
         &__user {
             display: grid;
             grid-template-columns: 1fr 1fr;
             border-bottom: 1px solid #fff;
-            margin-bottom: 5px;
-            padding-bottom: 3px; // extra 2px is provided by the buttons
+            padding: 5px 5px 3px; // extra 2px is provided by the buttons
+        }
+
+        &__navigation {
+            padding: 5px;
         }
 
         &__link {
