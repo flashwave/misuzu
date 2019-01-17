@@ -131,9 +131,12 @@
                 box-shadow: 0 0 4px #111;
 
                 &:hover,
-                &:active,
                 &:focus {
-                    box-shadow: 0 0 4px var(--header-accent-colour);
+                    box-shadow: 0 0 0 1px var(--header-accent-colour), 0 0 4px #111;
+                }
+
+                &:active {
+                    box-shadow: 0 0 0 2px var(--header-accent-colour), 0 0 4px #111;
                 }
             }
 
@@ -225,12 +228,6 @@
         &__avatar {
             transition: box-shadow .2s;
             box-shadow: 0 0 4px #111;
-
-            &:hover,
-            &:active,
-            &:focus {
-                box-shadow: 0 0 4px var(--header-accent-colour);
-            }
         }
 
         &__toggle {
