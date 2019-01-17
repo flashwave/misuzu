@@ -39,6 +39,7 @@ class BBCodeParser implements ParserInterface
                 // Links
                 new Tags\NamedUrlTag,
                 new Tags\UrlTag,
+                new Tags\LinkifyTag,
 
                 // Finally parse leftover newlines
                 new Tags\NewLineTag,
