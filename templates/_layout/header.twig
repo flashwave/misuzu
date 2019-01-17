@@ -86,7 +86,7 @@
     ]
 %}
 
-<nav class="header header--new js-header">
+<nav class="header">
     <div class="header__background"></div>
 
     <div class="header__desktop">
@@ -97,12 +97,17 @@
         <div class="header__desktop__menus">
             {% for item in site_menu %}
                 <div class="header__desktop__menu">
-                    {{ item.url|html_link(item.title, {'class': 'header__desktop__link header__desktop__link--primary'})|raw }}
+                    {{ item.url|html_link(item.title, {'class': 'header__desktop__link header__desktop__menu__link'})|raw }}
 
                     {% if item.menu is defined and item.menu is iterable %}
-                        {% for subitem in item.menu %}
-                            {{ subitem.url|html_link(subitem.title, {'class': 'header__desktop__link'})|raw }}
-                        {% endfor %}
+                        <div class="header__desktop__submenu">
+                            <div class="header__desktop__submenu__background"></div>
+                            <div class="header__desktop__submenu__content">
+                                {% for subitem in item.menu %}
+                                    {{ subitem.url|html_link(subitem.title, {'class': 'header__desktop__link header__desktop__submenu__link'})|raw }}
+                                {% endfor %}
+                            </div>
+                        </div>
                     {% endif %}
                 </div>
             {% endfor %}

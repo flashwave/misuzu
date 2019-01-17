@@ -43,25 +43,7 @@ window.addEventListener('load', () => {
     }
 
     commentsInit();
-
-    const siteHeader: HTMLDivElement = document.querySelector('.js-header');
-
-    if (siteHeader) {
-        window.addEventListener('scroll', () => updateHeader(siteHeader));
-        updateHeader(siteHeader); // initial call to bring it in the right state
-    }
 });
-
-function updateHeader(element: HTMLDivElement): void
-{
-    const floating: string = 'header--floating';
-
-    if (scrollY > 0 && !element.classList.contains(floating)) {
-        element.classList.add(floating);
-    } else if (scrollY <= 0 && element.classList.contains(floating)) {
-        element.classList.remove(floating);
-    }
-}
 
 function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTMLInputElement, force: boolean = false): void {
     if (!force) {

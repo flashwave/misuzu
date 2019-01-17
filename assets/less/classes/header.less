@@ -1,13 +1,9 @@
 .header {
     --header-image-px: 60px;
     --header-link-margin: 14px;
+    --header-background-mask-image: linear-gradient(180deg, var(--background-colour) 0, transparent 100%);
 
     flex: 0 0 auto;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 500;
 
     &__background {
         position: absolute;
@@ -22,35 +18,13 @@
         -webkit-mask-image: var(--header-background-mask-image); // fuck chrome
     }
 
-    --header-background-mask-image: linear-gradient(180deg, var(--background-colour) 0, transparent 100%);
-
-    @media (min-width: @site-mobile-width) {
-        &--floating {
-            position: fixed;
-            --header-background-mask-image: linear-gradient(180deg, var(--background-colour) 90%, transparent 100%);
-            --header-image-px: 40px;
-            --header-link-margin: 4px;
-            --header-height: var(--header-height-floating);
-        }
-
-        &:hover,
-        &:focus,
-        &:focus-within,
-        &:active {
-            --header-background-mask-image: linear-gradient(180deg, var(--background-colour) calc(var(--header-height-open) - 10px), transparent 100%);
-            --header-height: var(--header-height-open);
-        }
-    }
-
     &__desktop {
         margin: 0 auto;
         display: flex;
         align-items: flex-start;
-        padding: 5px 4px 4px;
+        padding: 4px;
         max-width: var(--site-max-width);
-        height: var(--header-height);
-        transition: height .1s;
-        overflow: hidden;
+        height: var(--header-height-desktop);
 
         @media (max-width: @site-mobile-width) {
             display: none;
@@ -76,27 +50,15 @@
             height: 100%;
         }
 
-        &__menu {
-            height: 100%;
-            margin: 0 5px;
-        }
-
         &__link {
             color: inherit;
             text-decoration: none;
             display: block;
             min-width: 100px;
-            padding: 4px 10px;
             cursor: pointer;
-            opacity: .4;
             border-radius: 2px;
-            transition: background-color .2s, margin .1s, opacity .1s;
-
-            &--primary {
-                margin: var(--header-link-margin) 0;
-                font-size: 1.2em;
-                padding: 6px 10px;
-            }
+            padding: 4px 10px;
+            transition: background-color .2s;
 
             &:hover,
             &:focus {
@@ -108,12 +70,55 @@
             }
         }
 
-        &__menu:hover &__link,
-        &__menu:active &__link,
-        &__menu:focus &__link,
-        &__menu:focus-within &__link,
-        &__menus:not(:hover) &__link--primary {
-            opacity: 1;
+        &__menu {
+            margin: 0 5px;
+
+            &__link {
+                margin: var(--header-link-margin) 0;
+                font-size: 1.2em;
+                padding: 6px 10px;
+                text-align: center;
+            }
+
+            &:focus-within &__link {
+                background-color: fade(#fff, 30%);
+            }
+        }
+
+        &__submenu {
+            position: absolute;
+            z-index: 100;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height .2s;
+            left: -5px;
+            top: 50px;
+            box-shadow: 0 1px 2px #000A;
+
+            &__link {
+                margin: 5px;
+            }
+
+            &__background {
+                background: var(--header-accent-colour);
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            }
+
+            &__content {
+                background: var(--background-colour-translucent-9);
+                overflow: hidden;
+            }
+        }
+
+        &__menu:hover &__submenu,
+        &__menu:focus &__submenu,
+        &__menu:focus-within &__submenu,
+        &__menu:active &__submenu {
+            max-height: 200px;
         }
 
         &__user {
@@ -185,7 +190,7 @@
             justify-content: space-between;
             height: var(--header-height-mobile);
             padding: 5px;
-            z-index: 500;
+            z-index: 100;
 
             -webkit-touch-callout: none !important;
             -webkit-user-select: none !important;
@@ -240,7 +245,7 @@
             position: absolute;
             left: 0;
             right: 0;
-            z-index: 499;
+            z-index: 99;
             padding: var(--header-height-mobile) 5px 5px;
             background: var(--background-pattern);
             background-color: var(--header-accent-colour);

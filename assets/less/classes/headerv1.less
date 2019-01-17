@@ -2,10 +2,6 @@
     --header-image-px: 60px;
     flex: 0 0 auto;
     transition: height .2s;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
     z-index: 500;
 
     &__background {
@@ -27,12 +23,13 @@
         align-items: center;
         padding: 4px;
         max-width: var(--site-max-width);
-        height: var(--header-height);
+        height: var(--header-height-desktop);
         transition: height .2s;
 
         @media (max-width: @site-mobile-width) {
             flex-direction: column;
             height: 100%;
+            height: var(--header-height-mobile);
         }
     }
 

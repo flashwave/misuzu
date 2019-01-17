@@ -8,11 +8,8 @@
     --site-max-width: 1200px;
     --site-logo: url('/images/logos/imouto-default.png');
 
-    --header-height-static: 70px;
-    --header-height-floating: 50px;
-    --header-height-open: 240px;
-    --header-height: var(--header-height-static);
-    --header-height-mobile: 50px; // functionally different from -floating
+    --header-height-desktop: 70px;
+    --header-height-mobile: 50px;
 
     --background-image: initial;
 
@@ -72,11 +69,6 @@ html {
         width: 100%;
         margin: 0 auto;
         flex: 1 0 auto;
-        padding-top: var(--header-height);
-
-        @media (max-width: @site-mobile-width) {
-            padding-top: var(--header-height-mobile);
-        }
     }
 
     &--bg-blend {
