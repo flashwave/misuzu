@@ -115,6 +115,11 @@ if ($mode === 'edit') {
 $notices = [];
 
 if (!empty($_POST)) {
+    $topicTitle = $_POST['post']['title'] ?? '';
+    $postText = $_POST['post']['text'] ?? '';
+    $postParser = (int)($_POST['post']['parser'] ?? MSZ_PARSER_BBCODE);
+    $topicType = isset($_POST['post']['type']) ? (int)$_POST['post']['type'] : null;
+
     if (!csrf_verify('forum_post', $_POST['csrf'] ?? '')) {
         $notices[] = 'Could not verify request.';
     } else {
@@ -127,11 +132,9 @@ if (!empty($_POST)) {
         }
 
         if ($isEditingTopic) {
-            $topicTitle = $_POST['post']['title'] ?? '';
             $originalTopicTitle = $topic['topic_title'] ?? null;
             $topicTitleChanged = $topicTitle !== $originalTopicTitle;
             $originalTopicType = (int)($topic['topic_type'] ?? MSZ_TOPIC_TYPE_DISCUSSION);
-            $topicType = isset($_POST['post']['type']) ? (int)$_POST['post']['type'] : null;
             $topicTypeChanged = $topicType !== null && $topicType !== $originalTopicType;
 
             switch (forum_validate_title($topicTitle)) {
@@ -150,9 +153,6 @@ if (!empty($_POST)) {
                 $notices[] = 'You are not allowed to set this topic type.';
             }
         }
-
-        $postText = $_POST['post']['text'] ?? '';
-        $postParser = (int)($_POST['post']['parser'] ?? MSZ_PARSER_BBCODE);
 
         if (!parser_is_valid($postParser)) {
             $notices[] = 'Invalid parser selected.';
