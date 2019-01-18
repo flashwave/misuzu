@@ -130,7 +130,7 @@
 
         <div class="forum__category__container">
             <div class="forum__category__icon forum__category__icon--{{ forum_unread }}">
-                <i class="{{ forum_type }}"></i>
+                <i class="{{ forum_type }} fa-fw"></i>
             </div>
 
             <div class="forum__category__details">
@@ -252,7 +252,7 @@
 
 {% macro forum_topic_entry(topic, topic_type, topic_unread) %}
     {% set topic_type = topic_type|default(null) %}
-    {% set topic_unread = topic_unread|default(topic.topic_unread|default(false)) ? 'unread' : 'read' %}
+    {% set topic_unread = topic_unread|default(topic.topic_unread|default(false)) %}
     {% set topic_important = topic.topic_type == constant('MSZ_TOPIC_TYPE_STICKY') or topic.topic_type == constant('MSZ_TOPIC_TYPE_ANNOUNCEMENT') or topic.topic_type == constant('MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT') %}
 
     {% if topic_type is null %}
@@ -267,7 +267,7 @@
         {% elseif topic.topic_locked is defined and topic.topic_locked is not null %}
             {% set topic_type = 'fas fa-lock' %}
         {% else %}
-            {% set topic_type = 'fas fa-comment' %}
+            {% set topic_type = (topic_unread ? 'fas' : 'far') ~ ' fa-comment' %}
         {% endif %}
     {% endif %}
 
@@ -275,8 +275,12 @@
         <a href="/forum/topic.php?t={{ topic.topic_id }}" class="forum__topic__link"></a>
 
         <div class="forum__topic__container">
-            <div class="forum__topic__icon forum__topic__icon--{{ topic_unread }}">
-                <i class="{{ topic_type }}"></i>
+            <div class="forum__topic__icon forum__topic__icon--{{ topic_unread ? 'unread' : 'read' }}">
+                <i class="{{ topic_type }} fa-fw"></i>
+
+                {% if topic.topic_participated %}
+                    <div class="forum__topic__icon__participated" title="You have posted in this topic"></div>
+                {% endif %}
             </div>
 
             <div class="forum__topic__details">

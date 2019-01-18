@@ -71,10 +71,22 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        padding-bottom: 1px; // fixes centering
+        padding: 1px 1px 0 2px;
 
         &--unread {
             background-color: var(--accent-colour);
+        }
+
+        &__participated {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 4px;
+            height: 4px;
+            background-color: #fff;
+            border-radius: 100%;
+            box-shadow: 0 1px 2px #111;
+            pointer-events: initial;
         }
     }
 

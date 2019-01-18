@@ -184,7 +184,14 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
                         AND tt.`user_id` = `target_user_id`
                         AND `track_last_read` >= `topic_bumped`
                     )
-                ) AS `topic_unread`
+                ) AS `topic_unread`,
+                (
+                    SELECT COUNT(`post_id`) > 0
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = t.`topic_id`
+                    AND `user_id` = `target_user_id`
+                    LIMIT 1
+                ) AS `topic_participated`
             FROM `msz_forum_topics` AS t
             LEFT JOIN `msz_users` AS au
             ON t.`user_id` = au.`user_id`
