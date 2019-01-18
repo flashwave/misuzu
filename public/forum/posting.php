@@ -113,6 +113,7 @@ if (!empty($_POST)) {
     $postText = $_POST['post']['text'] ?? '';
     $postParser = (int)($_POST['post']['parser'] ?? MSZ_PARSER_BBCODE);
     $topicType = isset($_POST['post']['type']) ? (int)$_POST['post']['type'] : null;
+    $postSignature = isset($_POST['post']['signature']);
 
     if (!csrf_verify('forum_post', $_POST['csrf'] ?? '')) {
         $notices[] = 'Could not verify request.';
@@ -182,13 +183,14 @@ if (!empty($_POST)) {
                         user_session_current('user_id', 0),
                         ip_remote_address(),
                         $postText,
-                        $postParser
+                        $postParser,
+                        $postSignature
                     );
                     forum_topic_mark_read(user_session_current('user_id', 0), $topicId, $forum['forum_id']);
                     break;
 
                 case 'edit':
-                    if (!forum_post_update($postId, ip_remote_address(), $postText, $postParser, $postText !== $post['post_text'])) {
+                    if (!forum_post_update($postId, ip_remote_address(), $postText, $postParser, $postSignature, $postText !== $post['post_text'])) {
                         $notices[] = 'Post edit failed.';
                     }
 
@@ -232,5 +234,6 @@ echo tpl_render('forum.posting', [
         'type' => $topicType ?? null,
         'text' => $postText ?? null,
         'parser' => $postParser ?? null,
+        'signature' => $postSignature ?? null,
     ],
 ]);

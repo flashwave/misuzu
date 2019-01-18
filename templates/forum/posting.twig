@@ -1,6 +1,6 @@
 {% extends 'forum/master.twig' %}
 {% from 'forum/macros.twig' import forum_header %}
-{% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_button, input_select %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_button, input_select, input_checkbox %}
 
 {% set title = 'Posting' %}
 {% set is_reply = posting_topic is defined %}
@@ -80,6 +80,16 @@
                                 null, null, null, 'forum__post__dropdown'
                             ) }}
                         {% endif %}
+                        {{ input_checkbox(
+                            'post[signature]',
+                            'Display Signature',
+                            posting_defaults.signature is not null
+                                ? posting_defaults.signature : (
+                                    posting_post.post_display_signature is defined
+                                        ? posting_post.post_display_signature
+                                        : true
+                                )
+                        ) }}
                     </div>
 
                     <div class="forum__post__buttons">

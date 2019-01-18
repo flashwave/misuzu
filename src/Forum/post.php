@@ -7,13 +7,14 @@ function forum_post_create(
     int $userId,
     string $ipAddress,
     string $text,
-    int $parser = MSZ_PARSER_PLAIN
+    int $parser = MSZ_PARSER_PLAIN,
+    bool $displaySignature = true
 ): int {
     $createPost = db_prepare('
         INSERT INTO `msz_forum_posts`
-            (`topic_id`, `forum_id`, `user_id`, `post_ip`, `post_text`, `post_parse`)
+            (`topic_id`, `forum_id`, `user_id`, `post_ip`, `post_text`, `post_parse`, `post_display_signature`)
         VALUES
-            (:topic_id, :forum_id, :user_id, INET6_ATON(:post_ip), :post_text, :post_parse)
+            (:topic_id, :forum_id, :user_id, INET6_ATON(:post_ip), :post_text, :post_parse, :post_display_signature)
     ');
     $createPost->bindValue('topic_id', $topicId);
     $createPost->bindValue('forum_id', $forumId);
@@ -21,6 +22,7 @@ function forum_post_create(
     $createPost->bindValue('post_ip', $ipAddress);
     $createPost->bindValue('post_text', $text);
     $createPost->bindValue('post_parse', $parser);
+    $createPost->bindValue('post_display_signature', $displaySignature ? 1 : 0);
 
     return $createPost->execute() ? db_last_insert_id() : 0;
 }
@@ -30,6 +32,7 @@ function forum_post_update(
     string $ipAddress,
     string $text,
     int $parser = MSZ_PARSER_PLAIN,
+    bool $displaySignature = true,
     bool $bumpUpdate = true
 ): bool {
     if ($postId < 1) {
@@ -41,6 +44,7 @@ function forum_post_update(
         SET `post_ip` = INET6_ATON(:post_ip),
             `post_text` = :post_text,
             `post_parse` = :post_parse,
+            `post_display_signature` = :post_display_signature,
             `post_edited` = IF(:bump, NOW(), `post_edited`)
         WHERE `post_id` = :post_id
     ');
@@ -48,6 +52,7 @@ function forum_post_update(
     $updatePost->bindValue('post_ip', $ipAddress);
     $updatePost->bindValue('post_text', $text);
     $updatePost->bindValue('post_parse', $parser);
+    $updatePost->bindValue('post_display_signature', $displaySignature ? 1 : 0);
     $updatePost->bindValue('bump', $bumpUpdate ? 1 : 0);
 
     return $updatePost->execute();
@@ -85,13 +90,11 @@ function forum_post_get(int $postId, bool $allowDeleted = false): array
     $getPost = db_prepare(sprintf(
         '
             SELECT
-                p.`post_id`, p.`post_text`, p.`post_created`, p.`post_parse`,
+                p.`post_id`, p.`post_text`, p.`post_created`, p.`post_parse`, p.`post_display_signature`,
                 p.`topic_id`, p.`post_deleted`, p.`post_edited`, p.`topic_id`, p.`forum_id`,
                 INET6_NTOA(p.`post_ip`) AS `post_ip`,
-                u.`user_id` AS `poster_id`,
-                u.`username` AS `poster_name`,
-                u.`user_created` AS `poster_joined`,
-                u.`user_country` AS `poster_country`,
+                u.`user_id` AS `poster_id`, u.`username` AS `poster_name`,
+                u.`user_created` AS `poster_joined`, u.`user_country` AS `poster_country`,
                 COALESCE(u.`user_colour`, r.`role_colour`) AS `poster_colour`,
                 (
                     SELECT COUNT(`post_id`)
@@ -126,12 +129,11 @@ function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $
         '
             SELECT
                 p.`post_id`, p.`post_text`, p.`post_created`, p.`post_parse`,
-                p.`topic_id`, p.`post_deleted`, p.`post_edited`,
+                p.`topic_id`, p.`post_deleted`, p.`post_edited`, p.`post_display_signature`,
                 INET6_NTOA(p.`post_ip`) AS `post_ip`,
-                u.`user_id` AS `poster_id`,
-                u.`username` AS `poster_name`,
-                u.`user_created` AS `poster_joined`,
-                u.`user_country` AS `poster_country`,
+                u.`user_id` AS `poster_id`, u.`username` AS `poster_name`,
+                u.`user_created` AS `poster_joined`, u.`user_country` AS `poster_country`,
+                u.`user_signature_content` AS `poster_signature_content`, u.`user_signature_parser` AS `poster_signature_parser`,
                 COALESCE(u.`user_colour`, r.`role_colour`) AS `poster_colour`,
                 COALESCE(u.`user_title`, r.`role_title`) AS `poster_title`,
                 (

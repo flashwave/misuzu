@@ -180,17 +180,23 @@
     }
 
     &__options {
-        margin: 2px;
+        margin: 5px;
         display: flex;
         justify-content: space-between;
+        align-items: center;
 
         @media (max-width: @site-mobile-width) {
             flex-direction: column;
         }
     }
 
+    &__settings {
+        display: flex;
+        align-items: center;
+    }
+
     &__dropdown {
-        margin: 0;
+        margin-right: 5px;
     }
 
     &__actions {

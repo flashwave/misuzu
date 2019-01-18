@@ -8,6 +8,7 @@ define('MSZ_PERM_USER_CHANGE_AVATAR', 1 << 1);
 define('MSZ_PERM_USER_CHANGE_BACKGROUND', 1 << 2);
 define('MSZ_PERM_USER_EDIT_ABOUT', 1 << 3);
 define('MSZ_PERM_USER_EDIT_BIRTHDATE', 1 << 4);
+define('MSZ_PERM_USER_EDIT_SIGNATURE', 1 << 5);
 
 define('MSZ_PERM_USER_MANAGE_USERS', 1 << 20);
 define('MSZ_PERM_USER_MANAGE_ROLES', 1 << 21);
@@ -297,26 +298,26 @@ function user_get_birthdays(int $day = 0, int $month = 0)
 
 define('MSZ_USER_ABOUT_MAX_LENGTH', 0xFFFF);
 
-define('MSZ_USER_ABOUT_OK', 0);
-define('MSZ_USER_ABOUT_INVALID_USER', 1);
-define('MSZ_USER_ABOUT_INVALID_PARSER', 2);
-define('MSZ_USER_ABOUT_TOO_LONG', 3);
-define('MSZ_USER_ABOUT_UPDATE_FAILED', 4);
+define('MSZ_E_USER_ABOUT_OK', 0);
+define('MSZ_E_USER_ABOUT_INVALID_USER', 1);
+define('MSZ_E_USER_ABOUT_INVALID_PARSER', 2);
+define('MSZ_E_USER_ABOUT_TOO_LONG', 3);
+define('MSZ_E_USER_ABOUT_UPDATE_FAILED', 4);
 
 function user_set_about_page(int $userId, string $content, int $parser = MSZ_PARSER_PLAIN): int
 {
     if ($userId < 1) {
-        return MSZ_USER_ABOUT_INVALID_USER;
+        return MSZ_E_USER_ABOUT_INVALID_USER;
     }
 
     if (!parser_is_valid($parser)) {
-        return MSZ_USER_ABOUT_INVALID_PARSER;
+        return MSZ_E_USER_ABOUT_INVALID_PARSER;
     }
 
     $length = strlen($content);
 
     if ($length > MSZ_USER_ABOUT_MAX_LENGTH) {
-        return MSZ_USER_ABOUT_TOO_LONG;
+        return MSZ_E_USER_ABOUT_TOO_LONG;
     }
 
     $setAbout = db_prepare('
@@ -329,7 +330,48 @@ function user_set_about_page(int $userId, string $content, int $parser = MSZ_PAR
     $setAbout->bindValue('content', $length < 1 ? null : $content);
     $setAbout->bindValue('parser', $parser);
 
-    return $setAbout->execute() ? MSZ_USER_ABOUT_OK : MSZ_USER_ABOUT_UPDATE_FAILED;
+    return $setAbout->execute()
+        ? MSZ_E_USER_ABOUT_OK
+        : MSZ_E_USER_ABOUT_UPDATE_FAILED;
+}
+
+define('MSZ_USER_SIGNATURE_MAX_LENGTH', 2000);
+
+define('MSZ_E_USER_SIGNATURE_OK', 0);
+define('MSZ_E_USER_SIGNATURE_INVALID_USER', 1);
+define('MSZ_E_USER_SIGNATURE_INVALID_PARSER', 2);
+define('MSZ_E_USER_SIGNATURE_TOO_LONG', 3);
+define('MSZ_E_USER_SIGNATURE_UPDATE_FAILED', 4);
+
+function user_set_signature(int $userId, string $content, int $parser = MSZ_PARSER_PLAIN): int
+{
+    if ($userId < 1) {
+        return MSZ_E_USER_SIGNATURE_INVALID_USER;
+    }
+
+    if (!parser_is_valid($parser)) {
+        return MSZ_E_USER_SIGNATURE_INVALID_PARSER;
+    }
+
+    $length = strlen($content);
+
+    if ($length > MSZ_USER_SIGNATURE_MAX_LENGTH) {
+        return MSZ_E_USER_SIGNATURE_TOO_LONG;
+    }
+
+    $setSignature = db_prepare('
+        UPDATE `msz_users`
+        SET `user_signature_content` = :content,
+            `user_signature_parser` = :parser
+        WHERE `user_id` = :user
+    ');
+    $setSignature->bindValue('user', $userId);
+    $setSignature->bindValue('content', $length < 1 ? null : $content);
+    $setSignature->bindValue('parser', $parser);
+
+    return $setSignature->execute()
+        ? MSZ_E_USER_SIGNATURE_OK
+        : MSZ_E_USER_SIGNATURE_UPDATE_FAILED;
 }
 
 // all the way down here bc of defines, this define is temporary
@@ -388,14 +430,22 @@ define('MSZ_TMP_USER_ERROR_STRINGS', [
         'not-allowed' => "You're not allowed to edit your profile.",
         MSZ_USER_PROFILE_INVALID_FIELD => "Field '%1\$s' does not exist!",
         MSZ_USER_PROFILE_FILTER_FAILED => '%2$s field was invalid!',
-        MSZ_USER_PROFILE_UPDATE_FAILED => 'Failed to update values, contact an administator.',
+        MSZ_USER_PROFILE_UPDATE_FAILED => 'Failed to update profile, contact an administator.',
     ],
     'about' => [
         '_' => 'An unexpected error occurred, contact an administator.',
         'not-allowed' => "You're not allowed to edit your about page.",
-        MSZ_USER_ABOUT_INVALID_USER => 'The requested user does not exist.',
-        MSZ_USER_ABOUT_INVALID_PARSER => 'The selected parser is invalid.',
-        MSZ_USER_ABOUT_TOO_LONG => 'Please keep the length of your about section below %1$d characters.',
-        MSZ_USER_ABOUT_UPDATE_FAILED => 'Failed to update values, contact an administator.',
+        MSZ_E_USER_ABOUT_INVALID_USER => 'The requested user does not exist.',
+        MSZ_E_USER_ABOUT_INVALID_PARSER => 'The selected parser is invalid.',
+        MSZ_E_USER_ABOUT_TOO_LONG => 'Please keep the length of your about section below %1$d characters.',
+        MSZ_E_USER_ABOUT_UPDATE_FAILED => 'Failed to update about section, contact an administator.',
+    ],
+    'signature' => [
+        '_' => 'An unexpected error occurred, contact an administator.',
+        'not-allowed' => "You're not allowed to edit your about page.",
+        MSZ_E_USER_SIGNATURE_INVALID_USER => 'The requested user does not exist.',
+        MSZ_E_USER_SIGNATURE_INVALID_PARSER => 'The selected parser is invalid.',
+        MSZ_E_USER_SIGNATURE_TOO_LONG => 'Please keep the length of your signature below %1$d characters.',
+        MSZ_E_USER_SIGNATURE_UPDATE_FAILED => 'Failed to update signature, contact an administator.',
     ],
 ]);

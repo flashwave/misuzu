@@ -226,6 +226,11 @@ function manage_perms_list(array $rawPerms): array
                     'perm' => MSZ_PERM_USER_EDIT_BIRTHDATE,
                 ],
                 [
+                    'section' => 'edit-signature',
+                    'title' => 'Can change own signature.',
+                    'perm' => MSZ_PERM_USER_EDIT_SIGNATURE,
+                ],
+                [
                     'section' => 'manage-users',
                     'title' => 'Can manage other users.',
                     'perm' => MSZ_PERM_USER_MANAGE_USERS,

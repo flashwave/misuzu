@@ -211,8 +211,9 @@ function user_profile_get(int $userId): array
             '
                 SELECT
                     u.`user_id`, u.`username`, u.`user_country`, u.`user_birthdate`,
-                    u.`user_created`, u.`user_active`,
-                    u.`user_about_parser`, u.`user_about_content`, u.`user_background_settings`,
+                    u.`user_created`, u.`user_active`, u.`user_background_settings`,
+                    u.`user_about_parser`, u.`user_about_content`,
+                    u.`user_signature_parser`, u.`user_signature_content`,
                     %1$s,
                     COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
                     COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,

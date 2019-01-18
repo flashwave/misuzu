@@ -134,6 +134,7 @@ switch ($mode) {
                 'edit_background' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_BACKGROUND),
                 'edit_about' => perms_check($userPerms, MSZ_PERM_USER_EDIT_ABOUT),
                 'edit_birthdate' => perms_check($userPerms, MSZ_PERM_USER_EDIT_BIRTHDATE),
+                'edit_signature' => perms_check($userPerms, MSZ_PERM_USER_EDIT_SIGNATURE),
             ];
 
             tpl_vars([
@@ -177,10 +178,29 @@ switch ($mode) {
                                 (int)($_POST['about']['parser'] ?? MSZ_PARSER_PLAIN)
                             );
 
-                            if ($setAboutError !== MSZ_USER_ABOUT_OK) {
+                            if ($setAboutError !== MSZ_E_USER_ABOUT_OK) {
                                 $notices[] = sprintf(
                                     MSZ_TMP_USER_ERROR_STRINGS['about'][$setAboutError] ?? MSZ_TMP_USER_ERROR_STRINGS['about']['_'],
                                     MSZ_USER_ABOUT_MAX_LENGTH
+                                );
+                            }
+                        }
+                    }
+
+                    if (!empty($_POST['signature']) && is_array($_POST['signature'])) {
+                        if (!$perms['edit_signature']) {
+                            $notices[] = MSZ_TMP_USER_ERROR_STRINGS['signature']['not-allowed'];
+                        } else {
+                            $setSignatureError = user_set_signature(
+                                $userId,
+                                $_POST['signature']['text'] ?? '',
+                                (int)($_POST['signature']['parser'] ?? MSZ_PARSER_PLAIN)
+                            );
+
+                            if ($setSignatureError !== MSZ_E_USER_SIGNATURE_OK) {
+                                $notices[] = sprintf(
+                                    MSZ_TMP_USER_ERROR_STRINGS['signature'][$setSignatureError] ?? MSZ_TMP_USER_ERROR_STRINGS['signature']['_'],
+                                    MSZ_USER_SIGNATURE_MAX_LENGTH
                                 );
                             }
                         }
