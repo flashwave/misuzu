@@ -17,7 +17,7 @@ final class LinkifyTag extends BBCodeTag
                     return $matches[0];
                 }
 
-                return sprintf('<a href="%1$s" class="link" target="_blank" rel="noreferrer noopener">%1$s</a>', $matches[0]);
+                return sprintf(' <a href="%1$s" class="link" target="_blank" rel="noreferrer noopener">%1$s</a>', $matches[0]);
             },
             $text
         );
