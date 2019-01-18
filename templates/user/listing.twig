@@ -1,6 +1,5 @@
 {% extends 'user/master.twig' %}
-{% from 'macros.twig' import pagination, container_title %}
-{% from '_layout/input.twig' import input_select %}
+{% from 'macros.twig' import container_title %}
 {% from 'user/macros.twig' import user_card %}
 
 {% set url_role = role.role_id != 1 ? role.role_id : 0 %}
@@ -15,39 +14,64 @@
 {% set title = role.role_id == 1 ? 'Members' : 'Role » ' ~ role.role_name  %}
 {% set manage_link = '/manage/users.php?v=listing' %}
 
-{% block content %}
-    <form class="container" onchange="this.submit()" style="{{ role.role_colour|html_colour('--accent-colour') }}">
-        {{ container_title('<i class="fas fa-users fa-fw"></i> Member Listing') }}
+{% macro member_nav(roles, role_id, orders, order, directions, direction, users_pagination, url_role, url_sort, url_direction) %}
+    {% from 'macros.twig' import pagination %}
+    {% from '_layout/input.twig' import input_select %}
 
-        <div class="userlist__selection">
-            {{ input_select('r', roles, role.role_id, 'role_name', 'role_id') }}
-            {{ input_select('ss', order_fields, order_field, 'title') }}
-            {{ input_select('sd', order_directions, order_direction) }}
+    <div class="userlist__navigation">
+        <form onchange="this.submit()" class="userlist__sorting">
+            {{ input_select('r', roles, role_id, 'role_name', 'role_id', false, 'userlist__select') }}
+            {{ input_select('ss', orders, order, 'title', null, false, 'userlist__select') }}
+            {{ input_select('sd', directions, direction, null, null, false, 'userlist__select') }}
 
             <noscript>
                 <button class="input__button">Go</button>
             </noscript>
+        </form>
+
+        <div class="userlist__pagination">
+            {{ pagination(users_pagination, '/members.php', null, {'r': url_role, 'ss': url_sort, 'sd': url_direction}) }}
         </div>
-    </form>
-
-    {% set mpagination = pagination(users_pagination, '/members.php', null, {
-        'r': url_role, 'ss': url_sort, 'sd': url_direction,
-    }) %}
-
-    {{ mpagination }}
-
-    <div class="userlist">
-        {% for user in users %}
-            <div class="userlist__item">
-                {{ user_card(user, null, null, not can_manage_users ? [] : [
-                    {
-                        'href': '/manage/users.php?v=view&u=%d'|format(user.user_id),
-                        'text': 'Manage',
-                    }
-                ]) }}
-            </div>
-        {% endfor %}
     </div>
+{% endmacro %}
 
-    {{ mpagination }}
+{% block content %}
+    {% from _self import member_nav %}
+
+    <div class="container" style="{{ role.role_colour|html_colour('--accent-colour') }}">
+        {{ container_title('<i class="fas fa-users fa-fw"></i> ' ~ title) }}
+
+        {% set member_nav = member_nav(
+            roles, role.role_id,
+            order_fields, order_field,
+            order_directions, order_direction,
+            users_pagination, url_role, url_sort, url_direction
+        ) %}
+
+        <div class="userlist">
+            {{ member_nav }}
+
+            <div class="userlist__listing">
+                {% for user in users %}
+                    <div class="userlist__item">
+                            {#
+                                'href': '/relations.php?u=%d&m=%s&c=%s'|format(user.user_id, constant('MSZ_USER_RELATION_FOLLOW'), csrf_token('user_relation')),
+                                'title': 'Follow',
+                                'icon': 'fas fa-user-plus'
+                            ,#}
+                        {{ user_card(user, null, null, [
+                            {
+                                'href': '/manage/users.php?v=view&u=%d'|format(user.user_id),
+                                'title': 'Manage',
+                                'icon': 'fas fa-user-edit',
+                                'display': can_manage_users
+                            },
+                        ]) }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            {{ member_nav }}
+        </div>
+    </div>
 {% endblock %}

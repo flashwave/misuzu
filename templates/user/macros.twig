@@ -14,29 +14,22 @@
                         {{ user.username }}
                     </div>
 
+                    {# put something interesting here, the very first version had a lot of stats
                     <div class="usercard__info">
-                        {% if user.user_country is defined %}
-                            <div class="flag flag--{{ user.user_country|lower }} usercard__item usercard__item--country usercard__item--active" title="{{ user.user_country|country_name }}">
-                                {{ user.user_country }}
-                            </div>
-                        {% endif %}
-
-                        {% if user.user_title is defined %}
-                            <a class="usercard__item usercard__item--title{% if user.role_id is defined %} usercard__item--active{% endif %}"{% if user.role_id is defined %} href="{{ rank_url|default('/members.php?r=%d')|format(user.role_id) }}"{% endif %} title="{{ user.user_title }}">
-                                {{ user.user_title }}
-                            </a>
-                        {% endif %}
-                    </div>
+                    </div>#}
                 </div>
             </div>
             {% if actions is iterable and actions|length > 0 %}
                 <div class="usercard__actions">
+                    <div class="usercard__actions__background"></div>
                     {% for action in actions %}
-                        <a class="usercard__action"
-                            {% if action.href is defined %}href="{{ action.href }}"{% endif %}
-                            {% if action.onclick is defined %}onclick="{{ action.onclick }}"{% endif %}>
-                            {{ action.text }}
-                        </a>
+                        {% if action.display is not defined or action.display %}
+                            <a class="usercard__action" title="{{ action.title }}"
+                                {% if action.href is defined %}href="{{ action.href }}"{% endif %}
+                                {% if action.onclick is defined %}onclick="{{ action.onclick }}"{% endif %}>
+                                <i class="{{ action.icon }} fa-fw"></i>
+                            </a>
+                        {% endif %}
                     {% endfor %}
                 </div>
             {% endif %}

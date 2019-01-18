@@ -1,14 +1,44 @@
 .userlist {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    padding: 5px;
 
-    &__item {
-        margin: 0 2px 2px 0;
+    &__listing {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 5px;
     }
 
-    &__selection {
-        margin: 6px;
-        text-align: center;
+    &__item {
+        margin: 2px;
+    }
+
+    &__navigation {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: stretch;
+    }
+
+    &__pagination {
+        max-width: 500px;
+        flex: 1 1 auto;
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+
+        @media (max-width: @site-mobile-width) {
+            max-width: 100%;
+            flex-grow: 0;
+        }
+    }
+
+    &__sorting {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: stretch;
+    }
+
+    &__select {
+        margin: 0 1px;
     }
 }
