@@ -81,3 +81,57 @@ function user_role_get_display(int $userId): int
     $fetchRole->bindValue('user_id', $userId);
     return $fetchRole->execute() ? (int)$fetchRole->fetchColumn() : MSZ_ROLE_MAIN;
 }
+
+function user_role_all_user(int $userId): array
+{
+    $getUserRoles = db_prepare('
+        SELECT
+            r.`role_id`, r.`role_name`, r.`role_description`,
+            r.`role_colour`, r.`role_can_leave`, r.`role_created`
+        FROM `msz_user_roles` AS ur
+        LEFT JOIN `msz_roles` AS r
+        ON r.`role_id` = ur.`role_id`
+        WHERE ur.`user_id` = :user_id
+        ORDER BY r.`role_hierarchy` DESC
+    ');
+    $getUserRoles->bindValue('user_id', $userId);
+    return db_fetch_all($getUserRoles);
+}
+
+function user_role_all(bool $withHidden = false)
+{
+    return db_query(sprintf(
+        '
+            SELECT
+                r.`role_id`, r.`role_name`, r.`role_description`,
+                r.`role_colour`, r.`role_can_leave`, r.`role_created`,
+                (
+                    SELECT COUNT(`user_id`)
+                    FROM `msz_user_roles`
+                    WHERE `role_id` = r.`role_id`
+                ) AS `role_user_count`
+            FROM `msz_roles` AS r
+            %s
+            ORDER BY `role_id`
+        ',
+        $withHidden ? '' : 'WHERE `role_hidden` = 0'
+    ))->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function user_role_get(int $roleId): array
+{
+    $getRole = db_prepare('
+        SELECT
+            r.`role_id`, r.`role_name`, r.`role_description`,
+            r.`role_colour`, r.`role_can_leave`, r.`role_created`,
+            (
+                SELECT COUNT(`user_id`)
+                FROM `msz_user_roles`
+                WHERE `role_id` = r.`role_id`
+            ) AS `role_user_count`
+        FROM `msz_roles` AS r
+        WHERE `role_id` = :role_id
+    ');
+    $getRole->bindValue('role_id', $roleId);
+    return db_fetch($getRole);
+}

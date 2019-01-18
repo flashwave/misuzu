@@ -54,13 +54,7 @@ if (!empty($topicId)) {
 }
 
 if (!empty($forumId)) {
-    $getForum = db_prepare('
-        SELECT `forum_id`, `forum_name`, `forum_type`, `forum_archived`
-        FROM `msz_forum_categories`
-        WHERE `forum_id` = :forum_id
-    ');
-    $getForum->bindValue('forum_id', $forumId);
-    $forum = db_fetch($getForum);
+    $forum = forum_get($forumId);
 }
 
 if (empty($forum)) {
@@ -223,19 +217,7 @@ if ($mode === 'edit') { // $post is pretty much sure to be populated at this poi
     tpl_var('posting_post', $post);
 }
 
-// fetches additional data for simulating a forum post
-$getDisplayInfo = db_prepare('
-    SELECT u.`user_country`, u.`user_created`, (
-        SELECT COUNT(`post_id`)
-        FROM `msz_forum_posts`
-        WHERE `user_id` = u.`user_id`
-        AND `post_deleted` IS NULL
-    ) AS `user_forum_posts`
-    FROM `msz_users` as u
-    WHERE `user_id` = :user_id
-');
-$getDisplayInfo->bindValue('user_id', user_session_current('user_id'));
-$displayInfo = db_fetch($getDisplayInfo);
+$displayInfo = forum_posting_info(user_session_current('user_id'));
 
 echo tpl_render('forum.posting', [
     'posting_breadcrumbs' => forum_get_breadcrumbs($forumId),

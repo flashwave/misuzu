@@ -55,6 +55,47 @@ function user_create(
     return $createUser->execute() ? (int)db_last_insert_id() : 0;
 }
 
+function user_find_for_login(string $usernameOrMail): array
+{
+    $getUser = db_prepare('
+        SELECT `user_id`, `password`
+        FROM `msz_users`
+        WHERE LOWER(`email`) = LOWER(:email)
+        OR LOWER(`username`) = LOWER(:username)
+    ');
+    $getUser->bindValue('email', $usernameOrMail);
+    $getUser->bindValue('username', $usernameOrMail);
+    return db_fetch($getUser);
+}
+
+function user_find_for_reset(string $email): array
+{
+    $getUser = db_prepare('
+        SELECT `user_id`, `username`, `email`
+        FROM `msz_users`
+        WHERE LOWER(`email`) = LOWER(:email)
+    ');
+    $getUser->bindValue('email', $email);
+    return db_fetch($getUser);
+}
+
+function user_find_for_profile(string $idOrUsername): int
+{
+    $getUserId = db_prepare('
+        SELECT
+            :user_id as `input_id`,
+            (
+                SELECT `user_id`
+                FROM `msz_users`
+                WHERE `user_id` = `input_id`
+                OR LOWER(`username`) = LOWER(`input_id`)
+                LIMIT 1
+            ) as `user_id`
+    ');
+    $getUserId->bindValue('user_id', $idOrUsername);
+    return (int)($getUserId->execute() ? $getUserId->fetchColumn(1) : 0);
+}
+
 function user_password_hash(string $password): string
 {
     return password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO);

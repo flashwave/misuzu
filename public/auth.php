@@ -75,17 +75,17 @@ switch ($authMode) {
             return;
         }
 
-        $resetUser = (int)($_POST['user'] ?? $_GET['u'] ?? 0);
-        $getResetUser = db_prepare('
-            SELECT `user_id`, `username`
-            FROM `msz_users`
-            WHERE `user_id` = :user_id
-        ');
-        $getResetUser->bindValue('user_id', $resetUser);
-        $resetUser = db_fetch($getResetUser);
+        $resetUserId = (int)($_POST['user'] ?? $_GET['u'] ?? 0);
 
-        if (empty($resetUser)) {
+        if (empty($resetUserId)) {
             header('Location: /auth.php?m=forgot');
+            break;
+        }
+
+        $resetUsername = user_username_from_id($resetUserId);
+
+        if (empty($resetUsername)) {
+            header('Location: /auth.php');
             break;
         }
 
@@ -97,7 +97,7 @@ switch ($authMode) {
                 break;
             }
 
-            if (!user_recovery_token_validate($resetUser['user_id'], $authVerification)) {
+            if (!user_recovery_token_validate($resetUserId, $authVerification)) {
                 tpl_var('auth_reset_error', 'Invalid verification code!');
                 break;
             }
@@ -116,20 +116,23 @@ switch ($authMode) {
                 break;
             }
 
-            if (user_password_set($resetUser['user_id'], $authPassword['new'])) {
-                audit_log(MSZ_AUDIT_PASSWORD_RESET, $resetUser['user_id']);
+            if (user_password_set($resetUserId, $authPassword['new'])) {
+                audit_log(MSZ_AUDIT_PASSWORD_RESET, $resetUserId);
             } else {
                 throw new UnexpectedValueException('Password reset failed.');
             }
 
-            user_recovery_token_invalidate($resetUser['user_id'], $authVerification);
+            user_recovery_token_invalidate($resetUserId, $authVerification);
 
-            header("Location: /auth.php?m=login&u={$resetUser['user_id']}");
+            header("Location: /auth.php?m=login&u={$resetUserId}");
             break;
         }
 
         echo tpl_render('auth.password', [
-            'reset_user' => $resetUser,
+            'reset_user' => [
+                'user_id' => $resetUserId,
+                'username' => $resetUsername,
+            ],
         ]);
         break;
 
@@ -150,13 +153,7 @@ switch ($authMode) {
                 break;
             }
 
-            $forgotUser = db_prepare('
-                SELECT `user_id`, `username`, `email`
-                FROM `msz_users`
-                WHERE LOWER(`email`) = LOWER(:email)
-            ');
-            $forgotUser->bindValue('email', $authEmail);
-            $forgotUser = db_fetch($forgotUser);
+            $forgotUser = user_find_for_reset($authEmail);
 
             if (empty($forgotUser)) {
                 tpl_var('auth_forgot_error', 'This user is not registered with us.');
@@ -231,16 +228,7 @@ MSG;
                 break;
             }
 
-            $getUser = db_prepare('
-                SELECT `user_id`, `password`
-                FROM `msz_users`
-                WHERE LOWER(`email`) = LOWER(:email)
-                OR LOWER(`username`) = LOWER(:username)
-            ');
-            $getUser->bindValue('email', $authUsername);
-            $getUser->bindValue('username', $authUsername);
-            $userData = db_fetch($getUser);
-            $userId = (int)($userData['user_id'] ?? 0);
+            $userData = user_find_for_login($authUsername);
 
             $loginFailedError = sprintf(
                 "Invalid username or password, %d attempt%s remaining.",
@@ -248,22 +236,22 @@ MSG;
                 $remainingAttempts === 2 ? '' : 's'
             );
 
-            if ($userId < 1) {
+            if ($userData['user_id'] < 1) {
                 user_login_attempt_record(false, null, $ipAddress, $userAgent);
                 $authLoginError = $loginFailedError;
                 break;
             }
 
             if (!password_verify($authPassword, $userData['password'])) {
-                user_login_attempt_record(false, $userId, $ipAddress, $userAgent);
+                user_login_attempt_record(false, $userData['user_id'], $ipAddress, $userAgent);
                 $authLoginError = $loginFailedError;
                 break;
             }
 
-            user_login_attempt_record(true, $userId, $ipAddress, $userAgent);
+            user_login_attempt_record(true, $userData['user_id'], $ipAddress, $userAgent);
 
             if ($loginPermission > 0) {
-                $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $userId);
+                $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $userData['user_id']);
 
                 if (!perms_check($generalPerms, $loginPermission)) {
                     $authLoginError = 'Your credentials were correct, but your account lacks the proper permissions to use this website.';
@@ -271,16 +259,16 @@ MSG;
                 }
             }
 
-            $sessionKey = user_session_create($userId, $ipAddress, $userAgent);
+            $sessionKey = user_session_create($userData['user_id'], $ipAddress, $userAgent);
 
             if ($sessionKey === '') {
                 $authLoginError = 'Unable to create new session, contact an administrator ASAP.';
                 break;
             }
 
-            user_session_start($userId, $sessionKey);
+            user_session_start($userData['user_id'], $sessionKey);
             $cookieLife = strtotime(user_session_current('session_expires'));
-            set_cookie_m('uid', $userId, $cookieLife);
+            set_cookie_m('uid', $userData['user_id'], $cookieLife);
             set_cookie_m('sid', $sessionKey, $cookieLife);
 
             if (!is_local_url($authRedirect)) {

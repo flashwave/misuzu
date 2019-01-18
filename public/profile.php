@@ -89,19 +89,7 @@ switch ($mode) {
         break;
 
     default:
-        $getUserId = db_prepare('
-            SELECT
-                :user_id as `input_id`,
-                (
-                    SELECT `user_id`
-                    FROM `msz_users`
-                    WHERE `user_id` = `input_id`
-                    OR LOWER(`username`) = LOWER(`input_id`)
-                    LIMIT 1
-                ) as `user_id`
-        ');
-        $getUserId->bindValue('user_id', $_GET['u'] ?? 0);
-        $userId = (int)($getUserId->execute() ? $getUserId->fetchColumn(1) : 0);
+        $userId = user_find_for_profile($_GET['u'] ?? 0);
 
         if ($userId < 1) {
             http_response_code(404);
@@ -335,52 +323,7 @@ switch ($mode) {
             }
         }
 
-        $getProfile = db_prepare(
-            sprintf(
-                '
-                    SELECT
-                        u.`user_id`, u.`username`, u.`user_country`, u.`user_birthdate`,
-                        u.`user_created`, u.`user_active`,
-                        u.`user_about_parser`, u.`user_about_content`, u.`user_background_settings`,
-                        %1$s,
-                        COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
-                        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
-                        `user_background_settings` & 0x0F as `user_background_attachment`,
-                        (`user_background_settings` & %2$d) > 0 as `user_background_blend`,
-                        (`user_background_settings` & %3$d) > 0 as `user_background_slide`,
-                        (
-                            SELECT COUNT(`topic_id`)
-                            FROM `msz_forum_topics`
-                            WHERE `user_id` = u.`user_id`
-                        ) as `forum_topic_count`,
-                        (
-                            SELECT COUNT(`post_id`)
-                            FROM `msz_forum_posts`
-                            WHERE `user_id` = u.`user_id`
-                        ) as `forum_post_count`,
-                        (
-                            SELECT COUNT(`change_id`)
-                            FROM `msz_changelog_changes`
-                            WHERE `user_id` = u.`user_id`
-                        ) as `changelog_count`,
-                        (
-                            SELECT COUNT(`comment_id`)
-                            FROM `msz_comments_posts`
-                            WHERE `user_id` = u.`user_id`
-                        ) as `comments_count`
-                    FROM `msz_users` as u
-                    LEFT JOIN `msz_roles` as r
-                    ON r.`role_id` = u.`display_role`
-                    WHERE `user_id` = :user_id
-                    LIMIT 1
-                ',
-                pdo_prepare_array(user_profile_fields_get(), true, 'u.`user_%s`'),
-                MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND,
-                MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE
-            )
-        );
-        $getProfile->bindValue('user_id', $userId);
-        $profile = db_fetch($getProfile);
+        $profile = user_profile_get($userId);
 
         $backgroundPath = build_path(MSZ_STORAGE, 'backgrounds/original', "{$profile['user_id']}.msz");
 

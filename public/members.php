@@ -58,19 +58,7 @@ $canManageUsers = perms_check(
     MSZ_PERM_USER_MANAGE_USERS
 );
 
-$getRole = db_prepare('
-    SELECT
-        `role_id`, `role_name`, `role_colour`, `role_description`, `role_created`,
-        (
-            SELECT COUNT(`user_id`)
-            FROM `msz_user_roles`
-            WHERE `role_id` = r.`role_id`
-        ) as `role_user_count`
-    FROM `msz_roles` as r
-    WHERE `role_id` = :role_id
-');
-$getRole->bindValue('role_id', $roleId);
-$role = db_fetch($getRole);
+$role = user_role_get($roleId);
 
 if (empty($role)) {
     echo render_error(404);
@@ -85,18 +73,13 @@ if (!pagination_is_valid_offset($usersOffset)) {
     return;
 }
 
-$roles = db_query('
-    SELECT `role_id`, `role_name`, `role_colour`
-    FROM `msz_roles`
-    WHERE `role_hidden` = 0
-    ORDER BY `role_id`
-')->fetchAll(PDO::FETCH_ASSOC);
+$roles = user_role_all();
 
 $getUsers = db_prepare(sprintf(
     '
         SELECT
             u.`user_id`, u.`username`, u.`user_country`, r.`role_id`,
-            COALESCE(u.`user_title`, r.`role_title`, r.`role_name`) as `user_title`,
+            COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
             COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
         FROM `msz_users` as u
         LEFT JOIN `msz_roles` as r

@@ -80,7 +80,7 @@ function forum_may_have_topics(int $forumType): bool
     return in_array($forumType, MSZ_FORUM_MAY_HAVE_TOPICS);
 }
 
-function forum_fetch(int $forumId, bool $showDeleted = false): array
+function forum_get(int $forumId, bool $showDeleted = false): array
 {
     $getForum = db_prepare(sprintf(
         '
@@ -428,4 +428,30 @@ function forum_mark_read(?int $forumId, int $userId): bool
     }
 
     return $doMark->execute();
+}
+
+function forum_posting_info(int $userId): array
+{
+    $getPostingInfo = db_prepare('
+        SELECT
+            u.`user_country`, u.`user_created`,
+            (
+                SELECT COUNT(`post_id`)
+                FROM `msz_forum_posts`
+                WHERE `user_id` = u.`user_id`
+                AND `post_deleted` IS NULL
+            ) AS `user_forum_posts`,
+            (
+                SELECT `post_parse`
+                FROM `msz_forum_posts`
+                WHERE `user_id` = u.`user_id`
+                AND `post_deleted` IS NULL
+                ORDER BY `post_id` DESC
+                LIMIT 1
+            ) AS `user_post_parse`
+        FROM `msz_users` as u
+        WHERE `user_id` = :user_id
+    ');
+    $getPostingInfo->bindValue('user_id', $userId);
+    return db_fetch($getPostingInfo);
 }

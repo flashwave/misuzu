@@ -173,16 +173,7 @@ $logs['list'] = audit_log_list(
     user_session_current('user_id')
 );
 
-$getUserRoles = db_prepare('
-    SELECT r.`role_id`, r.`role_name`, r.`role_description`, r.`role_colour`, r.`role_can_leave`
-    FROM `msz_user_roles` as ur
-    LEFT JOIN `msz_roles` as r
-    ON r.`role_id` = ur.`role_id`
-    WHERE ur.`user_id` = :user_id
-    ORDER BY r.`role_hierarchy` DESC
-');
-$getUserRoles->bindValue('user_id', user_session_current('user_id'));
-$userRoles = db_fetch_all($getUserRoles);
+$userRoles = user_role_all_user(user_session_current('user_id'));
 
 echo tpl_render('user.settings', [
     'errors' => $errors,

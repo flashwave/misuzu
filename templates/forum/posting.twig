@@ -69,8 +69,8 @@
                         {{ input_select(
                             'post[parser]',
                             constant('MSZ_PARSERS_NAMES'),
-                            posting_defaults.parser|default(posting_post.post_parse|default(constant('MSZ_PARSER_BBCODE'))),
-                            null, null, null, 'forum__post__dropdown'
+                            posting_defaults.parser|default(posting_post.post_parse|default(posting_info.user_post_parse|default(constant('MSZ_PARSER_BBCODE')))),
+                            null, null, false, 'forum__post__dropdown'
                         ) }}
                         {% if is_opening and posting_types|length > 1 %}
                             {{ input_select(

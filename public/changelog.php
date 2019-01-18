@@ -9,44 +9,16 @@ $changelogTags = $_GET['t'] ?? '';
 tpl_var('comments_perms', $commentPerms = comments_get_perms(user_session_current('user_id', 0)));
 
 if ($changelogChange > 0) {
-    $getChange = db_prepare('
-        SELECT
-            c.`change_id`, c.`change_created`, c.`change_log`, c.`change_text`,
-            a.`action_name`, a.`action_colour`, a.`action_class`,
-            u.`user_id`, u.`username`, u.`display_role` as `user_role`,
-            DATE(`change_created`) as `change_date`,
-            COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
-            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-        FROM `msz_changelog_changes` as c
-        LEFT JOIN `msz_users` as u
-        ON u.`user_id` = c.`user_id`
-        LEFT JOIN `msz_roles` as r
-        ON r.`role_id` = u.`display_role`
-        LEFT JOIN `msz_changelog_actions` as a
-        ON a.`action_id` = c.`action_id`
-        WHERE `change_id` = :change_id
-    ');
-    $getChange->bindValue('change_id', $changelogChange);
-    $change = db_fetch($getChange);
+    $change = changelog_change_get($changelogChange);
 
     if (!$change) {
         echo render_error(404);
         return;
-    } else {
-        $getTags = db_prepare('
-            SELECT
-                t.`tag_id`, t.`tag_name`, t.`tag_description`
-            FROM `msz_changelog_tags` as t
-            LEFT JOIN `msz_changelog_change_tags` as ct
-            ON ct.`tag_id` = t.`tag_id`
-            WHERE ct.`change_id` = :change_id
-        ');
-        $getTags->bindValue('change_id', $change['change_id']);
-        tpl_var('tags', db_fetch_all($getTags));
     }
 
     echo tpl_render('changelog.change', [
         'change' => $change,
+        'tags' => changelog_change_tags_get($change['change_id']),
         'comments_category' => $commentsCategory = comments_category_info(
             "changelog-date-{$change['change_date']}",
             true

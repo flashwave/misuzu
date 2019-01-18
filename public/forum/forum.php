@@ -8,7 +8,7 @@ if ($forumId === 0) {
     exit;
 }
 
-$forum = forum_fetch($forumId);
+$forum = forum_get($forumId);
 $forumUserId = user_session_current('user_id', 0);
 
 if (empty($forum) || ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK && empty($forum['forum_link']))) {
