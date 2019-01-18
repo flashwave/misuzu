@@ -1,5 +1,5 @@
 <?php
-define('MSZ_CSRF_TOLERANCE', 15 * 60); // DO NOT EXCEED 16-BIT INTEGER SIZES, SHIT _WILL_ BREAK
+define('MSZ_CSRF_TOLERANCE', 30 * 60); // DO NOT EXCEED 16-BIT INTEGER SIZES, SHIT _WILL_ BREAK
 define('MSZ_CSRF_HTML', '<input type="hidden" name="%1$s[%3$s]" value="%2$s">');
 define('MSZ_CSRF_SECRET_STORE', '_msz_csrf_secret');
 define('MSZ_CSRF_IDENTITY_STORE', '_msz_csrf_identity');
