@@ -65,6 +65,10 @@ $changelog = cache_get('index:changelog:v1', function () {
     ')->fetchAll(PDO::FETCH_ASSOC);
 }, 300);
 
+$birthdays = user_session_active()
+    ? cache_get('index:birthdays:v1', user_get_birthdays(), 300)
+    : [];
+
 $latestUser = cache_get('index:latest_user:v1', function () {
     return db_query('
         SELECT
@@ -97,6 +101,7 @@ echo tpl_render('home.' . (user_session_active() ? 'home' : 'landing'), [
     'statistics' => $stats,
     'latest_user' => $latestUser,
     'online_users' => $onlineUsers,
+    'birthdays' => $birthdays,
     'featured_changelog' => $changelog,
     'featured_news' => $news,
 ]);

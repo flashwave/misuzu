@@ -7,6 +7,7 @@ define('MSZ_PERM_USER_EDIT_PROFILE', 1);
 define('MSZ_PERM_USER_CHANGE_AVATAR', 1 << 1);
 define('MSZ_PERM_USER_CHANGE_BACKGROUND', 1 << 2);
 define('MSZ_PERM_USER_EDIT_ABOUT', 1 << 3);
+define('MSZ_PERM_USER_EDIT_BIRTHDATE', 1 << 4);
 
 define('MSZ_PERM_USER_MANAGE_USERS', 1 << 20);
 define('MSZ_PERM_USER_MANAGE_ROLES', 1 << 21);
@@ -189,6 +190,68 @@ function user_check_authority(int $userId, int $subjectId): bool
     $checkHierarchy->bindValue('user_id', $userId);
     $checkHierarchy->bindValue('subject_id', $subjectId);
     return (bool)($checkHierarchy->execute() ? $checkHierarchy->fetchColumn() : false);
+}
+
+define('MSZ_E_USER_BIRTHDATE_OK', 0);
+define('MSZ_E_USER_BIRTHDATE_USER', 1);
+define('MSZ_E_USER_BIRTHDATE_DATE', 2);
+define('MSZ_E_USER_BIRTHDATE_FAIL', 3);
+define('MSZ_E_USER_BIRTHDATE_YEAR', 4);
+
+function user_set_birthdate(int $userId, int $day, int $month, int $year, int $yearRange = 100): int
+{
+    if ($userId < 1) {
+        return MSZ_E_USER_BIRTHDATE_USER;
+    }
+
+    $unset = $day === 0 && $month === 0;
+
+    if ($year === 0) {
+        $checkYear = date('Y');
+    } else {
+        echo $year;
+        if ($year < date('Y') - $yearRange || $year > date('Y')) {
+            return MSZ_E_USER_BIRTHDATE_YEAR;
+        }
+
+        $checkYear = $year;
+    }
+
+    if (!$unset && !checkdate($month, $day, $checkYear)) {
+        return MSZ_E_USER_BIRTHDATE_DATE;
+    }
+
+    $birthdate = $unset ? null : implode('-', [$year, $month, $day]);
+    $setBirthdate = db_prepare('
+        UPDATE `msz_users`
+        SET `user_birthdate` = :birthdate
+        WHERE `user_id` = :user
+    ');
+    $setBirthdate->bindValue('birthdate', $birthdate);
+    $setBirthdate->bindValue('user', $userId);
+
+    return $setBirthdate->execute()
+        ? MSZ_E_USER_BIRTHDATE_OK
+        : MSZ_E_USER_BIRTHDATE_FAIL;
+}
+
+function user_get_birthdays(int $day = 0, int $month = 0)
+{
+    if ($day < 1 || $month < 1) {
+        $date = date('%-m-d');
+    } else {
+        $date = "%-{$month}-{$day}";
+    }
+
+    $getBirthdays = db_prepare('
+        SELECT `user_id`, `username`, `user_birthdate`,
+            IF(YEAR(`user_birthdate`) < 1, NULL, YEAR(NOW()) - YEAR(`user_birthdate`)) AS `user_age`
+        FROM `msz_users`
+        WHERE `user_deleted` IS NULL
+        AND `user_birthdate` LIKE :birthdate
+    ');
+    $getBirthdays->bindValue('birthdate', $date);
+    return db_fetch_all($getBirthdays);
 }
 
 define('MSZ_USER_ABOUT_MAX_LENGTH', 0xFFFF);

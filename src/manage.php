@@ -13,7 +13,6 @@ function manage_get_menu(int $userId): array
 
     $menu = [];
     $menu['General']['Overview'] = '/manage/index.php?v=overview';
-    $menu['General']['Quotes'] = '/manage/index.php?v=quotes';
 
     if (perms_check($perms['general'], MSZ_PERM_GENERAL_VIEW_LOGS)) {
         $menu['General']['Logs'] = '/manage/index.php?v=logs';
@@ -220,6 +219,11 @@ function manage_perms_list(array $rawPerms): array
                     'section' => 'edit-about',
                     'title' => 'Can change own about section.',
                     'perm' => MSZ_PERM_USER_EDIT_ABOUT,
+                ],
+                [
+                    'section' => 'edit-birthdate',
+                    'title' => 'Can change own birthdate.',
+                    'perm' => MSZ_PERM_USER_EDIT_BIRTHDATE,
                 ],
                 [
                     'section' => 'manage-users',

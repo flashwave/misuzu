@@ -92,7 +92,27 @@
                 </div>
             {% endif %}
 
-            {% if latest_user.user_id|default(0) > 0 %}
+            {% if current_user is defined and birthdays|length > 0 %}
+                <div class="container index__container">
+                    {{ container_title('<i class="fas fa-birthday-cake fa-fw"></i> Happy Birthday!') }}
+
+                    {% for birthday in birthdays %}
+                        <a class="index__latest" style="{# birthday.user_colour|html_colour #}" href="/profile.php?u={{ birthday.user_id }}">
+                            <div class="avatar index__latest__avatar" style="--avatar-url: url('/profile.php?m=avatar&amp;u={{ birthday.user_id }}')"></div>
+                            <div class="index__latest__content">
+                                <div class="index__latest__username">
+                                    {{ birthday.username }}
+                                </div>
+                                {% if birthday.user_age is not null %}
+                                    <div class="index__latest__joined">
+                                        Turned {{ birthday.user_age }} today!
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% elseif latest_user.user_id|default(0) > 0 %}
                 <div class="container index__container">
                     {{ container_title('<i class="fas fa-user-plus fa-fw"></i> Newest User') }}
 

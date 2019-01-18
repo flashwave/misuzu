@@ -66,7 +66,7 @@
             {% include 'user/_layout/header.twig' %}
 
             {% if is_editing %}
-                <div class="container profile__guidelines">
+                <div class="container profile__container profile__guidelines">
                     <ul class="profile__guidelines__section">
                         <li class="profile__guidelines__line profile__guidelines__line--header">General</li>
                         <li class="profile__guidelines__line">Keep things sane and generally suitable for all ages.</li>
@@ -104,15 +104,16 @@
                 </div>
             {% endif %}
 
-            <div class="profile__container">
+            <div class="profile__content">
                 {% set show_profile_fields = is_editing ? perms.edit_profile : profile_fields|default([])|length > 0 %}
                 {% set show_background_settings = is_editing and perms.edit_background %}
+                {% set show_birthdate = is_editing and perms.edit_birthdate %}
                 {% set show_sidebar = current_user is not defined or show_profile_fields or show_background_settings %}
 
                 {% if show_sidebar %}
-                    <div class="profile__container__side">
+                    <div class="profile__content__side">
                         {% if show_background_settings %}
-                            <div class="container profile__background-settings">
+                            <div class="container profile__container profile__background-settings">
                                 {{ container_title('Background') }}
 
                                 <div class="profile__background-settings__content">
@@ -129,13 +130,13 @@
                             </div>
                         {% endif %}
                         {% if current_user is not defined %}
-                            <div class="container">
+                            <div class="container profile__container">
                                 <div class="profile__accounts__notice">
                                     You must <a href="/auth.php?m=login" class="profile__accounts__link">log in</a> to view full profiles!
                                 </div>
                             </div>
                         {% elseif show_profile_fields %}
-                            <div class="container profile__accounts">
+                            <div class="container profile__container profile__accounts">
                                 {{ container_title('Elsewhere') }}
 
                                 <div class="profile__accounts__content">
@@ -163,12 +164,46 @@
                                 </div>
                             </div>
                         {% endif %}
+                        {% if show_birthdate %}
+                            <div class="container profile__container profile__birthdate">
+                                {{ container_title('Birthdate') }}
+
+                                {% set birthdate = profile.user_birthdate|split('-') %}
+
+                                <div class="profile__birthdate__content">
+                                    <div class="profile__birthdate__date">
+                                        <label class="profile__birthdate__label">
+                                            <div class="profile__birthdate__title">
+                                                Day
+                                            </div>
+                                            {{ input_select('birthdate[day]', ['-']|merge(range(1, 31)), birthdate[2]|default(0)|trim('0'), '', '', true, 'profile__birthdate__select profile__birthdate__select--day') }}
+                                        </label>
+
+                                        <label class="profile__birthdate__label">
+                                            <div class="profile__birthdate__title">
+                                                Month
+                                            </div>
+                                            {{ input_select('birthdate[month]', ['-']|merge(range(1, 12)), birthdate[1]|default(0)|trim('0'), '', '', true, 'profile__birthdate__select profile__birthdate__select--month') }}
+                                        </label>
+                                    </div>
+
+                                    <div class="profile__birthdate__year">
+                                        <label class="profile__birthdate__label">
+                                            <div class="profile__birthdate__title">
+                                                Year (may be left empty)
+                                            </div>
+                                            {{ input_select('birthdate[year]', ['-']|merge(range(null|date('Y'), null|date('Y') - 100)), birthdate[0]|default(0)|trim('0'), '', '', true, 'profile__birthdate__select profile__birthdate__select--year') }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
                 {% endif %}
 
-                <div class="profile__container__main">
+                <div class="profile__content__main">
                     {% if (is_editing and perms.edit_about) or profile.user_about_content|length > 0 %}
-                        <div class="container profile__about" id="about">
+                        <div class="container profile__container profile__about" id="about">
                             {{ container_title('About ' ~ profile.username) }}
 
                             <div class="profile__about__content{% if is_editing %} profile__about__content--edit{% elseif profile.user_about_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
@@ -183,7 +218,7 @@
                     {% endif %}
 
                     {% if warnings|length > 0 %}
-                        <div class="container profile__warning__container" id="account-standing">
+                        <div class="container profile__container profile__warning__container" id="account-standing">
                             {{ container_title('Account Standing', false, can_manage_warnings ? '/manage/users.php?v=warnings&u=' ~ profile.user_id : '') }}
 
                             <div class="profile__warning">

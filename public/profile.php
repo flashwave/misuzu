@@ -145,6 +145,7 @@ switch ($mode) {
                 'edit_avatar' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_AVATAR),
                 'edit_background' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_BACKGROUND),
                 'edit_about' => perms_check($userPerms, MSZ_PERM_USER_EDIT_ABOUT),
+                'edit_birthdate' => perms_check($userPerms, MSZ_PERM_USER_EDIT_BIRTHDATE),
             ];
 
             tpl_vars([
@@ -193,6 +194,38 @@ switch ($mode) {
                                     MSZ_TMP_USER_ERROR_STRINGS['about'][$setAboutError] ?? MSZ_TMP_USER_ERROR_STRINGS['about']['_'],
                                     MSZ_USER_ABOUT_MAX_LENGTH
                                 );
+                            }
+                        }
+                    }
+
+                    if (!empty($_POST['birthdate']) && is_array($_POST['birthdate'])) {
+                        if (!$perms['edit_birthdate']) {
+                            $notices[] = "You aren't allow to change your birthdate.";
+                        } else {
+                            $setBirthdate = user_set_birthdate(
+                                $userId,
+                                (int)($_POST['birthdate']['day'] ?? 0),
+                                (int)($_POST['birthdate']['month'] ?? 0),
+                                (int)($_POST['birthdate']['year'] ?? 0)
+                            );
+
+                            switch ($setBirthdate) {
+                                case MSZ_E_USER_BIRTHDATE_USER:
+                                    $notices[] = 'Invalid user specified while setting birthdate?';
+                                    break;
+                                case MSZ_E_USER_BIRTHDATE_DATE:
+                                    $notices[] = 'The given birthdate is invalid.';
+                                    break;
+                                case MSZ_E_USER_BIRTHDATE_FAIL:
+                                    $notices[] = 'Failed to set birthdate.';
+                                    break;
+                                case MSZ_E_USER_BIRTHDATE_YEAR:
+                                    $notices[] = 'The given birth year is invalid.';
+                                    break;
+                                case MSZ_E_USER_BIRTHDATE_OK:
+                                    break;
+                                default:
+                                    $notices[] = 'Something unexpected happened while setting your birthdate.';
                             }
                         }
                     }
@@ -306,7 +339,7 @@ switch ($mode) {
             sprintf(
                 '
                     SELECT
-                        u.`user_id`, u.`username`, u.`user_country`,
+                        u.`user_id`, u.`username`, u.`user_country`, u.`user_birthdate`,
                         u.`user_created`, u.`user_active`,
                         u.`user_about_parser`, u.`user_about_content`, u.`user_background_settings`,
                         %1$s,
