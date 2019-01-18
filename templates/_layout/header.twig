@@ -123,8 +123,8 @@
             {% endfor %}
 
             {% if current_user is defined %}
-                <a href="/profile.php?u={{ current_user.user_id }}" class="avatar header__desktop__user__avatar"
-                    style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');" title="{{ current_user.username }}"></a>
+                <a href="/profile.php?u={{ current_user.user_id }}" class="avatar header__desktop__user__avatar" title="{{ current_user.username }}"
+                    style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');{{ current_user.user_colour|html_colour }}"></a>
             {% else %}
                 <a href="/auth.php?m=login" class="avatar header__desktop__user__avatar"
                     style="background-image:url('/profile.php?m=avatar');"></a>
@@ -149,7 +149,7 @@
 
         {{ input_checkbox_raw('', false, 'header__mobile__toggle', '', false, {'id':'toggle-mobile-header'}) }}
         <div class="header__mobile__menu">
-            <div class="header__mobile__menu__spacer"><!-- required because padding is DUMB and OVERRIDES max-height --></div>
+            <div class="header__mobile__menu__spacer"></div>
 
             <div class="header__mobile__user">
                 {% for item in user_menu %}
