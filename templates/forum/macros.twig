@@ -385,7 +385,7 @@
     <div class="container forum__post{% if is_deleted %} forum__post--deleted{% endif %}" id="p{{ post.post_id }}" style="{{ post.poster_colour|html_colour('--accent-colour') }}">
         <div class="forum__post__info">
             <div class="forum__post__info__background"></div>
-            <div class="forum__post__info__content{% if null|date('Ym') < 201902 %} forum__post__info__content--tolerate-wide{% endif %}">
+            <div class="forum__post__info__content">
                 {% if post.poster_id is not null %}
                     <a class="avatar forum__post__avatar"
                         style="background-image:url('/profile.php?u={{ post.poster_id }}&amp;m=avatar');"
@@ -393,6 +393,7 @@
                     </a>
 
                     <a class="forum__post__username" href="/profile.php?u={{ post.poster_id }}">{{ post.poster_name }}</a>
+                    <a class="forum__post__usertitle">{{ post.poster_title }}</a>
 
                     <div class="forum__post__icons">
                         <div class="flag flag--{{ post.poster_country|lower }}" title="{{ post.poster_country|country_name }}"></div>

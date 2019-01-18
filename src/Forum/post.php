@@ -133,6 +133,7 @@ function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $
                 u.`user_created` AS `poster_joined`,
                 u.`user_country` AS `poster_country`,
                 COALESCE(u.`user_colour`, r.`role_colour`) AS `poster_colour`,
+                COALESCE(u.`user_title`, r.`role_title`) AS `poster_title`,
                 (
                     SELECT COUNT(`post_id`)
                     FROM `msz_forum_posts`
