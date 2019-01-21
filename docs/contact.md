@@ -7,7 +7,8 @@ If you need to reach us outside of this website, this is the page for you. Below
 
 ## Twitter
   - [@flashiinet](https://twitter.com/flashiinet): General updates and conversation.
-  - [@smugwave](https://twitter.com/smugwave): Twitter of the owner, enter with caution!
+  - [@flashiistatus](https://twitter.com/flashiistatus): Status updates without the other noise from @flashiinet.
+  - [@smugwave](https://twitter.com/smugwave): Twitter of the owner, proceed with caution!
 
 ## Source Code
   - [Misuzu](https://github.com/flashwave/misuzu): Backend of the website.
