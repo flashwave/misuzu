@@ -68,3 +68,57 @@ function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTML
     xhr.open('GET', `/auth.php?m=get_user&u=${encodeURI(usernameElement.value)}`);
     xhr.send();
 }
+
+interface MessageBoxButton {
+    text: string;
+    callback: Function;
+}
+
+function messageBox(text: string, title: string = null, buttons: MessageBoxButton[] = []): boolean
+{
+    if (document.querySelector('.messagebox')) {
+        return false;
+    }
+
+    const element = document.createElement('div');
+    element.className = 'messagebox';
+
+    const container = element.appendChild(document.createElement('div'));
+    container.className = 'container messagebox__container';
+
+    const titleElement = container.appendChild(document.createElement('div')),
+        titleBackground = titleElement.appendChild(document.createElement('div')),
+        titleText = titleElement.appendChild(document.createElement('div'));
+
+    titleElement.className = 'container__title';
+    titleBackground.className = 'container__title__background';
+    titleText.className = 'container__title__text';
+    titleText.textContent = title || 'Information';
+
+    const textElement = container.appendChild(document.createElement('div'));
+    textElement.className = 'container__content';
+    textElement.textContent = text;
+
+    const buttonsContainer = container.appendChild(document.createElement('div'));
+    buttonsContainer.className = 'messagebox__buttons';
+
+    if (buttons.length < 1) {
+        const okButton = buttonsContainer.appendChild(document.createElement('button'));
+        okButton.className = 'input__button';
+        okButton.textContent = 'OK';
+        okButton.addEventListener('click', () => element.remove());
+    } else {
+        for (let i = 0; i < buttons.length; i++) {
+            let button = buttonsContainer.appendChild(document.createElement('button'));
+            button.className = 'input__button';
+            button.textContent = buttons[i].text;
+            button.addEventListener('click', () => {
+                element.remove();
+                buttons[i].callback();
+            });
+        }
+    }
+
+    document.body.appendChild(element);
+    return true;
+}

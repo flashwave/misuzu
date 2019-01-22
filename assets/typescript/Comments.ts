@@ -48,9 +48,7 @@ function commentDeleteEventHandler(ev: Event): void {
             if (elem)
                 elem.parentNode.removeChild(elem);
         },
-        message => {
-            alert(message);
-        }
+        message => messageBox(message)
     );
 }
 
@@ -139,7 +137,7 @@ function commentPostSuccess(form: HTMLFormElement, comment: CommentPostInfo): vo
 }
 
 function commentPostFail(form: HTMLFormElement, message: string): void {
-    alert(message);
+    messageBox(message);
     form.style.opacity = '1';
     form.dataset.disabled = '';
 }
@@ -377,7 +375,7 @@ function commentVoteEventHandler(ev: Event): void {
     commentVote(
         commentId,
         voteType,
-        (info) => {
+        info => {
             switch (voteType) {
                 case CommentVoteType.Like:
                     likeButton.classList.add(classVoted);
@@ -391,10 +389,10 @@ function commentVoteEventHandler(ev: Event): void {
             likeButton.textContent = info.likes > 0 ? `Like (${info.likes.toLocaleString()})` : 'Like';
             dislikeButton.textContent = info.dislikes > 0 ? `Dislike (${info.dislikes.toLocaleString()})` : 'Dislike';
         },
-        (message) => {
+        message => {
             likeButton.textContent = 'Like';
             dislikeButton.textContent = 'Dislike';
-            alert(message);
+            messageBox(message);
         }
     );
 }
@@ -441,7 +439,7 @@ function commentPinEventHandler(ev: Event): void {
     commentPin(
         commentId,
         !isPinned,
-        (info) => {
+        info => {
             if (info.comment_pinned === null) {
                 target.textContent = 'Pin';
                 target.dataset.commentPinned = '0';
@@ -467,9 +465,9 @@ function commentPinEventHandler(ev: Event): void {
                 pinInfo.appendChild(pinElement);
             }
         },
-        (message) => {
+        message => {
             target.textContent = isPinned ? 'Unpin' : 'Pin';
-            alert(message);
+            messageBox(message);
         }
     );
 }

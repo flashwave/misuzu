@@ -76,7 +76,7 @@ function userRelationSetEventHandler(ev: Event): void {
         },
         msg => {
             target.classList.remove(buttonBusy);
-            alert(msg);
+            messageBox(msg);
         }
     );
 }

@@ -1,0 +1,22 @@
+.messagebox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--background-colour-translucent-8);
+    z-index: 9000;
+
+    &__container {
+        min-width: 300px;
+    }
+
+    &__buttons {
+        display: flex;
+        justify-content: center;
+        padding: 5px;
+    }
+}
