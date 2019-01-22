@@ -8,7 +8,16 @@ switch ($mode) {
     case 'avatar':
         $userId = (int)($_GET['u'] ?? 0);
 
-        if (user_warning_check_expiration($userId, MSZ_WARN_BAN) > 0) {
+        if (user_warning_check_expiration($userId, MSZ_WARN_BAN) > 0 && !(
+            parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH) === '/profile.php'
+            && perms_check(
+                perms_get_user(
+                    MSZ_PERMS_USER,
+                    user_session_current('user_id', 0)
+                ),
+                MSZ_PERM_USER_MANAGE_USERS
+            )
+        )) {
             $avatarFilename = build_path(
                 MSZ_ROOT,
                 config_get_default('public/images/banned-avatar.png', 'Avatar', 'banned_path')
@@ -60,7 +69,16 @@ switch ($mode) {
     case 'background':
         $userId = (int)($_GET['u'] ?? 0);
 
-        if (user_warning_check_expiration($userId, MSZ_WARN_BAN) > 0) {
+        if (user_warning_check_expiration($userId, MSZ_WARN_BAN) > 0 && !(
+            parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH) === '/profile.php'
+            && perms_check(
+                perms_get_user(
+                    MSZ_PERMS_USER,
+                    user_session_current('user_id', 0)
+                ),
+                MSZ_PERM_USER_MANAGE_USERS
+            )
+        )) {
             echo render_error(404);
             break;
         }
