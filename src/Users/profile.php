@@ -215,33 +215,45 @@ function user_profile_get(int $userId): array
                     u.`user_about_parser`, u.`user_about_content`,
                     u.`user_signature_parser`, u.`user_signature_content`,
                     %1$s,
-                    COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
-                    COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
-                    `user_background_settings` & 0x0F as `user_background_attachment`,
-                    (`user_background_settings` & %2$d) > 0 as `user_background_blend`,
-                    (`user_background_settings` & %3$d) > 0 as `user_background_slide`,
+                    COALESCE(u.`user_title`, r.`role_title`) AS `user_title`,
+                    COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`,
+                    `user_background_settings` & 0x0F AS `user_background_attachment`,
+                    (`user_background_settings` & %2$d) > 0 AS `user_background_blend`,
+                    (`user_background_settings` & %3$d) > 0 AS `user_background_slide`,
                     (
                         SELECT COUNT(`topic_id`)
                         FROM `msz_forum_topics`
                         WHERE `user_id` = u.`user_id`
-                    ) as `forum_topic_count`,
+                    ) AS `forum_topic_count`,
                     (
                         SELECT COUNT(`post_id`)
                         FROM `msz_forum_posts`
                         WHERE `user_id` = u.`user_id`
-                    ) as `forum_post_count`,
+                    ) AS `forum_post_count`,
                     (
                         SELECT COUNT(`change_id`)
                         FROM `msz_changelog_changes`
                         WHERE `user_id` = u.`user_id`
-                    ) as `changelog_count`,
+                    ) AS `changelog_count`,
                     (
                         SELECT COUNT(`comment_id`)
                         FROM `msz_comments_posts`
                         WHERE `user_id` = u.`user_id`
-                    ) as `comments_count`
-                FROM `msz_users` as u
-                LEFT JOIN `msz_roles` as r
+                    ) AS `comments_count`,
+                    (
+                        SELECT COUNT(`user_id`)
+                        FROM `msz_user_relations`
+                        WHERE `subject_id` = u.`user_id`
+                        AND `relation_type` = 1
+                    ) AS `followers_count`,
+                    (
+                        SELECT COUNT(`subject_id`)
+                        FROM `msz_user_relations`
+                        WHERE `user_id` = u.`user_id`
+                        AND `relation_type` = 1
+                    ) AS `following_count`
+                FROM `msz_users` AS u
+                LEFT JOIN `msz_roles` AS r
                 ON r.`role_id` = u.`display_role`
                 WHERE `user_id` = :user_id
                 LIMIT 1
