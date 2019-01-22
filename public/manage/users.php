@@ -100,7 +100,7 @@ switch ($_GET['v'] ?? null) {
         $hasRoles = db_fetch_all($getHasRoles);
 
         $getAvailableRoles = db_prepare('
-            SELECT `role_id`, `role_name`
+            SELECT `role_id`, `role_name`, `role_hierarchy`
             FROM `msz_roles`
             WHERE `role_id` NOT IN (
                 SELECT `role_id`
@@ -118,6 +118,11 @@ switch ($_GET['v'] ?? null) {
         if ($isPostRequest) {
             if (!csrf_verify('users_edit', $_POST['csrf'] ?? '')) {
                 echo 'csrf err';
+                break;
+            }
+
+            if (!user_check_authority(user_session_current('user_id'), $userId)) {
+                echo 'You are not allowed to administer this user.';
                 break;
             }
 
@@ -191,7 +196,7 @@ switch ($_GET['v'] ?? null) {
                 $updatePassword->execute();
             }
 
-            if (isset($_POST['add_role'])) {
+            if (isset($_POST['add_role']) && user_role_check_authority(user_session_current('user_id'), (int)$_POST['add_role']['role'])) {
                 user_role_add($manageUser['user_id'], $_POST['add_role']['role']);
             }
 
@@ -202,7 +207,7 @@ switch ($_GET['v'] ?? null) {
                         break;
 
                     case 'remove':
-                        if ((int)$_POST['manage_roles']['role'] !== MSZ_ROLE_MAIN) {
+                        if ((int)$_POST['manage_roles']['role'] !== MSZ_ROLE_MAIN && user_role_check_authority(user_session_current('user_id'), (int)$_POST['manage_roles']['role'])) {
                             user_role_remove($manageUser['user_id'], $_POST['manage_roles']['role']);
                         }
                         break;
@@ -309,6 +314,15 @@ switch ($_GET['v'] ?? null) {
                 break;
             }
 
+            $roleHierarchy = (int)($_POST['role']['hierarchy'] ?? -1);
+
+            if ($roleId === null
+                    ? (user_get_hierarchy(user_session_current('user_id')) <= $roleHierarchy)
+                    : !user_role_check_authority(user_session_current('user_id'), $roleId)) {
+                echo 'Your hierarchy is too low to do this.';
+                break;
+            }
+
             if (!isset($_POST['role'])) {
                 echo 'no';
                 break;
@@ -323,8 +337,6 @@ switch ($_GET['v'] ?? null) {
             }
 
             $roleSecret = !empty($_POST['role']['secret']);
-
-            $roleHierarchy = (int)($_POST['role']['hierarchy'] ?? -1);
 
             if ($roleHierarchy < 1 || $roleHierarchy > 100) {
                 echo 'Invalid hierarchy value.';

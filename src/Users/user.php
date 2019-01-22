@@ -212,8 +212,12 @@ function user_get_last_ip(int $userId): string
     return $getAddress->execute() ? $getAddress->fetchColumn() : '';
 }
 
-function user_check_authority(int $userId, int $subjectId): bool
+function user_check_authority(int $userId, int $subjectId, bool $canManageSelf = true): bool
 {
+    if ($canManageSelf && $userId === $subjectId) {
+        return true;
+    }
+
     $checkHierarchy = db_prepare('
         SELECT (
             SELECT MAX(r.`role_hierarchy`)
@@ -232,6 +236,19 @@ function user_check_authority(int $userId, int $subjectId): bool
     $checkHierarchy->bindValue('user_id', $userId);
     $checkHierarchy->bindValue('subject_id', $subjectId);
     return (bool)($checkHierarchy->execute() ? $checkHierarchy->fetchColumn() : false);
+}
+
+function user_get_hierarchy(int $userId): int
+{
+    $getHierarchy = db_prepare('
+        SELECT MAX(r.`role_hierarchy`)
+        FROM `msz_roles` AS r
+        LEFT JOIN `msz_user_roles` AS ur
+        ON ur.`role_id` = r.`role_id`
+        WHERE ur.`user_id` = :user_id
+    ');
+    $getHierarchy->bindValue('user_id', $userId);
+    return (int)($getHierarchy->execute() ? $getHierarchy->fetchColumn() : 0);
 }
 
 define('MSZ_E_USER_BIRTHDATE_OK', 0);

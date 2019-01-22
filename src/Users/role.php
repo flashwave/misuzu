@@ -135,3 +135,23 @@ function user_role_get(int $roleId): array
     $getRole->bindValue('role_id', $roleId);
     return db_fetch($getRole);
 }
+
+function user_role_check_authority(int $userId, int $roleId): bool
+{
+    $checkHierarchy = db_prepare('
+        SELECT (
+            SELECT MAX(r.`role_hierarchy`)
+            FROM `msz_roles` AS r
+            LEFT JOIN `msz_user_roles` AS ur
+            ON ur.`role_id` = r.`role_id`
+            WHERE ur.`user_id` = :user_id
+        ) > (
+            SELECT `role_hierarchy`
+            FROM `msz_roles`
+            WHERE `role_id` = :role_id
+        )
+    ');
+    $checkHierarchy->bindValue('user_id', $userId);
+    $checkHierarchy->bindValue('role_id', $roleId);
+    return (bool)($checkHierarchy->execute() ? $checkHierarchy->fetchColumn() : false);
+}

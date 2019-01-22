@@ -121,7 +121,7 @@ switch ($mode) {
         $userPerms = perms_get_user(MSZ_PERMS_USER, user_session_current('user_id', 0));
         $canManageWarnings = perms_check($userPerms, MSZ_PERM_USER_MANAGE_WARNINGS);
         $canEdit = !$isRestricted && user_session_active() && (
-            $viewingOwnProfile || perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS)
+            $viewingOwnProfile || (perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS) && user_check_authority(user_session_current('user_id', 0), $userId))
         );
         $isEditing = $mode === 'edit';
 

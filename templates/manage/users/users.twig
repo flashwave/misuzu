@@ -9,7 +9,8 @@
                 {{ user_card(user, '?v=view&u=%d', '?v=role&r=%d', [
                     {
                         'href': '/profile.php?u=%d'|format(user.user_id),
-                        'text': 'Profile',
+                        'title': 'Profile',
+                        'icon': 'fas fa-user',
                     }
                 ]) }}
             </div>
