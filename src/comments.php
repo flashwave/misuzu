@@ -36,7 +36,22 @@ function comments_parse_for_store(string $text): string
 
 function comments_parse_for_display(string $text): string
 {
-    return preg_replace_callback(MSZ_COMMENTS_MARKUP_USER_ID, function ($matches) {
+    $text = preg_replace_callback(
+        '/(^|[\n ])([\w]*?)([\w]*?:\/\/[\w]+[^ \,\"\n\r\t<]*)/is',
+        function ($matches) {
+            $matches[0] = trim($matches[0]);
+            $url = parse_url($matches[0]);
+
+            if (empty($url['scheme']) || !in_array(mb_strtolower($url['scheme']), ['http', 'https'], true)) {
+                return $matches[0];
+            }
+
+            return sprintf(' <a href="%1$s" class="link" target="_blank" rel="noreferrer noopener">%1$s</a>', $matches[0]);
+        },
+        $text
+    );
+
+    $text = preg_replace_callback(MSZ_COMMENTS_MARKUP_USER_ID, function ($matches) {
         $getInfo = db_prepare('
             SELECT
                 u.`user_id`, u.`username`,
@@ -60,6 +75,8 @@ function comments_parse_for_display(string $text): string
             $info['username']
         );
     }, $text);
+
+    return $text;
 }
 
 // usually this is not how you're suppose to handle permission checking,
