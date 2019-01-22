@@ -225,4 +225,39 @@
             vertical-align: middle;
         }
     }
+
+    &__badge {
+        background-color: var(--accent-colour);
+        border-radius: 12px;
+        width: 100%;
+        padding: 2px;
+        box-shadow: 0 2px 3px #000A;
+        margin: 4px;
+        overflow: hidden;
+
+        @media (max-width: @site-mobile-width) {
+            width: auto;
+            padding: 2px 10px;
+            margin: 0;
+            align-self: flex-start;
+            margin-left: 5px;
+            font-size: .9em;
+        }
+
+        &__desktop {
+            display: block;
+
+            @media (max-width: @site-mobile-width) {
+                display: none;
+            }
+        }
+
+        &__mobile {
+            display: none;
+
+            @media (max-width: @site-mobile-width) {
+                display: block;
+            }
+        }
+    }
 }

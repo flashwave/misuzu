@@ -393,12 +393,22 @@
                     </a>
 
                     <a class="forum__post__username" href="/profile.php?u={{ post.poster_id }}">{{ post.poster_name }}</a>
-                    <a class="forum__post__usertitle">{{ post.poster_title }}</a>
+
+                    {% if post.poster_title|length > 0 %}
+                        <div class="forum__post__usertitle">{{ post.poster_title }}</div>
+                    {% endif %}
 
                     <div class="forum__post__icons">
                         <div class="flag flag--{{ post.poster_country|lower }}" title="{{ post.poster_country|country_name }}"></div>
                         <div class="forum__post__posts-count">{{ post.poster_post_count|number_format }} posts</div>
                     </div>
+
+                    {% if post.is_original_poster %}
+                        <div class="forum__post__badge forum__post__badge--original-poster">
+                            <div class="forum__post__badge__desktop">Original Poster</div>
+                            <div class="forum__post__badge__mobile">OP</div>
+                        </div>
+                    {% endif %}
 
                     <div class="forum__post__joined">
                         joined <time datetime="{{ post.poster_joined|date('c') }}" title="{{ post.poster_joined|date('r') }}">{{ post.poster_joined|time_diff }}</time>

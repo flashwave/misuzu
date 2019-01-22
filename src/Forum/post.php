@@ -106,7 +106,14 @@ function forum_post_get(int $postId, bool $allowDeleted = false): array
                     SELECT MIN(`post_id`) = p.`post_id`
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = p.`topic_id`
-                ) AS `is_opening_post`
+                ) AS `is_opening_post`,
+                (
+                    SELECT `user_id` = u.`user_id`
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = p.`topic_id`
+                    ORDER BY `post_id`
+                    LIMIT 1
+                ) AS `is_original_poster`
             FROM `msz_forum_posts` AS p
             LEFT JOIN `msz_users` AS u
             ON u.`user_id` = p.`user_id`
@@ -146,7 +153,14 @@ function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $
                     SELECT MIN(`post_id`) = p.`post_id`
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = p.`topic_id`
-                ) AS `is_opening_post`
+                ) AS `is_opening_post`,
+                (
+                    SELECT `user_id` = u.`user_id`
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = p.`topic_id`
+                    ORDER BY `post_id`
+                    LIMIT 1
+                ) AS `is_original_poster`
             FROM `msz_forum_posts` AS p
             LEFT JOIN `msz_users` AS u
             ON u.`user_id` = p.`user_id`
