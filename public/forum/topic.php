@@ -169,6 +169,10 @@ if (in_array($moderationMode, $validModerationModes, true)) {
 
             $deleteTopic = forum_topic_delete($topic['topic_id']);
 
+            if ($deleteTopic) {
+                audit_log(MSZ_AUDIT_FORUM_TOPIC_DELETE, $topicUserId, [$topic['topic_id']]);
+            }
+
             if ($isXHR) {
                 echo json_encode([
                     'success' => $deleteTopic,
@@ -217,6 +221,7 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                 break;
             }
 
+            audit_log(MSZ_AUDIT_FORUM_TOPIC_RESTORE, $topicUserId, [$topic['topic_id']]);
             http_response_code(204);
 
             if (!$isXHR) {
@@ -255,6 +260,7 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                 break;
             }
 
+            audit_log(MSZ_AUDIT_FORUM_TOPIC_NUKE, $topicUserId, [$topic['topic_id']]);
             http_response_code(204);
 
             if (!$isXHR) {
@@ -263,24 +269,24 @@ if (in_array($moderationMode, $validModerationModes, true)) {
             break;
 
         case 'bump':
-            if ($canBumpTopic) {
-                forum_topic_bump($topic['topic_id']);
+            if ($canBumpTopic && forum_topic_bump($topic['topic_id'])) {
+                audit_log(MSZ_AUDIT_FORUM_TOPIC_BUMP, $topicUserId, [$topic['topic_id']]);
             }
 
             header('Location: /forum/topic.php?t=' . $topic['topic_id']);
             break;
 
         case 'lock':
-            if ($canLockTopic && !$topicIsLocked) {
-                forum_topic_lock($topic['topic_id']);
+            if ($canLockTopic && !$topicIsLocked && forum_topic_lock($topic['topic_id'])) {
+                audit_log(MSZ_AUDIT_FORUM_TOPIC_LOCK, $topicUserId, [$topic['topic_id']]);
             }
 
             header('Location: /forum/topic.php?t=' . $topic['topic_id']);
             break;
 
         case 'unlock':
-            if ($canLockTopic && $topicIsLocked) {
-                forum_topic_unlock($topic['topic_id']);
+            if ($canLockTopic && $topicIsLocked && forum_topic_unlock($topic['topic_id'])) {
+                audit_log(MSZ_AUDIT_FORUM_TOPIC_UNLOCK, $topicUserId, [$topic['topic_id']]);
             }
 
             header('Location: /forum/topic.php?t=' . $topic['topic_id']);

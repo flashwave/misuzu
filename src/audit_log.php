@@ -19,6 +19,16 @@ audit_log_define('NEWS_POST_CREATE');
 audit_log_define('NEWS_POST_EDIT');
 audit_log_define('NEWS_CATEGORY_CREATE');
 audit_log_define('NEWS_CATEGORY_EDIT');
+audit_log_define('FORUM_POST_EDIT');
+audit_log_define('FORUM_POST_DELETE');
+audit_log_define('FORUM_POST_RESTORE');
+audit_log_define('FORUM_POST_NUKE');
+audit_log_define('FORUM_TOPIC_DELETE');
+audit_log_define('FORUM_TOPIC_RESTORE');
+audit_log_define('FORUM_TOPIC_NUKE');
+audit_log_define('FORUM_TOPIC_BUMP');
+audit_log_define('FORUM_TOPIC_LOCK');
+audit_log_define('FORUM_TOPIC_UNLOCK');
 
 // replace this with a localisation system
 define('MSZ_AUDIT_LOG_STRINGS', [
@@ -42,6 +52,16 @@ define('MSZ_AUDIT_LOG_STRINGS', [
     MSZ_AUDIT_NEWS_POST_EDIT                => 'Edited news post #%d.',
     MSZ_AUDIT_NEWS_CATEGORY_CREATE          => 'Created news category #%d.',
     MSZ_AUDIT_NEWS_CATEGORY_EDIT            => 'Edited news category #%d.',
+    MSZ_AUDIT_FORUM_POST_EDIT               => 'Edited forum post #%d.',
+    MSZ_AUDIT_FORUM_POST_DELETE             => 'Deleted forum post #%d.',
+    MSZ_AUDIT_FORUM_POST_RESTORE            => 'Restored forum post #%d.',
+    MSZ_AUDIT_FORUM_POST_NUKE               => 'Nuked forum post #%d.',
+    MSZ_AUDIT_FORUM_TOPIC_DELETE            => 'Deleted forum topic #%d.',
+    MSZ_AUDIT_FORUM_TOPIC_RESTORE           => 'Restored forum topic #%d.',
+    MSZ_AUDIT_FORUM_TOPIC_NUKE              => 'Nuked forum topic #%d.',
+    MSZ_AUDIT_FORUM_TOPIC_BUMP              => 'Manually bumped forum topic #%d.',
+    MSZ_AUDIT_FORUM_TOPIC_LOCK              => 'Locked forum topic #%d.',
+    MSZ_AUDIT_FORUM_TOPIC_UNLOCK            => 'Unlocked forum topic #%d.',
 ]);
 
 function audit_log_define(string $name): void
