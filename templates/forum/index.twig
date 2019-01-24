@@ -22,7 +22,7 @@
 
         {% if current_user is defined %}
             <div class="container forum__actions">
-                <a href="?m=mark&amp;c={{ csrf_token('forum_mark') }}" class="input__button forum__actions__button">Mark All Read</a>
+                <a href="{{ url('forum-mark-global') }}" class="input__button forum__actions__button">Mark All Read</a>
             </div>
         {% endif %}
     {% else %}

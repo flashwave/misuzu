@@ -203,7 +203,11 @@ if (!empty($_POST)) {
             }
 
             if (empty($notices)) {
-                $redirect = '/forum/topic.php' . (empty($topic) ? "?t={$topicId}" : "?p={$postId}#p{$postId}");
+                $redirect = url(empty($topic) ? 'forum-topic' : 'forum-post', [
+                    'topic' => $topicId ?? 0,
+                    'post' => $postId ?? 0,
+                    'post_fragment' => 'p' . ($postId ?? 0),
+                ]);
                 header("Location: {$redirect}");
                 return;
             }

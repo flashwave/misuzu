@@ -90,7 +90,7 @@
     <div class="header__background"></div>
 
     <div class="header__desktop">
-        <a class="header__desktop__logo" href="/" title="{{ globals.site_name }}">
+        <a class="header__desktop__logo" href="{{ url('index') }}" title="{{ globals.site_name }}">
             {{ globals.site_name }}
         </a>
 
@@ -123,11 +123,11 @@
             {% endfor %}
 
             {% if current_user is defined %}
-                <a href="/profile.php?u={{ current_user.user_id }}" class="avatar header__desktop__user__avatar" title="{{ current_user.username }}"
-                    style="background-image:url('/profile.php?u={{ current_user.user_id }}&amp;m=avatar');{{ current_user.user_colour|html_colour }}"></a>
+                <a href="{{ url('user-profile', {'user': current_user.user_id}) }}" class="avatar header__desktop__user__avatar" title="{{ current_user.username }}"
+                    style="background-image:url('{{ url('user-avatar', {'user': current_user.user_id}) }}');{{ current_user.user_colour|html_colour }}"></a>
             {% else %}
-                <a href="/auth.php?m=login" class="avatar header__desktop__user__avatar"
-                    style="background-image:url('/profile.php?m=avatar');"></a>
+                <a href="{{ url('auth-login') }}" class="avatar header__desktop__user__avatar"
+                    style="background-image:url('{{ url('guest-avatar') }}');"></a>
             {% endif %}
         </div>
     </div>
@@ -138,7 +138,7 @@
                 <i class="fas fa-bars"></i>
             </label>
 
-            <a class="header__mobile__logo header__mobile__icon" href="/">
+            <a class="header__mobile__logo header__mobile__icon" href="{{ url('index') }}">
                 {{ globals.site_name }}
             </a>
 

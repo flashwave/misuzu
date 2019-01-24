@@ -7,11 +7,11 @@
             <div class="container changelog-actions-tags__panel changelog-actions-tags__panel--tags">
                 {{ container_title('Tags') }}
 
-                <a href="?v=tag" class="input__button">Create new tag</a>
+                <a href="{{ url('manage-changelog-tag-create') }}" class="input__button">Create new tag</a>
 
                 <div class="changelog-actions-tags__list">
                     {% for tag in changelog_tags %}
-                        <a href="?v=tag&amp;t={{ tag.tag_id }}" class="changelog-actions-tags__entry">
+                        <a href="{{ url('manage-changelog-tag-edit', {'tag': tag.tag_id}) }}" class="changelog-actions-tags__entry">
                             <div class="listing__entry__content changelog-tags__content">
                                 <div class="changelog-tags__text">
                                     {{ tag.tag_name }} ({{ tag.tag_count }})
@@ -31,11 +31,11 @@
             <div class="container changelog-actions-tags__panel changelog-actions-tags__panel--actions">
                 {{ container_title('Actions') }}
 
-                <a href="?v=action" class="input__button">Create new action</a>
+                <a href="{{ url('manage-changelog-action-create') }}" class="input__button">Create new action</a>
 
                 <div class="changelog-actions-tags__list">
                     {% for action in changelog_actions %}
-                        <a href="?v=action&amp;a={{ action.action_id }}" class="changelog-actions-tags__entry"
+                        <a href="{{ url('manage-changelog-action-edit', {'action': action.action_id}) }}" class="changelog-actions-tags__entry"
                             style="{{ action.action_colour|html_colour('border-color') }}">
                             <div class="listing__entry__content changelog-tags__content">
                                 <div class="changelog-tags__text">

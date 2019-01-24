@@ -2,20 +2,12 @@
 {% from 'macros.twig' import container_title %}
 {% from 'news/macros.twig' import news_preview %}
 {% from 'changelog/macros.twig' import changelog_listing %}
-{% from 'home/macros.twig' import chat_quote_display %}
 
 {% set canonical_url = '/' %}
 
 {% block content %}
     <div class="index">
         <div class="index__sidebar">
-            {% if chat_quote is defined and chat_quote is iterable and chat_quote|length > 0 %}
-                <div class="container index__container">
-                    {{ container_title('<i class="fas fa-quote-left fa-fw"></i> Chat quote from ' ~ (chat_quote[0].quote_timestamp|date('Y-m-d'))) }}
-                    {{ chat_quote_display(chat_quote) }}
-                </div>
-            {% endif %}
-
             <div class="container index__container">
                 {{ container_title('<i class="fas fa-chart-bar fa-fw"></i> Statistics') }}
 
@@ -84,7 +76,7 @@
 
                     <div class="index__online">
                         {% for user in online_users %}
-                            <a href="/profile.php?u={{ user.user_id }}" class="avatar index__online__user" style="{{ user.user_colour|html_colour }};--avatar-url: url('/profile.php?m=avatar&amp;u={{ user.user_id }}');" title="{{ user.username }}">
+                            <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="avatar index__online__user" style="{{ user.user_colour|html_colour }};--avatar-url: url('{{ url('user-avatar', {'user': user.user_id}) }}');" title="{{ user.username }}">
                                 {{ user.username }}
                             </a>
                         {% endfor %}
@@ -97,8 +89,8 @@
                     {{ container_title('<i class="fas fa-birthday-cake fa-fw"></i> Happy Birthday!') }}
 
                     {% for birthday in birthdays %}
-                        <a class="index__latest" style="{# birthday.user_colour|html_colour #}" href="/profile.php?u={{ birthday.user_id }}">
-                            <div class="avatar index__latest__avatar" style="--avatar-url: url('/profile.php?m=avatar&amp;u={{ birthday.user_id }}')"></div>
+                        <a class="index__latest" style="{# birthday.user_colour|html_colour #}" href="{{ url('user-profile', {'user': birthday.user_id}) }}">
+                            <div class="avatar index__latest__avatar" style="--avatar-url: url('{{ url('user-avatar', {'user': birthday.user_id}) }}')"></div>
                             <div class="index__latest__content">
                                 <div class="index__latest__username">
                                     {{ birthday.username }}
@@ -116,8 +108,8 @@
                 <div class="container index__container">
                     {{ container_title('<i class="fas fa-user-plus fa-fw"></i> Newest User') }}
 
-                    <a class="index__latest" style="{{ latest_user.user_colour|html_colour }}" href="/profile.php?u={{ latest_user.user_id }}">
-                        <div class="avatar index__latest__avatar" style="--avatar-url: url('/profile.php?m=avatar&amp;u={{ latest_user.user_id }}')"></div>
+                    <a class="index__latest" style="{{ latest_user.user_colour|html_colour }}" href="{{ url('user-profile', {'user': latest_user.user_id}) }}">
+                        <div class="avatar index__latest__avatar" style="--avatar-url: url('{{ url('user-avatar', {'user': latest_user.user_id}) }}')"></div>
                         <div class="index__latest__content">
                             <div class="index__latest__username">
                                 {{ latest_user.username }}
@@ -131,7 +123,7 @@
             {% endif %}
 
             <div class="container index__container">
-                {{ container_title('<i class="fas fa-wrench fa-fw"></i> Changelog', false, '/changelog.php') }}
+                {{ container_title('<i class="fas fa-wrench fa-fw"></i> Changelog', false, url('changelog-index')) }}
                 <div class="changelog__content">
                     {{ changelog_listing(featured_changelog, false, false, null, null, null, null, true) }}
                 </div>

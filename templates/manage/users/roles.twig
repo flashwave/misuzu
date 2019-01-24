@@ -3,7 +3,7 @@
 
 {% block manage_content %}
     {% if can_manage_roles %}
-        <a href="?v=role" class="input__button">Create new Role</a>
+        <a href="{{ url('manage-role-create') }}" class="input__button">Create new Role</a>
     {% endif %}
 
     <div class="userlist">
@@ -11,7 +11,7 @@
             <div class="userlist__item">
 
                 <div class="usercard">
-                    <a  href="?v=role&amp;r={{ role.role_id }}"
+                    <a  href="{{ url('manage-role-edit', {'role': role.role_id}) }}"
                         class="usercard__background"></a>
 
                     <div class="usercard__container">
@@ -38,7 +38,7 @@
                         </div>
 
                         <div class="usercard__actions">
-                            <a class="usercard__action" href="/members.php?r={{ role.role_id }}">
+                            <a class="usercard__action" href="{{ url('members-role', {'role': role.role_id}) }}">
                                 Members
                             </a>
                         </div>

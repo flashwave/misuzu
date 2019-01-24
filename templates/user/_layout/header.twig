@@ -63,17 +63,17 @@
         <div class="profile__header__actions">
             {% if is_editing %}
                 <button class="input__button input__button--save profile__header__action">Save</button>
-                <a href="/profile.php?u={{ profile.user_id }}" class="input__button input__button--destroy profile__header__action">Discard</a>
-                <a href="/settings.php" class="input__button profile__header__action">Settings</a>
+                <a href="{{ url('user-profile', {'user': profile.user_id}) }}" class="input__button input__button--destroy profile__header__action">Discard</a>
+                <a href="{{ url('settings-index') }}" class="input__button profile__header__action">Settings</a>
             {% elseif can_edit %}
-                <a href="/profile.php?u={{ profile.user_id }}&amp;m=edit" class="input__button profile__header__action">Edit Profile</a>
+                <a href="{{ url('user-profile-edit', {'user': profile.user_id}) }}" class="input__button profile__header__action">Edit Profile</a>
             {% endif %}
 
             {% if current_user is defined and current_user.user_id != profile.user_id and not is_editing %}
                 {% if friend_info.user_relation == constant('MSZ_USER_RELATION_FOLLOW') %}
-                    <a href="/relations.php?u={{ profile.user_id }}&amp;m={{ constant('MSZ_USER_RELATION_NONE') }}&amp;c={{ csrf_token('user_relation') }}" class="input__button input__button--destroy profile__header__action js-user-relation-action" data-relation-user="{{ profile.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_NONE') }}">Unfollow</a>
+                    <a href="{{ url('user-relation-none', {'user': profile.user_id}) }}" class="input__button input__button--destroy profile__header__action js-user-relation-action" data-relation-user="{{ profile.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_NONE') }}">Unfollow</a>
                 {% else %}
-                    <a href="/relations.php?u={{ profile.user_id }}&amp;m={{ constant('MSZ_USER_RELATION_FOLLOW') }}&amp;c={{ csrf_token('user_relation') }}" class="input__button profile__header__action js-user-relation-action" data-relation-user="{{ profile.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_FOLLOW') }}">Follow</a>
+                    <a href="{{ url('user-relation-follow', {'user': profile.user_id}) }}" class="input__button profile__header__action js-user-relation-action" data-relation-user="{{ profile.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_FOLLOW') }}">Follow</a>
                 {% endif %}
             {% endif %}
         </div>

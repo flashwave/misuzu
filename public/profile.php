@@ -355,7 +355,7 @@ switch ($mode) {
 
                 // If there are no notices, redirect to regular profile.
                 if (empty($notices)) {
-                    header("Location: /profile.php?u={$userId}");
+                    header('Location: ' . url('user-profile', ['user' => $userId]));
                     return;
                 }
             }
@@ -370,7 +370,7 @@ switch ($mode) {
 
             if ($backgroundInfo) {
                 tpl_var('site_background', [
-                    'url' => "/profile.php?m=background&u={$userId}",
+                    'url' => url('user-background', ['user' => $userId]),
                     'width' => $backgroundInfo[0],
                     'height' => $backgroundInfo[1],
                     'settings' => $profile['user_background_settings'],

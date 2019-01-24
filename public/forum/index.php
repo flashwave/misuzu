@@ -11,7 +11,7 @@ switch ($_GET['m'] ?? '') {
             $markAction = forum_mark_read($markEntireForum ? null : $forumId, user_session_current('user_id', 0));
         }
 
-        header('Location: /forum' . (!$markAction || $markEntireForum ? '' : url_construct('/forum.php', ['f' => $forumId])));
+        header('Location: /forum' . (!$markAction || $markEntireForum ? '' : url('forum-category', ['forum' => $forumId])));
         break;
 
     default:

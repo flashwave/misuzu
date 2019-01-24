@@ -76,7 +76,7 @@
         <div class="container forum__actions">
             <div class="forum__actions__buttons">
                 {% if can_topic %}
-                    <a href="{{ url_construct('/forum/posting.php', {'f':info.forum_id}) }}" class="input__button forum__actions__button">New Topic</a>
+                    <a href="{{ url('forum-topic-new', {'forum': info.forum_id}) }}" class="input__button forum__actions__button">New Topic</a>
                 {% endif %}
             </div>
 
@@ -96,7 +96,7 @@
         <div class="container forum__actions">
             <div class="forum__actions__buttons">
                 {% if can_reply %}
-                    <a href="/forum/posting.php?t={{ info.topic_id }}" class="input__button">Reply</a>
+                    <a href="{{ url('forum-reply-new', {'topic': info.topic_id}) }}" class="input__button">Reply</a>
                 {% endif %}
             </div>
 
@@ -126,7 +126,7 @@
     {% endif %}
 
     <div class="forum__category">
-        <a href="/forum/forum.php?f={{ forum.forum_id }}" class="forum__category__link"></a>
+        <a href="{{ url('forum-category', {'forum': forum.forum_id}) }}" class="forum__category__link"></a>
 
         <div class="forum__category__container">
             <div class="forum__category__icon forum__category__icon--{{ forum_unread }}">
@@ -145,7 +145,7 @@
                 {% if forum.forum_subforums is defined and forum.forum_subforums|length > 0 %}
                     <div class="forum__category__subforums">
                         {% for subforum in forum.forum_subforums %}
-                            <a href="/forum/forum.php?f={{ subforum.forum_id }}"
+                            <a href="{{ url('forum-category', {'forum': subforum.forum_id}) }}"
                                 class="forum__category__subforum{% if subforum.forum_unread %} forum__category__subforum--unread{% endif %}">
                                 {{ subforum.forum_name }}
                             </a>
@@ -177,7 +177,7 @@
                         {% else %}
                             <div class="forum__category__activity__details">
                                 <a class="forum__category__activity__post"
-                                    href="/forum/topic.php?p={{ forum.recent_post_id }}#p{{ forum.recent_post_id }}">
+                                    href="{{ url('forum-post', {'post': forum.recent_post_id, 'post_fragment': 'p' ~ forum.recent_post_id}) }}">
                                     {{ forum.recent_topic_title }}
                                 </a>
 
@@ -186,7 +186,7 @@
                                         title="{{ forum.recent_post_created|date('r') }}">{{ forum.recent_post_created|time_diff }}</time>
                                     {% if forum.recent_post_user_id is not null %}
                                         by
-                                        <a href="/profile.php?u={{ forum.recent_post_user_id }}" class="forum__category__username"
+                                        <a href="{{ url('user-profile', {'user': forum.recent_post_user_id}) }}" class="forum__category__username"
                                             style="{{ forum.recent_post_user_colour|html_colour }}">
                                             {{ forum.recent_post_username }}
                                         </a>
@@ -195,9 +195,9 @@
                             </div>
 
                             {% if forum.recent_post_user_id is not null %}
-                                <a href="/profile.php?u={{ forum.recent_post_user_id }}"
+                                <a href="{{ url('user-profile', {'user': forum.recent_post_user_id}) }}"
                                     class="avatar forum__category__avatar"
-                                    style="background-image:url('/profile.php?u={{ forum.recent_post_user_id }}&amp;m=avatar')">
+                                    style="background-image:url('{{ url('user-avatar', {'user': forum.recent_post_user_id}) }}')">
                                 </a>
                             {% endif %}
                         {% endif %}
@@ -272,7 +272,7 @@
     {% endif %}
 
     <div class="forum__topic{% if topic.topic_deleted is not null %} forum__topic--deleted{% elseif topic.topic_locked is not null and not topic_important %} forum__topic--locked{% endif %}">
-        <a href="/forum/topic.php?t={{ topic.topic_id }}" class="forum__topic__link"></a>
+        <a href="{{ url('forum-topic', {'topic': topic.topic_id}) }}" class="forum__topic__link"></a>
 
         <div class="forum__topic__container">
             <div class="forum__topic__icon forum__topic__icon--{{ topic_unread ? 'unread' : 'read' }}">
@@ -293,7 +293,7 @@
                 <div class="forum__topic__info">
                     {% if topic.author_id is not null %}
                         by <a
-                            href="/profile.php?u={{ topic.author_id }}"
+                            href="{{ url('user-profile', {'user': topic.author_id}) }}"
                             class="forum__topic__username"
                             style="{{ topic.author_colour|html_colour }}">{{ topic.author_name }}</a>,
 
@@ -308,7 +308,7 @@
                         </div>
 
                         {% for i in 1..topic.topic_pages|clamp(0, 3) %}
-                            <a href="/forum/topic.php?t={{ topic.topic_id }}{% if i > 1 %}&amp;page={{ i }}{% endif %}" class="forum__topic__pagination__item">
+                            <a href="{{ url('forum-topic', {'topic': topic.topic_id, 'page': i}) }}" class="forum__topic__pagination__item">
                                 {{ i }}
                             </a>
                         {% endfor %}
@@ -320,7 +320,7 @@
                             {% endif %}
 
                             {% for i in (topic.topic_pages - 2)|clamp(4, topic.topic_pages)..topic.topic_pages %}
-                                <a href="/forum/topic.php?t={{ topic.topic_id }}{% if i > 1 %}&amp;page={{ i }}{% endif %}" class="forum__topic__pagination__item">
+                                <a href="{{ url('forum-topic', {'topic': topic.topic_id, 'page': i}) }}" class="forum__topic__pagination__item">
                                     {{ i }}
                                 </a>
                             {% endfor %}
@@ -337,21 +337,21 @@
             <div class="forum__topic__activity">
                 <div class="forum__topic__activity__details">
                     {% if topic.respondent_id is not null %}
-                        <a href="/profile.php?u={{ topic.respondent_id }}" class="forum__topic__username"
+                        <a href="{{ url('user-profile', {'user': topic.respondent_id}) }}" class="forum__topic__username"
                             style="{{ topic.respondent_colour|html_colour }}">{{ topic.respondent_name }}</a>
                     {% endif %}
 
                     <a class="forum__topic__activity__post"
-                        href="/forum/topic.php?p={{ topic.response_id }}#p{{ topic.response_id }}">
+                        href="{{ url('forum-post', {'post': topic.response_id, 'post_fragment': 'p' ~ topic.response_id}) }}">
                         <time datetime="{{ topic.response_created|date('c') }}"
                             title="{{ topic.response_created|date('r') }}">{{ topic.response_created|time_diff }}</time>
                     </a>
                 </div>
 
                 {% if topic.respondent_id is not null %}
-                    <a href="/profile.php?u={{ topic.respondent_id }}"
+                    <a href="{{ url('user-profile', {'user': topic.respondent_id}) }}"
                         class="avatar forum__topic__avatar"
-                        style="background-image:url('/profile.php?u={{ topic.respondent_id }}&amp;m=avatar')">
+                        style="background-image:url('{{ url('user-avatar', {'user': topic.respondent_id}) }}')">
                     </a>
                 {% endif %}
             </div>
@@ -388,11 +388,11 @@
             <div class="forum__post__info__content">
                 {% if post.poster_id is not null %}
                     <a class="avatar forum__post__avatar"
-                        style="background-image:url('/profile.php?u={{ post.poster_id }}&amp;m=avatar');"
-                        href="/profile.php?u={{ post.poster_id }}">
+                        style="background-image:url('{{ url('user-avatar', {'user': post.poster_id}) }}');"
+                        href="{{ url('user-profile', {'user': post.poster_id}) }}">
                     </a>
 
-                    <a class="forum__post__username" href="/profile.php?u={{ post.poster_id }}">{{ post.poster_name }}</a>
+                    <a class="forum__post__username" href="{{ url('user-profile', {'user': post.poster_id}) }}">{{ post.poster_name }}</a>
 
                     {% if post.poster_title|length > 0 %}
                         <div class="forum__post__usertitle">{{ post.poster_title }}</div>
@@ -420,7 +420,7 @@
         </div>
 
         <div class="forum__post__content">
-            {% set post_link = url_construct('/forum/topic.php', post.is_opening_post ? {'t':post.topic_id} : {'p':post.post_id}, post.is_opening_post ? '' : 'p%d'|format(post.post_id)) %}
+            {% set post_link = url(post.is_opening_post ? 'forum-topic' : 'forum-post', {'topic': post.topic_id, 'post': post.post_id, 'post_fragment': 'p%d'|format(post.post_id)}) %}
 
             <div class="forum__post__details">
                 <a class="forum__post__datetime" href="{{ post_link }}">
@@ -442,17 +442,17 @@
             {% if can_post or can_edit or can_delete %}
                 <div class="forum__post__actions">
                     {% if is_deleted %}
-                        <a href="/forum/post.php?p={{ post.post_id }}&amp;m=restore" class="forum__post__action forum__post__action--restore"><i class="fas fa-magic fa-fw"></i> Restore</a>
-                        <a href="/forum/post.php?p={{ post.post_id }}&amp;m=nuke" class="forum__post__action forum__post__action--nuke"><i class="fas fa-radiation-alt fa-fw"></i> Permanently Delete</a>
+                        <a href="{{ url('forum-post-restore', {'post': post.post_id}) }}" class="forum__post__action forum__post__action--restore"><i class="fas fa-magic fa-fw"></i> Restore</a>
+                        <a href="{{ url('forum-post-nuke', {'post': post.post_id}) }}" class="forum__post__action forum__post__action--nuke"><i class="fas fa-radiation-alt fa-fw"></i> Permanently Delete</a>
                     {% else %}
                         {# if can_post %}
-                            <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=quote" class="forum__post__action forum__post__action--quote"><i class="fas fa-quote-left fa-fw"></i> Quote</a>
+                            <a href="{{ url('forum-post-quote', {'post': post.post_id}) }}" class="forum__post__action forum__post__action--quote"><i class="fas fa-quote-left fa-fw"></i> Quote</a>
                         {% endif #}
                         {% if can_edit %}
-                            <a href="/forum/posting.php?p={{ post.post_id }}&amp;m=edit" class="forum__post__action forum__post__action--edit"><i class="fas fa-edit fa-fw"></i> Edit</a>
+                            <a href="{{ url('forum-post-edit', {'post': post.post_id}) }}" class="forum__post__action forum__post__action--edit"><i class="fas fa-edit fa-fw"></i> Edit</a>
                         {% endif %}
                         {% if can_delete %}
-                            <a href="/forum/post.php?p={{ post.post_id }}&amp;m=delete" class="forum__post__action forum__post__action--delete"><i class="far fa-trash-alt fa-fw"></i> Delete</a>
+                            <a href="{{ url('forum-post-delete', {'post': post.post_id}) }}" class="forum__post__action forum__post__action--delete"><i class="far fa-trash-alt fa-fw"></i> Delete</a>
                         {% endif %}
                     {% endif %}
                 </div>

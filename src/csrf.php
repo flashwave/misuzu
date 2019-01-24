@@ -85,6 +85,13 @@ function csrf_init(string $secretKey, string $identity): void
     $GLOBALS[MSZ_CSRF_TOKEN_STORE] = [];
 }
 
+function csrf_is_ready(): bool
+{
+    return !empty($GLOBALS[MSZ_CSRF_SECRET_STORE])
+        && !empty($GLOBALS[MSZ_CSRF_IDENTITY_STORE])
+        && is_array($GLOBALS[MSZ_CSRF_TOKEN_STORE]);
+}
+
 function csrf_token(string $realm): string
 {
     if (array_key_exists($realm, $GLOBALS[MSZ_CSRF_TOKEN_STORE])) {

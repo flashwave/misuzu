@@ -11,13 +11,13 @@
             <p>Here's a listing of a few informational pages that'll probably come in handy during your Flashii Experience&trade;.</p>
             <h2>Flashii</h2>
             <ul>
-                <li><a href="/info.php/rules">Rules</a></li>
+                <li><a href="{{ url('info', {'title': 'rules'}) }}">Rules</a></li>
             </ul>
             <h2>Misuzu Project</h2>
             <ul>
-                <li><a href="/info.php/misuzu">Read me</a></li>
-                <li><a href="/info.php/misuzu/license">License</a></li>
-                <li><a href="/info.php/misuzu/code_of_conduct">Code of Conduct</a></li>
+                <li><a href="{{ url('info', {'title': 'misuzu'}) }}">Read me</a></li>
+                <li><a href="{{ url('info', {'title': 'misuzu/license'}) }}">License</a></li>
+                <li><a href="{{ url('info', {'title': 'misuzu/code_of_conduct'}) }}">Code of Conduct</a></li>
             </ul>
         </div>
     </div>

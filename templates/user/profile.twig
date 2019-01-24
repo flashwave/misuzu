@@ -78,7 +78,7 @@
                     <ul class="profile__guidelines__section">
                         <li class="profile__guidelines__line profile__guidelines__line--header">General</li>
                         <li class="profile__guidelines__line">Keep things sane and generally suitable for all ages.</li>
-                        <li class="profile__guidelines__line">Make sure to adhere to the <a href="/info.php/rules" class="profile__guidelines__link">rules</a>.</li>
+                        <li class="profile__guidelines__line">Make sure to adhere to the <a href="{{ url('info', {'title': 'rules'}) }}" class="profile__guidelines__link">rules</a>.</li>
                     </ul>
 
                     {% if perms.edit_avatar %}
@@ -140,7 +140,7 @@
                         {% if current_user is not defined %}
                             <div class="container profile__container">
                                 <div class="profile__accounts__notice">
-                                    You must <a href="/auth.php?m=login" class="profile__accounts__link">log in</a> to view full profiles!
+                                    You must <a href="{{ url('auth-login') }}" class="profile__accounts__link">log in</a> to view full profiles!
                                 </div>
                             </div>
                         {% elseif show_profile_fields %}

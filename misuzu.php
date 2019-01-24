@@ -46,6 +46,7 @@ require_once 'src/pagination.php';
 require_once 'src/perms.php';
 require_once 'src/string.php';
 require_once 'src/tpl.php';
+require_once 'src/url.php';
 require_once 'src/zalgo.php';
 require_once 'src/Forum/forum.php';
 require_once 'src/Forum/perms.php';

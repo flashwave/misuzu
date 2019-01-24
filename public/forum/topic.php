@@ -151,7 +151,10 @@ if (in_array($moderationMode, $validModerationModes, true)) {
 
             if (!$isXHR) {
                 if (isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
-                    header("Location: /forum/topic.php?t={$topic['topic_id']}");
+                    header("Location: " . url(
+                        'forum-topic',
+                        ['topic' => $topic['topic_id']]
+                    ));
                     break;
                 } elseif (!isset($_GET['confirm'])) {
                     echo tpl_render('forum.confirm', [
@@ -187,7 +190,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                 break;
             }
 
-            header('Location: /forum/forum.php?f=' . $topic['forum_id']);
+            header('Location: ' . url('forum-category', [
+                'forum' => $topic['forum_id'],
+            ]));
             break;
 
         case 'restore':
@@ -198,7 +203,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
 
             if (!$isXHR) {
                 if (isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
-                    header("Location: /forum/topic.php?t={$topic['topic_id']}");
+                    header("Location: " . url('forum-topic', [
+                        'topic' => $topic['topic_id'],
+                    ]));
                     break;
                 } elseif (!isset($_GET['confirm'])) {
                     echo tpl_render('forum.confirm', [
@@ -225,7 +232,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
             http_response_code(204);
 
             if (!$isXHR) {
-                header('Location: /forum/forum.php?f=' . $topic['forum_id']);
+                header('Location: ' . url('forum-category', [
+                    'forum' => $topic['forum_id'],
+                ]));
             }
             break;
 
@@ -237,7 +246,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
 
             if (!$isXHR) {
                 if (isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
-                    header("Location: /forum/topic.php?t={$topic['topic_id']}");
+                    header('Location: ' . url('forum-topic', [
+                        'topic' => $topic['topic_id'],
+                    ]));
                     break;
                 } elseif (!isset($_GET['confirm'])) {
                     echo tpl_render('forum.confirm', [
@@ -264,7 +275,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
             http_response_code(204);
 
             if (!$isXHR) {
-                header('Location: /forum/forum.php?f=' . $topic['forum_id']);
+                header('Location: ' . url('forum-category', [
+                    'forum' => $topic['forum_id'],
+                ]));
             }
             break;
 
@@ -273,7 +286,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                 audit_log(MSZ_AUDIT_FORUM_TOPIC_BUMP, $topicUserId, [$topic['topic_id']]);
             }
 
-            header('Location: /forum/topic.php?t=' . $topic['topic_id']);
+            header('Location: ' . url('forum-topic', [
+                'topic' => $topic['topic_id'],
+            ]));
             break;
 
         case 'lock':
@@ -281,7 +296,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                 audit_log(MSZ_AUDIT_FORUM_TOPIC_LOCK, $topicUserId, [$topic['topic_id']]);
             }
 
-            header('Location: /forum/topic.php?t=' . $topic['topic_id']);
+            header('Location: ' . url('forum-topic', [
+                'topic' => $topic['topic_id'],
+            ]));
             break;
 
         case 'unlock':
@@ -289,7 +306,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                 audit_log(MSZ_AUDIT_FORUM_TOPIC_UNLOCK, $topicUserId, [$topic['topic_id']]);
             }
 
-            header('Location: /forum/topic.php?t=' . $topic['topic_id']);
+            header('Location: ' . url('forum-topic', [
+                'topic' => $topic['topic_id'],
+            ]));
             break;
     }
     return;

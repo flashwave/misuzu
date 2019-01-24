@@ -66,26 +66,26 @@ switch ($authMode) {
     case 'reset':
         // If we're logged in, redirect to the password/e-mail change part in settings instead.
         if (user_session_active()) {
-            header('Location: /settings.php#account');
+            header(sprintf('Location: %s', url('settings-mode', ['mode' => 'account'])));
             break;
         }
 
         if (!$canResetPassword) {
-            header('Location: /');
+            header(sprintf('Location: %s', url('index')));
             return;
         }
 
         $resetUserId = (int)($_POST['user'] ?? $_GET['u'] ?? 0);
 
         if (empty($resetUserId)) {
-            header('Location: /auth.php?m=forgot');
+            header(sprintf('Location: %s', url('auth-forgot')));
             break;
         }
 
         $resetUsername = user_username_from_id($resetUserId);
 
         if (empty($resetUsername)) {
-            header('Location: /auth.php');
+            header(sprintf('Location: %s', url('auth-login')));
             break;
         }
 
@@ -124,7 +124,7 @@ switch ($authMode) {
 
             user_recovery_token_invalidate($resetUserId, $authVerification);
 
-            header("Location: /auth.php?m=login&u={$resetUserId}");
+            header(sprintf('Location: %s', url('auth-login')));
             break;
         }
 
@@ -192,7 +192,7 @@ MSG;
                 }
             }
 
-            header("Location: ?m=reset&u={$forgotUser['user_id']}");
+            header(sprintf('Location: %s', url('auth-reset', ['user' => $forgotUser['user_id']])));
             break;
         }
 
@@ -201,7 +201,7 @@ MSG;
 
     case 'login':
         if (user_session_active()) {
-            header('Location: /');
+            header('Location: ' . url('index'));
             break;
         }
 
@@ -272,7 +272,7 @@ MSG;
             set_cookie_m('sid', $sessionKey, $cookieLife);
 
             if (!is_local_url($authRedirect)) {
-                $authRedirect = '/';
+                $authRedirect = url('index');
             }
 
             header("Location: {$authRedirect}");
@@ -290,7 +290,7 @@ MSG;
 
     case 'register':
         if (user_session_active()) {
-            header('Location: /');
+            header('Location: ' . url('index'));
         }
 
         $authRegistrationError = '';

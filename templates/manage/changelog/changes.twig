@@ -3,7 +3,7 @@
 {% from 'changelog/macros.twig' import changelog_listing %}
 
 {% block manage_content %}
-    <a href="?v=change" class="input__button">Create new change</a>
+    <a href="{{ url('manage-changelog-change-create') }}" class="input__button">Create new change</a>
 
     <div class="container">
         {{ container_title('Changelog') }}
@@ -11,9 +11,9 @@
         <div class="changelog__content">
             {{ changelog_listing(
                 changelog_changes, false, true,
-                '?v=change&c=%d', '#cd-%s',
-                '?v=tag&t=%d',
-                '/manage/user.php?v=view&u=%d'
+                url('manage-changelog-change-edit', {'change': '%d'}), '#cd-%s',
+                url('manage-changelog-tag-edit', {'tag': '%d'}),
+                url('manage-user-edit', {'user': '%d'})
             ) }}
 
             <div class="changelog__pagination">

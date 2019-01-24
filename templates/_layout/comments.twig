@@ -53,15 +53,15 @@
                     <div class="avatar comment__avatar" style="background-image:url('/profile.php?m=avatar')"></div>
                 {% else %}
                     <a class="avatar comment__avatar"
-                        href="/profile.php?u={{ comment.user_id }}"
-                        style="background-image:url('/profile.php?m=avatar&amp;u={{ comment.user_id }}')">
+                        href="{{ url('user-profile', {'user':comment.user_id}) }}"
+                        style="background-image:url('{{ url('user-avatar', {'user':comment.user_id}) }}')">
                     </a>
                 {% endif %}
                 <div class="comment__content">
                     <div class="comment__info">
                         {% if not hide_details %}
                             <a class="comment__user comment__user--link"
-                                href="/profile.php?u={{ comment.user_id }}"
+                                href="{{ url('user-profile', {'user':comment.user_id}) }}"
                                 style="{{ comment.user_colour|html_colour }}">{{ comment.username }}</a>
                         {% endif %}
                         <a class="comment__link" href="#comment-{{ comment.comment_id }}">
@@ -90,7 +90,7 @@
                         {% if not is_deleted and user is not null %}
                             {% if perms.can_vote %}
                                 <a class="comment__action comment__action--link comment__action--vote comment__action--like{% if comment.comment_user_vote == 'Like' %} comment__action--voted{% endif %}" data-comment-id="{{ comment.comment_id }}" data-comment-vote="{{ comment.comment_user_vote == 'Like' ? '0' : '1' }}"
-                                href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Like' ? '0' : '1' }}&amp;csrf={{ csrf_token('comments') }}">
+                                href="{{ url('comment-vote', {'comment':comment.comment_id,'vote':comment.comment_user_vote == 'Like' ? '0' : '1'}) }}">
                                     <!--i class="fas fa-thumbs-up"></i-->
                                     Like
                                     {% if comment.comment_likes > 0 %}
@@ -98,7 +98,7 @@
                                     {% endif %}
                                 </a>
                                 <a class="comment__action comment__action--link comment__action--vote comment__action--dislike{% if comment.comment_user_vote == 'Dislike' %} comment__action--voted{% endif %}" data-comment-id="{{ comment.comment_id }}" data-comment-vote="{{ comment.comment_user_vote == 'Dislike' ? '0' : '-1' }}"
-                                href="/comments.php?m=vote&amp;c={{ comment.comment_id }}&amp;v={{ comment.comment_user_vote == 'Dislike' ? '0' : '-1' }}&amp;csrf={{ csrf_token('comments') }}">
+                                href="{{ url('comment-vote', {'comment':comment.comment_id,'vote':comment.comment_user_vote == 'Dislike' ? '0' : '-1'}) }}">
                                     <!--i class="fas fa-thumbs-down"></i-->
                                     Dislike
                                     {% if comment.comment_dislikes > 0 %}
@@ -110,16 +110,16 @@
                                 <label class="comment__action comment__action--link" for="comment-reply-toggle-{{ comment.comment_id }}">Reply</label>
                             {% endif %}
                             {% if perms.can_delete_any or (comment.user_id == user.user_id and perms.can_delete) %}
-                                <a class="comment__action comment__action--link comment__action--hide comment__action--delete" data-comment-id="{{ comment.comment_id }}" href="/comments.php?m=delete&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token('comments') }}">Delete</a>
+                                <a class="comment__action comment__action--link comment__action--hide comment__action--delete" data-comment-id="{{ comment.comment_id }}" href="{{ url('comment-delete', {'comment':comment.comment_id}) }}">Delete</a>
                             {% endif %}
                             {# if user is not null %}
                                 <a class="comment__action comment__action--link comment__action--hide" href="#">Report</a>
                             {% endif #}
                             {% if comment.comment_reply_to is null and perms.can_pin %}
-                                <a class="comment__action comment__action--link comment__action--hide comment__action--pin" data-comment-id="{{ comment.comment_id }}" data-comment-pinned="{{ is_pinned ? '1' : '0' }}" href="/comments.php?m={{ is_pinned ? 'unpin' : 'pin' }}&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token('comments') }}">{{ is_pinned ? 'Unpin' : 'Pin' }}</a>
+                                <a class="comment__action comment__action--link comment__action--hide comment__action--pin" data-comment-id="{{ comment.comment_id }}" data-comment-pinned="{{ is_pinned ? '1' : '0' }}" href="{{ url('comment-' ~ (is_pinned ? 'unpin' : 'pin'), {'comment':comment.comment_id}) }}">{{ is_pinned ? 'Unpin' : 'Pin' }}</a>
                             {% endif %}
                         {% elseif perms.can_delete_any %}
-                            <a class="comment__action comment__action--link comment__action--restore" data-comment-id="{{ comment.comment_id }}" href="/comments.php?m=restore&amp;c={{ comment.comment_id }}&amp;csrf={{ csrf_token('comments') }}">Restore</a>
+                            <a class="comment__action comment__action--link comment__action--restore" data-comment-id="{{ comment.comment_id }}" href="{{ url('comment-restore', {'comment':comment.comment_id}) }}">Restore</a>
                         {% endif %}
                     </div>
                 </div>
@@ -146,7 +146,7 @@
         <div class="comments__input">
             {% if user|default(null) is null %}
                 <div class="comments__notice">
-                    Please <a href="/auth.php?m=login" class="comments__notice__link">login</a> to comment.
+                    Please <a href="{{ url('auth-login') }}" class="comments__notice__link">login</a> to comment.
                 </div>
             {% elseif category|default(null) is null or perms|default(null) is null %}
                 <div class="comments__notice">

@@ -27,18 +27,18 @@
                 {% if change.user_id is not null %}
                     <div class="changelog__change__user">
                         <a class="avatar changelog__change__avatar"
-                            style="background-image:url('/profile.php?u={{ change.user_id }}&amp;m=avatar');"
-                            href="/profile.php?u={{ change.user_id }}">
+                            style="background-image:url('{{ url('user-avatar', {'user': change.user_id}) }}');"
+                            href="{{ url('user-profile', {'user': change.user_id}) }}">
                         </a>
 
                         <div class="changelog__change__user__details">
-                            <a class="changelog__change__username" href="/profile.php?u={{ change.user_id }}">{{ change.username }}</a>
-                            <a class="changelog__change__userrole" href="/members.php?r={{ change.user_role }}">{{ change.user_title }}</a>
+                            <a class="changelog__change__username" href="{{ url('user-profile', {'user': change.user_id}) }}">{{ change.username }}</a>
+                            <a class="changelog__change__userrole" href="{{ url('members-role', {'user': change.user_role}) }}">{{ change.user_title }}</a>
                         </div>
                     </div>
                 {% endif %}
 
-                <a class="changelog__change__date" href="/changelog.php?d={{ change.change_date }}">
+                <a class="changelog__change__date" href="{{ url('changelog-date', {'date': change.change_date}) }}">
                     Created
                     <time datetime="{{ change.change_created|date('c') }}" title="{{ change.change_created|date('r') }}">
                         {{ change.change_created|time_diff }}
@@ -49,7 +49,7 @@
                     <ul class="changelog__change__tags">
                         {% for tag in tags %}
                             <li class="changelog__change__tag" title="{{ tag.tag_description }}">
-                                <a href="/changelog.php?t={{ tag.tag_id }}" class="changelog__change__tag__link">
+                                <a href="{{ url('changelog-tag', {'tag': tag.tag_id}) }}" class="changelog__change__tag__link">
                                     {{ tag.tag_name }}
                                 </a>
                             </li>

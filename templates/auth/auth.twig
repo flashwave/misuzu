@@ -23,9 +23,9 @@
                 <div class="warning auth__warning">
                     <div class="warning__content">
                         {% if auth_restricted == 2 %}
-                            A user is currently in a banned and/or silenced state from the same IP address you're currently visiting the site from. If said user isn't you and you wish to create an account, please <a href="/info.php/contact" class="warning__link">contact us</a>!
+                            A user is currently in a banned and/or silenced state from the same IP address you're currently visiting the site from. If said user isn't you and you wish to create an account, please <a href="{{ url('info', {'title': 'contact'}) }}" class="warning__link">contact us</a>!
                         {% else %}
-                            The IP address from which you are visiting the website appears on our blacklist, you are not allowed to register from this address but if you already have an account you can log in just fine using the form above. If you think this blacklisting is a mistake, please <a href="/info.php/contact" class="warning__link">contact us</a>!
+                            The IP address from which you are visiting the website appears on our blacklist, you are not allowed to register from this address but if you already have an account you can log in just fine using the form above. If you think this blacklisting is a mistake, please <a href="{{ url('info', {'title': 'contact'}) }}" class="warning__link">contact us</a>!
                         {% endif %}
                     </div>
                 </div>

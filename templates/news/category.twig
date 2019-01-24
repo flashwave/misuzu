@@ -17,7 +17,7 @@
             {% endfor %}
 
             <div class="container" style="padding: 4px; display: {{ news_pagination.pages > 1 ? 'block' : 'none' }}">
-                {{ pagination(news_pagination, '/news.php', null, {'c':category.category_id}, 'page') }}
+                {{ pagination(news_pagination, url('news-index'), null, {'c':category.category_id}, 'page') }}
             </div>
         </div>
 
@@ -36,7 +36,7 @@
 
                     <div class="container__content">
                         {% for featured_post in featured %}
-                            <a class="news__list__item" href="/news.php?p={{ featured_post.post_id }}">{{ featured_post.post_title }}</a>
+                            <a class="news__list__item" href="{{ url('news-post', {'post': featured_post.post_id}) }}">{{ featured_post.post_title }}</a>
                         {% endfor %}
                     </div>
                 </div>

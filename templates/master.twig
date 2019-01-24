@@ -32,7 +32,7 @@
             {% if current_user.ban_expiration|default(0) > 0 or current_user.silence_expiration|default(0) > 0 %}
                 <div class="warning">
                     <div class="warning__content">
-                        You have been {{ current_user.silence_expiration ? 'silenced' : 'banned' }} until <strong>{{ (current_user.silence_expiration ? current_user.silence_expiration : current_user.ban_expiration)|date('r') }}</strong>, view the account standing table on <a href="/profile.php?u={{ current_user.user_id }}#account-standing" class="warning__link">your profile</a> to view why.
+                        You have been {{ current_user.silence_expiration ? 'silenced' : 'banned' }} until <strong>{{ (current_user.silence_expiration ? current_user.silence_expiration : current_user.ban_expiration)|date('r') }}</strong>, view the account standing table on <a href="{{ url('user-account-standing', {'user': current_user.user_id}) }}" class="warning__link">your profile</a> to view why.
                     </div>
                 </div>
             {% endif %}
@@ -51,6 +51,9 @@
         {% endif %}
         <script type="application/json" id="js-csrf-tokens">
             {{ get_csrf_tokens()|json_encode|raw }}
+        </script>
+        <script type="application/json" id="js-urls-list">
+            {{ url_list()|json_encode|raw }}
         </script>
         <script src="{{ '/js/libraries.js'|asset_url }}"></script>
         <script src="{{ '/js/misuzu.js'|asset_url }}"></script>
