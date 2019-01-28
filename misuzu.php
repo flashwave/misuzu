@@ -146,13 +146,13 @@ if (PHP_SAPI === 'cli') {
                     // Cleans up the login history table
                     "
                         DELETE FROM `msz_login_attempts`
-                        WHERE `attempt_created` < NOW() - INTERVAL 1 YEAR
+                        WHERE `attempt_created` < NOW() - INTERVAL 6 MONTH
                     ",
 
                     // Cleans up the audit log table
                     "
                         DELETE FROM `msz_audit_log`
-                        WHERE `log_created` < NOW() - INTERVAL 1 YEAR
+                        WHERE `log_created` < NOW() - INTERVAL 6 MONTH
                     ",
 
                     // Delete ignored forum tracking entries
