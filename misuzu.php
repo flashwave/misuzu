@@ -89,86 +89,92 @@ if (PHP_SAPI === 'cli') {
     if (realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
         switch ($argv[1] ?? null) {
             case 'cron':
-                // Ensure main role exists.
-                db_exec("
-                    INSERT IGNORE INTO `msz_roles`
-                        (`role_id`, `role_name`, `role_hierarchy`, `role_colour`, `role_description`, `role_created`)
-                    VALUES
-                        (1, 'Member', 1, 1073741824, NULL, NOW())
-                ");
+                $cronTasks = [
+                    // Ensure main role exists.
+                    "
+                        INSERT IGNORE INTO `msz_roles`
+                            (`role_id`, `role_name`, `role_hierarchy`, `role_colour`, `role_description`, `role_created`)
+                        VALUES
+                            (1, 'Member', 1, 1073741824, NULL, NOW())
+                    ",
 
-                // Ensures all users are in the main role.
-                db_exec('
-                    INSERT INTO `msz_user_roles`
-                        (`user_id`, `role_id`)
-                    SELECT `user_id`, 1 FROM `msz_users` as u
-                    WHERE NOT EXISTS (
-                        SELECT 1
-                        FROM `msz_user_roles` as ur
-                        WHERE `role_id` = 1
-                        AND u.`user_id` = ur.`user_id`
-                    )
-                ');
+                    // Ensures all users are in the main role.
+                    "
+                        INSERT INTO `msz_user_roles`
+                            (`user_id`, `role_id`)
+                        SELECT `user_id`, 1 FROM `msz_users` as u
+                        WHERE NOT EXISTS (
+                            SELECT 1
+                            FROM `msz_user_roles` as ur
+                            WHERE `role_id` = 1
+                            AND u.`user_id` = ur.`user_id`
+                        )
+                    ",
 
-                // Ensures all display_role values are correct with `msz_user_roles`
-                db_exec('
-                    UPDATE `msz_users` as u
-                    SET `display_role` = (
-                         SELECT ur.`role_id`
-                         FROM `msz_user_roles` as ur
-                         LEFT JOIN `msz_roles` as r
-                         ON r.`role_id` = ur.`role_id`
-                         WHERE ur.`user_id` = u.`user_id`
-                         ORDER BY `role_hierarchy` DESC
-                         LIMIT 1
-                    )
-                    WHERE NOT EXISTS (
-                        SELECT 1
-                        FROM `msz_user_roles` as ur
-                        WHERE ur.`role_id` = u.`display_role`
-                        AND `ur`.`user_id` = u.`user_id`
-                    )
-                ');
+                    // Ensures all display_role values are correct with `msz_user_roles`
+                    "
+                        UPDATE `msz_users` as u
+                        SET `display_role` = (
+                             SELECT ur.`role_id`
+                             FROM `msz_user_roles` as ur
+                             LEFT JOIN `msz_roles` as r
+                             ON r.`role_id` = ur.`role_id`
+                             WHERE ur.`user_id` = u.`user_id`
+                             ORDER BY `role_hierarchy` DESC
+                             LIMIT 1
+                        )
+                        WHERE NOT EXISTS (
+                            SELECT 1
+                            FROM `msz_user_roles` as ur
+                            WHERE ur.`role_id` = u.`display_role`
+                            AND `ur`.`user_id` = u.`user_id`
+                        )
+                    ",
 
-                // Deletes expired sessions
-                db_exec('
-                    DELETE FROM `msz_sessions`
-                    WHERE `session_expires` < NOW()
-                ');
+                    // Deletes expired sessions
+                    "
+                        DELETE FROM `msz_sessions`
+                        WHERE `session_expires` < NOW()
+                    ",
 
-                // Remove old password reset records, left for a week for possible review
-                db_exec('
-                    DELETE FROM `msz_users_password_resets`
-                    WHERE `reset_requested` < NOW() - INTERVAL 1 WEEK
-                ');
+                    // Remove old password reset records, left for a week for possible review
+                    "
+                        DELETE FROM `msz_users_password_resets`
+                        WHERE `reset_requested` < NOW() - INTERVAL 1 WEEK
+                    ",
 
-                // Cleans up the login history table
-                db_exec('
-                    DELETE FROM `msz_login_attempts`
-                    WHERE `attempt_created` < NOW() - INTERVAL 1 YEAR
-                ');
+                    // Cleans up the login history table
+                    "
+                        DELETE FROM `msz_login_attempts`
+                        WHERE `attempt_created` < NOW() - INTERVAL 1 YEAR
+                    ",
 
-                // Cleans up the audit log table
-                db_exec('
-                    DELETE FROM `msz_audit_log`
-                    WHERE `log_created` < NOW() - INTERVAL 1 YEAR
-                ');
+                    // Cleans up the audit log table
+                    "
+                        DELETE FROM `msz_audit_log`
+                        WHERE `log_created` < NOW() - INTERVAL 1 YEAR
+                    ",
 
-                // Delete ignored forum tracking entries
-                db_exec('
-                    DELETE tt FROM `msz_forum_topics_track` as tt
-                    LEFT JOIN `msz_forum_topics` as t
-                    ON t.`topic_id` = tt.`topic_id`
-                    WHERE t.`topic_bumped` < NOW() - INTERVAL 1 MONTH
-                ');
+                    // Delete ignored forum tracking entries
+                    "
+                        DELETE tt FROM `msz_forum_topics_track` as tt
+                        LEFT JOIN `msz_forum_topics` as t
+                        ON t.`topic_id` = tt.`topic_id`
+                        WHERE t.`topic_bumped` < NOW() - INTERVAL 1 MONTH
+                    ",
 
-                // Synchronise forum_id
-                db_exec('
-                    UPDATE `msz_forum_posts` AS p
-                    INNER JOIN `msz_forum_topics` AS t
-                    ON t.`topic_id` = p.`topic_id`
-                    SET p.`forum_id` = t.`forum_id`
-                ');
+                    // Synchronise forum_id
+                    "
+                        UPDATE `msz_forum_posts` AS p
+                        INNER JOIN `msz_forum_topics` AS t
+                        ON t.`topic_id` = p.`topic_id`
+                        SET p.`forum_id` = t.`forum_id`
+                    ",
+                ];
+
+                foreach ($cronTasks as $cronTask) {
+                    db_exec($cronTask);
+                }
                 break;
 
             case 'migrate':
