@@ -46,7 +46,7 @@ define('JS_DIR', PUBLIC_DIR . '/js');
 
 define('LESS_DEST', CSS_DIR . '/style.css');
 define('TS_DEST', JS_DIR . '/misuzu.js');
-define('TS_SRC', JS_DIR . '/misuzu/');
+define('TS_SRC', JS_DIR . '/misuzu');
 
 define('NODE_MODULES_DIR', __DIR__ . '/node_modules');
 define('NODE_DEST_CSS', CSS_DIR . '/libraries.css');
@@ -226,7 +226,7 @@ if ($doJs) {
     misuzu_log('Compiling TypeScript');
     misuzu_log(shell_exec('tsc --extendedDiagnostics -p tsconfig.json'));
     file_put_contents(TS_DEST, recursiveConcat(TS_SRC));
-    deleteAllFilesInDir(TS_SRC, '*.js');
+    deleteAllFilesInDir(TS_SRC, '*');
     rmdir(TS_SRC);
 }
 

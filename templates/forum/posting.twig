@@ -42,7 +42,7 @@
             </div>
         {% endif %}
 
-        <div class="container forum__post" style="{{ posting_post.poster_colour|default(current_user.user_colour)|html_colour('--accent-colour') }}">
+        <div class="container forum__post js-forum-posting" style="{{ posting_post.poster_colour|default(current_user.user_colour)|html_colour('--accent-colour') }}">
             <div class="forum__post__info">
                 <div class="forum__post__info__background"></div>
                 <div class="forum__post__info__content">
@@ -62,7 +62,20 @@
             </div>
 
             <div class="forum__post__content">
-                <textarea name="post[text]" class="forum__post__text forum__post__text--edit" placeholder="Type your post content here...">{{ posting_defaults.text|default(posting_post.post_text|default('')) }}</textarea>
+                <div class="forum__post__details">
+                    <span class="forum__post__mode js-forum-posting-mode">
+                        {% if posting_post is defined %}
+                            Editing
+                        {% elseif is_reply %}
+                            Replying
+                        {% else %}
+                            Creating
+                        {% endif %}
+                    </span>
+                </div>
+
+                <textarea name="post[text]" class="forum__post__text forum__post__text--edit js-forum-posting-text" placeholder="Type your post content here...">{{ posting_defaults.text|default(posting_post.post_text|default('')) }}</textarea>
+                <div class="forum__post__text js-forum-posting-preview" hidden></div>
 
                 <div class="forum__post__options">
                     <div class="forum__post__settings">
@@ -70,7 +83,7 @@
                             'post[parser]',
                             constant('MSZ_PARSERS_NAMES'),
                             posting_defaults.parser|default(posting_post.post_parse|default(posting_info.user_post_parse|default(constant('MSZ_PARSER_BBCODE')))),
-                            null, null, false, 'forum__post__dropdown'
+                            null, null, false, 'forum__post__dropdown js-forum-posting-parser'
                         ) }}
                         {% if is_opening and posting_types|length > 1 %}
                             {{ input_select(
@@ -92,7 +105,7 @@
                         ) }}
                     </div>
 
-                    <div class="forum__post__buttons">
+                    <div class="forum__post__buttons js-forum-posting-buttons">
                         <button class="input__button">Submit</button>
                     </div>
                 </div>

@@ -12,7 +12,7 @@ if (user_warning_check_restriction(user_session_current('user_id', 0))) {
 }
 
 $forumPostingModes = [
-    'create', 'edit', 'quote',
+    'create', 'edit', 'quote', 'preview',
 ];
 
 if (!empty($_POST)) {
@@ -29,6 +29,22 @@ if (!empty($_POST)) {
 
 if (!in_array($mode, $forumPostingModes, true)) {
     echo render_error(400);
+    return;
+}
+
+if ($mode === 'preview') {
+    header('Content-Type: text/plain; charset=utf-8');
+
+    $postText = (string)($_POST['post']['text']);
+    $postParser = (int)($_POST['post']['parser']);
+
+    if (!parser_is_valid($postParser)) {
+        http_response_code(400);
+        return;
+    }
+
+    http_response_code(200);
+    echo parse_text(htmlspecialchars($postText), $postParser);
     return;
 }
 
