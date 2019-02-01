@@ -184,14 +184,14 @@
                                             <div class="profile__birthdate__title">
                                                 Day
                                             </div>
-                                            {{ input_select('birthdate[day]', ['-']|merge(range(1, 31)), birthdate[2]|default(0)|trim('0'), '', '', true, 'profile__birthdate__select profile__birthdate__select--day') }}
+                                            {{ input_select('birthdate[day]', ['-']|merge(range(1, 31)), birthdate[2]|default(0)|trim('0', 'left'), '', '', true, 'profile__birthdate__select profile__birthdate__select--day') }}
                                         </label>
 
                                         <label class="profile__birthdate__label">
                                             <div class="profile__birthdate__title">
                                                 Month
                                             </div>
-                                            {{ input_select('birthdate[month]', ['-']|merge(range(1, 12)), birthdate[1]|default(0)|trim('0'), '', '', true, 'profile__birthdate__select profile__birthdate__select--month') }}
+                                            {{ input_select('birthdate[month]', ['-']|merge(range(1, 12)), birthdate[1]|default(0)|trim('0', 'left'), '', '', true, 'profile__birthdate__select profile__birthdate__select--month') }}
                                         </label>
                                     </div>
 
@@ -200,7 +200,7 @@
                                             <div class="profile__birthdate__title">
                                                 Year (may be left empty)
                                             </div>
-                                            {{ input_select('birthdate[year]', ['-']|merge(range(null|date('Y'), null|date('Y') - 100)), birthdate[0]|default(0)|trim('0'), '', '', true, 'profile__birthdate__select profile__birthdate__select--year') }}
+                                            {{ input_select('birthdate[year]', ['-']|merge(range(null|date('Y'), null|date('Y') - 100)), birthdate[0]|default(0)|trim('0', 'left'), '', '', true, 'profile__birthdate__select profile__birthdate__select--year') }}
                                         </label>
                                     </div>
                                 </div>
