@@ -26,15 +26,13 @@
     &__info {
         display: flex;
         justify-content: space-between;
-        border-top: 1px solid var(--accent-colour);
         font-size: .9em;
-        padding: 0 2px;
-        margin-top: 1px;
     }
 
     &__link {
-        color: inherit;
-        text-decoration: underline dotted;
+        color: var(--accent-colour);
+        text-decoration: none;
+        padding: 2px 5px;
 
         &:hover {
             text-decoration: underline;
@@ -48,11 +46,12 @@
         color: inherit;
         display: flex;
         flex-direction: column;
+        padding: 5px;
+        align-items: center;
 
         &__avatar {
             height: 50px;
             width: 50px;
-            margin-left: 4px;
         }
 
         &__name {
