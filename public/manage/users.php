@@ -62,12 +62,169 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $userId = $_GET['u'] ?? null;
+        $userId = (int)($_GET['u'] ?? 0);
 
-        if ($userId === null || ($userId = (int)$userId) < 1) {
-            echo 'no';
+        if ($userId < 1) {
+            echo render_error(404);
             break;
         }
+
+        $getHasRoles = db_prepare('
+            SELECT `role_id`, `role_name`, `role_hierarchy`
+            FROM `msz_roles`
+            WHERE `role_id` IN (
+                SELECT `role_id`
+                FROM `msz_user_roles`
+                WHERE `user_id` = :user_id
+            )
+        ');
+        $getHasRoles->bindValue('user_id', $userId);
+        $hasRoles = db_fetch_all($getHasRoles);
+
+        $getAvailableRoles = db_prepare('
+            SELECT `role_id`, `role_name`, `role_hierarchy`
+            FROM `msz_roles`
+            WHERE `role_id` NOT IN (
+                SELECT `role_id`
+                FROM `msz_user_roles`
+                WHERE `user_id` = :user_id
+            )
+        ');
+        $getAvailableRoles->bindValue('user_id', $userId);
+        $availableRoles = db_fetch_all($getAvailableRoles);
+
+        if ($canManagePerms) {
+            tpl_var('permissions', $permissions = manage_perms_list(perms_get_user_raw($userId)));
+        }
+
+        $notices = [];
+
+        if ($isPostRequest) {
+            if (!csrf_verify('users_edit', $_POST['csrf'] ?? '')) {
+                $notices[] = "Couldn't verify the request.";
+            } elseif (!user_check_authority(user_session_current('user_id'), $userId)) {
+                $notices[] = 'You are not allowed to administer this user.';
+            } else {
+                $setUserInfo = [];
+
+                if (!empty($_POST['user']) && is_array($_POST['user'])) {
+                    $setUserInfo['username'] = (string)($_POST['user']['username'] ?? '');
+                    $setUserInfo['email'] = (string)($_POST['user']['email'] ?? '');
+                    $setUserInfo['user_country'] = (string)($_POST['user']['country'] ?? '');
+                    $setUserInfo['user_title'] = (string)($_POST['user']['title'] ?? '');
+
+                    $usernameValidation = user_validate_username($setUserInfo['username']);
+                    $emailValidation = user_validate_email($setUserInfo['email']);
+                    $countryValidation = strlen($setUserInfo['user_country']) === 2
+                        && ctype_alpha($setUserInfo['user_country'])
+                        && ctype_upper($setUserInfo['user_country']);
+
+                    if (!empty($usernameValidation)) {
+                        $notices[] = MSZ_USER_USERNAME_VALIDATION_STRINGS[$usernameValidation];
+                    }
+
+                    if (!empty($emailValidation)) {
+                        $notices[] = $emailValidation === 'in-use'
+                            ? 'This e-mail address has already been used!'
+                            : 'This e-mail address is invalid!';
+                    } else {
+                        $setUserInfo['email'] = mb_strtolower($setUserInfo['email']);
+                    }
+
+                    if (!$countryValidation) {
+                        $notices[] = 'Country code was invalid.';
+                    }
+
+                    if (strlen($setUserInfo['user_title']) < 1) {
+                        $setUserInfo['user_title'] = null;
+                    } elseif (strlen($setUserInfo['user_title']) > 64) {
+                        $notices[] = 'User title was invalid.';
+                    }
+                }
+
+                if (!empty($_POST['colour']) && is_array($_POST['colour'])) {
+                    $userColour = null;
+
+                    if (!empty($_POST['colour']['enable'])) {
+                        $userColour = colour_create();
+
+                        if (!colour_from_hex($userColour, (string)($_POST['colour']['hex'] ?? ''))) {
+                            $notices[] = 'An invalid colour was supplied.';
+                        }
+                    }
+
+                    $setUserInfo['user_colour'] = $userColour;
+                }
+
+                if (!empty($_POST['password']) && is_array($_POST['password'])) {
+                    $passwordNewValue = (string)($_POST['password']['new'] ?? '');
+                    $passwordConfirmValue = (string)($_POST['password']['confirm'] ?? '');
+
+                    if (!empty($passwordNewValue)) {
+                        if ($passwordNewValue !== $passwordConfirmValue) {
+                            $notices[] = 'Confirm password does not match.';
+                        } elseif (!empty(user_validate_password($passwordNewValue))) {
+                            $notices[] = 'New password is too weak.';
+                        } else {
+                            $setUserInfo['password'] = user_password_hash($passwordNewValue);
+                        }
+                    }
+                }
+
+                if (empty($notices) && !empty($setUserInfo)) {
+                    $userUpdate = db_prepare(sprintf(
+                        '
+                            UPDATE `msz_users`
+                            SET %s
+                            WHERE `user_id` = :set_user_id
+                        ',
+                        pdo_prepare_array_update($setUserInfo, true)
+                    ));
+                    $userUpdate->bindValue('set_user_id', $userId);
+
+                    foreach ($setUserInfo as $key => $value) {
+                        $userUpdate->bindValue($key, $value);
+                    }
+
+                    if (!$userUpdate->execute()) {
+                        $notices[] = 'Something went wrong while updating the user.';
+                    }
+                }
+
+                if (!empty($permissions) && !empty($_POST['perms']) && is_array($_POST['perms'])) {
+                    $perms = manage_perms_apply($permissions, $_POST['perms']);
+
+                    if ($perms !== null) {
+                        if (!perms_set_user_raw($userId, $perms)) {
+                            $notices[] = 'Failed to update permissions.';
+                        }
+                    } else {
+                        if (!perms_delete_user($userId)) {
+                            $notices[] = 'Failed to remove permissions.';
+                        }
+                    }
+                }
+
+                if (isset($_POST['add_role']) && user_role_check_authority(user_session_current('user_id'), (int)$_POST['add_role']['role'])) {
+                    user_role_add($userId, $_POST['add_role']['role']);
+                }
+
+                if (isset($_POST['manage_roles'])) {
+                    switch ($_POST['manage_roles']['mode'] ?? '') {
+                        case 'display':
+                            user_role_set_display($userId, $_POST['manage_roles']['role']);
+                            break;
+
+                        case 'remove':
+                            if ((int)$_POST['manage_roles']['role'] !== MSZ_ROLE_MAIN && user_role_check_authority(user_session_current('user_id'), (int)$_POST['manage_roles']['role'])) {
+                                user_role_remove($userId, $_POST['manage_roles']['role']);
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
         $getUser = db_prepare('
             SELECT
                 u.*,
@@ -81,179 +238,19 @@ switch ($_GET['v'] ?? null) {
             ORDER BY `user_id`
         ');
         $getUser->bindValue('user_id', $userId);
-        $getUser->execute();
         $manageUser = db_fetch($getUser);
 
         if (empty($manageUser)) {
-            echo 'Could not find that user.';
-            break;
-        }
-
-        $getHasRoles = db_prepare('
-            SELECT `role_id`, `role_name`
-            FROM `msz_roles`
-            WHERE `role_id` IN (
-                SELECT `role_id`
-                FROM `msz_user_roles`
-                WHERE `user_id` = :user_id
-            )
-        ');
-        $getHasRoles->bindValue('user_id', $manageUser['user_id']);
-        $hasRoles = db_fetch_all($getHasRoles);
-
-        $getAvailableRoles = db_prepare('
-            SELECT `role_id`, `role_name`, `role_hierarchy`
-            FROM `msz_roles`
-            WHERE `role_id` NOT IN (
-                SELECT `role_id`
-                FROM `msz_user_roles`
-                WHERE `user_id` = :user_id
-            )
-        ');
-        $getAvailableRoles->bindValue('user_id', $manageUser['user_id']);
-        $availableRoles = db_fetch_all($getAvailableRoles);
-
-        if ($canManagePerms) {
-            tpl_var('permissions', $permissions = manage_perms_list(perms_get_user_raw($userId)));
-        }
-
-        if ($isPostRequest) {
-            if (!csrf_verify('users_edit', $_POST['csrf'] ?? '')) {
-                echo 'csrf err';
-                break;
-            }
-
-            if (!user_check_authority(user_session_current('user_id'), $userId)) {
-                echo 'You are not allowed to administer this user.';
-                break;
-            }
-
-            if (!empty($_POST['user']) && is_array($_POST['user'])
-                && user_validate_username($_POST['user']['username']) === ''
-                && user_validate_email($_POST['user']['email']) === ''
-                && strlen($_POST['user']['country']) === 2) {
-                $updateUserDetails = db_prepare('
-                    UPDATE `msz_users`
-                    SET `username` = :username,
-                        `email` = LOWER(:email),
-                        `user_title` = :title,
-                        `user_country` = :country
-                    WHERE `user_id` = :user_id
-                ');
-                $updateUserDetails->bindValue('username', $_POST['user']['username']);
-                $updateUserDetails->bindValue('email', $_POST['user']['email']);
-                $updateUserDetails->bindValue('country', $_POST['user']['country']);
-                $updateUserDetails->bindValue(
-                    'title',
-                    strlen($_POST['user']['title'])
-                    ? $_POST['user']['title']
-                    : null
-                );
-                $updateUserDetails->bindValue('user_id', $userId);
-                $updateUserDetails->execute();
-            }
-
-            if (!empty($_POST['colour']) && is_array($_POST['colour'])) {
-                $userColour = null;
-
-                if (!empty($_POST['colour']['enable'])) {
-                    $userColour = colour_create();
-
-                    foreach (['red', 'green', 'blue'] as $key) {
-                        $value = (int)($_POST['colour'][$key] ?? -1);
-                        $func = 'colour_set_' . ucfirst($key);
-
-                        if ($value < 0 || $value > 0xFF) {
-                            echo 'invalid colour value';
-                            break 2;
-                        }
-
-                        $func($userColour, $value);
-                    }
-                }
-
-                $updateUserColour = db_prepare('
-                    UPDATE `msz_users`
-                    SET `user_colour` = :colour
-                    WHERE `user_id` = :user_id
-                ');
-                $updateUserColour->bindValue('colour', $userColour);
-                $updateUserColour->bindValue('user_id', $userId);
-                $updateUserColour->execute();
-            }
-
-            if (!empty($_POST['password'])
-                && is_array($_POST['password'])
-                && !empty($_POST['password']['new'])
-                && !empty($_POST['password']['confirm'])
-                && user_validate_password($_POST['password']['new']) === ''
-                && $_POST['password']['new'] === $_POST['password']['confirm']) {
-                $updatePassword = db_prepare('
-                    UPDATE `msz_users`
-                    SET `password` = :password
-                    WHERE `user_id` = :user_id
-                ');
-                $updatePassword->bindValue('password', user_password_hash($_POST['password']['new']));
-                $updatePassword->bindValue('user_id', $userId);
-                $updatePassword->execute();
-            }
-
-            if (isset($_POST['add_role']) && user_role_check_authority(user_session_current('user_id'), (int)$_POST['add_role']['role'])) {
-                user_role_add($manageUser['user_id'], $_POST['add_role']['role']);
-            }
-
-            if (isset($_POST['manage_roles'])) {
-                switch ($_POST['manage_roles']['mode'] ?? '') {
-                    case 'display':
-                        user_role_set_display($manageUser['user_id'], $_POST['manage_roles']['role']);
-                        break;
-
-                    case 'remove':
-                        if ((int)$_POST['manage_roles']['role'] !== MSZ_ROLE_MAIN && user_role_check_authority(user_session_current('user_id'), (int)$_POST['manage_roles']['role'])) {
-                            user_role_remove($manageUser['user_id'], $_POST['manage_roles']['role']);
-                        }
-                        break;
-                }
-            }
-
-            if (!empty($permissions) && !empty($_POST['perms']) && is_array($_POST['perms'])) {
-                $perms = manage_perms_apply($permissions, $_POST['perms']);
-
-                if ($perms !== null) {
-                    $permKeys = array_keys($perms);
-                    $setPermissions = db_prepare('
-                        REPLACE INTO `msz_permissions`
-                            (`role_id`, `user_id`, `' . implode('`, `', $permKeys) . '`)
-                        VALUES
-                            (NULL, :user_id, :' . implode(', :', $permKeys) . ')
-                    ');
-                    $setPermissions->bindValue('user_id', $userId);
-
-                    foreach ($perms as $key => $value) {
-                        $setPermissions->bindValue($key, $value);
-                    }
-
-                    $setPermissions->execute();
-                } else {
-                    $deletePermissions = db_prepare('
-                        DELETE FROM `msz_permissions`
-                        WHERE `role_id` IS NULL
-                        AND `user_id` = :user_id
-                    ');
-                    $deletePermissions->bindValue('user_id', $userId);
-                    $deletePermissions->execute();
-                }
-            }
-
-            header("Location: ?v=view&u={$manageUser['user_id']}");
+            echo render_error(404);
             break;
         }
 
         tpl_vars([
             'available_roles' => $availableRoles,
             'has_roles' => $hasRoles,
-            'view_user' => $manageUser,
+            'manage_user' => $manageUser,
             'profile_fields' => user_profile_fields_get(),
+            'manage_notices' => $notices,
         ]);
         echo tpl_render('manage.users.user');
         break;

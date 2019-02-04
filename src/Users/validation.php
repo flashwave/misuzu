@@ -84,3 +84,11 @@ function user_validate_password(string $password): string
 
     return '';
 }
+
+define('MSZ_USER_USERNAME_VALIDATION_STRINGS', [
+    'trim' => 'Your username may not start or end with spaces!',
+    'short' => sprintf('Your username is too short, it has to be at least %d characters!', MSZ_USERNAME_MIN_LENGTH),
+    'long' => sprintf("Your username is too long, it can't be longer than %d characters!", MSZ_USERNAME_MAX_LENGTH),
+    'invalid' => 'Your username contains invalid characters.',
+    'in-use' => 'This username is already taken!',
+]);

@@ -5,14 +5,6 @@ $misuzuBypassLockdown = $authMode === 'login' || $authMode === 'get_user';
 
 require_once '../misuzu.php';
 
-$usernameValidationErrors = [
-    'trim' => 'Your username may not start or end with spaces!',
-    'short' => sprintf('Your username is too short, it has to be at least %d characters!', MSZ_USERNAME_MIN_LENGTH),
-    'long' => sprintf("Your username is too long, it can't be longer than %d characters!", MSZ_USERNAME_MAX_LENGTH),
-    'invalid' => 'Your username contains invalid characters.',
-    'in-use' => 'This username is already taken!',
-];
-
 $siteIsPrivate = boolval(config_get_default(false, 'Private', 'enabled'));
 $loginPermission = $siteIsPrivate ? intval(config_get_default(0, 'Private', 'permission')) : 0;
 $canResetPassword = $siteIsPrivate ? boolval(config_get_default(false, 'Private', 'password_reset')) : true;
@@ -323,7 +315,7 @@ MSG;
 
             $usernameValidation = user_validate_username($authUsername, true);
             if ($usernameValidation !== '') {
-                $authRegistrationError = $usernameValidationErrors[$usernameValidation];
+                $authRegistrationError = MSZ_USER_USERNAME_VALIDATION_STRINGS[$usernameValidation];
                 break;
             }
 

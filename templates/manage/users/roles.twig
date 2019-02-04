@@ -4,28 +4,28 @@
 {% set roles_pagination = pagination(manage_roles_pagination, '/manage/users.php', null, {'v': 'roles'}) %}
 
 {% block manage_content %}
-    <div class="container manage__roles">
+    <div class="container manage__role-items">
         {{ container_title('<i class="fas fa-user-check fa-fw"></i> Roles') }}
 
         {% if roles_pagination|trim|length > 0 %}
-            <div class="manage__roles__pagination">
+            <div class="manage__role-items__pagination">
                 {{ roles_pagination }}
             </div>
         {% endif %}
 
-        <div class="manage__roles__collection">
+        <div class="manage__role-items__collection">
             {% if can_manage_roles %}
-                <div class="manage__role manage__role--create">
-                    <a href="{{ url('manage-role-create') }}" class="manage__role__background"></a>
-                    <div class="manage__role__container">
-                        <div class="manage__role__icon">
-                            <div class="manage__role__icon__background"></div>
-                            <div class="manage__role__icon__content">
+                <div class="manage__role-item manage__role-item--create">
+                    <a href="{{ url('manage-role-create') }}" class="manage__role-item__background"></a>
+                    <div class="manage__role-item__container">
+                        <div class="manage__role-item__icon">
+                            <div class="manage__role-item__icon__background"></div>
+                            <div class="manage__role-item__icon__content">
                                 <i class="fas fa-plus-circle fa-fw"></i>
                             </div>
                         </div>
-                        <div class="manage__role__info">
-                            <div class="manage__role__name">
+                        <div class="manage__role-item__info">
+                            <div class="manage__role-item__name">
                                 Create a new role
                             </div>
                         </div>
@@ -34,35 +34,35 @@
             {% endif %}
 
             {% for role in manage_roles %}
-                <div class="manage__role" style="{{ role.role_colour|html_colour('--accent-colour') }}">
-                    <a href="{{ url('manage-role-edit', {'role': role.role_id}) }}" class="manage__role__background"></a>
+                <div class="manage__role-item" style="{{ role.role_colour|html_colour('--accent-colour') }}">
+                    <a href="{{ url('manage-role-edit', {'role': role.role_id}) }}" class="manage__role-item__background"></a>
 
-                    <div class="manage__role__container">
-                        <div class="manage__role__icon">
-                            <div class="manage__role__icon__background"></div>
-                            <div class="manage__role__icon__content">
+                    <div class="manage__role-item__container">
+                        <div class="manage__role-item__icon">
+                            <div class="manage__role-item__icon__background"></div>
+                            <div class="manage__role-item__icon__content">
                                 <i class="fas fa-toilet-paper fa-fw"></i>
                             </div>
                         </div>
-                        <div class="manage__role__info">
-                            <div class="manage__role__name">
+                        <div class="manage__role-item__info">
+                            <div class="manage__role-item__name">
                                 {{ role.role_name }}
                             </div>
-                            <div class="manage__role__details">
+                            <div class="manage__role-item__details">
                                 {% if role.users > 0 %}
-                                    <div class="manage__role__users">
+                                    <div class="manage__role-item__users">
                                         <i class="fas fa-users fa-fw"></i> {{ role.users|number_format }}
                                     </div>
                                 {% endif %}
                                 {% if role.role_title|default('')|length > 0 %}
-                                    <div class="manage__role__title">
+                                    <div class="manage__role-item__title">
                                         {{ role.role_title }}
                                     </div>
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="manage__role__actions">
-                            <a href="{{ url('members-role', {'role': role.role_id}) }}" class="manage__role__action" title="Members">
+                        <div class="manage__role-item__actions">
+                            <a href="{{ url('members-role', {'role': role.role_id}) }}" class="manage__role-item__action" title="Members">
                                 <i class="fas fa-users fa-fw"></i>
                             </a>
                         </div>
@@ -72,7 +72,7 @@
         </div>
 
         {% if roles_pagination|trim|length > 0 %}
-            <div class="manage__roles__pagination">
+            <div class="manage__role-items__pagination">
                 {{ roles_pagination }}
             </div>
         {% endif %}

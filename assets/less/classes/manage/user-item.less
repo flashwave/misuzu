@@ -1,0 +1,113 @@
+.manage__user-item {
+    display: flex;
+    text-shadow: 0 1px 4px #000;
+    box-shadow: 0 1px 4px #000A;
+    margin-bottom: 4px;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    &--deleted {
+        opacity: .5;
+        transition: opacity .2s;
+
+        &:hover,
+        &:focus,
+        &:focus-within {
+            opacity: .8;
+        }
+    }
+
+    &__background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--accent-colour);
+    }
+
+    &__container {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        background-color: var(--background-colour-translucent-9);
+        width: 100%;
+        height: 100%;
+        margin-left: 5px;
+        pointer-events: none;
+        transition: background-color .2s;
+    }
+
+    &:hover &__container,
+    &:focus &__container,
+    &:focus-within &__container {
+        background-color: var(--background-colour-translucent-8);
+    }
+
+    &__avatar {
+        width: 40px;
+        height: 40px;
+        margin: 10px;
+        flex: 0 0 auto;
+        overflow: hidden;
+    }
+
+    &__info {
+        display: inline-flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+    }
+
+    &__name {
+        font-size: 1.4em;
+        line-height: 1.4em;
+    }
+
+    &__details {
+        font-size: .9em;
+        line-height: 1.3em;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    &__detail {
+        border-radius: 10px;
+        background-color: var(--accent-colour);
+        box-shadow: 0 1px 4px #111;
+        padding: 3px 8px;
+        pointer-events: initial;
+        margin: 2px;
+    }
+
+    &__actions {
+        display: flex;
+        flex: 0 0 auto;
+        margin: 10px;
+    }
+
+    &__action {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        font-size: 1.5em;
+        border-radius: 2px;
+        margin: 5px;
+        margin-right: 0;
+        color: #fff;
+        cursor: pointer;
+        pointer-events: initial;
+        transition: background-color .2s;
+        text-align: center;
+
+        &:hover,
+        &:focus {
+            background-color: fade(#fff, 20%);
+        }
+
+        &:active {
+            background-color: fade(#fff, 10%);
+        }
+    }
+}

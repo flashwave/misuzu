@@ -4,39 +4,39 @@
 {% set users_pagination = pagination(manage_users_pagination, '/manage/users.php', null, {'v': 'listing'}) %}
 
 {% block manage_content %}
-    <div class="container manage__users">
+    <div class="container manage__user-items">
         {{ container_title('<i class="fas fa-users fa-fw"></i> Users') }}
 
         {% if users_pagination|trim|length > 0 %}
-            <div class="manage__users__pagination">
+            <div class="manage__user-items__pagination">
                 {{ users_pagination }}
             </div>
         {% endif %}
 
-        <div class="manage__users__collection">
+        <div class="manage__user-items__collection">
             {% for user in manage_users %}
-                <div class="manage__user{% if user.user_deleted is not null %} manage__user--deleted{% endif %}" style="{{ user.user_colour|html_colour('--accent-colour') }}">
-                    <a href="{{ url('manage-user-edit', {'user': user.user_id}) }}" class="manage__user__background"></a>
+                <div class="manage__user-item{% if user.user_deleted is not null %} manage__user-item--deleted{% endif %}" style="{{ user.user_colour|html_colour('--accent-colour') }}">
+                    <a href="{{ url('manage-user-edit', {'user': user.user_id}) }}" class="manage__user-item__background"></a>
 
-                    <div class="manage__user__container">
-                        <div class="avatar manage__user__avatar" style="background-image: url('{{ url('user-avatar', {'user': user.user_id}) }}')"></div>
-                        <div class="manage__user__info">
-                            <div class="manage__user__name">
+                    <div class="manage__user-item__container">
+                        <div class="avatar manage__user-item__avatar" style="background-image: url('{{ url('user-avatar', {'user': user.user_id}) }}')"></div>
+                        <div class="manage__user-item__info">
+                            <div class="manage__user-item__name">
                                 {{ user.username }}
                             </div>
-                            <div class="manage__user__details">
-                                <div class="manage__user__detail">
+                            <div class="manage__user-item__details">
+                                <div class="manage__user-item__detail">
                                     <i class="fas fa-user-plus fa-fw"></i>
                                     <time datetime="{{ user.user_created|date('c') }}" title="{{ user.user_created|date('r') }}">{{ user.user_created|time_diff }}</time> /
                                     <span>{{ user.register_ip }}</span>
                                 </div>
-                                <div class="manage__user__detail">
+                                <div class="manage__user-item__detail">
                                     <i class="fas fa-user-clock fa-fw"></i>
                                     <time datetime="{{ user.user_active|date('c') }}" title="{{ user.user_active|date('r') }}">{{ user.user_active|time_diff }}</time> /
                                     <span>{{ user.last_ip }}</span>
                                 </div>
                                 {% if user.user_deleted is not null %}
-                                    <div class="manage__user__detail">
+                                    <div class="manage__user-item__detail">
                                         <i class="fas fa-trash-alt fa-fw"></i>
                                         <time datetime="{{ user.user_deleted|date('c') }}" title="{{ user.user_deleted|date('r') }}">{{ user.user_deleted|time_diff }}</time>
                                     </div>
@@ -44,7 +44,7 @@
                             </div>
                         </div>
                         <div class="manage__role__actions">
-                            <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="manage__user__action" title="Profile">
+                            <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="manage__user-item__action" title="Profile">
                                 <i class="fas fa-user fa-fw"></i>
                             </a>
                         </div>
@@ -54,7 +54,7 @@
         </div>
 
         {% if users_pagination|trim|length > 0 %}
-            <div class="manage__users__pagination">
+            <div class="manage__user-items__pagination">
                 {{ users_pagination }}
             </div>
         {% endif %}

@@ -75,6 +75,21 @@ function perms_get_user(string $prefix, int $user): int
     return $getPerms->execute() ? (int)$getPerms->fetchColumn(1) : 0;
 }
 
+function perms_delete_user(int $user): bool
+{
+    if ($user < 1) {
+        return false;
+    }
+
+    $deletePermissions = db_prepare('
+        DELETE FROM `msz_permissions`
+        WHERE `role_id` IS NULL
+        AND `user_id` = :user_id
+    ');
+    $deletePermissions->bindValue('user_id', $user);
+    return $deletePermissions->execute();
+}
+
 function perms_get_role(string $prefix, int $role): int
 {
     if (!in_array($prefix, MSZ_PERM_MODES) || $role < 1) {
@@ -114,6 +129,38 @@ function perms_get_user_raw(int $user): array
     }
 
     return $perms;
+}
+
+function perms_set_user_raw(int $user, array $perms): bool
+{
+    if ($user < 1) {
+        return false;
+    }
+
+    $realPerms = perms_create();
+    $permKeys = array_keys($realPerms);
+
+    foreach ($permKeys as $perm) {
+        $realPerms[$perm] = (int)($perms[$perm] ?? 0);
+    }
+
+    $setPermissions = db_prepare(sprintf(
+        '
+            REPLACE INTO `msz_permissions`
+                (`role_id`, `user_id`, `%s`)
+            VALUES
+                (NULL, :user_id, :%s)
+        ',
+        implode('`, `', $permKeys),
+        implode(', :', $permKeys)
+    ));
+    $setPermissions->bindValue('user_id', $user);
+
+    foreach ($realPerms as $key => $value) {
+        $setPermissions->bindValue($key, $value);
+    }
+
+    return $setPermissions->execute();
 }
 
 function perms_get_role_raw(int $role): array
