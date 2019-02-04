@@ -35,10 +35,12 @@ switch ($_GET['v'] ?? null) {
         $getManageUsers = db_prepare('
             SELECT
                 u.`user_id`, u.`username`, u.`user_country`, r.`role_id`,
-                COALESCE(u.`user_title`, r.`role_title`, r.`role_name`) as `user_title`,
-                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-            FROM `msz_users` as u
-            LEFT JOIN `msz_roles` as r
+                u.`user_created`, u.`user_active`, u.`user_deleted`,
+                INET6_NTOA(u.`register_ip`) AS `register_ip`, INET6_NTOA(u.`last_ip`) AS `last_ip`,
+                COALESCE(u.`user_title`, r.`role_title`, r.`role_name`) AS `user_title`,
+                COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
+            FROM `msz_users` AS u
+            LEFT JOIN `msz_roles` AS r
             ON u.`display_role` = r.`role_id`
             ORDER BY `user_id`
             LIMIT :offset, :take

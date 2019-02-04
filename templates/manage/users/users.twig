@@ -1,21 +1,62 @@
 {% extends 'manage/users/master.twig' %}
-{% from 'macros.twig' import pagination %}
-{% from 'user/macros.twig' import user_card %}
+{% from 'macros.twig' import pagination, container_title %}
+
+{% set users_pagination = pagination(manage_users_pagination, '/manage/users.php', null, {'v': 'listing'}) %}
 
 {% block manage_content %}
-    <div class="userlist">
-        {% for user in manage_users %}
-            <div class="userlist__item">
-                {{ user_card(user, '?v=view&u=%d', '?v=role&r=%d', [
-                    {
-                        'href': '/profile.php?u=%d'|format(user.user_id),
-                        'title': 'Profile',
-                        'icon': 'fas fa-user',
-                    }
-                ]) }}
-            </div>
-        {% endfor %}
-    </div>
+    <div class="container manage__users">
+        {{ container_title('<i class="fas fa-users fa-fw"></i> Users') }}
 
-    {{ pagination(manage_users_pagination, '/manage/users.php', null, {'v': 'listing'}) }}
+        {% if users_pagination|trim|length > 0 %}
+            <div class="manage__users__pagination">
+                {{ users_pagination }}
+            </div>
+        {% endif %}
+
+        <div class="manage__users__collection">
+            {% for user in manage_users %}
+                <div class="manage__user{% if user.user_deleted is not null %} manage__user--deleted{% endif %}" style="{{ user.user_colour|html_colour('--accent-colour') }}">
+                    <a href="{{ url('manage-user-edit', {'user': user.user_id}) }}" class="manage__user__background"></a>
+
+                    <div class="manage__user__container">
+                        <div class="avatar manage__user__avatar" style="background-image: url('{{ url('user-avatar', {'user': user.user_id}) }}')"></div>
+                        <div class="manage__user__info">
+                            <div class="manage__user__name">
+                                {{ user.username }}
+                            </div>
+                            <div class="manage__user__details">
+                                <div class="manage__user__detail">
+                                    <i class="fas fa-user-plus fa-fw"></i>
+                                    <time datetime="{{ user.user_created|date('c') }}" title="{{ user.user_created|date('r') }}">{{ user.user_created|time_diff }}</time> /
+                                    <span>{{ user.register_ip }}</span>
+                                </div>
+                                <div class="manage__user__detail">
+                                    <i class="fas fa-user-clock fa-fw"></i>
+                                    <time datetime="{{ user.user_active|date('c') }}" title="{{ user.user_active|date('r') }}">{{ user.user_active|time_diff }}</time> /
+                                    <span>{{ user.last_ip }}</span>
+                                </div>
+                                {% if user.user_deleted is not null %}
+                                    <div class="manage__user__detail">
+                                        <i class="fas fa-trash-alt fa-fw"></i>
+                                        <time datetime="{{ user.user_deleted|date('c') }}" title="{{ user.user_deleted|date('r') }}">{{ user.user_deleted|time_diff }}</time>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="manage__role__actions">
+                            <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="manage__user__action" title="Profile">
+                                <i class="fas fa-user fa-fw"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if users_pagination|trim|length > 0 %}
+            <div class="manage__users__pagination">
+                {{ users_pagination }}
+            </div>
+        {% endif %}
+    </div>
 {% endblock %}
