@@ -109,7 +109,7 @@ function forumPostingInit(): void
         }
     });
 
-    postingButtons.appendChild(previewButton);
+    postingButtons.insertBefore(previewButton, postingButtons.firstChild);
 }
 
 function forumPostingPreview(
