@@ -1,53 +1,80 @@
 {% extends 'manage/users/master.twig' %}
-{% from 'macros.twig' import pagination %}
+{% from 'macros.twig' import pagination, container_title %}
+
+{% set roles_pagination = pagination(manage_roles_pagination, '/manage/users.php', null, {'v': 'roles'}) %}
 
 {% block manage_content %}
-    {% if can_manage_roles %}
-        <a href="{{ url('manage-role-create') }}" class="input__button">Create new Role</a>
-    {% endif %}
+    <div class="container manage__roles">
+        {{ container_title('<i class="fas fa-user-check fa-fw"></i> Roles') }}
 
-    <div class="userlist">
-        {% for role in manage_roles %}
-            <div class="userlist__item">
+        {% if roles_pagination|trim|length > 0 %}
+            <div class="manage__roles__pagination">
+                {{ roles_pagination }}
+            </div>
+        {% endif %}
 
-                <div class="usercard">
-                    <a  href="{{ url('manage-role-edit', {'role': role.role_id}) }}"
-                        class="usercard__background"></a>
-
-                    <div class="usercard__container">
-                        <div class="usercard__main">
-                            <div class="avatar usercard__avatar"
-                                style="{{ role.role_colour|html_colour('background-color') }}">
-                            </div>
-
-                            <div class="usercard__details">
-                                <div class="usercard__name">
-                                    {{ role.role_name }}
-                                </div>
-
-                                <div class="usercard__info">
-                                    <span class="usercard__item usercard__item--title">
-                                        {{ role.role_title }}
-                                    </span>
-
-                                    <span class="usercard__item usercard__item--title">
-                                        {{ role.users|number_format }} users
-                                    </span>
-                                </div>
+        <div class="manage__roles__collection">
+            {% if can_manage_roles %}
+                <div class="manage__role manage__role--create">
+                    <a href="{{ url('manage-role-create') }}" class="manage__role__background"></a>
+                    <div class="manage__role__container">
+                        <div class="manage__role__icon">
+                            <div class="manage__role__icon__background"></div>
+                            <div class="manage__role__icon__content">
+                                <i class="fas fa-plus-circle fa-fw"></i>
                             </div>
                         </div>
+                        <div class="manage__role__info">
+                            <div class="manage__role__name">
+                                Create a new role
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
 
-                        <div class="usercard__actions">
-                            <a class="usercard__action" href="{{ url('members-role', {'role': role.role_id}) }}">
-                                Members
+            {% for role in manage_roles %}
+                <div class="manage__role" style="{{ role.role_colour|html_colour('--accent-colour') }}">
+                    <a href="{{ url('manage-role-edit', {'role': role.role_id}) }}" class="manage__role__background"></a>
+
+                    <div class="manage__role__container">
+                        <div class="manage__role__icon">
+                            <div class="manage__role__icon__background"></div>
+                            <div class="manage__role__icon__content">
+                                <i class="fas fa-toilet-paper fa-fw"></i>
+                            </div>
+                        </div>
+                        <div class="manage__role__info">
+                            <div class="manage__role__name">
+                                {{ role.role_name }}
+                            </div>
+                            <div class="manage__role__details">
+                                {% if role.users > 0 %}
+                                    <div class="manage__role__users">
+                                        <i class="fas fa-users fa-fw"></i> {{ role.users|number_format }}
+                                    </div>
+                                {% endif %}
+                                {% if role.role_title|default('')|length > 0 %}
+                                    <div class="manage__role__title">
+                                        {{ role.role_title }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="manage__role__actions">
+                            <a href="{{ url('members-role', {'role': role.role_id}) }}" class="manage__role__action" title="Members">
+                                <i class="fas fa-users fa-fw"></i>
                             </a>
                         </div>
                     </div>
                 </div>
+            {% endfor %}
+        </div>
 
+        {% if roles_pagination|trim|length > 0 %}
+            <div class="manage__roles__pagination">
+                {{ roles_pagination }}
             </div>
-        {% endfor %}
+        {% endif %}
     </div>
-
-    {{ pagination(manage_roles_pagination, '/manage/users.php', null, {'v': 'roles'}) }}
 {% endblock %}
