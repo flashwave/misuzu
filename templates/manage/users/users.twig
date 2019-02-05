@@ -4,16 +4,16 @@
 {% set users_pagination = pagination(manage_users_pagination, '/manage/users.php', null, {'v': 'listing'}) %}
 
 {% block manage_content %}
-    <div class="container manage__user-items">
+    <div class="container manage__users">
         {{ container_title('<i class="fas fa-users fa-fw"></i> Users') }}
 
         {% if users_pagination|trim|length > 0 %}
-            <div class="manage__user-items__pagination">
+            <div class="manage__users__pagination">
                 {{ users_pagination }}
             </div>
         {% endif %}
 
-        <div class="manage__user-items__collection">
+        <div class="manage__users__collection">
             {% for user in manage_users %}
                 <div class="manage__user-item{% if user.user_deleted is not null %} manage__user-item--deleted{% endif %}" style="{{ user.user_colour|html_colour('--accent-colour') }}">
                     <a href="{{ url('manage-user-edit', {'user': user.user_id}) }}" class="manage__user-item__background"></a>
@@ -54,7 +54,7 @@
         </div>
 
         {% if users_pagination|trim|length > 0 %}
-            <div class="manage__user-items__pagination">
+            <div class="manage__users__pagination">
                 {{ users_pagination }}
             </div>
         {% endif %}

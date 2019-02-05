@@ -4,16 +4,16 @@
 {% set roles_pagination = pagination(manage_roles_pagination, '/manage/users.php', null, {'v': 'roles'}) %}
 
 {% block manage_content %}
-    <div class="container manage__role-items">
+    <div class="container manage__roles">
         {{ container_title('<i class="fas fa-user-check fa-fw"></i> Roles') }}
 
         {% if roles_pagination|trim|length > 0 %}
-            <div class="manage__role-items__pagination">
+            <div class="manage__roles__pagination">
                 {{ roles_pagination }}
             </div>
         {% endif %}
 
-        <div class="manage__role-items__collection">
+        <div class="manage__roles__collection">
             {% if can_manage_roles %}
                 <div class="manage__role-item manage__role-item--create">
                     <a href="{{ url('manage-role-create') }}" class="manage__role-item__background"></a>
@@ -72,7 +72,7 @@
         </div>
 
         {% if roles_pagination|trim|length > 0 %}
-            <div class="manage__role-items__pagination">
+            <div class="manage__roles__pagination">
                 {{ roles_pagination }}
             </div>
         {% endif %}
