@@ -1,12 +1,12 @@
-{% extends 'auth/master.twig' %}
+{% extends 'master_minimal.twig' %}
 {% from 'macros.twig' import container_title %}
 
 {% block content %}
     <div class="container auth">
-        {{ container_title('<i class="fas fa-lock fa-fw"></i> Unavailable') }}
+        {{ container_title(message_title|default('<i class="fas fa-lock fa-fw"></i> Unavailable')) }}
 
         <div class="container__content">
-            {{ message|default('The site is currently unavailable, try again later.') }}
+            {{ message|default('The site is currently unavailable, try again later.')|raw }}
         </div>
     </div>
 {% endblock %}

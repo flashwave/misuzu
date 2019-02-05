@@ -178,6 +178,8 @@ if (PHP_SAPI === 'cli') {
                 break;
 
             case 'migrate':
+                touch(MSZ_ROOT . '/.migrating');
+
                 $migrationTargets = [
                     'mysql-main' => MSZ_ROOT . '/database',
                 ];
@@ -217,6 +219,8 @@ if (PHP_SAPI === 'cli') {
                         }
                     }
                 }
+
+                unlink(MSZ_ROOT . '/.migrating');
                 break;
 
             case 'new-mig':
@@ -302,6 +306,15 @@ MIG;
         http_response_code(503);
         echo tpl_render('auth.lockdown', [
             'message' => config_get_default(null, 'Auth', 'lockdown_msg'),
+        ]);
+        exit;
+    }
+
+    if (file_exists(MSZ_ROOT . '/.migrating')) {
+        http_response_code(503);
+        echo tpl_render('auth.lockdown', [
+            'message' => "The site is currently updating, this shouldn't take long.<br><a href='javascript:location.reload(true)' class='link'>Retry</a>",
+            'message_title' => '<i class="fas fa-wrench"></i> Updating',
         ]);
         exit;
     }
