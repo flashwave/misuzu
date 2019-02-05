@@ -83,7 +83,8 @@ db_setup([
 ]);
 
 // replace this with a better storage mechanism
-define('MSZ_STORAGE', create_directory(config_get_default(MSZ_ROOT . '/store', 'Storage', 'path')));
+define('MSZ_STORAGE', config_get_default(MSZ_ROOT . '/store', 'Storage', 'path'));
+mkdirs(MSZ_STORAGE, true);
 
 if (PHP_SAPI === 'cli') {
     if (realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
@@ -285,10 +286,15 @@ MIG;
     cache_init(config_get_default([], 'Cache'));
     geoip_init(config_get_default('', 'GeoIP', 'database_path'));
 
+    if (!MSZ_DEBUG) {
+        $twigCache = sys_get_temp_dir() . '/msz-tpl-cache-' . md5(MSZ_ROOT);
+        mkdirs($twigCache, true);
+    }
+
     tpl_init([
         'debug' => MSZ_DEBUG,
         'auto_reload' => MSZ_DEBUG,
-        'cache' => MSZ_DEBUG ? false : create_directory(build_path(sys_get_temp_dir(), 'msz-tpl-cache-' . md5(MSZ_ROOT))),
+        'cache' => $twigCache ?? false,
     ]);
 
     tpl_var('globals', [

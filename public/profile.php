@@ -18,28 +18,22 @@ switch ($mode) {
                 MSZ_PERM_USER_MANAGE_USERS
             )
         )) {
-            $avatarFilename = build_path(
-                MSZ_ROOT,
-                config_get_default('public/images/banned-avatar.png', 'Avatar', 'banned_path')
-            );
+            $avatarFilename = config_get_default(MSZ_ROOT . '/public/images/banned-avatar.png', 'Avatar', 'banned_path');
         } else {
-            $avatarFilename = build_path(
-                MSZ_ROOT,
-                config_get_default('public/images/no-avatar.png', 'Avatar', 'default_path')
-            );
+            $avatarFilename = config_get_default(MSZ_ROOT . '/public/images/no-avatar.png', 'Avatar', 'default_path');
             $userAvatar = "{$userId}.msz";
-            $croppedAvatar = build_path(
-                create_directory(build_path(MSZ_STORAGE, 'avatars/200x200')),
-                $userAvatar
-            );
+            $storageDir = MSZ_STORAGE . '/avatars/200x200';
+            $croppedAvatar = $storageDir . '/' . $userAvatar;
 
             if (is_file($croppedAvatar)) {
                 $avatarFilename = $croppedAvatar;
             } else {
-                $originalAvatar = build_path(MSZ_STORAGE, 'avatars/original', $userAvatar);
+                $originalAvatar = MSZ_STORAGE . '/avatars/original/' . $userAvatar;
 
                 if (is_file($originalAvatar)) {
                     try {
+                        mkdirs($storageDir, true);
+
                         file_put_contents(
                             $croppedAvatar,
                             crop_image_centred_path($originalAvatar, 200, 200)->getImagesBlob(),
@@ -83,10 +77,9 @@ switch ($mode) {
             break;
         }
 
-        $userBackground = build_path(
-            create_directory(build_path(MSZ_STORAGE, 'backgrounds/original')),
-            "{$userId}.msz"
-        );
+        $storageDir = MSZ_STORAGE . '/backgrounds/original';
+        $userBackground = "{$storageDir}/{$userId}.msz";
+        mkdirs($storageDir, true);
 
         if (!is_file($userBackground)) {
             echo render_error(404);
@@ -362,8 +355,7 @@ switch ($mode) {
         }
 
         $profile = user_profile_get($userId);
-
-        $backgroundPath = build_path(MSZ_STORAGE, 'backgrounds/original', "{$profile['user_id']}.msz");
+        $backgroundPath = MSZ_STORAGE . "/backgrounds/original/{$profile['user_id']}.msz";
 
         if (is_file($backgroundPath)) {
             $backgroundInfo = getimagesize($backgroundPath);

@@ -268,7 +268,6 @@ function user_set_birthdate(int $userId, int $day, int $month, int $year, int $y
     if ($year === 0) {
         $checkYear = date('Y');
     } else {
-        echo $year;
         if ($year < date('Y') - $yearRange || $year > date('Y')) {
             return MSZ_E_USER_BIRTHDATE_YEAR;
         }
@@ -432,14 +431,14 @@ define('MSZ_TMP_USER_ERROR_STRINGS', [
         ],
         'set' => [
             '_' => 'Something happened? (SET:%1$d)',
-            MSZ_USER_AVATAR_NO_ERRORS => '',
-            MSZ_USER_AVATAR_ERROR_INVALID_IMAGE => 'The file you uploaded was not an image!',
-            MSZ_USER_AVATAR_ERROR_PROHIBITED_TYPE => 'This type of image is not supported!',
-            MSZ_USER_AVATAR_ERROR_DIMENSIONS_TOO_LARGE => 'Your background can\'t be larger than %3$dx%4$d!',
-            MSZ_USER_AVATAR_ERROR_DATA_TOO_LARGE => 'Your background is not allowed to be larger in file size than %2$s!',
-            MSZ_USER_AVATAR_ERROR_TMP_FAILED => 'Unable to save your background, contact an administator!',
-            MSZ_USER_AVATAR_ERROR_STORE_FAILED => 'Unable to save your background, contact an administator!',
-            MSZ_USER_AVATAR_ERROR_FILE_NOT_FOUND => 'Unable to save your background, contact an administator!',
+            MSZ_USER_BACKGROUND_NO_ERRORS => '',
+            MSZ_USER_BACKGROUND_ERROR_INVALID_IMAGE => 'The file you uploaded was not an image!',
+            MSZ_USER_BACKGROUND_ERROR_PROHIBITED_TYPE => 'This type of image is not supported!',
+            MSZ_USER_BACKGROUND_ERROR_DIMENSIONS_TOO_LARGE => 'Your background can\'t be larger than %3$dx%4$d!',
+            MSZ_USER_BACKGROUND_ERROR_DATA_TOO_LARGE => 'Your background is not allowed to be larger in file size than %2$s!',
+            MSZ_USER_BACKGROUND_ERROR_TMP_FAILED => 'Unable to save your background, contact an administator!',
+            MSZ_USER_BACKGROUND_ERROR_STORE_FAILED => 'Unable to save your background, contact an administator!',
+            MSZ_USER_BACKGROUND_ERROR_FILE_NOT_FOUND => 'Unable to save your background, contact an administator!',
         ],
     ],
     'profile' => [

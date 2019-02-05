@@ -78,7 +78,7 @@ function user_background_set_settings(int $userId, int $settings): void
 function user_background_delete(int $userId): void
 {
     $backgroundFileName = sprintf(MSZ_USER_BACKGROUND_FORMAT, $userId);
-    safe_delete(build_path(MSZ_STORAGE, 'backgrounds/original', $backgroundFileName));
+    safe_delete(MSZ_STORAGE . '/backgrounds/original/' . $backgroundFileName);
 }
 
 define('MSZ_USER_BACKGROUND_TYPE_PNG', IMAGETYPE_PNG);
@@ -149,10 +149,9 @@ function user_background_set_from_path(int $userId, string $path, array $options
     user_background_delete($userId);
 
     $fileName = sprintf(MSZ_USER_BACKGROUND_FORMAT, $userId);
-    $backgroundPath = build_path(
-        create_directory(build_path(MSZ_STORAGE, 'backgrounds/original')),
-        $fileName
-    );
+    $storageDir = MSZ_STORAGE . '/backgrounds/original';
+    mkdirs($storageDir, true);
+    $backgroundPath = "{$storageDir}/{$fileName}";
 
     if (!copy($path, $backgroundPath)) {
         return MSZ_USER_BACKGROUND_ERROR_STORE_FAILED;

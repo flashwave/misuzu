@@ -6,8 +6,8 @@ function user_avatar_delete(int $userId): void
     $avatarFileName = sprintf(MSZ_USER_AVATAR_FORMAT, $userId);
 
     $deleteThis = [
-        build_path(MSZ_STORAGE, 'avatars/original', $avatarFileName),
-        build_path(MSZ_STORAGE, 'avatars/200x200', $avatarFileName),
+        MSZ_STORAGE . '/avatars/original/' . $avatarFileName,
+        MSZ_STORAGE . '/avatars/200x200/' . $avatarFileName,
     ];
 
     foreach ($deleteThis as $deleteAvatar) {
@@ -83,10 +83,9 @@ function user_avatar_set_from_path(int $userId, string $path, array $options = [
     user_avatar_delete($userId);
 
     $fileName = sprintf(MSZ_USER_AVATAR_FORMAT, $userId);
-    $avatarPath = build_path(
-        create_directory(build_path(MSZ_STORAGE, 'avatars/original')),
-        $fileName
-    );
+    $storageDir = MSZ_STORAGE . '/avatars/original';
+    mkdirs($storageDir, true);
+    $avatarPath = "{$storageDir}/{$fileName}";
 
     if (!copy($path, $avatarPath)) {
         return MSZ_USER_AVATAR_ERROR_STORE_FAILED;
