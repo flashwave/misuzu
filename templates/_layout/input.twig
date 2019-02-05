@@ -105,3 +105,12 @@
     </select>
 {% endspaceless %}
 {% endmacro %}
+
+{% macro input_colour(name, class, value) %}
+{% spaceless %}
+    <label class="input__colour{% if class %} {{ class }}{% endif %}">
+        <div class="input__colour__overlay"></div>
+        <input type="color" name="{{ name }}" value="{{ value }}" class="input__colour__control">
+    </label>
+{% endspaceless %}
+{% endmacro %}
