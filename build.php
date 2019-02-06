@@ -58,41 +58,41 @@ define('TWIG_DIRECTORY', sys_get_temp_dir() . '/msz-tpl-cache-' . md5(__DIR__));
  * FUNCTIONS
  */
 
-function misuzu_log(string $text = ''): void
+function build_log(string $text = ''): void
 {
     echo strlen($text) > 0 ? date('<H:i:s> ') . $text . PHP_EOL : PHP_EOL;
 }
 
-function createDirIfNotExist(string $dir): void
+function create_dir(string $dir): void
 {
     if (!file_exists($dir) || !is_dir($dir)) {
         mkdir($dir);
-        misuzu_log("Created '{$dir}'!");
+        build_log("Created '{$dir}'!");
     }
 }
 
-function globDir(string $dir, string $pattern, int $flags = 0): array
+function glob_dir(string $dir, string $pattern, int $flags = 0): array
 {
     return glob($dir . '/' . $pattern, $flags);
 }
 
-function deleteAllFilesInDir(string $dir, string $pattern): void
+function purge_dir(string $dir, string $pattern): void
 {
-    $files = globDir($dir, $pattern);
+    $files = glob_dir($dir, $pattern);
 
     foreach ($files as $file) {
         if (is_dir($file)) {
-            misuzu_log("'{$file}' is a directory, entering...");
-            deleteAllFilesInDir($file, $pattern);
+            build_log("'{$file}' is a directory, entering...");
+            purge_dir($file, $pattern);
             rmdir($file);
         } else {
             unlink($file);
-            misuzu_log("Deleted '{$file}'");
+            build_log("Deleted '{$file}'");
         }
     }
 }
 
-function recursiveCopy(string $source, string $dest): bool
+function recursive_copy(string $source, string $dest): bool
 {
     if (is_link($source)) {
         return symlink(readlink($source), $dest);
@@ -113,32 +113,11 @@ function recursiveCopy(string $source, string $dest): bool
             continue;
         }
 
-        recursiveCopy($source . DIRECTORY_SEPARATOR . $entry, $dest . DIRECTORY_SEPARATOR . $entry);
+        recursive_copy($source . DIRECTORY_SEPARATOR . $entry, $dest . DIRECTORY_SEPARATOR . $entry);
     }
 
     $dir->close();
     return true;
-}
-
-function recursiveConcat(string $source, string $existing = ''): string
-{
-    if (!is_dir($source)) {
-        return $existing . file_get_contents($source);
-    }
-
-    $dir = dir($source);
-
-    while (($entry = $dir->read()) !== false) {
-        if ($entry === '.' || $entry === '..') {
-            continue;
-        }
-
-        $existing = recursiveConcat($source . DIRECTORY_SEPARATOR . $entry, $existing);
-    }
-
-    $dir->close();
-
-    return $existing;
 }
 
 $doAll = empty($argv[1]) || $argv[1] === 'all';
@@ -148,32 +127,32 @@ $doJs = $doAll || $argv[1] === 'js';
 // Make sure we're running from the misuzu root directory.
 chdir(__DIR__);
 
-misuzu_log('Cleanup');
+build_log('Cleanup');
 
 if ($doCss) {
-    createDirIfNotExist(CSS_DIR);
-    deleteAllFilesInDir(CSS_DIR, '*.css');
+    create_dir(CSS_DIR);
+    purge_dir(CSS_DIR, '*.css');
 }
 
 if ($doJs) {
-    createDirIfNotExist(JS_DIR);
-    deleteAllFilesInDir(JS_DIR, '*.js');
-    deleteAllFilesInDir(TS_DIR, '*.d.ts');
+    create_dir(JS_DIR);
+    purge_dir(JS_DIR, '*.js');
+    purge_dir(TS_DIR, '*.d.ts');
 }
 
 if ($doCss) {
-    misuzu_log();
-    misuzu_log('Compiling LESS');
+    build_log();
+    build_log('Compiling LESS');
 
     if (!is_file(LESS_DIR . LESS_ENTRY_POINT)) {
-        misuzu_log('==> ERR: Entry point for this style does not exist (' . basename(LESS_ENTRY_POINT) . ')');
+        build_log('==> ERR: Entry point for this style does not exist (' . basename(LESS_ENTRY_POINT) . ')');
     } else {
         system(sprintf(LESS_CMD, escapeshellarg(LESS_DIR . LESS_ENTRY_POINT), LESS_DEST));
     }
 }
 
-misuzu_log();
-misuzu_log('Importing libraries');
+build_log();
+build_log('Importing libraries');
 
 define('IMPORT_SEQ', [
     [
@@ -197,17 +176,17 @@ foreach (IMPORT_SEQ as $sequence) {
         continue;
     }
 
-    misuzu_log("=> {$sequence['name']}");
+    build_log("=> {$sequence['name']}");
 
     $contents = '';
 
     foreach ($sequence['files'] as $file) {
         $realpath = realpath(NODE_MODULES_DIR . '/' . $file);
 
-        misuzu_log("==> '{$file}'");
+        build_log("==> '{$file}'");
 
         if (!file_exists($realpath)) {
-            misuzu_log('===> File does not exist.');
+            build_log('===> File does not exist.');
             continue;
         }
 
@@ -222,29 +201,26 @@ foreach (IMPORT_SEQ as $sequence) {
 }
 
 if ($doJs) {
-    misuzu_log();
-    misuzu_log('Compiling TypeScript');
-    misuzu_log(shell_exec('tsc --extendedDiagnostics -p tsconfig.json'));
-    file_put_contents(TS_DEST, recursiveConcat(TS_SRC));
-    deleteAllFilesInDir(TS_SRC, '*');
-    rmdir(TS_SRC);
+    build_log();
+    build_log('Compiling TypeScript');
+    build_log(shell_exec('tsc --extendedDiagnostics -p tsconfig.json'));
 }
 
-misuzu_log();
-misuzu_log('Copying data...');
+build_log();
+build_log('Copying data...');
 
 foreach (NODE_COPY_DIRECTORY as $source => $dest) {
-    misuzu_log("=> " . basename($dest));
+    build_log("=> " . basename($dest));
     $source = realpath(NODE_MODULES_DIR . DIRECTORY_SEPARATOR . $source);
     $dest = PUBLIC_DIR . DIRECTORY_SEPARATOR . $dest;
-    deleteAllFilesInDir($dest, '*');
-    recursiveCopy($source, $dest);
+    purge_dir($dest, '*');
+    recursive_copy($source, $dest);
 }
 
 // no need to do this in debug mode, auto reload is enabled and cache is disabled
 if ($doAll && !file_exists(__DIR__ . '/.debug')) {
     // Clear Twig cache
-    misuzu_log();
-    misuzu_log('Deleting template cache');
-    deleteAllFilesInDir(TWIG_DIRECTORY, '*');
+    build_log();
+    build_log('Deleting template cache');
+    purge_dir(TWIG_DIRECTORY, '*');
 }

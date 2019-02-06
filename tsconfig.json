@@ -1,10 +1,10 @@
 {
     "compilerOptions": {
         "target": "es6",
-        "module": "es6",
+        "module": "amd",
         "removeComments": true,
         "preserveConstEnums": true,
-        "outDir": "./public/js/misuzu/",
+        "out": "./public/js/misuzu.js",
         "rootDir": "./assets/typescript/",
         "sourceMap": false,
     },
