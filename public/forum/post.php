@@ -116,7 +116,7 @@ switch ($postMode) {
 
         if (!$isXHR) {
             if ($postRequestVerified && isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
-                header("Location: " . url('forum_post', [
+                header("Location: " . url('forum-post', [
                     'post' => $postInfo['post_id'],
                     'post_fragment' => 'p' . $postInfo['post_id'],
                 ]));
@@ -155,7 +155,7 @@ switch ($postMode) {
             break;
         }
 
-        header("Location: " . url('forum_topic', ['topic' => $postInfo['topic_id']]));
+        header("Location: " . url('forum-topic', ['topic' => $postInfo['topic_id']]));
         break;
 
     case 'nuke':
@@ -166,7 +166,7 @@ switch ($postMode) {
 
         if (!$isXHR) {
             if ($postRequestVerified && isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
-                header("Location: " . url('forum_post', [
+                header("Location: " . url('forum-post', [
                     'post' => $postInfo['post_id'],
                     'post_fragment' => 'p' . $postInfo['post_id'],
                 ]));
@@ -196,7 +196,7 @@ switch ($postMode) {
         http_response_code(204);
 
         if (!$isXHR) {
-            header("Location: " . url('forum_topic', ['topic' => $postInfo['topic_id']]));
+            header("Location: " . url('forum-topic', ['topic' => $postInfo['topic_id']]));
         }
         break;
 
@@ -208,7 +208,7 @@ switch ($postMode) {
 
         if (!$isXHR) {
             if ($postRequestVerified && isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
-                header("Location: " . url('forum_post', [
+                header("Location: " . url('forum-post', [
                     'post' => $postInfo['post_id'],
                     'post_fragment' => 'p' . $postInfo['post_id'],
                 ]));
@@ -238,7 +238,7 @@ switch ($postMode) {
         http_response_code(204);
 
         if (!$isXHR) {
-            header("Location: " . url('forum_topic', ['topic' => $postInfo['topic_id']]));
+            header("Location: " . url('forum-topic', ['topic' => $postInfo['topic_id']]));
         }
         break;
 
