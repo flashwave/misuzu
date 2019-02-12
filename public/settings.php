@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($currentSessionKilled) {
-                header('Location: /');
+                header(sprintf('Location: %s', url('index')));
                 return;
             }
         }

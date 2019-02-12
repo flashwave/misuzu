@@ -69,8 +69,8 @@ function comments_parse_for_display(string $text): string
         }
 
         return sprintf(
-            '<a href="/profile.php?u=%d" class="comment__mention", style="%s">@%s</a>',
-            $info['user_id'],
+            '<a href="%s" class="comment__mention", style="%s">@%s</a>',
+            url('user-profile', ['user' => $info['user_id']]),
             html_colour($info['user_colour']),
             $info['username']
         );

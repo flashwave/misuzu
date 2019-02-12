@@ -40,7 +40,7 @@ switch ($authMode) {
 
     case 'logout':
         if (!user_session_active()) {
-            header('Location: /');
+            header(sprintf('Location: %s', url('index')));
             return;
         }
 
@@ -48,7 +48,7 @@ switch ($authMode) {
             set_cookie_m('uid', '', -3600);
             set_cookie_m('sid', '', -3600);
             user_session_stop(true);
-            header('Location: /');
+            header(sprintf('Location: %s', url('index')));
             return;
         }
 
@@ -130,7 +130,7 @@ switch ($authMode) {
 
     case 'forgot':
         if (user_session_active() || !$canResetPassword) {
-            header('Location: /');
+            header(sprintf('Location: %s', url('index')));
             break;
         }
 
