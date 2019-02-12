@@ -1,17 +1,4 @@
 <?php
-function set_cookie_m(string $name, string $value, int $expires): void
-{
-    setcookie(
-        "msz_{$name}",
-        $value,
-        $expires,
-        '/',
-        '',
-        !empty($_SERVER['HTTPS']),
-        true
-    );
-}
-
 function password_entropy(string $password): int
 {
     return count(count_chars(utf8_decode($password), 1)) * 8;

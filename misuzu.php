@@ -325,36 +325,46 @@ MIG;
         exit;
     }
 
-    if (isset($_COOKIE['msz_uid'], $_COOKIE['msz_sid'])
-        && user_session_start((int)$_COOKIE['msz_uid'], $_COOKIE['msz_sid'])) {
-        $mszUserId = (int)$_COOKIE['msz_uid'];
+    if (!empty($_COOKIE['msz_uid']) && !empty($_COOKIE['msz_sid'])
+        && ctype_digit($_COOKIE['msz_uid']) && ctype_xdigit($_COOKIE['msz_sid'])
+        && strlen($_COOKIE['msz_sid']) === 64) {
+        $_COOKIE['msz_auth'] = base64url_encode(user_session_cookie_pack($_COOKIE['msz_uid'], $_COOKIE['msz_sid']));
+        setcookie('msz_auth', $_COOKIE['msz_auth'], strtotime('1 year'), '/', '', true, true);
+        setcookie('msz_uid', '', -3600, '/', '', true, true);
+        setcookie('msz_sid', '', -3600, '/', '', true, true);
+    }
 
-        user_bump_last_active($mszUserId);
-        user_session_bump_active(user_session_current('session_id'));
+    if (!empty($_COOKIE['msz_auth']) && is_string($_COOKIE['msz_auth'])) {
+        $cookieData = user_session_cookie_unpack(base64url_decode($_COOKIE['msz_auth']));
 
-        $getUserDisplayInfo = db_prepare('
-            SELECT
-                u.`user_id`, u.`username`, u.`user_background_settings`,
-                COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
-            FROM `msz_users` AS u
-            LEFT JOIN `msz_roles` AS r
-            ON u.`display_role` = r.`role_id`
-            WHERE `user_id` = :user_id
-        ');
-        $getUserDisplayInfo->bindValue('user_id', $mszUserId);
-        $userDisplayInfo = db_fetch($getUserDisplayInfo);
+        if (!empty($cookieData) && user_session_start($cookieData['user_id'], $cookieData['session_token'])) {
+            user_bump_last_active($cookieData['user_id']);
+            user_session_bump_active(user_session_current('session_id'));
 
-        if ($userDisplayInfo) {
-            $userDisplayInfo['general_perms'] = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
-            $userDisplayInfo['comments_perms'] = perms_get_user(MSZ_PERMS_COMMENTS, $userDisplayInfo['user_id']);
-            $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_BAN);
-            $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_SILENCE);
+            $getUserDisplayInfo = db_prepare('
+                SELECT
+                    u.`user_id`, u.`username`, u.`user_background_settings`,
+                    COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
+                FROM `msz_users` AS u
+                LEFT JOIN `msz_roles` AS r
+                ON u.`display_role` = r.`role_id`
+                WHERE `user_id` = :user_id
+            ');
+            $getUserDisplayInfo->bindValue('user_id', $cookieData['user_id']);
+            $userDisplayInfo = db_fetch($getUserDisplayInfo);
+
+            if ($userDisplayInfo) {
+                $userDisplayInfo['general_perms'] = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
+                $userDisplayInfo['comments_perms'] = perms_get_user(MSZ_PERMS_COMMENTS, $userDisplayInfo['user_id']);
+                $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_BAN);
+                $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_SILENCE);
+            }
         }
     }
 
     csrf_init(
         config_get_default('insecure', 'CSRF', 'secret_key'),
-        empty($userDisplayInfo) ? ip_remote_address() : $_COOKIE['msz_sid']
+        empty($userDisplayInfo) ? ip_remote_address() : $cookieData['session_token']
     );
 
     if (!$misuzuBypassLockdown && boolval(config_get_default(false, 'Private', 'enabled'))) {

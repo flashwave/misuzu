@@ -45,8 +45,7 @@ switch ($authMode) {
         }
 
         if (csrf_verify('logout', $_GET['s'] ?? '')) {
-            set_cookie_m('uid', '', -3600);
-            set_cookie_m('sid', '', -3600);
+            setcookie('msz_auth', '', -3600, '/', '', true, true);
             user_session_stop(true);
             header(sprintf('Location: %s', url('index')));
             return;
@@ -260,8 +259,8 @@ MSG;
 
             user_session_start($userData['user_id'], $sessionKey);
             $cookieLife = strtotime(user_session_current('session_expires'));
-            set_cookie_m('uid', $userData['user_id'], $cookieLife);
-            set_cookie_m('sid', $sessionKey, $cookieLife);
+            $cookieValue = base64_encode(user_session_cookie_pack($userData['user_id'], $sessionKey));
+            setcookie('msz_auth', $cookieValue, $cookieLife, '/', '', true, true);
 
             if (!is_local_url($authRedirect)) {
                 $authRedirect = url('index');

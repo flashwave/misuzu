@@ -174,3 +174,35 @@ function user_session_active(): bool
     return !empty($GLOBALS[MSZ_SESSION_DATA_STORE])
         && time() < strtotime($GLOBALS[MSZ_SESSION_DATA_STORE]['session_expires']);
 }
+
+define('MSZ_SESSION_COOKIE_VERSION', 1);
+// make sure to match this to the final fixed size of the cookie string
+// it'll pad older tokens out for backwards compatibility
+define('MSZ_SESSION_COOKIE_SIZE', 37);
+
+function user_session_cookie_pack(int $userId, string $sessionToken): ?string
+{
+    if (strlen($sessionToken) !== MSZ_SESSION_KEY_SIZE) {
+        return null;
+    }
+
+    return pack('CNH64', MSZ_SESSION_COOKIE_VERSION, $userId, $sessionToken);
+}
+
+function user_session_cookie_unpack(string $packed): array
+{
+    $packed = str_pad($packed, MSZ_SESSION_COOKIE_SIZE, "\x00");
+    $unpacked = unpack('Cversion/Nuser/H64token', $packed);
+
+    if ($unpacked['version'] < 1 || $unpacked['version'] > MSZ_SESSION_COOKIE_VERSION) {
+        return [];
+    }
+
+    // Make sure this contains all fields with a default for version > 1 exclusive stuff
+    $data = [
+        'user_id' => $unpacked['user'],
+        'session_token' => $unpacked['token'],
+    ];
+
+    return $data;
+}
