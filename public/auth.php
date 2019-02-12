@@ -259,7 +259,7 @@ MSG;
 
             user_session_start($userData['user_id'], $sessionKey);
             $cookieLife = strtotime(user_session_current('session_expires'));
-            $cookieValue = base64_encode(user_session_cookie_pack($userData['user_id'], $sessionKey));
+            $cookieValue = base64url_encode(user_session_cookie_pack($userData['user_id'], $sessionKey));
             setcookie('msz_auth', $cookieValue, $cookieLife, '/', '', true, true);
 
             if (!is_local_url($authRedirect)) {
