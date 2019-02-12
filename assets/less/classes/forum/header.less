@@ -1,18 +1,22 @@
 .forum__header {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: 10px 15px;
-    margin: 2px 0;
+    align-items: flex-start;
+    padding: 8px 10px;
 
     &__title {
         font-size: 2em;
         line-height: 1.5em;
         color: inherit;
         text-decoration: none;
+        padding: 0 5px;
 
         &[href]:hover {
             text-decoration: underline;
+        }
+
+        &--fill {
+            width: 100%;
         }
     }
 
@@ -31,11 +35,13 @@
         display: flex;
         font-size: 1.1em;
         line-height: 1.5em;
+        align-items: center;
     }
 
     &__breadcrumb {
         color: var(--accent-colour);
         text-decoration: none;
+        padding: 2px 5px;
 
         &:hover {
             text-decoration: underline;
@@ -43,7 +49,7 @@
 
         &__separator {
             color: var(--accent-colour);
-            margin: 0 8px;
+            margin: 0 4px;
             font-size: .9em;
         }
     }
@@ -53,14 +59,18 @@
     }
 
     &__action {
-        margin-right: 10px;
         color: inherit;
         text-decoration: none;
         transition: color .2s;
+        padding: 2px 5px;
 
         &:hover,
         &:focus {
             color: var(--accent-colour);
+        }
+
+        &:not(:last-child) {
+            margin-right: 5px;
         }
     }
 }
