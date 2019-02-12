@@ -44,9 +44,6 @@ If you have a legitimate reason for this, talk to a staff member.
 1. **Abusing post formatting tools is not allowed.**
 This includes using a persistent font colour as an "avatar", but excludes making a flashy opening post to your topic.
 
-1. **Don't make trivial posts.**
-Replying with `same` isn't constructive.
-
 ## Chat Rules
 1. **Persistent typing quirks are not allowed.**
 This applies where Global Rule 1 applies.
