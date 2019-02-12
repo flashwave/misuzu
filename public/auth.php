@@ -227,7 +227,7 @@ MSG;
                 $remainingAttempts === 2 ? '' : 's'
             );
 
-            if ($userData['user_id'] < 1) {
+            if (empty($userData) || $userData['user_id'] < 1) {
                 user_login_attempt_record(false, null, $ipAddress, $userAgent);
                 $authLoginError = $loginFailedError;
                 break;

@@ -31,7 +31,9 @@
             {{ input_text('auth[username]', 'auth__input js-login-username', username|default(''), 'text', 'Username', true, null, 0, autofocus) }}
             {{ input_text('auth[password]', 'auth__input', '', 'password', 'Password', true, null) }}
 
-            <button class="input__button">Log in</button>
+            <div class="auth__buttons">
+                <button class="input__button auth__button">Log in</button>
+            </div>
         </div>
     </form>
 {% endmacro %}

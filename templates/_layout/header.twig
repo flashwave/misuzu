@@ -82,6 +82,7 @@
             'title': 'Log in',
             'url': '/auth.php?m=login',
             'icon': 'fas fa-sign-in-alt fa-fw',
+            'class': 'js-login-button',
         },
     ]
 %}
@@ -116,7 +117,7 @@
         <div class="header__desktop__user">
             {% for item in user_menu %}
                 {% if item.display is not defined or item.display %}
-                    <a href="{{ item.url }}" title="{{ item.title }}" class="header__desktop__user__button">
+                    <a href="{{ item.url }}" title="{{ item.title }}" class="header__desktop__user__button {{ item.class|default('') }}">
                         <i class="{{ item.icon }}"></i>
                     </a>
                 {% endif %}
@@ -126,7 +127,7 @@
                 <a href="{{ url('user-profile', {'user': current_user.user_id}) }}" class="avatar header__desktop__user__avatar" title="{{ current_user.username }}"
                     style="background-image:url('{{ url('user-avatar', {'user': current_user.user_id}) }}');{{ current_user.user_colour|html_colour }}"></a>
             {% else %}
-                <a href="{{ url('auth-login') }}" class="avatar header__desktop__user__avatar"
+                <a href="{{ url('auth-login') }}" class="avatar header__desktop__user__avatar js-login-button"
                     style="background-image:url('{{ url('guest-avatar') }}');"></a>
             {% endif %}
         </div>
@@ -154,7 +155,7 @@
             <div class="header__mobile__user">
                 {% for item in user_menu %}
                     {% if item.display is not defined or item.display %}
-                        <a href="{{ item.url }}" class="header__mobile__link header__mobile__link--user">
+                        <a href="{{ item.url }}" class="header__mobile__link header__mobile__link--user {{ item.class|default('') }}">
                             <i class="{{ item.icon }}"></i> {{ item.title }}
                         </a>
                     {% endif %}

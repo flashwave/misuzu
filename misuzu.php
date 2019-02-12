@@ -390,6 +390,9 @@ MIG;
 
     if (!empty($userDisplayInfo)) {
         tpl_var('current_user', $userDisplayInfo);
+    } else {
+        // make sure the login csrf token is available
+        csrf_token('login');
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
