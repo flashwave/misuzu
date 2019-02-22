@@ -212,6 +212,23 @@ function user_get_last_ip(int $userId): string
     return $getAddress->execute() ? $getAddress->fetchColumn() : '';
 }
 
+function user_check_super(int $userId): bool
+{
+    static $superUsers = [];
+
+    if (!isset($superUsers[$userId])) {
+        $checkSuperUser = db_prepare("
+            SELECT `user_super`
+            FROM `msz_users`
+            WHERE `user_id` = :user_id
+        ");
+        $checkSuperUser->bindValue('user_id', $userId);
+        $superUsers[$userId] = (bool)($checkSuperUser->execute() ? $checkSuperUser->fetchColumn() : false);
+    }
+
+    return $superUsers[$userId];
+}
+
 function user_check_authority(int $userId, int $subjectId, bool $canManageSelf = true): bool
 {
     if ($canManageSelf && $userId === $subjectId) {

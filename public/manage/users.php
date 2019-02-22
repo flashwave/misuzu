@@ -1,7 +1,8 @@
 <?php
 require_once '../../misuzu.php';
 
-$userPerms = perms_get_user(MSZ_PERMS_USER, user_session_current('user_id', 0));
+$currentUserId = user_session_current('user_id', 0);
+$userPerms = perms_get_user(MSZ_PERMS_USER, $currentUserId);
 $isPostRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
 
 tpl_vars([
@@ -102,7 +103,7 @@ switch ($_GET['v'] ?? null) {
         if ($isPostRequest) {
             if (!csrf_verify('users_edit', $_POST['csrf'] ?? '')) {
                 $notices[] = "Couldn't verify the request.";
-            } elseif (!user_check_authority(user_session_current('user_id'), $userId)) {
+            } elseif (!user_check_super($currentUserId) && !user_check_authority($currentUserId, $userId)) {
                 $notices[] = 'You are not allowed to administer this user.';
             } else {
                 $setUserInfo = [];
@@ -205,7 +206,7 @@ switch ($_GET['v'] ?? null) {
                     }
                 }
 
-                if (isset($_POST['add_role']) && user_role_check_authority(user_session_current('user_id'), (int)$_POST['add_role']['role'])) {
+                if (isset($_POST['add_role']) && user_role_check_authority($currentUserId, (int)$_POST['add_role']['role'])) {
                     user_role_add($userId, $_POST['add_role']['role']);
                 }
 
@@ -216,7 +217,7 @@ switch ($_GET['v'] ?? null) {
                             break;
 
                         case 'remove':
-                            if ((int)$_POST['manage_roles']['role'] !== MSZ_ROLE_MAIN && user_role_check_authority(user_session_current('user_id'), (int)$_POST['manage_roles']['role'])) {
+                            if ((int)$_POST['manage_roles']['role'] !== MSZ_ROLE_MAIN && user_role_check_authority($currentUserId, (int)$_POST['manage_roles']['role'])) {
                                 user_role_remove($userId, $_POST['manage_roles']['role']);
                             }
                             break;
@@ -315,9 +316,9 @@ switch ($_GET['v'] ?? null) {
 
             $roleHierarchy = (int)($_POST['role']['hierarchy'] ?? -1);
 
-            if ($roleId === null
-                    ? (user_get_hierarchy(user_session_current('user_id')) <= $roleHierarchy)
-                    : !user_role_check_authority(user_session_current('user_id'), $roleId)) {
+            if (!user_check_super($currentUserId) && ($roleId === null
+                    ? (user_get_hierarchy($currentUserId) <= $roleHierarchy)
+                    : !user_role_check_authority($currentUserId, $roleId))) {
                 echo 'Your hierarchy is too low to do this.';
                 break;
             }
@@ -534,7 +535,7 @@ switch ($_GET['v'] ?? null) {
 
                 $warningsUser = (int)($_POST['warning']['user'] ?? 0);
 
-                if (!user_check_authority(user_session_current('user_id'), $warningsUser)) {
+                if (!user_check_super($currentUserId) && !user_check_authority($currentUserId, $warningsUser)) {
                     $notices[] = 'You do not have authority over this user.';
                 }
 
@@ -542,7 +543,7 @@ switch ($_GET['v'] ?? null) {
                     $warningId = user_warning_add(
                         $warningsUser,
                         user_get_last_ip($warningsUser),
-                        user_session_current('user_id'),
+                        $currentUserId,
                         ip_remote_address(),
                         $warningType,
                         $_POST['warning']['note'],
