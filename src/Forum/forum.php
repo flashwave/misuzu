@@ -304,24 +304,13 @@ define(
             :user_id AS `target_user_id`,
             f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`,
             f.`forum_link`, f.`forum_link_clicks`, f.`forum_archived`, f.`forum_colour`,
+            f.`forum_count_topics`, f.`forum_count_posts`,
             t.`topic_id` AS `recent_topic_id`, p.`post_id` AS `recent_post_id`,
             t.`topic_title` AS `recent_topic_title`, t.`topic_bumped` AS `recent_topic_bumped`,
             p.`post_created` AS `recent_post_created`,
             u.`user_id` AS `recent_post_user_id`,
             u.`username` AS `recent_post_username`,
             COALESCE(u.`user_colour`, r.`role_colour`) AS `recent_post_user_colour`,
-            (
-                SELECT COUNT(`topic_id`)
-                FROM `msz_forum_topics`
-                WHERE `forum_id` = f.`forum_id`
-                %6$s
-            ) AS `forum_topic_count`,
-            (
-                SELECT COUNT(`post_id`)
-                FROM `msz_forum_posts`
-                WHERE `forum_id` = f.`forum_id`
-                %7$s
-            ) AS `forum_post_count`,
             (%1$s) AS `forum_unread`,
             (%4$s) AS `forum_permissions`
         FROM `msz_forum_categories` AS f
@@ -460,4 +449,87 @@ function forum_posting_info(int $userId): array
     ');
     $getPostingInfo->bindValue('user_id', $userId);
     return db_fetch($getPostingInfo);
+}
+
+function forum_count_increase(int $forumId, bool $topic = false): void
+{
+    $increaseCount = db_prepare(sprintf(
+        '
+            UPDATE `msz_forum_categories`
+            SET `forum_count_posts` = `forum_count_posts` + 1
+                %s
+            WHERE `forum_id` = :forum
+        ',
+        $topic ? ',`forum_count_topics` = `forum_count_topics` + 1' : ''
+    ));
+    $increaseCount->bindValue('forum', $forumId);
+    $increaseCount->execute();
+}
+
+function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = true): array
+{
+    static $getChildren = null;
+    static $getCounts = null;
+    static $setCounts = null;
+
+    if (is_null($getChildren)) {
+        $getChildren = db_prepare('
+            SELECT `forum_id`, `forum_parent`
+            FROM `msz_forum_categories`
+            WHERE `forum_parent` = :parent
+        ');
+    }
+
+    if (is_null($getCounts)) {
+        $getCounts = db_prepare('
+            SELECT :forum as `target_forum_id`,
+            (
+                SELECT COUNT(`topic_id`)
+                FROM `msz_forum_topics`
+                WHERE `forum_id` = `target_forum_id`
+                AND `topic_deleted` IS NULL
+            ) AS `count_topics`,
+            (
+                SELECT COUNT(`post_id`)
+                FROM `msz_forum_posts`
+                WHERE `forum_id` = `target_forum_id`
+                AND `post_deleted` IS NULL
+            ) AS `count_posts`
+        ');
+    }
+
+    if ($save && is_null($setCounts)) {
+        $setCounts = db_prepare('
+            UPDATE `msz_forum_categories`
+            SET `forum_count_topics` = :topics,
+                `forum_count_posts` = :posts
+            WHERE `forum_id` = :forum_id
+        ');
+    }
+
+    $getChildren->bindValue('parent', $forumId);
+    $children = db_fetch_all($getChildren);
+
+    $topics = 0;
+    $posts = 0;
+
+    foreach ($children as $child) {
+        $childCount = forum_count_synchronise($child['forum_id'], $save);
+        $topics += $childCount['topics'];
+        $posts += $childCount['posts'];
+    }
+
+    $getCounts->bindValue('forum', $forumId);
+    $counts = db_fetch($getCounts);
+    $topics += $counts['count_topics'];
+    $posts += $counts['count_posts'];
+
+    if ($forumId > 0 && $save) {
+        $setCounts->bindValue('forum_id', $forumId);
+        $setCounts->bindValue('topics', $topics);
+        $setCounts->bindValue('posts', $posts);
+        $setCounts->execute();
+    }
+
+    return compact('topics', 'posts');
 }

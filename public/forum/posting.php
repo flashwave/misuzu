@@ -203,6 +203,7 @@ if (!empty($_POST)) {
                         $postSignature
                     );
                     forum_topic_mark_read(user_session_current('user_id', 0), $topicId, $forum['forum_id']);
+                    forum_count_increase($forum['forum_id'], empty($topic));
                     break;
 
                 case 'edit':

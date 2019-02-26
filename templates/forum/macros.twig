@@ -162,8 +162,8 @@
                 {% endif %}
             {% elseif forum.forum_type != constant('MSZ_FORUM_TYPE_CATEGORY') %}
                 <div class="forum__category__stats">
-                    <div class="forum__category__stat" title="Topics">{{ forum.forum_topic_count|number_format }}</div>
-                    <div class="forum__category__stat" title="Posts">{{ forum.forum_post_count|number_format }}</div>
+                    <div class="forum__category__stat" title="Topics">{{ forum.forum_count_topics|number_format }}</div>
+                    <div class="forum__category__stat" title="Posts">{{ forum.forum_count_posts|number_format }}</div>
                 </div>
             {% endif %}
 

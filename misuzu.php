@@ -90,6 +90,9 @@ if (PHP_SAPI === 'cli') {
     if (realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
         switch ($argv[1] ?? null) {
             case 'cron':
+                $cronFuncs = [
+                    'forum_count_synchronise',
+                ];
                 $cronTasks = [
                     // Ensure main role exists.
                     "
@@ -175,6 +178,10 @@ if (PHP_SAPI === 'cli') {
 
                 foreach ($cronTasks as $cronTask) {
                     db_exec($cronTask);
+                }
+
+                foreach ($cronFuncs as $cronTask) {
+                    call_user_func($cronTask);
                 }
                 break;
 
