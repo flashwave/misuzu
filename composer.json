@@ -31,7 +31,7 @@
     "scripts": {
         "post-install-cmd": [
             "php misuzu.php migrate",
-            "php misuzu.php cron"
+            "php misuzu.php cron low"
         ]
     },
     "config": {

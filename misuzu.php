@@ -90,98 +90,139 @@ if (PHP_SAPI === 'cli') {
     if (realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
         switch ($argv[1] ?? null) {
             case 'cron':
-                $cronFuncs = [
-                    'forum_count_synchronise',
-                ];
+                $runLowFreq = (bool)(!empty($argv[2]) && $argv[2] == 'low');
+
                 $cronTasks = [
-                    // Ensure main role exists.
-                    "
-                        INSERT IGNORE INTO `msz_roles`
-                            (`role_id`, `role_name`, `role_hierarchy`, `role_colour`, `role_description`, `role_created`)
-                        VALUES
-                            (1, 'Member', 1, 1073741824, NULL, NOW())
-                    ",
-
-                    // Ensures all users are in the main role.
-                    "
-                        INSERT INTO `msz_user_roles`
-                            (`user_id`, `role_id`)
-                        SELECT `user_id`, 1 FROM `msz_users` as u
-                        WHERE NOT EXISTS (
-                            SELECT 1
-                            FROM `msz_user_roles` as ur
-                            WHERE `role_id` = 1
-                            AND u.`user_id` = ur.`user_id`
-                        )
-                    ",
-
-                    // Ensures all display_role values are correct with `msz_user_roles`
-                    "
-                        UPDATE `msz_users` as u
-                        SET `display_role` = (
-                             SELECT ur.`role_id`
-                             FROM `msz_user_roles` as ur
-                             LEFT JOIN `msz_roles` as r
-                             ON r.`role_id` = ur.`role_id`
-                             WHERE ur.`user_id` = u.`user_id`
-                             ORDER BY `role_hierarchy` DESC
-                             LIMIT 1
-                        )
-                        WHERE NOT EXISTS (
-                            SELECT 1
-                            FROM `msz_user_roles` as ur
-                            WHERE ur.`role_id` = u.`display_role`
-                            AND `ur`.`user_id` = u.`user_id`
-                        )
-                    ",
-
-                    // Deletes expired sessions
-                    "
-                        DELETE FROM `msz_sessions`
-                        WHERE `session_expires` < NOW()
-                    ",
-
-                    // Remove old password reset records, left for a week for possible review
-                    "
-                        DELETE FROM `msz_users_password_resets`
-                        WHERE `reset_requested` < NOW() - INTERVAL 1 WEEK
-                    ",
-
-                    // Cleans up the login history table
-                    "
-                        DELETE FROM `msz_login_attempts`
-                        WHERE `attempt_created` < NOW() - INTERVAL 6 MONTH
-                    ",
-
-                    // Cleans up the audit log table
-                    "
-                        DELETE FROM `msz_audit_log`
-                        WHERE `log_created` < NOW() - INTERVAL 6 MONTH
-                    ",
-
-                    // Delete ignored forum tracking entries
-                    "
-                        DELETE tt FROM `msz_forum_topics_track` as tt
-                        LEFT JOIN `msz_forum_topics` as t
-                        ON t.`topic_id` = tt.`topic_id`
-                        WHERE t.`topic_bumped` < NOW() - INTERVAL 1 MONTH
-                    ",
-
-                    // Synchronise forum_id
-                    "
-                        UPDATE `msz_forum_posts` AS p
-                        INNER JOIN `msz_forum_topics` AS t
-                        ON t.`topic_id` = p.`topic_id`
-                        SET p.`forum_id` = t.`forum_id`
-                    ",
+                    [
+                        'name' => 'Ensures main role exists.',
+                        'type' => 'sql',
+                        'run' => $runLowFreq,
+                        'command' => "
+                            INSERT IGNORE INTO `msz_roles`
+                                (`role_id`, `role_name`, `role_hierarchy`, `role_colour`, `role_description`, `role_created`)
+                            VALUES
+                                (1, 'Member', 1, 1073741824, NULL, NOW())
+                        ",
+                    ],
+                    [
+                        'name' => 'Ensures all users are in the main role.',
+                        'type' => 'sql',
+                        'run' => $runLowFreq,
+                        'command' => "
+                            INSERT INTO `msz_user_roles`
+                                (`user_id`, `role_id`)
+                            SELECT `user_id`, 1 FROM `msz_users` as u
+                            WHERE NOT EXISTS (
+                                SELECT 1
+                                FROM `msz_user_roles` as ur
+                                WHERE `role_id` = 1
+                                AND u.`user_id` = ur.`user_id`
+                            )
+                        ",
+                    ],
+                    [
+                        'name' => 'Ensures all display_role values are correct with `msz_user_roles`.',
+                        'type' => 'sql',
+                        'run' => $runLowFreq,
+                        'command' => "
+                            UPDATE `msz_users` as u
+                            SET `display_role` = (
+                                 SELECT ur.`role_id`
+                                 FROM `msz_user_roles` as ur
+                                 LEFT JOIN `msz_roles` as r
+                                 ON r.`role_id` = ur.`role_id`
+                                 WHERE ur.`user_id` = u.`user_id`
+                                 ORDER BY `role_hierarchy` DESC
+                                 LIMIT 1
+                            )
+                            WHERE NOT EXISTS (
+                                SELECT 1
+                                FROM `msz_user_roles` as ur
+                                WHERE ur.`role_id` = u.`display_role`
+                                AND `ur`.`user_id` = u.`user_id`
+                            )
+                        ",
+                    ],
+                    [
+                        'name' => 'Remove expired sessions.',
+                        'type' => 'sql',
+                        'run' => true,
+                        'command' => "
+                            DELETE FROM `msz_sessions`
+                            WHERE `session_expires` < NOW()
+                        ",
+                    ],
+                    [
+                        'name' => 'Remove old password reset records.',
+                        'type' => 'sql',
+                        'run' => true,
+                        'command' => "
+                            DELETE FROM `msz_users_password_resets`
+                            WHERE `reset_requested` < NOW() - INTERVAL 1 WEEK
+                        ",
+                    ],
+                    [
+                        'name' => 'Clean up login history.',
+                        'type' => 'sql',
+                        'run' => true,
+                        'command' => "
+                            DELETE FROM `msz_login_attempts`
+                            WHERE `attempt_created` < NOW() - INTERVAL 6 MONTH
+                        ",
+                    ],
+                    [
+                        'name' => 'Clean up audit log.',
+                        'type' => 'sql',
+                        'run' => true,
+                        'command' => "
+                            DELETE FROM `msz_audit_log`
+                            WHERE `log_created` < NOW() - INTERVAL 6 MONTH
+                        ",
+                    ],
+                    [
+                        'name' => 'Remove stale forum tracking entries.',
+                        'type' => 'sql',
+                        'run' => true,
+                        'command' => "
+                            DELETE tt FROM `msz_forum_topics_track` as tt
+                            LEFT JOIN `msz_forum_topics` as t
+                            ON t.`topic_id` = tt.`topic_id`
+                            WHERE t.`topic_bumped` < NOW() - INTERVAL 1 MONTH
+                        ",
+                    ],
+                    [
+                        'name' => 'Synchronise forum_id.',
+                        'type' => 'sql',
+                        'run' => $runLowFreq,
+                        'command' => "
+                            UPDATE `msz_forum_posts` AS p
+                            INNER JOIN `msz_forum_topics` AS t
+                            ON t.`topic_id` = p.`topic_id`
+                            SET p.`forum_id` = t.`forum_id`
+                        ",
+                    ],
+                    [
+                        'name' => 'Recount forum topics and posts.',
+                        'type' => 'func',
+                        'run' => $runLowFreq,
+                        'command' => 'forum_count_synchronise',
+                    ],
                 ];
 
                 foreach ($cronTasks as $cronTask) {
-                    db_exec($cronTask);
-                }
+                    if ($cronTask['run']) {
+                        echo $cronTask['name'] . PHP_EOL;
 
-                foreach ($cronFuncs as $cronTask) {
-                    call_user_func($cronTask);
+                        switch ($cronTask['type']) {
+                            case 'sql':
+                                db_exec($cronTask['command']);
+                                break;
+
+                            case 'func':
+                                call_user_func($cronTask['command']);
+                                break;
+                        }
+                    }
                 }
                 break;
 
