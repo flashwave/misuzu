@@ -81,3 +81,40 @@ function user_relation_info(int $userId, int $subjectId): array
     $getRelationInfo->bindValue('subject_id', $subjectId);
     return db_fetch($getRelationInfo);
 }
+
+function user_relation_users(int $userId, int $type, bool $from): array
+{
+    if ($userId < 1 || $type <= MSZ_USER_RELATION_NONE || !user_relation_is_valid_type($type)) {
+        return [];
+    }
+
+    static $getUsers = [];
+
+    if (empty($getUsers[$from])) {
+        $getUsers[$from] = db_prepare(sprintf(
+            '
+                SELECT `%1$s` AS `user_id`, `relation_created`
+                FROM `msz_user_relations`
+                WHERE `%2$s` = :user_id
+                AND `relation_type` = :type
+            ',
+            $from ? 'subject_id' : 'user_id',
+            $from ? 'user_id' : 'subject_id'
+        ));
+    }
+
+    $getUsers[$from]->bindValue('user_id', $userId);
+    $getUsers[$from]->bindValue('type', $type);
+
+    return db_fetch_all($getUsers[$from]);
+}
+
+function user_relation_users_to(int $userId, int $type): array
+{
+    return user_relation_users($userId, $type, false);
+}
+
+function user_relation_users_from(int $userId, int $type): array
+{
+    return user_relation_users($userId, $type, true);
+}

@@ -165,13 +165,21 @@ function user_exists(int $userId): bool
         return false;
     }
 
+    static $exists = [];
+
+    if (isset($exists[$userId])) {
+        return $exists[$userId];
+    }
+
     $check = db_prepare('
         SELECT COUNT(`user_id`) > 0
         FROM `msz_users`
         WHERE `user_id` = :user_id
     ');
+
     $check->bindValue('user_id', $userId);
-    return $check->execute() ? (bool)$check->fetchColumn() : false;
+
+    return $exists[$userId] = (bool)($check->execute() ? $check->fetchColumn() : false);
 }
 
 function user_id_from_username(string $username): int

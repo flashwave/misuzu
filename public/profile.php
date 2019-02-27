@@ -99,6 +99,38 @@ switch ($mode) {
         echo file_get_contents($userBackground);
         break;
 
+    case 'following':
+        $userId = (int)($_GET['u'] ?? 0);
+
+        if (!user_exists($userId)) {
+            http_response_code(404);
+            echo tpl_render('user.notfound');
+            break;
+        }
+
+        $followingIds = user_relation_users_from($userId, MSZ_USER_RELATION_FOLLOW);
+
+        foreach ($followingIds as $user) {
+            echo "{$user['user_id']}|{$user['relation_created']}<br>";
+        }
+        break;
+
+    case 'followers':
+        $userId = (int)($_GET['u'] ?? 0);
+
+        if (!user_exists($userId)) {
+            http_response_code(404);
+            echo tpl_render('user.notfound');
+            break;
+        }
+
+        $followerIds = user_relation_users_to($userId, MSZ_USER_RELATION_FOLLOW);
+
+        foreach ($followerIds as $user) {
+            echo "{$user['user_id']}|{$user['relation_created']}<br>";
+        }
+        break;
+
     default:
         $userId = user_find_for_profile($_GET['u'] ?? 0);
 
