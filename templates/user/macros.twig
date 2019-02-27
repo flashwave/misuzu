@@ -6,7 +6,7 @@
         <div class="usercard__container">
             <div class="usercard__main">
                 <div class="avatar usercard__avatar"
-                    style="background-image:url('/profile.php?u={{ user.user_id }}&amp;m=avatar')">
+                    style="background-image:url('{{ url('user-avatar', {'user': user.user_id}) }}')">
                 </div>
 
                 <div class="usercard__details">
@@ -173,8 +173,8 @@
 {% macro user_account_log(data, strings) %}
     <div class="settings__account-log" id="account-log-{{ data.log_id }}">
         {% if data.user_id is defined %}
-            <a href="/profile.php?u={{ data.user_id }}" class="settings__account-log__user" style="{{ data.user_colour|html_colour }}">
-                <div class="avatar settings__account-log__user__avatar" style="background-image:url('/profile.php?u={{ data.user_id }}&amp;m=avatar');"></div>
+            <a href="{{ url('user-profile', {'user': data.user_id}) }}" class="settings__account-log__user" style="{{ data.user_colour|html_colour }}">
+                <div class="avatar settings__account-log__user__avatar" style="background-image:url('{{ url('user-avatar', {'user': data.user_id}) }}');"></div>
                 <div class="settings__account-log__user__name">{{ data.username }}</div>
             </a>
         {% endif %}
@@ -239,7 +239,7 @@
                     {% if warning.username is defined or warning.user_ip is defined %}
                         <div class="profile__warning__user">
                             {% if warning.username is defined %}
-                                <div class="avatar profile__warning__user__avatar" style="background-image:url('/profile.php?m=avatar&amp;u={{ warning.user_id }}');"></div>
+                                <div class="avatar profile__warning__user__avatar" style="background-image:url('{{ url('user-avatar', {'user': warning.user_id}) }}');"></div>
                                 <div class="profile__warning__user__username">
                                     {{ warning.username }}
                                 </div>
@@ -254,7 +254,7 @@
                     {% endif %}
 
                     <div class="profile__warning__user">
-                        <div class="avatar profile__warning__user__avatar" style="background-image:url('/profile.php?m=avatar&amp;u={{ warning.issuer_id }}');"></div>
+                        <div class="avatar profile__warning__user__avatar" style="background-image:url('{{ url('user-avatar', {'user': warning.issuer_id}) }}');"></div>
                         <div class="profile__warning__user__username">
                             {{ warning.issuer_username }}
                         </div>

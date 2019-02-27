@@ -74,7 +74,7 @@ function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTML
         if (xhr.readyState !== 4)
             return;
 
-        avatarElement.style.backgroundImage = `url('/profile.php?m=avatar&u=${xhr.responseText}')`;
+        avatarElement.style.backgroundImage = `url('/user-assets.php?m=avatar&u=${xhr.responseText}')`;
     });
     xhr.open('GET', `/auth.php?m=get_user&u=${encodeURI(usernameElement.value)}`);
     xhr.send();
@@ -162,7 +162,7 @@ function loginModal(): boolean {
 
     const authAvatar: HTMLDivElement = titleHeader.appendChild(document.createElement('div'));
     authAvatar.className = 'avatar auth__avatar';
-    authAvatar.style.backgroundImage = "url('/profile.php?u=0&m=avatar')";
+    authAvatar.style.backgroundImage = "url('/user-assets.php?u=0&m=avatar')";
 
     const hiddenMode: HTMLInputElement = container.appendChild(document.createElement('input'));
     hiddenMode.type = 'hidden';

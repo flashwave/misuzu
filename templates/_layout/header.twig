@@ -46,7 +46,7 @@
     ? [
         {
             'title': 'Profile',
-            'url': '/profile.php?u=' ~ current_user.user_id,
+            'url': url('user-profile', {'user': current_user.user_id}),
             'icon': 'fas fa-user fa-fw',
         },
         {
@@ -128,7 +128,7 @@
                     style="background-image:url('{{ url('user-avatar', {'user': current_user.user_id}) }}');{{ current_user.user_colour|html_colour }}"></a>
             {% else %}
                 <a href="{{ url('auth-login') }}" class="avatar header__desktop__user__avatar js-login-button"
-                    style="background-image:url('{{ url('guest-avatar') }}');"></a>
+                    style="background-image:url('{{ url('user-avatar') }}');"></a>
             {% endif %}
         </div>
     </div>
@@ -144,7 +144,7 @@
             </a>
 
             <label class="header__mobile__icon avatar header__mobile__avatar" for="toggle-mobile-header"
-                style="background-image:url('/profile.php?u={{ current_user.user_id|default(0) }}&amp;m=avatar');">
+                style="background-image:url('{{ url('user-avatar', {'user': current_user.user_id|default(0)}) }}');">
             </label>
         </div>
 

@@ -3,8 +3,8 @@
 {% from 'user/macros.twig' import user_profile_warning %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox, input_file, input_file_raw, input_select %}
 
-{% set image = '/profile.php?u=' ~ profile.user_id ~ '&m=avatar' %}
-{% set canonical_url = '/profile.php?u=' ~ profile.user_id %}
+{% set image = url('user-avatar', {'user': profile.user_id}) %}
+{% set canonical_url = url('user-profile', {'user': profile.user_id}) %}
 {% set title = 'Profile of ' ~ profile.username %}
 {% set manage_link = '/manage/users.php?v=view&u=' ~ profile.user_id %}
 
@@ -56,7 +56,7 @@
 
                 <script>
                     function updateAvatarPreview(name, url, preview) {
-                        url = url || "/profile.php?u={{ profile.user_id }}&m=avatar";
+                        url = url || "{{ url('user-avatar', {'user': profile.user_id})|raw }}";
                         preview = preview || document.getElementById('avatar-preview');
                         preview.style.backgroundImage = 'url(\'{0}\')'.replace('{0}', url);
                         preview.title = name;

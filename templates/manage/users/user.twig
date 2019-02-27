@@ -3,7 +3,7 @@
 {% from 'manage/macros.twig' import permissions_table %}
 {% from '_layout/input.twig' import input_csrf, input_text, input_checkbox, input_file, input_select, input_colour %}
 
-{% set site_link = '/profile.php?u=' ~ manage_user.user_id %}
+{% set site_link = url('user-profile', {'user': manage_user.user_id}) %}
 
 {% block manage_content %}
     <div class="manage__user"{% if manage_user is defined %} style="{{ manage_user.user_colour|html_colour('--accent-colour') }}"{% endif %}>

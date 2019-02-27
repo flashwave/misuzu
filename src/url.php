@@ -42,11 +42,9 @@ define('MSZ_URLS', [
 
     'user-profile'                      => ['/profile.php',             ['u' => '<user>']],
     'user-profile-edit'                 => ['/profile.php',             ['u' => '<user>', 'm' => 'edit']],
-    'user-avatar'                       => ['/profile.php',             ['u' => '<user>', 'm' => 'avatar']],
-    'user-background'                   => ['/profile.php',             ['u' => '<user>', 'm' => 'background']],
+    'user-avatar'                       => ['/user-assets.php',         ['u' => '<user>', 'm' => 'avatar']],
+    'user-background'                   => ['/user-assets.php',         ['u' => '<user>', 'm' => 'background']],
     'user-account-standing'             => ['/profile.php',             ['u' => '<user>'], 'account-standing'],
-
-    'guest-avatar'                      => ['/profile.php',             ['m' => 'avatar']],
 
     'user-relation-none'                => ['/relations.php',           ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_NONE]', 'c' => '{user_relation}']],
     'user-relation-follow'              => ['/relations.php',           ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_FOLLOW]', 'c' => '{user_relation}']],

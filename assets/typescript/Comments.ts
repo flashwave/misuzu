@@ -203,7 +203,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     const commentAvatar: HTMLAnchorElement = commentContainer.appendChild(document.createElement('a'));
     commentAvatar.className = 'avatar comment__avatar';
     commentAvatar.href = '/profile.php?u=' + comment.user_id;
-    commentAvatar.style.backgroundImage = `url('/profile.php?m=avatar&u=${comment.user_id}')`;
+    commentAvatar.style.backgroundImage = `url('/user-assets.php?m=avatar&u=${comment.user_id}')`;
 
     const commentContent: HTMLDivElement = commentContainer.appendChild(document.createElement('div'));
     commentContent.className = 'comment__content';
@@ -303,7 +303,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     // reply container
     const replyAvatar: HTMLDivElement = replyContainer.appendChild(document.createElement('div'));
     replyAvatar.className = 'avatar comment__avatar';
-    replyAvatar.style.backgroundImage = `url('/profile.php?m=avatar&u=${comment.user_id}')`;
+    replyAvatar.style.backgroundImage = `url('/user-assets.php?m=avatar&u=${comment.user_id}')`;
 
     const replyContent: HTMLDivElement = replyContainer.appendChild(document.createElement('div'));
     replyContent.className = 'comment__content';

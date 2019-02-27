@@ -15,7 +15,7 @@
 
         <div class="comment__container">
             <div class="avatar comment__avatar"
-                style="background-image:url('/profile.php?m=avatar&amp;u={{ user.user_id }}')">
+                style="background-image:url('{{ url('user-avatar', {'user':user.user_id}) }}')">
             </div>
             <div class="comment__content">
                 <textarea
@@ -50,7 +50,7 @@
         <div class="comment{% if is_deleted %} comment--deleted{% endif %}" id="comment-{{ comment.comment_id }}">
             <div class="comment__container">
                 {% if hide_details %}
-                    <div class="avatar comment__avatar" style="background-image:url('/profile.php?m=avatar')"></div>
+                    <div class="avatar comment__avatar" style="background-image:url('{{ url('user-avatar') }}')"></div>
                 {% else %}
                     <a class="avatar comment__avatar"
                         href="{{ url('user-profile', {'user':comment.user_id}) }}"
