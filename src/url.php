@@ -41,10 +41,13 @@ define('MSZ_URLS', [
     'forum-post-edit'                   => ['/forum/posting.php',       ['p' => '<post>', 'm' => 'edit']],
 
     'user-profile'                      => ['/profile.php',             ['u' => '<user>']],
-    'user-profile-edit'                 => ['/profile.php',             ['u' => '<user>', 'm' => 'edit']],
+    'user-profile-following'            => ['/profile.php',             ['u' => '<user>', 'm' => 'following']],
+    'user-profile-followers'            => ['/profile.php',             ['u' => '<user>', 'm' => 'followers']],
+    'user-profile-edit'                 => ['/profile.php',             ['u' => '<user>', 'edit' => '1']],
+    'user-account-standing'             => ['/profile.php',             ['u' => '<user>'], 'account-standing'],
+
     'user-avatar'                       => ['/user-assets.php',         ['u' => '<user>', 'm' => 'avatar']],
     'user-background'                   => ['/user-assets.php',         ['u' => '<user>', 'm' => 'background']],
-    'user-account-standing'             => ['/profile.php',             ['u' => '<user>'], 'account-standing'],
 
     'user-relation-none'                => ['/relations.php',           ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_NONE]', 'c' => '{user_relation}']],
     'user-relation-follow'              => ['/relations.php',           ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_FOLLOW]', 'c' => '{user_relation}']],

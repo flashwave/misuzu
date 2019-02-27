@@ -5,7 +5,7 @@
 
     <div class="profile__header__details">
         <div class="profile__header__avatar">
-            {% if is_editing and perms.edit_avatar %}
+            {% if profile_is_editing and perms.edit_avatar %}
                 <label class="avatar profile__header__avatar__image profile__header__avatar__image--edit"
                     style="background-image:url('{{ image }}')"
                     id="avatar-preview"
@@ -46,13 +46,13 @@
             </div>
         </div>
 
-        {% if friend_info|length > 0 and (friend_info.subject_relation is not null or friend_info.user_relation is not null) %}
-            <div class="profile__header__details__relation" title="Since {{ friend_info.relation_created|date('r') }}">
-                {% if friend_info.subject_relation and friend_info.user_relation %}
+        {% if profile_relation_info|length > 0 and (profile_relation_info.subject_relation is not null or profile_relation_info.user_relation is not null) %}
+            <div class="profile__header__details__relation" title="Since {{ profile_relation_info.relation_created|date('r') }}">
+                {% if profile_relation_info.subject_relation and profile_relation_info.user_relation %}
                     Mutual Friends
-                {% elseif friend_info.user_relation %}
+                {% elseif profile_relation_info.user_relation %}
                     You Follow
-                {% elseif friend_info.subject_relation %}
+                {% elseif profile_relation_info.subject_relation %}
                     Follows You
                 {% endif %}
             </div>
@@ -61,20 +61,24 @@
 
     <div class="profile__header__options">
         <div class="profile__header__actions">
-            {% if is_editing %}
-                <button class="input__button input__button--save profile__header__action">Save</button>
-                <a href="{{ url('user-profile', {'user': profile.user_id}) }}" class="input__button input__button--destroy profile__header__action">Discard</a>
-                <a href="{{ url('settings-index') }}" class="input__button profile__header__action">Settings</a>
-            {% elseif can_edit %}
-                <a href="{{ url('user-profile-edit', {'user': profile.user_id}) }}" class="input__button profile__header__action">Edit Profile</a>
-            {% endif %}
-
-            {% if current_user is defined and current_user.user_id != profile.user_id and not is_editing %}
-                {% if friend_info.user_relation == constant('MSZ_USER_RELATION_FOLLOW') %}
-                    <a href="{{ url('user-relation-none', {'user': profile.user_id}) }}" class="input__button input__button--destroy profile__header__action js-user-relation-action" data-relation-user="{{ profile.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_NONE') }}">Unfollow</a>
-                {% else %}
-                    <a href="{{ url('user-relation-follow', {'user': profile.user_id}) }}" class="input__button profile__header__action js-user-relation-action" data-relation-user="{{ profile.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_FOLLOW') }}">Follow</a>
+            {% if profile_mode is empty %}
+                {% if profile_is_editing %}
+                    <button class="input__button input__button--save profile__header__action">Save</button>
+                    <a href="{{ url('user-profile', {'user': profile.user_id}) }}" class="input__button input__button--destroy profile__header__action">Discard</a>
+                    <a href="{{ url('settings-index') }}" class="input__button profile__header__action">Settings</a>
+                {% elseif profile_can_edit %}
+                    <a href="{{ url('user-profile-edit', {'user': profile.user_id}) }}" class="input__button profile__header__action">Edit Profile</a>
                 {% endif %}
+
+                {% if current_user is defined and current_user.user_id != profile.user_id and not profile_is_editing %}
+                    {% if profile_relation_info.user_relation == constant('MSZ_USER_RELATION_FOLLOW') %}
+                        <a href="{{ url('user-relation-none', {'user': profile.user_id}) }}" class="input__button input__button--destroy profile__header__action js-user-relation-action" data-relation-user="{{ profile.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_NONE') }}">Unfollow</a>
+                    {% else %}
+                        <a href="{{ url('user-relation-follow', {'user': profile.user_id}) }}" class="input__button profile__header__action js-user-relation-action" data-relation-user="{{ profile.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_FOLLOW') }}">Follow</a>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <a href="{{ url('user-profile', {'user': profile.user_id}) }}" class="input__button profile__header__action">Return</a>
             {% endif %}
         </div>
 
@@ -83,8 +87,13 @@
                 {% for stat in stats %}
                     {% if stat.value|default(false) %}
                         {% set is_date = stat.is_date|default(false) %}
+                        {% set is_url = stat.url is defined %}
 
-                        <div class="profile__header__stat{% if is_date %} profile__header__stat--date" title="{{ stat.value|date('r') }}{% endif %}">
+                        {% if is_url %}
+                            <a class="profile__header__stat profile__header__stat--link" href="{{ stat.url }}">
+                        {% else %}
+                            <div class="profile__header__stat{% if is_date %} profile__header__stat--date" title="{{ stat.value|date('r') }}{% endif %}">
+                        {% endif %}
                             <div class="profile__header__stat__name">
                                 {{ stat.title }}
                             </div>
@@ -98,7 +107,7 @@
                                     {{ stat.value|number_format }}
                                 </div>
                             {% endif %}
-                        </div>
+                        {% if is_url %}</a>{% else %}</div>{% endif %}
                     {% endif %}
                 {% endfor %}
             </div>

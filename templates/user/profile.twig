@@ -22,10 +22,12 @@
     {
         'title': 'Following',
         'value': profile.following_count,
+        'url': url('user-profile-following', {'user': profile.user_id}),
     },
     {
         'title': 'Followers',
         'value': profile.followers_count,
+        'url': url('user-profile-followers', {'user': profile.user_id}),
     },
     {
         'title': 'Topics',
@@ -46,9 +48,8 @@
 ] %}
 
 {% block content %}
-    {% if is_editing %}
-        <form class="profile" method="post" action="" enctype="multipart/form-data">
-            {{ input_hidden('user', profile.user_id) }}
+    {% if profile_is_editing %}
+        <form class="profile" method="post" action="{{ url('user-profile', {'user': profile.user_id}) }}" enctype="multipart/form-data">
             {{ input_csrf('profile') }}
 
             {% if perms.edit_avatar %}
@@ -73,7 +74,7 @@
 
             {% include 'user/_layout/header.twig' %}
 
-            {% if is_editing %}
+            {% if profile_is_editing %}
                 <div class="container profile__container profile__guidelines">
                     <ul class="profile__guidelines__section">
                         <li class="profile__guidelines__line profile__guidelines__line--header">General</li>
@@ -113,9 +114,9 @@
             {% endif %}
 
             <div class="profile__content">
-                {% set show_profile_fields = is_editing ? perms.edit_profile : profile_fields|default([])|length > 0 %}
-                {% set show_background_settings = is_editing and perms.edit_background %}
-                {% set show_birthdate = is_editing and perms.edit_birthdate %}
+                {% set show_profile_fields = profile_is_editing ? perms.edit_profile : profile_fields|default([])|length > 0 %}
+                {% set show_background_settings = profile_is_editing and perms.edit_background %}
+                {% set show_birthdate = profile_is_editing and perms.edit_birthdate %}
                 {% set show_sidebar = current_user is not defined or show_profile_fields or show_background_settings %}
 
                 {% if show_sidebar %}
@@ -154,7 +155,7 @@
                                                 {{ data.name }}
                                             </div>
 
-                                            {% if is_editing %}
+                                            {% if profile_is_editing %}
                                                 {{ input_text('profile[' ~ name ~ ']', 'profile__accounts__input', profile['user_' ~ name], data.type|default('text')) }}
                                             {% else %}
                                                 <div class="profile__accounts__value"
@@ -210,48 +211,48 @@
                 {% endif %}
 
                 <div class="profile__content__main">
-                    {% if (is_editing and perms.edit_about) or profile.user_about_content|length > 0 %}
+                    {% if (profile_is_editing and perms.edit_about) or profile.user_about_content|length > 0 %}
                         <div class="container profile__container profile__about" id="about">
                             {{ container_title('About ' ~ profile.username) }}
 
-                            {% if is_editing %}
+                            {% if profile_is_editing %}
                                 <div class="profile__signature__editor">
                                     {{ input_select('about[parser]', constant('MSZ_PARSERS_NAMES'), profile.user_about_parser, '', '', false, 'profile__about__select') }}
                                     <textarea name="about[text]" class="input__textarea profile__about__text" id="about-textarea">{{ profile.user_about_content|escape }}</textarea>
                                 </div>
                             {% else %}
-                                <div class="profile__about__content{% if is_editing %} profile__about__content--edit{% elseif profile.user_about_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
+                                <div class="profile__about__content{% if profile_is_editing %} profile__about__content--edit{% elseif profile.user_about_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
                                     {{ profile.user_about_content|escape|parse_text(profile.user_about_parser)|raw }}
                                 </div>
                             {% endif %}
                         </div>
                     {% endif %}
 
-                    {% if (is_editing and perms.edit_signature) or profile.user_signature_content|length > 0 %}
+                    {% if (profile_is_editing and perms.edit_signature) or profile.user_signature_content|length > 0 %}
                         <div class="container profile__container profile__signature" id="signature">
                             {{ container_title('Signature') }}
 
-                            {% if is_editing %}
+                            {% if profile_is_editing %}
                                 <div class="profile__signature__editor">
                                     {{ input_select('signature[parser]', constant('MSZ_PARSERS_NAMES'), profile.user_signature_parser, '', '', false, 'profile__signature__select') }}
                                     <textarea name="signature[text]" class="input__textarea profile__signature__text" id="signature-textarea">{{ profile.user_signature_content|escape }}</textarea>
                                 </div>
                             {% else %}
-                                <div class="profile__signature__content{% if is_editing %} profile__signature__content--edit{% elseif profile.user_signature_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
+                                <div class="profile__signature__content{% if profile_is_editing %} profile__signature__content--edit{% elseif profile.user_signature_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
                                 {{ profile.user_signature_content|escape|parse_text(profile.user_signature_parser)|raw }}
                                 </div>
                             {% endif %}
                         </div>
                     {% endif %}
 
-                    {% if warnings|length > 0 %}
+                    {% if profile_warnings|length > 0 %}
                         <div class="container profile__container profile__warning__container" id="account-standing">
-                            {{ container_title('Account Standing', false, can_manage_warnings ? '/manage/users.php?v=warnings&u=' ~ profile.user_id : '') }}
+                            {{ container_title('Account Standing', false, profile_warnings_can_manage ? '/manage/users.php?v=warnings&u=' ~ profile.user_id : '') }}
 
                             <div class="profile__warning">
                                 <div class="profile__warning__background"></div>
 
-                                {% if can_manage_warnings %}
+                                {% if profile_warnings_can_manage %}
                                     <div class="profile__warning__tools">
                                         <div class="profile__warning__user">
                                             <div class="profile__warning__user__ip">
@@ -289,14 +290,14 @@
                                 </div>
                             </div>
 
-                            {% for warning in warnings %}
-                                {{ user_profile_warning(warning, can_view_private_note, can_manage_warnings, can_manage_warnings ? csrf_token('warning-delete[%d]'|format(warning.warning_id)) : '') }}
+                            {% for warning in profile_warnings %}
+                                {{ user_profile_warning(warning, prpfile_warnings_view_private, profile_warnings_can_manage, profile_warnings_can_manage ? csrf_token('warning-delete[%d]'|format(warning.warning_id)) : '') }}
                             {% endfor %}
                         </div>
                     {% endif %}
                 </div>
             </div>
-    {% if is_editing %}
+    {% if profile_is_editing %}
         </form>
         <script>
             let profilePreviousBackground = null;
