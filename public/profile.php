@@ -334,7 +334,7 @@ switch ($mode) {
 
         tpl_vars([
             'profile_warnings' => $warnings,
-            'prpfile_warnings_view_private' => $viewingOwnProfile,
+            'profile_warnings_view_private' => $viewingOwnProfile,
             'profile_warnings_can_manage' => $canManageWarnings,
             'profile_fields' => user_session_active() ? user_profile_fields_display($profile, !$isEditing) : [],
         ]);
