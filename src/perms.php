@@ -53,6 +53,12 @@ function perms_get_user(string $prefix, int $user): int
         return 0;
     }
 
+    static $perms = [];
+
+    if (isset($perms[$user][$prefix])) {
+        return $perms[$user][$prefix];
+    }
+
     $allowKey = perms_get_key($prefix, MSZ_PERMS_ALLOW);
     $denyKey = perms_get_key($prefix, MSZ_PERMS_DENY);
 
@@ -72,7 +78,7 @@ function perms_get_user(string $prefix, int $user): int
         )
     ");
     $getPerms->bindValue('user_id', $user);
-    return $getPerms->execute() ? (int)$getPerms->fetchColumn(1) : 0;
+    return $perms[$user][$prefix] = (int)($getPerms->execute() ? $getPerms->fetchColumn(1) : 0);
 }
 
 function perms_delete_user(int $user): bool
@@ -96,6 +102,12 @@ function perms_get_role(string $prefix, int $role): int
         return 0;
     }
 
+    static $perms = [];
+
+    if (isset($perms[$role][$prefix])) {
+        return $perms[$role][$prefix];
+    }
+
     $allowKey = perms_get_key($prefix, MSZ_PERMS_ALLOW);
     $denyKey = perms_get_key($prefix, MSZ_PERMS_DENY);
 
@@ -106,7 +118,7 @@ function perms_get_role(string $prefix, int $role): int
         AND `user_id` IS NULL
     ");
     $getPerms->bindValue('role_id', $role);
-    return $getPerms->execute() ? (int)$getPerms->fetchColumn() : 0;
+    return $perms[$role][$prefix] = (int)($getPerms->execute() ? $getPerms->fetchColumn() : 0);
 }
 
 function perms_get_user_raw(int $user): array
@@ -188,4 +200,9 @@ function perms_get_role_raw(int $role): array
 function perms_check(int $perms, int $perm): bool
 {
     return ($perms & $perm) > 0;
+}
+
+function perms_check_user(string $prefix, int $userId, int $perm): bool
+{
+    return perms_check(perms_get_user($prefix, $userId), $perm);
 }
