@@ -32,6 +32,18 @@ function db_connection(?string $name = null): ?PDO
 
 function db_prepare(string $statement, ?string $connection = null, $options = []): PDOStatement
 {
+    static $stmts = [];
+    $encodedOptions = serialize($options);
+
+    if (!empty($stmts[$connection][$statement][$encodedOptions])) {
+        return $stmts[$connection][$statement][$encodedOptions];
+    }
+
+    return $stmts[$connection][$statement][$encodedOptions] = db_prepare_direct($statement, $connection, $options);
+}
+
+function db_prepare_direct(string $statement, ?string $connection = null, $options = []): PDOStatement
+{
     return db_connection($connection)->prepare($statement, $options);
 }
 
