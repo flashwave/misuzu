@@ -1,51 +1,10 @@
-{% extends 'user/master.twig' %}
+{% extends 'profile/master.twig' %}
 {% from 'macros.twig' import container_title %}
 {% from 'user/macros.twig' import user_profile_warning %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox, input_file, input_file_raw, input_select %}
 
-{% set image = url('user-avatar', {'user': profile.user_id}) %}
 {% set canonical_url = url('user-profile', {'user': profile.user_id}) %}
-{% set title = 'Profile of ' ~ profile.username %}
-{% set manage_link = '/manage/users.php?v=view&u=' ~ profile.user_id %}
-
-{% set stats = [
-    {
-        'title': 'Joined',
-        'is_date': true,
-        'value': profile.user_created,
-    },
-    {
-        'title': 'Last seen',
-        'is_date': true,
-        'value': profile.user_active,
-    },
-    {
-        'title': 'Following',
-        'value': profile.following_count,
-        'url': url('user-profile-following', {'user': profile.user_id}),
-    },
-    {
-        'title': 'Followers',
-        'value': profile.followers_count,
-        'url': url('user-profile-followers', {'user': profile.user_id}),
-    },
-    {
-        'title': 'Topics',
-        'value': profile.forum_topic_count,
-    },
-    {
-        'title': 'Posts',
-        'value': profile.forum_post_count,
-    },
-    {
-        'title': 'Comments',
-        'value': profile.comments_count,
-    },
-    {
-        'title': 'Changes',
-        'value': profile.changelog_count,
-    },
-] %}
+{% set title = profile.username %}
 
 {% block content %}
     {% if profile_is_editing %}
@@ -72,7 +31,7 @@
         <div class="profile">
     {% endif %}
 
-            {% include 'user/_layout/header.twig' %}
+            {% include 'profile/_layout/header.twig' %}
 
             {% if profile_is_editing %}
                 <div class="container profile__container profile__guidelines">

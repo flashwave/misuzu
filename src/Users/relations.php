@@ -7,6 +7,8 @@ define('MSZ_USER_RELATION_TYPES', [
     MSZ_USER_RELATION_FOLLOW,
 ]);
 
+define('MSZ_USER_RELATION_FOLLOW_PER_PAGE', 21);
+
 function user_relation_is_valid_type(int $type): bool
 {
     return in_array($type, MSZ_USER_RELATION_TYPES, true);
@@ -82,18 +84,19 @@ function user_relation_info(int $userId, int $subjectId): array
     return db_fetch($getRelationInfo);
 }
 
-function user_relation_users(int $userId, int $type, bool $from): array
+function user_relation_count(int $userId, int $type, bool $from): int
 {
     if ($userId < 1 || $type <= MSZ_USER_RELATION_NONE || !user_relation_is_valid_type($type)) {
-        return [];
+        return 0;
     }
 
-    static $getUsers = [];
+    static $getCount = [];
+    $fetchCount = $getCount[$from] ?? null;
 
-    if (empty($getUsers[$from])) {
-        $getUsers[$from] = db_prepare(sprintf(
+    if (empty($fetchCount)) {
+        $getCount[$from] = $fetchCount = db_prepare(sprintf(
             '
-                SELECT `%1$s` AS `user_id`, `relation_created`
+                SELECT COUNT(`%1$s`)
                 FROM `msz_user_relations`
                 WHERE `%2$s` = :user_id
                 AND `relation_type` = :type
@@ -103,18 +106,71 @@ function user_relation_users(int $userId, int $type, bool $from): array
         ));
     }
 
-    $getUsers[$from]->bindValue('user_id', $userId);
-    $getUsers[$from]->bindValue('type', $type);
+    $fetchCount->bindValue('user_id', $userId);
+    $fetchCount->bindValue('type', $type);
 
-    return db_fetch_all($getUsers[$from]);
+    return (int)($fetchCount->execute() ? $fetchCount->fetchColumn() : 0);
 }
 
-function user_relation_users_to(int $userId, int $type): array
+function user_relation_count_to(int $userId, int $type): int
 {
-    return user_relation_users($userId, $type, false);
+    return user_relation_count($userId, $type, false);
 }
 
-function user_relation_users_from(int $userId, int $type): array
+function user_relation_count_from(int $userId, int $type): int
 {
-    return user_relation_users($userId, $type, true);
+    return user_relation_count($userId, $type, true);
+}
+
+function user_relation_users(int $userId, int $type, bool $from, int $take = 0, int $offset = 0): array
+{
+    if ($userId < 1 || $type <= MSZ_USER_RELATION_NONE || !user_relation_is_valid_type($type)) {
+        return [];
+    }
+
+    $fetchAll = $take < 1;
+    $key = sprintf('%s,%s', $from ? 'from' : 'to', $fetchAll ? 'all' : 'page');
+
+    static $prepared = [];
+    $fetchUsers = $prepared[$key] ?? null;
+
+    if (empty($fetchUsers)) {
+        $prepared[$key] = $fetchUsers = db_prepare(sprintf(
+            '
+                SELECT
+                    ur.`%1$s` AS `user_id`, ur.`relation_created`,
+                    u.`username`
+                FROM `msz_user_relations` AS ur
+                LEFT JOIN `msz_users` AS u
+                ON u.`user_id` = ur.`%1$s`
+                WHERE ur.`%2$s` = :user_id
+                AND ur.`relation_type` = :type
+                ORDER BY ur.`relation_created` DESC
+                %3$s
+            ',
+            $from ? 'subject_id' : 'user_id',
+            $from ? 'user_id' : 'subject_id',
+            !$fetchAll ? 'LIMIT :offset, :take' : ''
+        ));
+    }
+
+    $fetchUsers->bindValue('user_id', $userId);
+    $fetchUsers->bindValue('type', $type);
+
+    if (!$fetchAll) {
+        $fetchUsers->bindValue('take', $take);
+        $fetchUsers->bindValue('offset', $offset);
+    }
+
+    return db_fetch_all($fetchUsers);
+}
+
+function user_relation_users_to(int $userId, int $type, int $take = 0, int $offset = 0): array
+{
+    return user_relation_users($userId, $type, false, $take, $offset);
+}
+
+function user_relation_users_from(int $userId, int $type, int $take = 0, int $offset = 0): array
+{
+    return user_relation_users($userId, $type, true, $take, $offset);
 }

@@ -275,23 +275,49 @@ switch ($mode) {
         return;
 
     case 'following':
-        $followingIds = user_relation_users_from($userId, MSZ_USER_RELATION_FOLLOW);
+        $template = 'profile.relations';
+        $followingCount = user_relation_count_from($userId, MSZ_USER_RELATION_FOLLOW);
+        $followingPagination = pagination_create($followingCount, MSZ_USER_RELATION_FOLLOW_PER_PAGE);
+        $followingOffset = pagination_offset($followingPagination, pagination_param());
 
-        foreach ($followingIds as $user) {
-            echo "{$user['user_id']}|{$user['relation_created']}<br>";
+        if (!pagination_is_valid_offset($followingOffset)) {
+            echo render_error(404);
+            return;
         }
+
+        $following = user_relation_users_from($userId, MSZ_USER_RELATION_FOLLOW, $followingPagination['range'], $followingOffset);
+
+        tpl_vars([
+            'title' => 'flash / following',
+            'canonical_url' => url('user-profile-following', ['user' => $profile['user_id']]),
+            'profile_users' => $following,
+            'profile_relation_pagination' => $followingPagination,
+        ]);
         break;
 
     case 'followers':
-        $followerIds = user_relation_users_to($userId, MSZ_USER_RELATION_FOLLOW);
+        $template = 'profile.relations';
+        $followerCount = user_relation_count_to($userId, MSZ_USER_RELATION_FOLLOW);
+        $followerPagination = pagination_create($followerCount, MSZ_USER_RELATION_FOLLOW_PER_PAGE);
+        $followerOffset = pagination_offset($followerPagination, pagination_param());
 
-        foreach ($followerIds as $user) {
-            echo "{$user['user_id']}|{$user['relation_created']}<br>";
+        if (!pagination_is_valid_offset($followerOffset)) {
+            echo render_error(404);
+            return;
         }
+
+        $followers = user_relation_users_to($userId, MSZ_USER_RELATION_FOLLOW, $followerPagination['range'], $followerOffset);
+
+        tpl_vars([
+            'title' => 'flash / followers',
+            'canonical_url' => url('user-profile-followers', ['user' => $profile['user_id']]),
+            'profile_users' => $followers,
+            'profile_relation_pagination' => $followerPagination,
+            ]);
         break;
 
     case '':
-        $template = 'user.profile';
+        $template = 'profile.index';
         $warnings = $viewingAsGuest
             ? []
             : user_warning_fetch(

@@ -1,0 +1,42 @@
+{% extends 'master.twig' %}
+
+{% set image = url('user-avatar', {'user': profile.user_id}) %}
+{% set manage_link = '/manage/users.php?v=view&u=' ~ profile.user_id %}
+{% set stats = [
+    {
+        'title': 'Joined',
+        'is_date': true,
+        'value': profile.user_created,
+    },
+    {
+        'title': 'Last seen',
+        'is_date': true,
+        'value': profile.user_active,
+    },
+    {
+        'title': 'Following',
+        'value': profile.following_count,
+        'url': url('user-profile-following', {'user': profile.user_id}),
+    },
+    {
+        'title': 'Followers',
+        'value': profile.followers_count,
+        'url': url('user-profile-followers', {'user': profile.user_id}),
+    },
+    {
+        'title': 'Topics',
+        'value': profile.forum_topic_count,
+    },
+    {
+        'title': 'Posts',
+        'value': profile.forum_post_count,
+    },
+    {
+        'title': 'Comments',
+        'value': profile.comments_count,
+    },
+    {
+        'title': 'Changes',
+        'value': profile.changelog_count,
+    },
+] %}

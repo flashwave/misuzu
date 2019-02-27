@@ -1,0 +1,23 @@
+{% extends 'profile/master.twig' %}
+{% from 'macros.twig' import pagination %}
+{% from 'user/macros.twig' import user_card %}
+
+{% block content %}
+    <div class="profile">
+        {% include 'profile/_layout/header.twig' %}
+
+        <div class="profile__relations">
+            {% for user in profile_users %}
+                <div class="profile__relations__user">
+                    {{ user_card(user) }}
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if profile_relation_pagination.pages > 1 %}
+            <div class="container profile__pagination">
+                {{ pagination(profile_relation_pagination, canonical_url) }}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
