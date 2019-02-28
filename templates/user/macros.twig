@@ -1,38 +1,119 @@
-{% macro user_card(user, profile_url, rank_url, actions) %}
-    <div class="usercard" {% if user.user_colour is defined %}style="{{ user.user_colour|html_colour('--accent-colour') }}"{% endif %}>
-        <a href="{{ profile_url|default('/profile.php?u=%d')|format(user.user_id) }}"
-            class="usercard__background" title="{{ user.username }}"></a>
+{% macro user_card(user) %}
+    <div class="usercard"{% if user.user_colour is defined %} style="{{ user.user_colour|html_colour('--accent-colour') }}"{% endif %}>
+        <div class="usercard__background"></div>
 
-        <div class="usercard__container">
-            <div class="usercard__main">
-                <div class="avatar usercard__avatar"
+        <div class="usercard__header">
+            <a class="usercard__header__link" href="{{ url('user-profile', {'user': user.user_id}) }}"></a>
+
+            <div class="usercard__header__container">
+                <div class="avatar usercard__header__avatar"
                     style="background-image:url('{{ url('user-avatar', {'user': user.user_id}) }}')">
                 </div>
 
-                <div class="usercard__details">
-                    <div class="usercard__name">
+                <div class="usercard__header__details">
+                    <div class="usercard__header__username"{% if user.user_colour is defined %} style="{{ user.user_colour|html_colour }}"{% endif %}>
                         {{ user.username }}
                     </div>
 
-                    {# put something interesting here, the very first version had a lot of stats
-                    <div class="usercard__info">
-                    </div>#}
+                    {% if user.user_title is defined and user.user_title is not empty %}
+                        <div class="usercard__header__title">
+                            {{ user.user_title }}
+                        </div>
+                    {% endif %}
+
+                    {% if user.user_country|default('XX') != 'XX' %}
+                        <div class="usercard__header__country">
+                            <div class="flag flag--{{ user.user_country|lower }}"></div>
+                            <div class="usercard__header__country__name">
+                                {{ user.user_country|country_name }}
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
-            {% if actions is iterable and actions|length > 0 %}
-                <div class="usercard__actions">
-                    <div class="usercard__actions__background"></div>
-                    {% for action in actions %}
-                        {% if action.display is not defined or action.display %}
-                            <a class="usercard__action" title="{{ action.title }}"
-                                {% if action.href is defined %}href="{{ action.href }}"{% endif %}
-                                {% if action.onclick is defined %}onclick="{{ action.onclick }}"{% endif %}>
-                                <i class="{{ action.icon }} fa-fw"></i>
-                            </a>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            {% endif %}
+        </div>
+
+        <div class="usercard__container">
+            <div class="usercard__stats">
+                {% if user.user_count_following|default(0) > 0 %}
+                    <a class="usercard__stat" href="{{ url('user-profile-following', {'user': user.user_id}) }}">
+                        <div class="usercard__stat__name">
+                            Following
+                        </div>
+                        <div class="usercard__stat__value">
+                            {{ user.user_count_following|number_format }}
+                        </div>
+                    </a>
+                {% endif %}
+
+                {% if user.user_count_followers|default(0) > 0 %}
+                    <a class="usercard__stat" href="{{ url('user-profile-followers', {'user': user.user_id}) }}">
+                        <div class="usercard__stat__name">
+                            Followers
+                        </div>
+                        <div class="usercard__stat__value">
+                            {{ user.user_count_followers|number_format }}
+                        </div>
+                    </a>
+                {% endif %}
+
+                {% if user.user_count_topics|default(0) > 0 %}
+                    <a class="usercard__stat">
+                        <div class="usercard__stat__name">
+                            Topics
+                        </div>
+                        <div class="usercard__stat__value">
+                            {{ user.user_count_topics|number_format }}
+                        </div>
+                    </a>
+                {% endif %}
+
+                {% if user.user_count_posts|default(0) > 0 %}
+                    <a class="usercard__stat">
+                        <div class="usercard__stat__name">
+                            Posts
+                        </div>
+                        <div class="usercard__stat__value">
+                            {{ user.user_count_posts|number_format }}
+                        </div>
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="usercard__dates">
+                {% if user.user_created is defined %}
+                    <div class="usercard__date" title="{{ user.user_created|date('r') }}">
+                        Joined <time datetime="{{ user.user_created|date('c') }}">{{ user.user_created|time_diff }}</time>
+                    </div>
+                {% endif %}
+
+                {% if user.user_active is defined %}
+                    {% if user.user_active is null %}
+                        <div class="usercard__date">
+                            Never logged in
+                        </div>
+                    {% else %}
+                        <div class="usercard__date" title="{{ user.user_active|date('r') }}">
+                            Last seen <time datetime="{{ user.user_active|date('c') }}">{{ user.user_active|time_diff }}</time>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <div class="usercard__actions">
+                <a class="usercard__action" href="{{ url('user-profile', {'user': user.user_id}) }}" title="View Profile">
+                    <i class="fas fa-user"></i>
+                </a>
+
+                {% if user.current_user_id|default(0) != 0 and user.current_user_id != user.user_id %}
+                    {% set is_following = user.user_is_following|default(false) %}
+
+                    <a class="usercard__action js-user-relation-action" href="{{ url('user-relation-follow', {'user': user.user_id}) }}" title="{{ is_following ? 'Unfollow' : 'Follow' }}"
+                         data-relation-user="{{ user.user_id }}" data-relation-type="{{ constant(is_following ? 'MSZ_USER_RELATION_NONE' : 'MSZ_USER_RELATION_FOLLOW') }}">
+                        <i class="fas fa-user-{{ is_following ? 'minus' : 'plus' }}"></i>
+                    </a>
+                {% endif %}
+            </div>
         </div>
     </div>
 {% endmacro %}

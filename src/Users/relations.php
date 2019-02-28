@@ -7,7 +7,7 @@ define('MSZ_USER_RELATION_TYPES', [
     MSZ_USER_RELATION_FOLLOW,
 ]);
 
-define('MSZ_USER_RELATION_FOLLOW_PER_PAGE', 21);
+define('MSZ_USER_RELATION_FOLLOW_PER_PAGE', 15);
 
 function user_relation_is_valid_type(int $type): bool
 {
@@ -122,7 +122,7 @@ function user_relation_count_from(int $userId, int $type): int
     return user_relation_count($userId, $type, true);
 }
 
-function user_relation_users(int $userId, int $type, bool $from, int $take = 0, int $offset = 0): array
+function user_relation_users(int $userId, int $type, bool $from, int $take = 0, int $offset = 0, int $requestingUserId = 0): array
 {
     if ($userId < 1 || $type <= MSZ_USER_RELATION_NONE || !user_relation_is_valid_type($type)) {
         return [];
@@ -138,11 +138,52 @@ function user_relation_users(int $userId, int $type, bool $from, int $take = 0, 
         $prepared[$key] = $fetchUsers = db_prepare(sprintf(
             '
                 SELECT
-                    ur.`%1$s` AS `user_id`, ur.`relation_created`,
-                    u.`username`
+                    :current_user_id AS `current_user_id`,
+                    ur.`%1$s` AS `user_id`, u.`username`, u.`user_country`,
+                    u.`user_created`, u.`user_active`, r.`role_id`,
+                    COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
+                    COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
+                    (
+                        SELECT COUNT(`topic_id`)
+                        FROM `msz_forum_topics`
+                        WHERE `user_id` = ur.`%1$s`
+                        AND `topic_deleted` IS NULL
+                    ) AS `user_count_topics`,
+                    (
+                        SELECT COUNT(`post_Id`)
+                        FROM `msz_forum_posts`
+                        WHERE `user_id` = ur.`%1$s`
+                        AND `post_deleted` IS NULL
+                    ) AS `user_count_posts`,
+                    (
+                        SELECT COUNT(`subject_id`)
+                        FROM `msz_user_relations`
+                        WHERE `user_id` = ur.`%1$s`
+                        AND `relation_type` = ur.`relation_type`
+                    ) AS `user_count_following`,
+                    (
+                        SELECT COUNT(`user_id`)
+                        FROM `msz_user_relations`
+                        WHERE `subject_id` = ur.`%1$s`
+                        AND `relation_type` = ur.`relation_type`
+                    ) AS `user_count_followers`,
+                    (
+                        SELECT `relation_type` = ur.`relation_type`
+                        FROM `msz_user_relations`
+                        WHERE `user_id` = u.`user_id`
+                        AND `subject_id` = `current_user_id`
+                    ) AS `user_is_following`,
+                    (
+                        SELECT `relation_type` = ur.`relation_type`
+                        FROM `msz_user_relations`
+                        WHERE `user_id` = `current_user_id`
+                        AND `subject_id` = u.`user_id`
+                    ) AS `user_is_follower`
                 FROM `msz_user_relations` AS ur
                 LEFT JOIN `msz_users` AS u
                 ON u.`user_id` = ur.`%1$s`
+                LEFT JOIN `msz_roles` as r
+                ON r.`role_id` = u.`display_role`
                 WHERE ur.`%2$s` = :user_id
                 AND ur.`relation_type` = :type
                 ORDER BY ur.`relation_created` DESC
@@ -155,6 +196,7 @@ function user_relation_users(int $userId, int $type, bool $from, int $take = 0, 
     }
 
     $fetchUsers->bindValue('user_id', $userId);
+    $fetchUsers->bindValue('current_user_id', $requestingUserId);
     $fetchUsers->bindValue('type', $type);
 
     if (!$fetchAll) {
@@ -165,12 +207,12 @@ function user_relation_users(int $userId, int $type, bool $from, int $take = 0, 
     return db_fetch_all($fetchUsers);
 }
 
-function user_relation_users_to(int $userId, int $type, int $take = 0, int $offset = 0): array
+function user_relation_users_to(int $userId, int $type, int $take = 0, int $offset = 0, int $requestingUserId = 0): array
 {
-    return user_relation_users($userId, $type, false, $take, $offset);
+    return user_relation_users($userId, $type, false, $take, $offset, $requestingUserId);
 }
 
-function user_relation_users_from(int $userId, int $type, int $take = 0, int $offset = 0): array
+function user_relation_users_from(int $userId, int $type, int $take = 0, int $offset = 0, int $requestingUserId = 0): array
 {
-    return user_relation_users($userId, $type, true, $take, $offset);
+    return user_relation_users($userId, $type, true, $take, $offset, $requestingUserId);
 }

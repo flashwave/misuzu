@@ -13,29 +13,49 @@ $orderDirs = [
 $defaultOrder = 'last-online';
 $orderFields = [
     'id' => [
-        'column' => 'user_id',
+        'column' => 'u.`user_id`',
         'default-dir' => 'asc',
         'title' => 'User ID',
     ],
     'name' => [
-        'column' => 'username',
+        'column' => 'u.`username`',
         'default-dir' => 'asc',
         'title' => 'Username',
     ],
     'country' => [
-        'column' => 'user_country',
+        'column' => 'u.`user_country`',
         'default-dir' => 'asc',
         'title' => 'Country',
     ],
     'registered' => [
-        'column' => 'user_created',
+        'column' => 'u.`user_created`',
         'default-dir' => 'desc',
         'title' => 'Registration Date',
     ],
     'last-online' => [
-        'column' => 'user_active',
+        'column' => 'u.`user_active`',
         'default-dir' => 'desc',
         'title' => 'Last Online',
+    ],
+    'forum-topics' => [
+        'column' => '`user_count_topics`',
+        'default-dir' => 'desc',
+        'title' => 'Forum Topics',
+    ],
+    'forum-posts' => [
+        'column' => '`user_count_posts`',
+        'default-dir' => 'desc',
+        'title' => 'Forum Posts',
+    ],
+    'following' => [
+        'column' => '`user_count_following`',
+        'default-dir' => 'desc',
+        'title' => 'Following',
+    ],
+    'followers' => [
+        'column' => '`user_count_followers`',
+        'default-dir' => 'desc',
+        'title' => 'Followers',
     ],
 ];
 
@@ -65,7 +85,7 @@ if (empty($role)) {
     return;
 }
 
-$usersPagination = pagination_create($role['role_user_count'], 30);
+$usersPagination = pagination_create($role['role_user_count'], 15);
 $usersOffset = pagination_offset($usersPagination, pagination_param());
 
 if (!pagination_is_valid_offset($usersOffset)) {
@@ -78,9 +98,47 @@ $roles = user_role_all();
 $getUsers = db_prepare(sprintf(
     '
         SELECT
-            u.`user_id`, u.`username`, u.`user_country`, r.`role_id`,
+            :current_user_id AS `current_user_id`,
+            u.`user_id`, u.`username`, u.`user_country`,
+            u.`user_created`, u.`user_active`, r.`role_id`,
             COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
-            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
+            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
+            (
+                SELECT COUNT(`topic_id`)
+                FROM `msz_forum_topics`
+                WHERE `user_id` = u.`user_id`
+                AND `topic_deleted` IS NULL
+            ) AS `user_count_topics`,
+            (
+                SELECT COUNT(`post_Id`)
+                FROM `msz_forum_posts`
+                WHERE `user_id` = u.`user_id`
+                AND `post_deleted` IS NULL
+            ) AS `user_count_posts`,
+            (
+                SELECT COUNT(`subject_id`)
+                FROM `msz_user_relations`
+                WHERE `user_id` = u.`user_id`
+                AND `relation_type` = %4$d
+            ) AS `user_count_following`,
+            (
+                SELECT COUNT(`user_id`)
+                FROM `msz_user_relations`
+                WHERE `subject_id` = u.`user_id`
+                AND `relation_type` = %4$d
+            ) AS `user_count_followers`,
+            (
+                SELECT `relation_type` = %4$d
+                FROM `msz_user_relations`
+                WHERE `user_id` = u.`user_id`
+                AND `subject_id` = `current_user_id`
+            ) AS `user_is_following`,
+            (
+                SELECT `relation_type` = %4$d
+                FROM `msz_user_relations`
+                WHERE `user_id` = `current_user_id`
+                AND `subject_id` = u.`user_id`
+            ) AS `user_is_follower`
         FROM `msz_users` as u
         LEFT JOIN `msz_roles` as r
         ON r.`role_id` = u.`display_role`
@@ -88,16 +146,18 @@ $getUsers = db_prepare(sprintf(
         ON ur.`user_id` = u.`user_id`
         WHERE ur.`role_id` = :role_id
         %1$s
-        ORDER BY u.`%2$s` %3$s
+        ORDER BY %2$s %3$s
         LIMIT :offset, :take
     ',
     $canManageUsers ? '' : 'AND u.`user_deleted` IS NULL',
     $orderFields[$orderBy]['column'],
-    $orderDir
+    $orderDir,
+    MSZ_USER_RELATION_FOLLOW
 ));
 $getUsers->bindValue('role_id', $role['role_id']);
 $getUsers->bindValue('offset', $usersOffset);
 $getUsers->bindValue('take', $usersPagination['range']);
+$getUsers->bindValue('current_user_id', user_session_current('user_id', 0));
 $users = db_fetch_all($getUsers);
 
 echo tpl_render('user.listing', [

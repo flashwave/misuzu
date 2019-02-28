@@ -1,15 +1,17 @@
 .userlist {
-    padding: 5px;
-
-    &__listing {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin: 5px;
-    }
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 
     &__item {
         margin: 2px;
+        width: 300px;
+        display: flex;
+    }
+
+    &__container {
+        padding: 5px;
+        margin: 2px 0;
     }
 
     &__navigation {
@@ -17,6 +19,10 @@
         flex-direction: row;
         justify-content: space-between;
         align-items: stretch;
+
+        @media (max-width: @site-mobile-width) {
+            flex-direction: column;
+        }
     }
 
     &__pagination {
@@ -29,6 +35,7 @@
         @media (max-width: @site-mobile-width) {
             max-width: 100%;
             flex-grow: 0;
+            margin-top: 5px;
         }
     }
 
@@ -36,9 +43,23 @@
         flex: 0 0 auto;
         display: flex;
         align-items: stretch;
+
+        @media (max-width: @site-mobile-width) {
+            flex-direction: column;
+        }
     }
 
     &__select {
         margin: 0 1px;
+        background: inherit;
+        box-shadow: initial;
+        border-width: 0;
+        border-radius: 0;
+
+        @media (max-width: @site-mobile-width) {
+            &:not(:first-child) {
+                margin-top: 5px;
+            }
+        }
     }
 }

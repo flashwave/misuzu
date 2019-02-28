@@ -285,7 +285,7 @@ switch ($mode) {
             return;
         }
 
-        $following = user_relation_users_from($userId, MSZ_USER_RELATION_FOLLOW, $followingPagination['range'], $followingOffset);
+        $following = user_relation_users_from($userId, MSZ_USER_RELATION_FOLLOW, $followingPagination['range'], $followingOffset, $currentUserId);
 
         tpl_vars([
             'title' => 'flash / following',
@@ -306,7 +306,7 @@ switch ($mode) {
             return;
         }
 
-        $followers = user_relation_users_to($userId, MSZ_USER_RELATION_FOLLOW, $followerPagination['range'], $followerOffset);
+        $followers = user_relation_users_to($userId, MSZ_USER_RELATION_FOLLOW, $followerPagination['range'], $followerOffset, $currentUserId);
 
         tpl_vars([
             'title' => 'flash / followers',

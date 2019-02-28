@@ -35,13 +35,21 @@ function userRelationSetEventHandler(ev: Event): void {
         userId: number = parseInt(target.dataset.relationUser),
         relationType: UserRelationType = parseInt(target.dataset.relationType),
         isButton: boolean = target.classList.contains('input__button'),
-        buttonBusy: string = 'input__button--busy';
+        icon: HTMLElement = target.querySelector('[class^="fa"]'),
+        buttonBusy: string = 'input__button--busy',
+        iconAdd: string = 'fas fa-user-plus',
+        iconRemove: string = 'fas fa-user-minus',
+        iconBusy: string = 'fas fa-spinner fa-pulse';
 
     if (isButton) {
         if (target.classList.contains(buttonBusy))
             return;
 
         target.classList.add(buttonBusy);
+    }
+
+    if (icon) {
+        icon.className = iconBusy;
     }
 
     userRelationSet(
@@ -59,6 +67,11 @@ function userRelationSetEventHandler(ev: Event): void {
                         target.textContent = 'Follow';
                     }
 
+                    if (icon) {
+                        icon.className = iconAdd;
+                        target.title = 'Follow';
+                    }
+
                     target.dataset.relationType = UserRelationType.Follow.toString();
                     break;
 
@@ -68,6 +81,11 @@ function userRelationSetEventHandler(ev: Event): void {
                             target.classList.add('input__button--destroy');
 
                         target.textContent = 'Unfollow';
+                    }
+
+                    if (icon) {
+                        icon.className = iconRemove;
+                        target.title = 'Unfollow';
                     }
 
                     target.dataset.relationType = UserRelationType.None.toString();

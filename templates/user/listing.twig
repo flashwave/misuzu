@@ -37,41 +37,26 @@
 
 {% block content %}
     {% from _self import member_nav %}
+    {% set member_nav = member_nav(
+        roles, role.role_id,
+        order_fields, order_field,
+        order_directions, order_direction,
+        users_pagination, url_role, url_sort, url_direction
+    ) %}
 
-    <div class="container" style="{{ role.role_colour|html_colour('--accent-colour') }}">
-        {{ container_title('<i class="fas fa-users fa-fw"></i> ' ~ title) }}
+    <div class="container userlist__container" style="{{ role.role_colour|html_colour('--accent-colour') }}">
+        {{ member_nav }}
+    </div>
 
-        {% set member_nav = member_nav(
-            roles, role.role_id,
-            order_fields, order_field,
-            order_directions, order_direction,
-            users_pagination, url_role, url_sort, url_direction
-        ) %}
-
-        <div class="userlist">
-            {{ member_nav }}
-
-            <div class="userlist__listing">
-                {% for user in users %}
-                    <div class="userlist__item">
-                            {#
-                                'href': '/relations.php?u=%d&m=%s&c=%s'|format(user.user_id, constant('MSZ_USER_RELATION_FOLLOW'), csrf_token('user_relation')),
-                                'title': 'Follow',
-                                'icon': 'fas fa-user-plus'
-                            ,#}
-                        {{ user_card(user, null, null, [
-                            {
-                                'href': '/manage/users.php?v=view&u=%d'|format(user.user_id),
-                                'title': 'Manage',
-                                'icon': 'fas fa-user-edit',
-                                'display': can_manage_users
-                            },
-                        ]) }}
-                    </div>
-                {% endfor %}
+    <div class="userlist">
+        {% for user in users %}
+            <div class="userlist__item">
+                {{ user_card(user) }}
             </div>
+        {% endfor %}
+    </div>
 
-            {{ member_nav }}
-        </div>
+    <div class="container userlist__container" style="{{ role.role_colour|html_colour('--accent-colour') }}">
+        {{ member_nav }}
     </div>
 {% endblock %}
