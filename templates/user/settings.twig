@@ -48,66 +48,53 @@
                     <p>Here you can change your e-mail address and/or your password, please make sure your e-mail is accurate and your password is strong in order to protect your account. For convenience your current e-mail address is displayed. You are required to verify yourself by entering your current password to change either value.</p>
                 </div>
 
-                {% if disable_account_options %}
-                    <div class="settings__disabled">
-                        <div class="settings__disabled__notice">
-                            E-mail and password changing is only available on the main site for stability reasons.
-                        </div>
-                        <div class="settings__disabled__options">
-                            <a class="input__button" href="https://flashii.net/settings.php">
-                                <i class="fas fa-external-link-square-alt fa-fw"></i>&nbsp;Change E-mail or Password on Flashii
-                            </a>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="settings__account">
-                        <div class="settings__account__section">
-                            <label class="settings__account__input">
-                                <div class="settings__account__title">
-                                    New e-mail address
-                                </div>
-                                {{ input_text('email[new]', 'settings__account__input', '', 'email', current_email) }}
-                            </label>
-
-                            <label class="settings__account__input">
-                                <div class="settings__account__title">
-                                    Confirm new e-mail address
-                                </div>
-                                {{ input_text('email[confirm]', 'settings__account__input', '', 'email') }}
-                            </label>
-                        </div>
-
-                        <div class="settings__account__section">
-                            <label class="settings__account__input">
-                                <div class="settings__account__title">
-                                    New password
-                                </div>
-                                {{ input_text('password[new]', 'settings__account__input', '', 'password') }}
-                            </label>
-
-                            <label class="settings__account__input">
-                                <div class="settings__account__title">
-                                    Confirm new password
-                                </div>
-                                {{ input_text('password[confirm]', 'settings__account__input', '', 'password') }}
-                            </label>
-                        </div>
-
-                        <div class="settings__account__section settings__account__section--confirm">
-                            <label class="settings__account__input">
-                                <div class="settings__account__title">
-                                    Current password
-                                </div>
-                                {{ input_text('current_password', 'settings__account__input', '', 'password') }}
-                            </label>
-
-                            <div class="settings__account__buttons">
-                                <button class="input__button settings__account__button">Update</button>
-                                <button class="input__button settings__account__button" type="reset">Reset</button>
+                <div class="settings__account">
+                    <div class="settings__account__section">
+                        <label class="settings__account__input">
+                            <div class="settings__account__title">
+                                New e-mail address
                             </div>
+                            {{ input_text('email[new]', 'settings__account__input', '', 'email', current_email) }}
+                        </label>
+
+                        <label class="settings__account__input">
+                            <div class="settings__account__title">
+                                Confirm new e-mail address
+                            </div>
+                            {{ input_text('email[confirm]', 'settings__account__input', '', 'email') }}
+                        </label>
+                    </div>
+
+                    <div class="settings__account__section">
+                        <label class="settings__account__input">
+                            <div class="settings__account__title">
+                                New password
+                            </div>
+                            {{ input_text('password[new]', 'settings__account__input', '', 'password') }}
+                        </label>
+
+                        <label class="settings__account__input">
+                            <div class="settings__account__title">
+                                Confirm new password
+                            </div>
+                            {{ input_text('password[confirm]', 'settings__account__input', '', 'password') }}
+                        </label>
+                    </div>
+
+                    <div class="settings__account__section settings__account__section--confirm">
+                        <label class="settings__account__input">
+                            <div class="settings__account__title">
+                                Current password
+                            </div>
+                            {{ input_text('current_password', 'settings__account__input', '', 'password') }}
+                        </label>
+
+                        <div class="settings__account__buttons">
+                            <button class="input__button settings__account__button">Update</button>
+                            <button class="input__button settings__account__button" type="reset">Reset</button>
                         </div>
                     </div>
-                {% endif %}
+                </div>
             </form>
 
             {% if not is_restricted %}

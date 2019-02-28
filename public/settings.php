@@ -8,11 +8,6 @@ if (!user_session_active()) {
 
 $errors = [];
 
-$disableAccountOptions = !MSZ_DEBUG && (
-    boolval(config_get_default(false, 'Private', 'enabled'))
-    && boolval(config_get_default(false, 'Private', 'disable_account_settings'))
-);
-
 $currentEmail = user_email_get(user_session_current('user_id'));
 $isRestricted = user_warning_check_restriction(user_session_current('user_id'));
 
@@ -74,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if (!$disableAccountOptions && !empty($_POST['current_password'])) {
+        if (!empty($_POST['current_password'])) {
             if (!user_password_verify_db(user_session_current('user_id'), $_POST['current_password'] ?? '')) {
                 $errors[] = 'Your password was incorrect.';
             } else {
@@ -177,7 +172,6 @@ $userRoles = user_role_all_user(user_session_current('user_id'));
 
 echo tpl_render('user.settings', [
     'errors' => $errors,
-    'disable_account_options' => $disableAccountOptions,
     'current_email' => $currentEmail,
     'sessions' => $sessions,
     'logins' => $logins,
