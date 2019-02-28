@@ -121,7 +121,7 @@ function userRelationSet(
         else if (!message && onSuccess)
             onSuccess(json);
     });
-    xhr.open('GET', `/relations.php?u=${userId}&m=${relationType}`);
+    xhr.open('GET', urlFormat('user-relation-create', [{name: 'user', value: userId}, {name: 'type', value: relationType.toString()}]));
     xhr.setRequestHeader('X-Misuzu-XHR', 'user_relation');
     xhr.setRequestHeader('X-Misuzu-CSRF', getCSRFToken('user_relation'));
     xhr.send();

@@ -7,6 +7,7 @@
 /// <reference path="FormUtilities.ts" />
 /// <reference path="UserRelations.ts" />
 /// <reference path="Forum/Posting.ts" />
+/// <reference path="UrlRegistry.ts" />
 
 declare const timeago: any;
 declare const hljs: any;
@@ -15,10 +16,13 @@ let loginFormAvatarTimeout: number = 0;
 
 // Initialisation process.
 window.addEventListener('load', () => {
+    console.log("%c     __  ____\n   /  |/  (_)______  ______  __  __\n  / /|_/ / / ___/ / / /_  / / / / /\n / /  / / (__  ) /_/ / / /_/ /_/ /\n/_/  /_/_/____/\\__,_/ /___/\\__,_/\nhttps://github.com/flashwave/misuzu", 'color: #8559a5');
+
     timeago().render(document.querySelectorAll('time'));
     hljs.initHighlighting();
 
     initCSRF();
+    urlRegistryInit();
     userInit();
     userRelationsInit();
 
@@ -74,9 +78,9 @@ function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTML
         if (xhr.readyState !== 4)
             return;
 
-        avatarElement.style.backgroundImage = `url('/user-assets.php?m=avatar&u=${xhr.responseText}')`;
+        avatarElement.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [{name: 'user', value: xhr.responseText}]));
     });
-    xhr.open('GET', `/auth.php?m=get_user&u=${encodeURI(usernameElement.value)}`);
+    xhr.open('GET', urlFormat('auth-resolve-user', [{name: 'username', value: encodeURI(usernameElement.value)}]));
     xhr.send();
 }
 
@@ -150,7 +154,7 @@ function loginModal(): boolean {
     const container: HTMLFormElement = element.appendChild(document.createElement('form'));
     container.className = 'container messagebox__container auth js-login-form';
     container.method = 'post';
-    container.action = '/auth.php';
+    container.action = urlFormat('auth-login');
 
     const titleElement = container.appendChild(document.createElement('div')),
         titleBackground = titleElement.appendChild(document.createElement('div')),
@@ -162,7 +166,7 @@ function loginModal(): boolean {
 
     const authAvatar: HTMLDivElement = titleHeader.appendChild(document.createElement('div'));
     authAvatar.className = 'avatar auth__avatar';
-    authAvatar.style.backgroundImage = "url('/user-assets.php?u=0&m=avatar')";
+    authAvatar.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar'));
 
     const hiddenMode: HTMLInputElement = container.appendChild(document.createElement('input'));
     hiddenMode.type = 'hidden';

@@ -73,7 +73,8 @@ function getCSRF(realm: string): CSRFToken {
 }
 
 function getCSRFToken(realm: string): string {
-    return getCSRF(realm).token || '';
+    const token: CSRFToken = getCSRF(realm);
+    return token ? token.token : '';
 }
 
 function setCSRF(realm: string, token: string): void {

@@ -17,6 +17,7 @@ define('MSZ_URLS', [
     'auth-forgot'                       => ['/auth.php',                ['m' => 'forgot']],
     'auth-reset'                        => ['/auth.php',                ['m' => 'reset', 'u' => '<user>']],
     'auth-logout'                       => ['/auth.php',                ['m' => 'logout', 's' => '{logout}']],
+    'auth-resolve-user'                 => ['/auth.php',                ['m' => 'get_user', 'u' => '<username>']],
 
     'changelog-index'                   => ['/changelog.php'],
     'changelog-change'                  => ['/changelog.php',           ['c' => '<change>']],
@@ -61,6 +62,7 @@ define('MSZ_URLS', [
     'user-avatar'                       => ['/user-assets.php',         ['u' => '<user>', 'm' => 'avatar']],
     'user-background'                   => ['/user-assets.php',         ['u' => '<user>', 'm' => 'background']],
 
+    'user-relation-create'              => ['/relations.php',           ['u' => '<user>', 'm' => '<type>', 'c' => '{user_relation}']],
     'user-relation-none'                => ['/relations.php',           ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_NONE]', 'c' => '{user_relation}']],
     'user-relation-follow'              => ['/relations.php',           ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_FOLLOW]', 'c' => '{user_relation}']],
 
@@ -105,6 +107,11 @@ function url(string $name, array $variables = []): string
     }
 
     $info = MSZ_URLS[$name];
+
+    if (!is_string($info[0] ?? null)) {
+        return '';
+    }
+
     $splitUrl = explode('/', $info[0]);
 
     for ($i = 0; $i < count($splitUrl); $i++) {
@@ -112,10 +119,6 @@ function url(string $name, array $variables = []): string
     }
 
     $url = implode('/', $splitUrl);
-
-    if (!is_string($url)) {
-        return '';
-    }
 
     if (!empty($info[1]) && is_array($info[1])) {
         $url .= '?';

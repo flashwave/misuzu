@@ -76,7 +76,7 @@ function commentDelete(commentId: number, onSuccess: (info: CommentDeletionInfo)
         else if (!message && onSuccess)
             onSuccess(json);
     });
-    xhr.open('GET', `/comments.php?m=delete&c=${commentId}&csrf=${getCSRFToken('comments')}`);
+    xhr.open('GET', urlFormat('comments-delete', [{name:'comment',value:commentId}]));
     xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
     xhr.send();
 }
@@ -122,7 +122,7 @@ function commentPost(formData: FormData, onSuccess: (comment: CommentPostInfo) =
             onSuccess(json);
     });
 
-    xhr.open('POST', '/comments.php?m=create');
+    xhr.open('POST', urlFormat('comment-create'));
     xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
     xhr.send(formData);
 }
@@ -202,8 +202,8 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     // container
     const commentAvatar: HTMLAnchorElement = commentContainer.appendChild(document.createElement('a'));
     commentAvatar.className = 'avatar comment__avatar';
-    commentAvatar.href = '/profile.php?u=' + comment.user_id;
-    commentAvatar.style.backgroundImage = `url('/user-assets.php?m=avatar&u=${comment.user_id}')`;
+    commentAvatar.href = urlFormat('user-profile', [{name:'user',value:comment.user_id}]);
+    commentAvatar.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [{name:'user',value:comment.user_id}]));
 
     const commentContent: HTMLDivElement = commentContainer.appendChild(document.createElement('div'));
     commentContent.className = 'comment__content';
@@ -303,7 +303,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     // reply container
     const replyAvatar: HTMLDivElement = replyContainer.appendChild(document.createElement('div'));
     replyAvatar.className = 'avatar comment__avatar';
-    replyAvatar.style.backgroundImage = `url('/user-assets.php?m=avatar&u=${comment.user_id}')`;
+    replyAvatar.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [{name:'user',value:comment.user_id}]));
 
     const replyContent: HTMLDivElement = replyContainer.appendChild(document.createElement('div'));
     replyContent.className = 'comment__content';
@@ -424,7 +424,7 @@ function commentVote(
         else if (!message && onSuccess)
             onSuccess(json);
     };
-    xhr.open('GET', `/comments.php?m=vote&c=${commentId}&v=${vote}&csrf=${getCSRFToken('comments')}`);
+    xhr.open('GET', urlFormat('comment-vote', [{name: 'comment', value: commentId}, {name: 'vote', value: vote}]));
     xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
     xhr.send();
 }
@@ -500,7 +500,7 @@ function commentPin(
         else if (!message && onSuccess)
             onSuccess(json);
     };
-    xhr.open('GET', `/comments.php?m=${mode}&c=${commentId}&csrf=${getCSRFToken('comments')}`);
+    xhr.open('GET', urlFormat(`comment-${mode}`, [{name: 'comment', value: commentId}]));
     xhr.setRequestHeader('X-Misuzu-XHR', 'comments');
     xhr.send();
 }
