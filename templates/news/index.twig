@@ -3,8 +3,8 @@
 {% from 'news/macros.twig' import news_preview %}
 
 {% set title = 'News' %}
-{% set canonical_url = url_construct('/news.php', {
-    'p': news_pagination.page > 2 ? news_pagination.page : 0,
+{% set canonical_url = url('news-index', {
+    'page': news_pagination.page > 2 ? news_pagination.page : 0,
 }) %}
 {% set manage_link = '/manage/news.php?v=index' %}
 

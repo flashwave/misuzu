@@ -3,7 +3,7 @@
 {% from '_layout/comments.twig' import comments_section %}
 
 {% set title = 'Changelog » Change #' ~ change.change_id %}
-{% set canonical_url = '/changelog.php?c=' ~ change.change_id %}
+{% set canonical_url = url('changelog-change', {'change': change.change_id}) %}
 {% set manage_link = '/manage/changelog.php?v=change&c=' ~ change.change_id %}
 {% set description = change.change_log %}
 
@@ -33,7 +33,7 @@
 
                         <div class="changelog__change__user__details">
                             <a class="changelog__change__username" href="{{ url('user-profile', {'user': change.user_id}) }}">{{ change.username }}</a>
-                            <a class="changelog__change__userrole" href="{{ url('members-role', {'user': change.user_role}) }}">{{ change.user_title }}</a>
+                            <a class="changelog__change__userrole" href="{{ url('user-list', {'role': change.user_role}) }}">{{ change.user_title }}</a>
                         </div>
                     </div>
                 {% endif %}

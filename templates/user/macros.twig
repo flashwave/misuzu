@@ -131,7 +131,7 @@
                     {{ browser.browser }} on {{ browser.platform }}
                 </div>
 
-                <form class="settings__session__actions" method="post" action="/settings.php">
+                <form class="settings__session__actions" method="post" action="{{ url('settings-index') }}">
                     {{ input_csrf('settings') }}
                     {{ input_hidden('session[]', session.session_id) }}
 

@@ -7,11 +7,10 @@ require_once '../misuzu.php';
 $userId = (int)($_GET['u'] ?? 0);
 $userExists = user_exists($userId);
 
-$fromProfile = parse_url($_SERVER['HTTP_REFERER'] ?? '', PHP_URL_PATH) === '/profile.php';
 $canViewImages = !$userExists
     || !user_warning_check_expiration($userId, MSZ_WARN_BAN)
     || (
-        parse_url($_SERVER['HTTP_REFERER'] ?? '', PHP_URL_PATH) === '/profile.php'
+        parse_url($_SERVER['HTTP_REFERER'] ?? '', PHP_URL_PATH) === url('user-profile')
         && perms_check_user(MSZ_PERMS_USER, user_session_current('user_id', 0), MSZ_PERM_USER_MANAGE_USERS)
     );
 

@@ -70,7 +70,7 @@
 
     {% set is_locked = info.forum_archived != 0 %}
     {% set can_topic = not is_locked and perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
-    {% set pag = pagination(pagination_info, '/forum/forum.php', null, {'f': info.forum_id}) %}
+    {% set pag = pagination(pagination_info, url('forum-category'), null, {'f': info.forum_id}) %}
 
     {% if can_topic or pag|trim|length > 0 %}
         <div class="container forum__actions">
@@ -90,7 +90,7 @@
 {% macro forum_topic_tools(info, pagination_info, can_reply) %}
     {% from 'macros.twig' import pagination %}
 
-    {% set pag = pagination(pagination_info, '/forum/topic.php', null, {'t': info.topic_id}, 'page') %}
+    {% set pag = pagination(pagination_info, url('forum-topic'), null, {'t': info.topic_id}, 'page') %}
 
     {% if can_reply or pag|trim|length > 0 %}
         <div class="container forum__actions">

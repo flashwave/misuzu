@@ -5,11 +5,11 @@
 {% set url_role = role.role_id != 1 ? role.role_id : 0 %}
 {% set url_sort = order_field == order_default ? '' : order_field %}
 {% set url_direction = order_fields[order_field]['default-dir'] == order_direction ? '' : order_direction %}
-{% set canonical_url = url_construct('/members.php', {
-    'r': url_role,
-    'ss': url_sort,
-    'sd': url_direction,
-    'p': users_pagination.page > 2 ? users_pagination.page : 0,
+{% set canonical_url = url('user-list', {
+    'role': url_role,
+    'sort': url_sort,
+    'direction': url_direction,
+    'page': users_pagination.page > 2 ? users_pagination.page : 0,
 }) %}
 {% set title = role.role_id == 1 ? 'Members' : 'Role » ' ~ role.role_name  %}
 {% set manage_link = '/manage/users.php?v=listing' %}
@@ -30,7 +30,7 @@
         </form>
 
         <div class="userlist__pagination">
-            {{ pagination(users_pagination, '/members.php', null, {'r': url_role, 'ss': url_sort, 'sd': url_direction}) }}
+            {{ pagination(users_pagination, url('user-list'), null, {'r': url_role, 'ss': url_sort, 'sd': url_direction}) }}
         </div>
     </div>
 {% endmacro %}

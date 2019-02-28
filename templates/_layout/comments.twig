@@ -4,7 +4,7 @@
     {% from '_layout/input.twig' import input_hidden, input_csrf, input_checkbox %}
 
     <form class="comment comment--input{% if reply_mode %} comment--reply{% endif %}"
-        method="post" action="/comments.php?m=create"
+        method="post" action="{{ url('comment-create') }}"
         id="comment-{{ reply_mode ? 'reply-' ~ reply_to.comment_id : 'create-' ~ category.category_id }}">
         {{ input_hidden('comment[category]', category.category_id) }}
         {{ input_csrf('comments') }}

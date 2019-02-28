@@ -132,7 +132,7 @@
                                         {{ role.role_description }}
                                     </div>
 
-                                    <form class="settings__role__options" method="post" action="/settings.php">
+                                    <form class="settings__role__options" method="post" action="{{ url('settings-index') }}">
                                         {{ input_csrf('settings') }}
                                         {{ input_hidden('role[id]', role.role_id) }}
 
@@ -158,7 +158,7 @@
 
             <div class="container settings__container" id="sessions">
                 {{ container_title('<i class="fas fa-key fa-fw"></i> Sessions') }}
-                {% set spagination = pagination(sessions.pagination, '/settings.php', null, {
+                {% set spagination = pagination(sessions.pagination, url('settings-index'), null, {
                     'logins_page': logins.pagination.page > 1 ? logins.pagination.page : 0,
                     'logs_page': logs.pagination.page > 1 ? logs.pagination.page : 0,
                 }, 'sessions_page', 'sessions') %}
@@ -195,7 +195,7 @@
 
             <div class="container settings__container" id="login-attempts">
                 {{ container_title('<i class="fas fa-user-lock fa-fw"></i> Login Attempts') }}
-                {% set lhpagination = pagination(logins.pagination, '/settings.php', null, {
+                {% set lhpagination = pagination(logins.pagination, url('settings-index'), null, {
                     'sessions_page': sessions.pagination.page > 1 ? sessions.pagination.page : 0,
                     'logs_page': logs.pagination.page > 1 ? logs.pagination.page : 0,
                 }, 'logins_page', 'login-attempts') %}
@@ -221,7 +221,7 @@
 
             <div class="container settings__container" id="account-log">
                 {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Account Log') }}
-                {% set alpagination = pagination(logs.pagination, '/settings.php', null, {
+                {% set alpagination = pagination(logs.pagination, url('settings-index'), null, {
                     'sessions_page': sessions.pagination.page > 1 ? sessions.pagination.page : 0,
                     'logins_page': logins.pagination.page > 1 ? logins.pagination.page : 0,
                 }, 'logs_page', 'account-log') %}

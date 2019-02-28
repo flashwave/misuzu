@@ -4,9 +4,9 @@
 
 {% set title = category.category_name ~ ' :: News' %}
 {% set manage_link = url_construct('/manage/news.php', {'v':'category','c':category.category_id}) %}
-{% set canonical_url = url_construct('/news.php', {
-    'c': category.category_id,
-    'p': news_pagination.page > 2 ? news_pagination.page : 0,
+{% set canonical_url = url('news-category', {
+    'category': category.category_id,
+    'page': news_pagination.page > 2 ? news_pagination.page : 0,
 }) %}
 
 {% block content %}

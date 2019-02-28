@@ -7,19 +7,19 @@
         'menu': [
             {
                 'title': 'Members',
-                'url': '/members.php',
+                'url': url('members-index'),
             },
             {
                 'title': 'Changelog',
-                'url': '/changelog.php',
+                'url': url('changelog-index'),
             },
             {
                 'title': 'Contact',
-                'url': '/info.php/contact',
+                'url': url('info', {'title': 'contact'}),
             },
             {
                 'title': 'Rules',
-                'url': '/info.php/rules',
+                'url': url('info', {'title': 'rules'}),
             },
             {
                 'title': 'Twitter',
@@ -29,11 +29,11 @@
     },
     {
         'title': 'News',
-        'url': '/news.php',
+        'url': url('news-index'),
     },
     {
         'title': 'Forum',
-        'url': '/forum',
+        'url': url('forum-index'),
     },
     {
         'title': 'Chat',
@@ -51,12 +51,12 @@
         },
         {
             'title': 'Settings',
-            'url': '/settings.php',
+            'url': url('settings-index'),
             'icon': 'fas fa-cog fa-fw',
         },
         {
             'title': 'Return to Site',
-            'url': site_link|default('/'),
+            'url': site_link|default(url('index')),
             'icon': 'fas fa-door-open fa-fw',
             'display': has_manage_access and manage_menu is defined
         },
@@ -68,19 +68,19 @@
         },
         {
             'title': 'Log out',
-            'url': '/auth.php?m=logout&s=' ~ csrf_token('logout'),
+            'url': url('auth-logout'),
             'icon': 'fas fa-sign-out-alt fa-fw',
         },
     ]
     : [
         {
             'title': 'Register',
-            'url': '/auth.php?m=register',
+            'url': url('auth-register'),
             'icon': 'fas fa-user-plus fa-fw',
         },
         {
             'title': 'Log in',
-            'url': '/auth.php?m=login',
+            'url': url('auth-login'),
             'icon': 'fas fa-sign-in-alt fa-fw',
             'class': 'js-login-button',
         },

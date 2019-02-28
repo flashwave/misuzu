@@ -4,7 +4,7 @@
 
     {% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 
-    <form class="container auth js-login-form" method="post" action="/auth.php">
+    <form class="container auth js-login-form" method="post" action="{{ url('auth-login') }}">
         {{ input_hidden('auth[mode]', 'login') }}
         {{ input_csrf('login') }}
 

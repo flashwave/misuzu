@@ -3,7 +3,7 @@
     {% set is_manage = is_manage ? true : false %}
     {% set is_small = is_small ? true : false %}
     {% set last_date = '' %}
-    {% set date_url = date_url|default('/changelog.php?d=%s') %}
+    {% set date_url = date_url|default(url('changelog-date', {'date': '%s'})) %}
 
     {% from _self import changelog_entry %}
 
@@ -30,9 +30,9 @@
 {% macro changelog_entry(change, is_manage, change_url, tag_url, user_url, is_small) %}
     {% set is_manage = is_manage ? true : false %}
     {% set is_small = is_small ? true : false %}
-    {% set change_url = change_url|default('/changelog.php?c=%d') %}
-    {% set tag_url = tag_url|default('/changelog.php?t=%d') %}
-    {% set user_url = user_url|default('/profile.php?u=%d') %}
+    {% set change_url = change_url|default(url('changelog-date', {'change': '%d'})) %}
+    {% set tag_url = tag_url|default(url('changelog-tag', {'tag': '%d'})) %}
+    {% set user_url = user_url|default(url('user-profile', {'user': '%d'})) %}
     {% set has_text = change.change_has_text|default(false)
         or (change.change_text is defined and change.change_text|length > 0)
     %}

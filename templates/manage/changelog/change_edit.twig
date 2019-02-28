@@ -3,7 +3,7 @@
 {% from '_layout/input.twig' import input_csrf, input_text, input_select %}
 
 {% if edit_change is defined %}
-    {% set site_link = '/changelog.php?c=' ~ edit_change.change_id %}
+    {% set site_link = url('changelog-change', {'change': edit_change.change_id}) %}
 {% endif %}
 
 {% block manage_content %}

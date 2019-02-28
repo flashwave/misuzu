@@ -2,16 +2,16 @@
 {% from 'forum/macros.twig' import forum_category_listing, forum_topic_listing, forum_category_buttons, forum_header, forum_category_tools %}
 
 {% set title = forum_info.forum_name %}
-{% set canonical_url = url_construct('/forum/forum.php', {
-    'f': forum_info.forum_id,
-    'p': forum_pagination.page|default(0) > 1 ? forum_pagination.page : 0,
+{% set canonical_url = url('forum-category', {
+    'forum': forum_info.forum_id,
+    'page': forum_pagination.page|default(0) > 1 ? forum_pagination.page : 0,
 }) %}
 
 {% block content %}
     {{ forum_header(forum_info.forum_name, forum_breadcrumbs, true, canonical_url, [
         {
             'html': '<i class="far fa-check-circle"></i> Mark as Read',
-            'url': url_construct('/forum/index.php', {'m': 'mark', 'f': forum_info.forum_id, 'c': csrf_token('forum_mark')}),
+            'url': url('forum-mark-single', {'forum': forum_info.forum_id}),
             'display': current_user is defined,
         }
     ]) }}
