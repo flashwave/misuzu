@@ -46,7 +46,7 @@
             <div class="forum__post__info">
                 <div class="forum__post__info__background"></div>
                 <div class="forum__post__info__content">
-                    <span class="avatar forum__post__avatar" style="background-image:url('/profile.php?u={{ posting_post.poster_id|default(current_user.user_id) }}&amp;m=avatar');"></span>
+                    <span class="avatar forum__post__avatar" style="background-image:url('{{ url('user-avatar', {'user': posting_post.poster_id|default(current_user.user_id)}) }}');"></span>
 
                     <span class="forum__post__username">{{ posting_post.poster_name|default(current_user.username) }}</span>
 
