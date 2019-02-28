@@ -170,14 +170,14 @@ function user_relation_users(int $userId, int $type, bool $from, int $take = 0, 
                     (
                         SELECT `relation_type` = ur.`relation_type`
                         FROM `msz_user_relations`
-                        WHERE `user_id` = u.`user_id`
-                        AND `subject_id` = `current_user_id`
+                        WHERE `user_id` = `current_user_id`
+                        AND `subject_id` = u.`user_id`
                     ) AS `user_is_following`,
                     (
                         SELECT `relation_type` = ur.`relation_type`
                         FROM `msz_user_relations`
-                        WHERE `user_id` = `current_user_id`
-                        AND `subject_id` = u.`user_id`
+                        WHERE `user_id` = u.`user_id`
+                        AND `subject_id` = `current_user_id`
                     ) AS `user_is_follower`
                 FROM `msz_user_relations` AS ur
                 LEFT JOIN `msz_users` AS u

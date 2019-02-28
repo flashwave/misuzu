@@ -130,14 +130,14 @@ $getUsers = db_prepare(sprintf(
             (
                 SELECT `relation_type` = %4$d
                 FROM `msz_user_relations`
-                WHERE `user_id` = u.`user_id`
-                AND `subject_id` = `current_user_id`
+                WHERE `user_id` = `current_user_id`
+                AND `subject_id` = u.`user_id`
             ) AS `user_is_following`,
             (
                 SELECT `relation_type` = %4$d
                 FROM `msz_user_relations`
-                WHERE `user_id` = `current_user_id`
-                AND `subject_id` = u.`user_id`
+                WHERE `user_id` = u.`user_id`
+                AND `subject_id` = `current_user_id`
             ) AS `user_is_follower`
         FROM `msz_users` as u
         LEFT JOIN `msz_roles` as r
