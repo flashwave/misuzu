@@ -6,63 +6,63 @@
 {% set canonical_url = '/' %}
 
 {% block content %}
-    <div class="index">
-        <div class="index__sidebar">
-            <div class="container index__container">
+    <div class="landing">
+        <div class="landing__sidebar">
+            <div class="container landing__container">
                 {{ container_title('<i class="fas fa-chart-bar fa-fw"></i> Statistics') }}
 
-                <div class="index__statistics">
+                <div class="landing__statistics">
 
-                    <div class="index__statistic">
-                        <div class="index__statistic__name">
+                    <div class="landing__statistic">
+                        <div class="landing__statistic__name">
                             <i class="fas fa-users fa-fw"></i> Users
                         </div>
-                        <div class="index__statistic__value">
+                        <div class="landing__statistic__value">
                             {{ statistics.count_users_all|number_format }}
                         </div>
                     </div>
 
-                    <div class="index__statistic">
-                        <div class="index__statistic__name">
+                    <div class="landing__statistic">
+                        <div class="landing__statistic__name">
                             <i class="fas fa-comment-dots fa-fw"></i> Comments
                         </div>
-                        <div class="index__statistic__value">
+                        <div class="landing__statistic__value">
                             {{ statistics.count_comments|number_format }}
                         </div>
                     </div>
 
-                    <div class="index__statistic">
-                        <div class="index__statistic__name">
+                    <div class="landing__statistic">
+                        <div class="landing__statistic__name">
                             <i class="fas fa-user-check fa-fw"></i> Online
                         </div>
-                        <div class="index__statistic__value">
+                        <div class="landing__statistic__value">
                             {{ statistics.count_users_online|number_format }}
                         </div>
                     </div>
 
-                    <div class="index__statistic">
-                        <div class="index__statistic__name">
+                    <div class="landing__statistic">
+                        <div class="landing__statistic__name">
                             <i class="fas fa-user-clock fa-fw"></i> Active (24 hr)
                         </div>
-                        <div class="index__statistic__value">
+                        <div class="landing__statistic__value">
                             {{ statistics.count_users_active|number_format }}
                         </div>
                     </div>
 
-                    <div class="index__statistic">
-                        <div class="index__statistic__name">
+                    <div class="landing__statistic">
+                        <div class="landing__statistic__name">
                             <i class="fas fa-list fa-fw"></i> Topics
                         </div>
-                        <div class="index__statistic__value">
+                        <div class="landing__statistic__value">
                             {{ statistics.count_forum_topics|number_format }}
                         </div>
                     </div>
 
-                    <div class="index__statistic">
-                        <div class="index__statistic__name">
+                    <div class="landing__statistic">
+                        <div class="landing__statistic__name">
                             <i class="fas fa-comments fa-fw"></i> Posts
                         </div>
-                        <div class="index__statistic__value">
+                        <div class="landing__statistic__value">
                             {{ statistics.count_forum_posts|number_format }}
                         </div>
                     </div>
@@ -71,12 +71,12 @@
             </div>
 
             {% if online_users|length > 0 %}
-                <div class="container index__container">
+                <div class="container landing__container">
                     {{ container_title('<i class="fas fa-users fa-fw"></i> Online Users') }}
 
-                    <div class="index__online">
+                    <div class="landing__online">
                         {% for user in online_users %}
-                            <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="avatar index__online__user" style="{{ user.user_colour|html_colour }};--avatar-url: url('{{ url('user-avatar', {'user': user.user_id}) }}');" title="{{ user.username }}">
+                            <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="avatar landing__online__user" style="{{ user.user_colour|html_colour }};--avatar-url: url('{{ url('user-avatar', {'user': user.user_id}) }}');" title="{{ user.username }}">
                                 {{ user.username }}
                             </a>
                         {% endfor %}
@@ -85,18 +85,18 @@
             {% endif %}
 
             {% if birthdays|length > 0 %}
-                <div class="container index__container">
+                <div class="container landing__container">
                     {{ container_title('<i class="fas fa-birthday-cake fa-fw"></i> Happy Birthday!') }}
 
                     {% for birthday in birthdays %}
-                        <a class="index__latest" style="{# birthday.user_colour|html_colour #}" href="{{ url('user-profile', {'user': birthday.user_id}) }}">
-                            <div class="avatar index__latest__avatar" style="--avatar-url: url('{{ url('user-avatar', {'user': birthday.user_id}) }}')"></div>
-                            <div class="index__latest__content">
-                                <div class="index__latest__username">
+                        <a class="landing__latest" style="{# birthday.user_colour|html_colour #}" href="{{ url('user-profile', {'user': birthday.user_id}) }}">
+                            <div class="avatar landing__latest__avatar" style="--avatar-url: url('{{ url('user-avatar', {'user': birthday.user_id}) }}')"></div>
+                            <div class="landing__latest__content">
+                                <div class="landing__latest__username">
                                     {{ birthday.username }}
                                 </div>
                                 {% if birthday.user_age is not null %}
-                                    <div class="index__latest__joined">
+                                    <div class="landing__latest__joined">
                                         Turned {{ birthday.user_age }} today!
                                     </div>
                                 {% endif %}
@@ -105,16 +105,16 @@
                     {% endfor %}
                 </div>
             {% elseif latest_user.user_id|default(0) > 0 %}
-                <div class="container index__container">
+                <div class="container landing__container">
                     {{ container_title('<i class="fas fa-user-plus fa-fw"></i> Newest User') }}
 
-                    <a class="index__latest" style="{{ latest_user.user_colour|html_colour }}" href="{{ url('user-profile', {'user': latest_user.user_id}) }}">
-                        <div class="avatar index__latest__avatar" style="--avatar-url: url('{{ url('user-avatar', {'user': latest_user.user_id}) }}')"></div>
-                        <div class="index__latest__content">
-                            <div class="index__latest__username">
+                    <a class="landing__latest" style="{{ latest_user.user_colour|html_colour }}" href="{{ url('user-profile', {'user': latest_user.user_id}) }}">
+                        <div class="avatar landing__latest__avatar" style="--avatar-url: url('{{ url('user-avatar', {'user': latest_user.user_id}) }}')"></div>
+                        <div class="landing__latest__content">
+                            <div class="landing__latest__username">
                                 {{ latest_user.username }}
                             </div>
-                            <div class="index__latest__joined">
+                            <div class="landing__latest__joined">
                                 Joined <time datetime="{{ latest_user.user_created|date('c') }}" title="{{ latest_user.user_created|date('r') }}">{{ latest_user.user_created|time_diff }}</time>
                             </div>
                         </div>
@@ -122,7 +122,7 @@
                 </div>
             {% endif %}
 
-            <div class="container index__container">
+            <div class="container landing__container">
                 {{ container_title('<i class="fas fa-wrench fa-fw"></i> Changelog', false, url('changelog-index')) }}
                 <div class="changelog__content">
                     {{ changelog_listing(featured_changelog, false, true) }}
@@ -130,7 +130,7 @@
             </div>
         </div>
 
-        <div class="index__main">
+        <div class="landing__main">
             {% for post in featured_news %}
                 {{ news_preview(post) }}
             {% endfor %}
