@@ -29,7 +29,6 @@ $errorHandler->register();
 // TODO: do something about this, probably a good idea to include shit as required rather than all at once here
 require_once 'src/array.php';
 require_once 'src/audit_log.php';
-require_once 'src/cache.php';
 require_once 'src/changelog.php';
 require_once 'src/colour.php';
 require_once 'src/comments.php';
@@ -331,7 +330,6 @@ MIG;
         exit;
     }
 
-    cache_init(config_get_default([], 'Cache'));
     geoip_init(config_get_default('', 'GeoIP', 'database_path'));
 
     if (!MSZ_DEBUG) {
