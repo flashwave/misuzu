@@ -1,46 +1,37 @@
-{% macro changelog_listing(changes, hide_dates, is_manage, change_url, date_url, tag_url, user_url, is_small) %}
-    {% set hide_dates = hide_dates ? true : false %}
-    {% set is_manage = is_manage ? true : false %}
-    {% set is_small = is_small ? true : false %}
-    {% set last_date = '' %}
-    {% set date_url = date_url|default(url('changelog-date', {'date': '%s'})) %}
-
+{% macro changelog_listing(changes, hide_dates, is_small, is_manage) %}
     {% from _self import changelog_entry %}
 
-    {% if changes|length > 0 %}
-        {% for change in changes %}
-            {% if not hide_dates and last_date != change.change_date %}
-                {% set last_date = change.change_date %}
+    <div class="changelog__listing">
+        {% if changes|length > 0 %}
+            {% for change in changes %}
+                {% if not hide_dates and (last_date is not defined or last_date != change.change_date) %}
+                    {% set last_date = change.change_date %}
 
-                <a class="changelog__date" href="{{ date_url|format(last_date) }}"
-                    {% if date_url|slice(0, 1) == '#' %} id="{{ date_url|format(last_date)|slice(1) }}"{% endif %}>
-                    {{ last_date }}
-                </a>
-            {% endif %}
+                    <a href="{{ is_manage ? '#cd' ~ last_date : url('changelog-date', {'date': last_date}) }}" class="changelog__listing__date" id="cd{{ last_date }}">
+                        {{ last_date }}
+                    </a>
+                {% endif %}
 
-            {{ changelog_entry(change, is_manage, change_url, tag_url, user_url, is_small) }}
-        {% endfor %}
-    {% else %}
-        <div class="changelog__none">
-            There are no changes to display here.
-        </div>
-    {% endif %}
+                {{ changelog_entry(change, is_small, is_manage) }}
+            {% endfor %}
+        {% else %}
+            <div class="changelog__listing__none">
+                There are no changes to display here.
+            </div>
+        {% endif %}
+    </div>
 {% endmacro %}
 
-{% macro changelog_entry(change, is_manage, change_url, tag_url, user_url, is_small) %}
-    {% set is_manage = is_manage ? true : false %}
-    {% set is_small = is_small ? true : false %}
-    {% set change_url = change_url|default(url('changelog-date', {'change': '%d'})) %}
-    {% set tag_url = tag_url|default(url('changelog-tag', {'tag': '%d'})) %}
-    {% set user_url = user_url|default(url('user-profile', {'user': '%d'})) %}
+{% macro changelog_entry(change, is_small, is_manage) %}
+    {% set change_url = url(is_manage ? 'manage-changelog-change-edit' : 'changelog-change', {'change': change.change_id}) %}
     {% set has_text = change.change_has_text|default(false)
         or (change.change_text is defined and change.change_text|length > 0)
     %}
 
-    <div class="changelog" id="cl{{ change.change_id }}">
-        <div class="changelog__info">
+    <div class="changelog__entry" id="cl{{ change.change_id }}">
+        <div class="changelog__entry__info">
             {% if is_manage %}
-                <a href="{{ change_url|format(change.change_id) }}" class="changelog__datetime">
+                <a href="{{ change_url|format(change.change_id) }}" class="changelog__entry__datetime">
                     <time class="changelog__datetime__text"
                         datetime="{{ change.change_created|date('c') }}"
                         title="{{ change.change_created|date('r') }}">
@@ -49,38 +40,38 @@
                 </a>
             {% endif %}
 
-            <a class="changelog__action{{ change.action_class is defined and change.action_class is not null ? ' changelog__action--' ~ change.action_class : '' }} changelog__action--{{ change.action_colour|colour_contrast }}"
+            <a class="changelog__entry__action{{ change.action_class is defined and change.action_class is not null ? ' changelog__entry__action--' ~ change.action_class : '' }} changelog__entry__action--{{ change.action_colour|colour_contrast }}"
                 href="{{ change_url|format(change.change_id) }}"
                 {% if change.action_colour is defined %}style="{{ change.action_colour|html_colour('--action-colour') }}"{% endif %}
                 {% if is_small %}title="{{ change.action_name|default('Unknown') }}"{% endif %}>
                 {% if not is_small %}
-                    <div class="changelog__action__text">
+                    <div class="changelog__entry__action__text">
                         {{ change.action_name|default('Unknown') }}
                     </div>
                 {% endif %}
             </a>
 
             {% if change.user_id is defined %}
-                <a  class="changelog__user"
-                    href="{{ user_url|format(change.user_id) }}"
+                <a  class="changelog__entry__user"
+                    href="{{ url(is_manage ? 'manage-user-edit' : 'user-profile', {'user': change.user_id}) }}"
                     style="{{ change.user_colour|html_colour }}">
-                    <div class="changelog__user__text">
+                    <div class="changelog__entry__user__text">
                         {{ change.username }}
                     </div>
                 </a>
             {% endif %}
         </div>
 
-        <div class="changelog__text">
-            <a class="changelog__log{% if has_text %} changelog__log--link{% endif %}"
+        <div class="changelog__entry__text">
+            <a class="changelog__entry__log{% if has_text %} changelog__entry__log--link{% endif %}"
                 {% if has_text %}href="{{ change_url|format(change.change_id) }}"{% endif %}>
                 {{ change.change_log }}
             </a>
 
             {% if is_manage %}
-                <div class="changelog__tags">
+                <div class="changelog__entry__tags">
                     {% for tag in change.tags %}
-                        <a href="{{ tag_url|format(tag.tag_id) }}" class="changelog__tag">
+                        <a href="{{ url(is_manage ? 'manage-changelog-tag-edit' : 'changelog-tag', {'tag': tag.tag_id}) }}" class="changelog__entry__tag">
                             {{ tag.tag_name }}
                         </a>
                     {% endfor %}

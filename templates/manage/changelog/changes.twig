@@ -9,12 +9,7 @@
         {{ container_title('Changelog') }}
 
         <div class="changelog__content">
-            {{ changelog_listing(
-                changelog_changes, false, true,
-                url('manage-changelog-change-edit', {'change': '%d'}), '#cd-%s',
-                url('manage-changelog-tag-edit', {'tag': '%d'}),
-                url('manage-user-edit', {'user': '%d'})
-            ) }}
+            {{ changelog_listing(changelog_changes, false, false, true) }}
 
             <div class="changelog__pagination">
                 {{ pagination(changelog_pagination, '/manage/changelog.php', null, {'v': 'changes'}) }}

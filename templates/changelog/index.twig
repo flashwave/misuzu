@@ -22,18 +22,16 @@
 {% endif %}
 
 {% block content %}
-    <div class="container">
+    <div class="container changelog__container">
         {{ container_title('<i class="fas fa-wrench fa-fw"></i> ' ~ title) }}
 
-        <div class="changelog__content">
-            {{ changelog_listing(changes, is_date) }}
+        {{ changelog_listing(changes, is_date) }}
 
-            {% if not is_date %}
-                <div class="changelog__pagination">
-                    {{ pagination(changelog_pagination, url('changelog-index'), null, {'d':changelog_date, 'u':changelog_user|default(0)})}}
-                </div>
-            {% endif %}
-        </div>
+        {% if not is_date %}
+            <div class="changelog__pagination">
+                {{ pagination(changelog_pagination, url('changelog-index'), null, {'d':changelog_date, 'u':changelog_user|default(0)})}}
+            </div>
+        {% endif %}
     </div>
 
     {% if comments is defined %}

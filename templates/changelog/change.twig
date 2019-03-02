@@ -8,15 +8,13 @@
 {% set description = change.change_log %}
 
 {% block content %}
-    <div class="container changelog__change__line" style="{{ change.action_colour|html_colour('--accent-colour') }}">
-        <div class="changelog__change__action {{ change.action_class is defined and change.action_class is not null ? ' changelog__change__action--' ~ change.action_class : '' }} changelog__change__action--{{ change.action_colour|colour_contrast }}">
+    <div class="container changelog__log" style="{{ change.action_colour|html_colour('--accent-colour') }}">
+        <div class="changelog__log__action {{ change.action_class is defined and change.action_class is not null ? ' changelog__log__action--' ~ change.action_class : '' }} changelog__log__action--{{ change.action_colour|colour_contrast }}">
             {{ change.action_name }}
         </div>
 
-        <div class="changelog__change__log">
-            <div class="changelog__change__log__text">
-                {{ change.change_log }}
-            </div>
+        <div class="changelog__log__text">
+            {{ change.change_log }}
         </div>
     </div>
 
