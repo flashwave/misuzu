@@ -370,6 +370,7 @@ MIG;
         exit;
     }
 
+    // Remove this block at the start of April, 2 months is plenty for this to propagate
     if (!empty($_COOKIE['msz_uid']) && !empty($_COOKIE['msz_sid'])
         && ctype_digit($_COOKIE['msz_uid']) && ctype_xdigit($_COOKIE['msz_sid'])
         && strlen($_COOKIE['msz_sid']) === 64) {
