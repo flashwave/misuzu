@@ -26,7 +26,6 @@ $errorHandler->pushHandler(
 );
 $errorHandler->register();
 
-// TODO: do something about this, probably a good idea to include shit as required rather than all at once here
 require_once 'src/array.php';
 require_once 'src/audit_log.php';
 require_once 'src/changelog.php';
