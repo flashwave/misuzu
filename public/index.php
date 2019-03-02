@@ -12,41 +12,39 @@ if (config_get_default(false, 'Site', 'embed_linked_data')) {
 
 $news = news_posts_get(0, 5, null, true);
 
-$stats = [
-    'users' => db_query('
-        SELECT
-            (
-                SELECT COUNT(`user_id`)
-                FROM `msz_users`
-                WHERE `user_deleted` IS NULL
-            ) as `all`,
-            (
-                SELECT COUNT(`user_id`)
-                FROM `msz_users`
-                WHERE `user_active` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
-            ) as `online`,
-            (
-                SELECT COUNT(`user_id`)
-                FROM `msz_users`
-                WHERE `user_active` >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
-            ) as `active`
-    ')->fetch(PDO::FETCH_ASSOC),
-    'comments' => (int)db_query('
+$stats = db_fetch(db_query('
+    SELECT
+    (
+        SELECT COUNT(`user_id`)
+        FROM `msz_users`
+        WHERE `user_deleted` IS NULL
+    ) AS `count_users_all`,
+    (
+        SELECT COUNT(`user_id`)
+        FROM `msz_users`
+        WHERE `user_active` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
+    ) AS `count_users_online`,
+    (
+        SELECT COUNT(`user_id`)
+        FROM `msz_users`
+        WHERE `user_active` >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+    ) AS `count_users_active`,
+    (
         SELECT COUNT(`comment_id`)
         FROM `msz_comments_posts`
         WHERE `comment_deleted` IS NULL
-    ')->fetchColumn(),
-    'forum_topics' => (int)db_query('
+    ) AS `count_comments`,
+    (
         SELECT COUNT(`topic_id`)
         FROM `msz_forum_topics`
         WHERE `topic_deleted` IS NULL
-    ')->fetchColumn(),
-    'forum_posts' => (int)db_query('
+    ) AS `count_forum_topics`,
+    (
         SELECT COUNT(`post_id`)
         FROM `msz_forum_posts`
         WHERE `post_deleted` IS NULL
-    ')->fetchColumn(),
-];
+    ) AS `count_forum_posts`
+'));
 
 $changelog = db_query('
     SELECT

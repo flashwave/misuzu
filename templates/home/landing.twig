@@ -18,7 +18,7 @@
                             <i class="fas fa-users fa-fw"></i> Users
                         </div>
                         <div class="index__statistic__value">
-                            {{ statistics.users.all|number_format }}
+                            {{ statistics.count_users_all|number_format }}
                         </div>
                     </div>
 
@@ -27,7 +27,7 @@
                             <i class="fas fa-comment-dots fa-fw"></i> Comments
                         </div>
                         <div class="index__statistic__value">
-                            {{ statistics.comments|number_format }}
+                            {{ statistics.count_comments|number_format }}
                         </div>
                     </div>
 
@@ -36,7 +36,7 @@
                             <i class="fas fa-user-check fa-fw"></i> Online
                         </div>
                         <div class="index__statistic__value">
-                            {{ statistics.users.online|number_format }}
+                            {{ statistics.count_users_online|number_format }}
                         </div>
                     </div>
 
@@ -45,7 +45,7 @@
                             <i class="fas fa-user-clock fa-fw"></i> Active (24 hr)
                         </div>
                         <div class="index__statistic__value">
-                            {{ statistics.users.active|number_format }}
+                            {{ statistics.count_users_active|number_format }}
                         </div>
                     </div>
 
@@ -54,7 +54,7 @@
                             <i class="fas fa-list fa-fw"></i> Topics
                         </div>
                         <div class="index__statistic__value">
-                            {{ statistics.forum_topics|number_format }}
+                            {{ statistics.count_forum_topics|number_format }}
                         </div>
                     </div>
 
@@ -63,7 +63,7 @@
                             <i class="fas fa-comments fa-fw"></i> Posts
                         </div>
                         <div class="index__statistic__value">
-                            {{ statistics.forum_posts|number_format }}
+                            {{ statistics.count_forum_posts|number_format }}
                         </div>
                     </div>
 
