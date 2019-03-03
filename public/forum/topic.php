@@ -38,7 +38,7 @@ if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
 
 $topicIsLocked = !empty($topic['topic_locked']);
 $topicIsArchived = !empty($topic['topic_archived']);
-$topicPostsTotal = (int)($topic['topic_post_count'] + $topic['topic_deleted_post_count']);
+$topicPostsTotal = (int)($topic['topic_count_posts'] + $topic['topic_count_posts_deleted']);
 $topicIsFrozen = $topicIsArchived || $topicIsDeleted;
 $canDeleteOwn = !$topicIsFrozen && !$topicIsLocked && perms_check($perms, MSZ_FORUM_PERM_DELETE_POST);
 $canBumpTopic = !$topicIsFrozen && perms_check($perms, MSZ_FORUM_PERM_BUMP_TOPIC);
@@ -314,10 +314,10 @@ if (in_array($moderationMode, $validModerationModes, true)) {
     return;
 }
 
-$topicPosts = $topic['topic_post_count'];
+$topicPosts = $topic['topic_count_posts'];
 
 if ($canDeleteAny) {
-    $topicPosts += $topic['topic_deleted_post_count'];
+    $topicPosts += $topic['topic_count_posts_deleted'];
 }
 
 $topicPagination = pagination_create($topicPosts, MSZ_FORUM_POSTS_PER_PAGE);

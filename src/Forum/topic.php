@@ -82,13 +82,13 @@ function forum_topic_get(int $topicId, bool $allowDeleted = false): array
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = t.`topic_id`
                     AND `post_deleted` IS NULL
-                ) as `topic_post_count`,
+                ) as `topic_count_posts`,
                 (
                     SELECT COUNT(`post_id`)
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = t.`topic_id`
                     AND `post_deleted` IS NOT NULL
-                ) as `topic_deleted_post_count`
+                ) as `topic_count_posts_deleted`
             FROM `msz_forum_topics` as t
             LEFT JOIN `msz_forum_categories` as f
             ON f.`forum_id` = t.`forum_id`
@@ -126,10 +126,12 @@ function forum_topic_mark_read(int $userId, int $topicId, int $forumId): void
     }
 
     $markAsRead = db_prepare('
-        REPLACE INTO `msz_forum_topics_track`
+        INSERT INTO `msz_forum_topics_track`
             (`user_id`, `topic_id`, `forum_id`, `track_last_read`)
         VALUES
             (:user_id, :topic_id, :forum_id, NOW())
+        ON DUPLICATE KEY UPDATE
+            `track_last_read` = NOW()
     ');
     $markAsRead->bindValue('user_id', $userId);
     $markAsRead->bindValue('topic_id', $topicId);
@@ -145,7 +147,7 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
             SELECT
                 :user_id AS `target_user_id`,
                 t.`topic_id`, t.`topic_title`, t.`topic_locked`, t.`topic_type`, t.`topic_created`,
-                t.`topic_bumped`, t.`topic_deleted`,
+                t.`topic_bumped`, t.`topic_deleted`, t.`topic_count_views`,
                 au.`user_id` AS `author_id`, au.`username` AS `author_name`,
                 COALESCE(au.`user_colour`, ar.`role_colour`) AS `author_colour`,
                 lp.`post_id` AS `response_id`,
@@ -158,18 +160,13 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = t.`topic_id`
                     %5$s
-                ) AS `topic_post_count`,
+                ) AS `topic_count_posts`,
                 (
                     SELECT CEIL(COUNT(`post_id`) / %6$d)
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = t.`topic_id`
                     %5$s
                 ) AS `topic_pages`,
-                (
-                    SELECT COUNT(`user_id`)
-                    FROM `msz_forum_topics_track`
-                    WHERE `topic_id` = t.`topic_id`
-                ) AS `topic_view_count`,
                 (
                     SELECT
                         `target_user_id` > 0
@@ -334,7 +331,7 @@ function forum_topic_can_delete($topicId, ?int $userId = null): int
             return MSZ_E_FORUM_TOPIC_DELETE_OLD;
         }
 
-        $totalReplies = $topic['topic_post_count'] + $topic['topic_deleted_post_count'];
+        $totalReplies = $topic['topic_count_posts'] + $topic['topic_count_posts_deleted'];
 
         if ($totalReplies > MSZ_E_FORUM_TOPIC_DELETE_POSTS) {
             return MSZ_E_FORUM_TOPIC_DELETE_POSTS;
