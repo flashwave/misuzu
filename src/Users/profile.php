@@ -244,13 +244,13 @@ function user_profile_get(int $userId): array
                         SELECT COUNT(`user_id`)
                         FROM `msz_user_relations`
                         WHERE `subject_id` = u.`user_id`
-                        AND `relation_type` = 1
+                        AND `relation_type` = %4$d
                     ) AS `followers_count`,
                     (
                         SELECT COUNT(`subject_id`)
                         FROM `msz_user_relations`
                         WHERE `user_id` = u.`user_id`
-                        AND `relation_type` = 1
+                        AND `relation_type` = %4$d
                     ) AS `following_count`
                 FROM `msz_users` AS u
                 LEFT JOIN `msz_roles` AS r
@@ -260,7 +260,8 @@ function user_profile_get(int $userId): array
             ',
             pdo_prepare_array(user_profile_fields_get(), true, 'u.`user_%s`'),
             MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND,
-            MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE
+            MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE,
+            MSZ_USER_RELATION_FOLLOW
         )
     );
     $getProfile->bindValue('user_id', $userId);
