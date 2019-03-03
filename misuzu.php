@@ -225,8 +225,6 @@ if (PHP_SAPI === 'cli') {
                 break;
 
             case 'migrate':
-                touch(MSZ_ROOT . '/.migrating');
-
                 $migrationTargets = [
                     'mysql-main' => MSZ_ROOT . '/database',
                 ];
@@ -237,6 +235,8 @@ if (PHP_SAPI === 'cli') {
                     echo 'Invalid target database connection.' . PHP_EOL;
                     break;
                 }
+
+                touch(MSZ_ROOT . '/.migrating');
 
                 foreach ($migrationTargets as $db => $path) {
                     echo "Creating migration manager for '{$db}'..." . PHP_EOL;
