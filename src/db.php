@@ -12,6 +12,9 @@ define('MSZ_DATABASE_MYSQL_DEFAULTS', [
     'port' => 3306,
 ]);
 
+// Output of PDOException::getCode() is string for god knows what reason
+define('MSZ_DATABASE_DUPLICATE_KEY', '23000');
+
 function db_setup(array $databases, ?string $default = null): void
 {
     $GLOBALS[MSZ_DATABASE_OPTIONS_STORE] = $databases;

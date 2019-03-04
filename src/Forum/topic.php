@@ -119,24 +119,61 @@ function forum_topic_bump(int $topicId): bool
     return $bumpTopic->execute();
 }
 
+function forum_topic_views_increment(int $topicId): void
+{
+    if ($topicId < 1) {
+        return;
+    }
+
+    $bumpViews = db_prepare('
+        UPDATE `msz_forum_topics`
+        SET `topic_count_views` = `topic_count_views` + 1
+        WHERE `topic_id` = :topic_id
+    ');
+    $bumpViews->bindValue('topic_id', $topicId);
+    $bumpViews->execute();
+}
+
 function forum_topic_mark_read(int $userId, int $topicId, int $forumId): void
 {
     if ($userId < 1) {
         return;
     }
 
-    $markAsRead = db_prepare('
-        INSERT INTO `msz_forum_topics_track`
-            (`user_id`, `topic_id`, `forum_id`, `track_last_read`)
-        VALUES
-            (:user_id, :topic_id, :forum_id, NOW())
-        ON DUPLICATE KEY UPDATE
-            `track_last_read` = NOW()
-    ');
-    $markAsRead->bindValue('user_id', $userId);
-    $markAsRead->bindValue('topic_id', $topicId);
-    $markAsRead->bindValue('forum_id', $forumId);
-    $markAsRead->execute();
+    // previously a TRIGGER was used to achieve this behaviour,
+    // but those explode when running on a lot of queries (like forum_mark_read() does)
+    // so instead we get to live with this garbage now
+    try {
+        $markAsRead = db_prepare('
+            INSERT INTO `msz_forum_topics_track`
+                (`user_id`, `topic_id`, `forum_id`, `track_last_read`)
+            VALUES
+                (:user_id, :topic_id, :forum_id, NOW())
+        ');
+        $markAsRead->bindValue('user_id', $userId);
+        $markAsRead->bindValue('topic_id', $topicId);
+        $markAsRead->bindValue('forum_id', $forumId);
+
+        if ($markAsRead->execute()) {
+            forum_topic_views_increment($topicId);
+        }
+    } catch (PDOException $ex) {
+        if ($ex->getCode() !== MSZ_DATABASE_DUPLICATE_KEY) {
+            throw $ex;
+        }
+
+        $markAsRead = db_prepare('
+            UPDATE `msz_forum_topics_track`
+            SET `track_last_read` = NOW()
+            WHERE `user_id` = :user_id
+            AND `topic_id` = :topic_id
+            AND `forum_id` = :forum_id
+        ');
+        $markAsRead->bindValue('user_id', $userId);
+        $markAsRead->bindValue('topic_id', $topicId);
+        $markAsRead->bindValue('forum_id', $forumId);
+        $markAsRead->execute();
+    }
 }
 
 function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $take = 0, bool $showDeleted = false): array

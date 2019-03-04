@@ -391,10 +391,10 @@ function forum_timeout(int $forumId, int $userId): int
 }
 
 // $forumId == null marks all forums as read
-function forum_mark_read(?int $forumId, int $userId): bool
+function forum_mark_read(?int $forumId, int $userId): void
 {
     if (($forumId !== null && $forumId < 1) || $userId < 1) {
-        return false;
+        return;
     }
 
     $entireForum = $forumId === null;
@@ -424,7 +424,7 @@ function forum_mark_read(?int $forumId, int $userId): bool
         $doMark->bindValue('forum', $forumId);
     }
 
-    return $doMark->execute();
+    $doMark->execute();
 }
 
 function forum_posting_info(int $userId): array
