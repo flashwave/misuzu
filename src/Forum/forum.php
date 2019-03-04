@@ -400,7 +400,7 @@ function forum_mark_read(?int $forumId, int $userId): bool
     $entireForum = $forumId === null;
     $doMark = db_prepare(sprintf(
         '
-            REPLACE INTO `msz_forum_topics_track`
+            INSERT INTO `msz_forum_topics_track`
                 (`user_id`, `topic_id`, `forum_id`, `track_last_read`)
             SELECT u.`user_id`, t.`topic_id`, t.`forum_id`, NOW()
             FROM `msz_forum_topics` AS t
@@ -411,6 +411,8 @@ function forum_mark_read(?int $forumId, int $userId): bool
             %1$s
             GROUP BY t.`topic_id`
             HAVING ((%2$s) & %3$d) > 0
+            ON DUPLICATE KEY UPDATE
+                `track_last_read` = NOW()
         ',
         $entireForum ? '' : 'AND t.`forum_id` = :forum',
         forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 't.`forum_id`', 'u.`user_id`', 'u.`user_id`'),
