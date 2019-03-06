@@ -55,9 +55,7 @@ function twitter_auth_complete(string $pin): array
 
 function twitter_tweet_post(string $text): void
 {
-    $params = [
+    Codebird::getInstance()->statuses_update([
         'status' => $text,
-    ];
-
-    Codebird::getInstance()->statuses_update($params);
+    ]);
 }

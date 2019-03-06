@@ -86,12 +86,14 @@ switch ($_GET['v'] ?? null) {
         if (!empty($_POST['post']) && csrf_verify('news_post', $_POST['csrf'] ?? '')) {
             $originalPostId = (int)($_POST['post']['id'] ?? null);
             $currentUserId = user_session_current('user_id');
+            $title = $_POST['post']['title'] ?? null;
+            $isFeatured = !empty($_POST['post']['featured']);
             $postId = news_post_create(
-                $_POST['post']['title'] ?? null,
+                $title,
                 $_POST['post']['text'] ?? null,
                 (int)($_POST['post']['category'] ?? null),
                 user_session_current('user_id'),
-                !empty($_POST['post']['featured']),
+                $isFeatured,
                 null,
                 $originalPostId
             );
@@ -102,6 +104,20 @@ switch ($_GET['v'] ?? null) {
                 $currentUserId,
                 [$postId]
             );
+
+            if (!$originalPostId && $isFeatured) {
+                $twitterApiKey = config_get('Twitter', 'api_key');
+                $twitterApiSecret = config_get('Twitter', 'api_secret');
+                $twitterToken = config_get('Twitter', 'token');
+                $twitterTokenSecret = config_get('Twitter', 'token_secret');
+
+                if (!empty($twitterApiKey) && !empty($twitterApiSecret)
+                    && !empty($twitterToken) && !empty($twitterTokenSecret)) {
+                    twitter_init($twitterApiKey, $twitterApiSecret, $twitterToken, $twitterTokenSecret);
+                    $url = url('news-post', ['post' => $postId]);
+                    twitter_tweet_post("News :: {$title}\nhttps://{$_SERVER['HTTP_HOST']}{$url}");
+                }
+            }
         }
 
         if ($postId > 0) {
