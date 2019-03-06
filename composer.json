@@ -15,7 +15,8 @@
         "erusev/parsedown": "~1.6",
         "geoip2/geoip2": "~2.0",
         "twig/extensions": "^1.5",
-        "filp/whoops": "^2.2"
+        "filp/whoops": "^2.2",
+        "jublonet/codebird-php": "^3.1"
     },
     "autoload": {
         "classmap": [

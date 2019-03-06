@@ -44,6 +44,7 @@ require_once 'src/pagination.php';
 require_once 'src/perms.php';
 require_once 'src/string.php';
 require_once 'src/tpl.php';
+require_once 'src/twitter.php';
 require_once 'src/url.php';
 require_once 'src/zalgo.php';
 require_once 'src/Forum/forum.php';
@@ -309,6 +310,40 @@ MIG;
                 file_put_contents($filepath, $template);
 
                 echo "Template for '{$namespace}' has been created." . PHP_EOL;
+                break;
+
+            case 'twitter-auth':
+                $apiKey = config_get('Twitter', 'api_key');
+                $apiSecret = config_get('Twitter', 'api_secret');
+
+                if (empty($apiKey) || empty($apiSecret)) {
+                    echo 'No Twitter api keys set in config.' . PHP_EOL;
+                    break;
+                }
+
+                twitter_init($apiKey, $apiSecret);
+                echo 'Twitter Authentication' . PHP_EOL;
+
+                $authPage = twitter_auth_create();
+
+                if (empty($authPage)) {
+                    echo 'Request to begin authentication failed.' . PHP_EOL;
+                    break;
+                }
+
+                echo 'Go to the page below and paste the pin code displayed.' . PHP_EOL . $authPage . PHP_EOL;
+
+                $pin = readline('Pin: ');
+                $authComplete = twitter_auth_complete($pin);
+
+                if (empty($authComplete)) {
+                    echo 'Invalid pin code.' . PHP_EOL;
+                    break;
+                }
+
+                echo 'Authentication successful!' . PHP_EOL
+                    . "Token: {$authComplete['token']}" . PHP_EOL
+                    . "Token Secret: {$authComplete['token_secret']}" . PHP_EOL;
                 break;
 
             default:
