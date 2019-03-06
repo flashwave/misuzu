@@ -1,6 +1,6 @@
 .landing {
     display: flex;
-    flex-direction: row-reverse;
+    flex-direction: row;
 
     @media (max-width: @site-mobile-width) {
         flex-direction: column;
@@ -12,12 +12,12 @@
 
     &__sidebar {
         width: 300px;
-        margin-left: 2px;
+        margin-right: 2px;
         flex: 0 0 auto;
 
         @media (max-width: @site-mobile-width) {
             width: 100%;
-            margin-left: 0;
+            margin-right: 0;
         }
     }
 
