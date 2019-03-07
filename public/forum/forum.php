@@ -1,7 +1,10 @@
 <?php
+use Misuzu\Request\RequestVar;
+
 require_once '../../misuzu.php';
 
-$forumId = max((int)($_GET['f'] ?? 0), 0);
+$forumId = RequestVar::get()->select('f')->value('int');
+$forumId = max($forumId, 0);
 
 if ($forumId === 0) {
     header('Location: /forum/');
