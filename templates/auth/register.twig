@@ -1,0 +1,90 @@
+{% extends 'auth/master.twig' %}
+{% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
+
+{% set title = 'Register' %}
+
+{% block content %}
+    <form class="container auth__container auth__register" method="post" action="{{ url('auth-register') }}">
+        {{ container_title('<i class="fas fa-user-check fa-fw"></i> Register') }}
+
+        <div class="auth__register__container">
+            {% if not register_restricted %}
+                <div class="auth__register__info">
+                    {% if register_notices|length > 0 %}
+                        <div class="warning auth__warning">
+                            <div class="warning__content">
+                                {% for notice in register_notices %}
+                                    <p class="auth__warning__paragraph">{{ notice }}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <p class="auth__register__paragraph">Welcome to Flashii! Before creating your account, here are a few things you should take note of.</p>
+                    <p class="auth__register__paragraph">By creating an account you agree to the <a href="{{ url('info', {'title': 'rules'}) }}" class="auth__register__link">rules</a>.</p>
+                    <p class="auth__register__paragraph">Engaging in borderline illegal activity on platforms provided by Flashii will result in a permanent ban, as described by Global Rule 5.</p>
+                    <p class="auth__register__paragraph">You are not allowed to have more than one account unless given explicit permission, as described by Global Rule 6.</p>
+                    <p class="auth__register__paragraph">You must be at least 13 years of age to use this website, as described by Global Rule 8.</p>
+                </div>
+            {% endif %}
+
+            <div class="auth__register__form">
+                {{ input_csrf('register') }}
+
+                {% if register_restricted %}
+                    <div class="warning auth__warning">
+                        <div class="warning__content">
+                            {% if register_restricted == 'ban' %}
+                                <p class="auth__warning__paragraph">A user is currently in a banned and/or silenced state from the same IP address you're currently visiting the site from. If said user isn't you and you wish to create an account, please <a href="{{ url('info', {'title': 'contact'}) }}" class="warning__link">contact us</a>!</p>
+                            {% else %}
+                                <p class="auth__warning__paragraph">The IP address from which you are visiting the website appears on our blacklist, you are not allowed to register from this address but if you already have an account you can log in just fine using the form above. If you think this blacklisting is a mistake, please <a href="{{ url('info', {'title': 'contact'}) }}" class="warning__link">contact us</a>!</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <label class="auth__label">
+                        <div class="auth__label__text">
+                            Username
+                        </div>
+                        <div class="auth__label__value">
+                            {{ input_text('register[username]', 'auth__label__input', register_username, 'text', '', true, null, 1, true) }}
+                        </div>
+                    </label>
+
+                    <label class="auth__label">
+                        <div class="auth__label__text">
+                            Password
+                        </div>
+                        <div class="auth__label__value">
+                            {{ input_text('register[password]', 'auth__label__input', '', 'password', '', true, null, 2) }}
+                        </div>
+                    </label>
+
+                    <label class="auth__label">
+                        <div class="auth__label__text">
+                            E-mail
+                        </div>
+                        <div class="auth__label__value">
+                            {{ input_text('register[email]', 'auth__label__input', register_email, 'text', '', true, null, 3) }}
+                        </div>
+                    </label>
+
+                    <label class="auth__label">
+                        <div class="auth__label__text">
+                            What is the outcome of nine plus ten?
+                        </div>
+                        <div class="auth__label__value">
+                            {{ input_text('register[question]', 'auth__label__input', '', 'text', '', true, null, 4) }}
+                        </div>
+                    </label>
+
+                    <div class="auth__buttons">
+                        <button class="input__button auth__buttons__button" tabindex="5">Create your account</button>
+                        <a href="{{ url('auth-login') }}" class="input__button auth__buttons__button auth__buttons__button--minor" tabindex="6">Log in</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+{% endblock %}

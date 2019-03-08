@@ -7,7 +7,7 @@
     min-width: 80px;
     text-align: center;
     cursor: pointer;
-    transition: color .2s, background-color .2s, opacity .2s;
+    transition: color .2s, background-color .2s, opacity .2s, border-color .2s;
     color: var(--accent-colour);
     border: 1px solid var(--accent-colour);
     border-radius: 2px;
@@ -21,6 +21,7 @@
     &:focus {
         color: #111;
         background-color: var(--accent-colour);
+        border-color: var(--accent-colour);
     }
 
     &--busy {

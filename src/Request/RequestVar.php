@@ -23,12 +23,22 @@ class RequestVar
         return new static($_POST ?? []);
     }
 
+    public static function request(): RequestVar
+    {
+        return new static($_REQUEST);
+    }
+
     public function __get(string $name)
     {
         return $this->select($name);
     }
 
     public function __isset(string $name): bool
+    {
+        return $this->isset($name);
+    }
+
+    public function isset(string $name): bool
     {
         switch ($this->type) {
             case 'array':
@@ -38,32 +48,37 @@ class RequestVar
                 return isset($this->value->{$name});
 
             default:
-                return null;
+                return !is_null($this->value);
         }
+    }
+
+    public function empty(): bool
+    {
+        return empty($this->value);
     }
 
     public function select(string $name): RequestVar
     {
         switch ($this->type) {
             case 'array':
-                return new static($this->value[$name]);
+                return new static($this->value[$name] ?? []);
 
             case 'object':
-                return new static($this->value->{$name});
+                return new static($this->value->{$name} ?? new \stdClass);
 
             default:
-                return null;
+                return new static(null);
         }
     }
 
-    public function value(string $type = 'string')
+    public function value(string $type = 'string', $default = null)
     {
         if (!is_null($this->valueCasted)) {
             $this->valueCasted;
         }
 
         if ($this->type === 'NULL' || (($type === 'object' || $type === 'array') && $this->type !== $type)) {
-            return null;
+            return $default;
         }
 
         if ($type !== 'string' && $this->type === 'string') {
@@ -79,7 +94,7 @@ class RequestVar
                     return (float)$this->value;
             }
         } elseif ($type !== $this->type) {
-            return null;
+            return $default;
         }
 
         return $this->valueCasted = $this->value;

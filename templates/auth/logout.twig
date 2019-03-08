@@ -1,14 +1,16 @@
 {% extends 'auth/master.twig' %}
 {% from 'macros.twig' import container_title %}
 
+{% set title = 'Logout confirmation' %}
+
 {% block content %}
-    <div class="container auth">
+    <div class="container auth__container">
         {{ container_title('<i class="fas fa-user-clock fa-fw"></i> Logout confirmation') }}
 
-        <div class="auth__form">
-            <p class="auth__paragraph">We couldn't verify that you were actually the person attempting to log out.</p>
-            <p class="auth__paragraph">Press the button below to verify the logout request, otherwise click back in your browser or close this tab.</p>
-            <p class="auth__paragraph">This error is usually caused by pressing the logout button on a page that's been loaded for a while.</p>
+        <div class="auth__logout">
+            <p class="auth__logout__paragraph">We couldn't verify that you were actually the person attempting to log out.</p>
+            <p class="auth__logout__paragraph">Press the button below to verify the logout request, otherwise click back in your browser or close this tab.</p>
+            <p class="auth__logout__paragraph">This error is usually caused by pressing the logout button on a page that's been loaded for a while.</p>
             <a href="{{ url('auth-logout') }}" class="input__button">Log out</a>
         </div>
     </div>

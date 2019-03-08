@@ -82,7 +82,6 @@
             'title': 'Log in',
             'url': url('auth-login'),
             'icon': 'fas fa-sign-in-alt fa-fw',
-            'class': 'js-login-button',
         },
     ]
 %}
@@ -127,7 +126,7 @@
                 <a href="{{ url('user-profile', {'user': current_user.user_id}) }}" class="avatar header__desktop__user__avatar" title="{{ current_user.username }}"
                     style="background-image:url('{{ url('user-avatar', {'user': current_user.user_id}) }}');{{ current_user.user_colour|html_colour }}"></a>
             {% else %}
-                <a href="{{ url('auth-login') }}" class="avatar header__desktop__user__avatar js-login-button"
+                <a href="{{ url('auth-login') }}" class="avatar header__desktop__user__avatar"
                     style="background-image:url('{{ url('user-avatar') }}');"></a>
             {% endif %}
         </div>

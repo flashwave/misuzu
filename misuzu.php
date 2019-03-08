@@ -386,16 +386,6 @@ MIG;
 
     tpl_add_path(MSZ_ROOT . '/templates');
 
-    $misuzuBypassLockdown = !empty($misuzuBypassLockdown);
-
-    if (!$misuzuBypassLockdown && boolval(config_get_default(false, 'Auth', 'lockdown'))) {
-        http_response_code(503);
-        echo tpl_render('auth.lockdown', [
-            'message' => config_get_default(null, 'Auth', 'lockdown_msg'),
-        ]);
-        exit;
-    }
-
     if (file_exists(MSZ_ROOT . '/.migrating')) {
         http_response_code(503);
         echo tpl_render('auth.lockdown', [
@@ -448,32 +438,32 @@ MIG;
         empty($userDisplayInfo) ? ip_remote_address() : $cookieData['session_token']
     );
 
-    if (!$misuzuBypassLockdown && boolval(config_get_default(false, 'Private', 'enabled'))) {
-        if (user_session_active()) {
-            $privatePermission = intval(config_get_default(0, 'Private', 'permission'));
+    if (config_get_default(false, 'Private', 'enabled')) {
+        $onLoginPage = $_SERVER['PHP_SELF'] === url('auth-login');
+        $onPasswordPage = parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH) === url('auth-forgot');
+        $misuzuBypassLockdown = !empty($misuzuBypassLockdown) || $onLoginPage;
 
-            if ($privatePermission > 0) {
-                $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
+        if (!$misuzuBypassLockdown) {
+            if (user_session_active()) {
+                $privatePermission = (int)config_get_default(0, 'Private', 'permission');
 
-                if (!perms_check($generalPerms, $privatePermission)) {
-                    unset($userDisplayInfo);
-                    user_session_stop(); // au revoir
+                if ($privatePermission > 0) {
+                    $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
+
+                    if (!perms_check($generalPerms, $privatePermission)) {
+                        unset($userDisplayInfo);
+                        user_session_stop(); // au revoir
+                    }
                 }
+            } elseif (!$onLoginPage && !($onPasswordPage && config_get_default(false, 'Private', 'password_reset'))) {
+                header(sprintf('Location: %s', url('auth-login')));
+                exit;
             }
-        } else {
-            http_response_code(401);
-            echo tpl_render('auth.private', [
-                'private_message'=> config_get_default('', 'Private', 'message'),
-            ]);
-            exit;
         }
     }
 
     if (!empty($userDisplayInfo)) {
         tpl_var('current_user', $userDisplayInfo);
-    } else {
-        // make sure the login csrf token is available
-        csrf_token('login');
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
