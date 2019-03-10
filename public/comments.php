@@ -87,9 +87,9 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        $vote = (int)($_GET['v'] ?? 0);
+        $vote = (int)($_GET['v'] ?? MSZ_COMMENTS_VOTE_INDIFFERENT);
 
-        if (!array_key_exists($vote, MSZ_COMMENTS_VOTE_TYPES)) {
+        if (!comments_vote_type_valid($vote)) {
             echo render_info_or_json($isXHR, 'Invalid vote action.', 400);
             break;
         }
@@ -102,7 +102,6 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        $vote = MSZ_COMMENTS_VOTE_TYPES[(int)($_GET['v'] ?? 0)];
         $voteResult = comments_vote_add(
             $comment,
             user_session_current('user_id', 0),

@@ -89,16 +89,23 @@
                     <div class="comment__actions">
                         {% if not is_deleted and user is not null %}
                             {% if perms.can_vote %}
-                                <a class="comment__action comment__action--link comment__action--vote comment__action--like{% if comment.comment_user_vote == 'Like' %} comment__action--voted{% endif %}" data-comment-id="{{ comment.comment_id }}" data-comment-vote="{{ comment.comment_user_vote == 'Like' ? '0' : '1' }}"
-                                href="{{ url('comment-vote', {'comment':comment.comment_id,'vote':comment.comment_user_vote == 'Like' ? '0' : '1'}) }}">
+                                {% set like_vote_state = comment.comment_user_vote == constant('MSZ_COMMENTS_VOTE_LIKE')
+                                    ? constant('MSZ_COMMENTS_VOTE_INDIFFERENT')
+                                    : constant('MSZ_COMMENTS_VOTE_LIKE') %}
+                                {% set dislike_vote_state = comment.comment_user_vote == constant('MSZ_COMMENTS_VOTE_DISLIKE')
+                                    ? constant('MSZ_COMMENTS_VOTE_INDIFFERENT')
+                                    : constant('MSZ_COMMENTS_VOTE_DISLIKE') %}
+
+                                <a class="comment__action comment__action--link comment__action--vote comment__action--like{% if comment.comment_user_vote == constant('MSZ_COMMENTS_VOTE_LIKE') %} comment__action--voted{% endif %}" data-comment-id="{{ comment.comment_id }}" data-comment-vote="{{ like_vote_state }}"
+                                href="{{ url('comment-vote', {'comment':comment.comment_id,'vote':like_vote_state}) }}">
                                     <!--i class="fas fa-thumbs-up"></i-->
                                     Like
                                     {% if comment.comment_likes > 0 %}
                                         ({{ comment.comment_likes|number_format }})
                                     {% endif %}
                                 </a>
-                                <a class="comment__action comment__action--link comment__action--vote comment__action--dislike{% if comment.comment_user_vote == 'Dislike' %} comment__action--voted{% endif %}" data-comment-id="{{ comment.comment_id }}" data-comment-vote="{{ comment.comment_user_vote == 'Dislike' ? '0' : '-1' }}"
-                                href="{{ url('comment-vote', {'comment':comment.comment_id,'vote':comment.comment_user_vote == 'Dislike' ? '0' : '-1'}) }}">
+                                <a class="comment__action comment__action--link comment__action--vote comment__action--dislike{% if comment.comment_user_vote == constant('MSZ_COMMENTS_VOTE_DISLIKE') %} comment__action--voted{% endif %}" data-comment-id="{{ comment.comment_id }}" data-comment-vote="{{ dislike_vote_state }}"
+                                href="{{ url('comment-vote', {'comment':comment.comment_id,'vote':dislike_vote_state}) }}">
                                     <!--i class="fas fa-thumbs-down"></i-->
                                     Dislike
                                     {% if comment.comment_dislikes > 0 %}

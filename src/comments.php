@@ -10,13 +10,13 @@ define('MSZ_PERM_COMMENTS_PIN', 1 << 5);
 define('MSZ_PERM_COMMENTS_LOCK', 1 << 6);
 define('MSZ_PERM_COMMENTS_VOTE', 1 << 7);
 
-define('MSZ_COMMENTS_VOTE_INDIFFERENT', null);
-define('MSZ_COMMENTS_VOTE_LIKE', 'Like');
-define('MSZ_COMMENTS_VOTE_DISLIKE', 'Dislike');
+define('MSZ_COMMENTS_VOTE_INDIFFERENT', 0);
+define('MSZ_COMMENTS_VOTE_LIKE', 1);
+define('MSZ_COMMENTS_VOTE_DISLIKE', -1);
 define('MSZ_COMMENTS_VOTE_TYPES', [
-    0 => MSZ_COMMENTS_VOTE_INDIFFERENT,
-    1 => MSZ_COMMENTS_VOTE_LIKE,
-    -1 => MSZ_COMMENTS_VOTE_DISLIKE,
+    MSZ_COMMENTS_VOTE_INDIFFERENT,
+    MSZ_COMMENTS_VOTE_LIKE,
+    MSZ_COMMENTS_VOTE_DISLIKE,
 ]);
 
 // gets parsed on post
@@ -24,6 +24,11 @@ define('MSZ_COMMENTS_MARKUP_USERNAME', '#\B(?:@{1}(' . MSZ_USERNAME_REGEX . '))#
 
 // gets parsed on fetch
 define('MSZ_COMMENTS_MARKUP_USER_ID', '#\B(?:@{2}([0-9]+))#u');
+
+function comments_vote_type_valid(int $voteType): bool
+{
+    return in_array($voteType, MSZ_COMMENTS_VOTE_TYPES, true);
+}
 
 function comments_parse_for_store(string $text): string
 {
@@ -115,9 +120,9 @@ function comments_pin_status(int $comment, bool $mode): ?string
     return $setPinStatus->execute() ? $status : null;
 }
 
-function comments_vote_add(int $comment, int $user, ?string $vote): bool
+function comments_vote_add(int $comment, int $user, int $vote = MSZ_COMMENTS_VOTE_INDIFFERENT): bool
 {
-    if (!in_array($vote, MSZ_COMMENTS_VOTE_TYPES, true)) {
+    if (!comments_vote_type_valid($vote)) {
         return false;
     }
 
@@ -135,21 +140,25 @@ function comments_vote_add(int $comment, int $user, ?string $vote): bool
 
 function comments_votes_get(int $commentId): array
 {
-    $getVotes = db_prepare('
-        SELECT :id as `id`,
-        (
-            SELECT COUNT(`user_id`)
-            FROM `msz_comments_votes`
-            WHERE `comment_id` = `id`
-            AND `comment_vote` = \'Like\'
-        ) as `likes`,
-        (
-            SELECT COUNT(`user_id`)
-            FROM `msz_comments_votes`
-            WHERE `comment_id` = `id`
-            AND `comment_vote` = \'Dislike\'
-        ) as `dislikes`
-    ');
+    $getVotes = db_prepare(sprintf(
+        '
+            SELECT :id as `id`,
+            (
+                SELECT COUNT(`user_id`)
+                FROM `msz_comments_votes`
+                WHERE `comment_id` = `id`
+                AND `comment_vote` = %1$d
+            ) as `likes`,
+            (
+                SELECT COUNT(`user_id`)
+                FROM `msz_comments_votes`
+                WHERE `comment_id` = `id`
+                AND `comment_vote` = %2$d
+            ) as `dislikes`
+        ',
+        MSZ_COMMENTS_VOTE_LIKE,
+        MSZ_COMMENTS_VOTE_DISLIKE
+    ));
     $getVotes->bindValue('id', $commentId);
     return db_fetch($getVotes);
 }
@@ -219,39 +228,43 @@ function comments_category_info($category, bool $createIfNone = false): array
         );
 }
 
-define('MSZ_COMMENTS_CATEGORY_QUERY', '
-    SELECT
-        p.`comment_id`, p.`comment_text`, p.`comment_reply_to`,
-        p.`comment_created`, p.`comment_pinned`, p.`comment_deleted`,
-        u.`user_id`, u.`username`,
-        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
-        (
-            SELECT COUNT(`comment_id`)
-            FROM `msz_comments_votes`
-            WHERE `comment_id` = p.`comment_id`
-            AND `comment_vote` = \'Like\'
-        ) as `comment_likes`,
-        (
-            SELECT COUNT(`comment_id`)
-            FROM `msz_comments_votes`
-            WHERE `comment_id` = p.`comment_id`
-            AND `comment_vote` = \'Dislike\'
-        ) as `comment_dislikes`,
-        (
-            SELECT `comment_vote`
-            FROM `msz_comments_votes`
-            WHERE `comment_id` = p.`comment_id`
-            AND `user_id` = :user
-        ) as `comment_user_vote`
-    FROM `msz_comments_posts` as p
-    LEFT JOIN `msz_users` as u
-    ON u.`user_id` = p.`user_id`
-    LEFT JOIN `msz_roles` as r
-    ON r.`role_id` = u.`display_role`
-    WHERE p.`category_id` = :category
-    %1$s
-    ORDER BY p.`comment_deleted` ASC, p.`comment_pinned` DESC, p.`comment_id` %2$s
-');
+define('MSZ_COMMENTS_CATEGORY_QUERY', sprintf(
+    '
+        SELECT
+            p.`comment_id`, p.`comment_text`, p.`comment_reply_to`,
+            p.`comment_created`, p.`comment_pinned`, p.`comment_deleted`,
+            u.`user_id`, u.`username`,
+            COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`,
+            (
+                SELECT COUNT(`comment_id`)
+                FROM `msz_comments_votes`
+                WHERE `comment_id` = p.`comment_id`
+                AND `comment_vote` = %1$d
+            ) AS `comment_likes`,
+            (
+                SELECT COUNT(`comment_id`)
+                FROM `msz_comments_votes`
+                WHERE `comment_id` = p.`comment_id`
+                AND `comment_vote` = %2$d
+            ) AS `comment_dislikes`,
+            (
+                SELECT `comment_vote`
+                FROM `msz_comments_votes`
+                WHERE `comment_id` = p.`comment_id`
+                AND `user_id` = :user
+            ) AS `comment_user_vote`
+        FROM `msz_comments_posts` AS p
+        LEFT JOIN `msz_users` AS u
+        ON u.`user_id` = p.`user_id`
+        LEFT JOIN `msz_roles` AS r
+        ON r.`role_id` = u.`display_role`
+        WHERE p.`category_id` = :category
+        %%1$s
+        ORDER BY p.`comment_deleted` ASC, p.`comment_pinned` DESC, p.`comment_id` %%2$s
+    ',
+    MSZ_COMMENTS_VOTE_LIKE,
+    MSZ_COMMENTS_VOTE_DISLIKE
+));
 
 // The $parent param should never be used outside of this function itself and should always remain the last of the list.
 function comments_category_get(int $category, int $user, ?int $parent = null): array
