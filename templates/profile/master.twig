@@ -26,10 +26,12 @@
     {
         'title': 'Topics',
         'value': profile.forum_topic_count,
+        'url': url('user-profile-forum-topics', {'user': profile.user_id}),
     },
     {
         'title': 'Posts',
         'value': profile.forum_post_count,
+        'url': url('user-profile-forum-posts', {'user': profile.user_id}),
     },
     {
         'title': 'Comments',

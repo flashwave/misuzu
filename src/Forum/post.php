@@ -129,7 +129,23 @@ function forum_post_get(int $postId, bool $allowDeleted = false): array
     return db_fetch($getPost);
 }
 
-function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $showDeleted = false): array
+function forum_post_count_user(int $userId, bool $showDeleted = false): int
+{
+    $getPosts = db_prepare(sprintf(
+        '
+            SELECT COUNT(p.`post_id`)
+            FROM `msz_forum_posts` AS p
+            WHERE `user_id` = :user_id
+            %1$s
+        ',
+        $showDeleted ? '' : 'AND `post_deleted` IS NULL'
+    ));
+    $getPosts->bindValue('user_id', $userId);
+
+    return (int)($getPosts->execute() ? $getPosts->fetchColumn() : 0);
+}
+
+function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $showDeleted = false, bool $selectAuthor = false): array
 {
     $hasPagination = $offset >= 0 && $take > 0;
     $getPosts = db_prepare(sprintf(
@@ -166,13 +182,14 @@ function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $
             ON u.`user_id` = p.`user_id`
             LEFT JOIN `msz_roles` AS r
             ON r.`role_id` = u.`display_role`
-            WHERE `topic_id` = :topic_id
+            WHERE `%3$s` = :topic_id
             %1$s
             ORDER BY `post_id`
             %2$s
         ',
         $showDeleted ? '' : 'AND `post_deleted` IS NULL',
-        $hasPagination ? 'LIMIT :offset, :take' : ''
+        $hasPagination ? 'LIMIT :offset, :take' : '',
+        $selectAuthor ? 'topic_id' : 'user_id'
     ));
     $getPosts->bindValue('topic_id', $topicId);
 

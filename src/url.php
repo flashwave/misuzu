@@ -58,6 +58,8 @@ define('MSZ_URLS', [
     'user-profile'                      => ['/profile.php',             ['u' => '<user>']],
     'user-profile-following'            => ['/profile.php',             ['u' => '<user>', 'm' => 'following']],
     'user-profile-followers'            => ['/profile.php',             ['u' => '<user>', 'm' => 'followers']],
+    'user-profile-forum-topics'         => ['/profile.php',             ['u' => '<user>', 'm' => 'forum-topics']],
+    'user-profile-forum-posts'          => ['/profile.php',             ['u' => '<user>', 'm' => 'forum-posts']],
     'user-profile-edit'                 => ['/profile.php',             ['u' => '<user>', 'edit' => '1']],
     'user-account-standing'             => ['/profile.php',             ['u' => '<user>'], 'account-standing'],
 

@@ -289,7 +289,7 @@ switch ($mode) {
 
         tpl_vars([
             'title' => 'flash / following',
-            'canonical_url' => url('user-profile-following', ['user' => $profile['user_id']]),
+            'canonical_url' => url('user-profile-following', ['user' => $userId]),
             'profile_users' => $following,
             'profile_relation_pagination' => $followingPagination,
         ]);
@@ -310,10 +310,45 @@ switch ($mode) {
 
         tpl_vars([
             'title' => 'flash / followers',
-            'canonical_url' => url('user-profile-followers', ['user' => $profile['user_id']]),
+            'canonical_url' => url('user-profile-followers', ['user' => $userId]),
             'profile_users' => $followers,
             'profile_relation_pagination' => $followerPagination,
-            ]);
+        ]);
+        break;
+
+    case 'forum-topics':
+        $template = 'profile.topics';
+        $topicsCount = forum_topic_count_user($userId, $currentUserId);
+        $topicsPagination = pagination_create($topicsCount, 20);
+        $topicsOffset = pagination_offset($topicsPagination, pagination_param());
+
+        if (!pagination_is_valid_offset($topicsOffset)) {
+            echo render_error(404);
+            return;
+        }
+
+        $topics = forum_topic_listing_user($userId, $currentUserId, $topicsOffset, $topicsPagination['range']);
+
+        tpl_vars([
+            'title' => 'flash / topics',
+            'canonical_url' => url('user-profile-forum-topics', ['user' => $userId]),
+            'profile_topics' => $topics,
+            'profile_topics_pagination' => $topicsPagination,
+        ]);
+        break;
+
+    case 'forum-posts':
+        $template = 'profile.posts';
+        $postsCount = forum_post_count_user($userId);
+        $postsPagination = pagination_create($postsCount, 20);
+        $postsOffset = pagination_offset($postsPagination, pagination_param());
+
+        if (!pagination_is_valid_offset($postsOffset)) {
+            echo render_error(404);
+            return;
+        }
+
+        $posts = forum_post_listing($userId, $postsOffset, $postsPagination['range'], false, true);
         break;
 
     case '':
