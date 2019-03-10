@@ -8,8 +8,17 @@ if (!user_session_active()) {
 
 $errors = [];
 
-$currentEmail = user_email_get(user_session_current('user_id'));
-$isRestricted = user_warning_check_restriction(user_session_current('user_id'));
+$currentUserId = user_session_current('user_id');
+$currentEmail = user_email_get($currentUserId);
+$isRestricted = user_warning_check_restriction($currentUserId);
+
+$getTwoFactorInfo = db_prepare('
+    SELECT `username`, `user_totp_key` IS NOT NULL AS `totp_enabled`
+    FROM `msz_users`
+    WHERE `user_id` = :user_id
+');
+$getTwoFactorInfo->bindValue('user_id', $currentUserId);
+$twoFactorInfo = db_fetch($getTwoFactorInfo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_verify('settings', $_POST['csrf'] ?? '')) {
@@ -23,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $sessionId = intval($sessionId);
                     $session = user_session_find($sessionId);
 
-                    if (!$session || (int)$session['user_id'] !== user_session_current('user_id')) {
+                    if (!$session || (int)$session['user_id'] !== $currentUserId) {
                         $errors[] = "Session #{$sessionId} does not exist.";
                         break;
                     } elseif ((int)$session['session_id'] === user_session_current('session_id')) {
@@ -31,14 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     user_session_delete($session['session_id']);
-                    audit_log(MSZ_AUDIT_PERSONAL_SESSION_DESTROY, user_session_current('user_id'), [
+                    audit_log(MSZ_AUDIT_PERSONAL_SESSION_DESTROY, $currentUserId, [
                         $session['session_id'],
                     ]);
                 }
             } elseif ($_POST['session'] === 'all') {
                 $currentSessionKilled = true;
-                user_session_purge_all(user_session_current('user_id'));
-                audit_log(MSZ_AUDIT_PERSONAL_SESSION_DESTROY_ALL, user_session_current('user_id'));
+                user_session_purge_all($currentUserId);
+                audit_log(MSZ_AUDIT_PERSONAL_SESSION_DESTROY_ALL, $currentUserId);
             }
 
             if ($currentSessionKilled) {
@@ -50,15 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!empty($_POST['role']) && !$isRestricted) {
             $roleId = (int)($_POST['role']['id'] ?? 0);
 
-            if ($roleId > 0 && user_role_has(user_session_current('user_id'), $roleId)) {
+            if ($roleId > 0 && user_role_has($currentUserId, $roleId)) {
                 switch ($_POST['role']['mode'] ?? '') {
                     case 'display':
-                        user_role_set_display(user_session_current('user_id'), $roleId);
+                        user_role_set_display($currentUserId, $roleId);
                         break;
 
                     case 'leave':
                         if (user_role_can_leave($roleId)) {
-                            user_role_remove(user_session_current('user_id'), $roleId);
+                            user_role_remove($currentUserId, $roleId);
                         } else {
                             $errors[] = "You're not allow to leave this role, an administrator has to remove it for you.";
                         }
@@ -69,8 +78,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        if (isset($_POST['tfa']['enable']) && (bool)$twoFactorInfo['totp_enabled'] !== (bool)$_POST['tfa']['enable']) {
+            $updateTotpKey = db_prepare('
+                UPDATE `msz_users`
+                SET `user_totp_key` = :key
+                WHERE `user_id` = :user_id
+            ');
+            $updateTotpKey->bindValue('user_id', $currentUserId);
+
+            if ((bool)$_POST['tfa']['enable']) {
+                $tfaKey = totp_generate_key();
+
+                tpl_vars([
+                    'settings_2fa_code' => $tfaKey,
+                    'settings_2fa_image' => totp_qrcode(totp_uri(
+                        sprintf(
+                            '%s:%s',
+                            config_get_default('Misuzu', 'Site', 'name'),
+                            $twoFactorInfo['username']
+                        ),
+                        $tfaKey,
+                        $_SERVER['HTTP_HOST']
+                    )),
+                ]);
+
+                $updateTotpKey->bindValue('key', $tfaKey);
+            } else {
+                $updateTotpKey->bindValue('key', null);
+            }
+
+            if ($updateTotpKey->execute()) {
+                $twoFactorInfo['totp_enabled'] = !$twoFactorInfo['totp_enabled'];
+            } else {
+                $errors[] = 'Failed to save Two Factor Authentication state.';
+            }
+        }
+
         if (!empty($_POST['current_password'])) {
-            if (!user_password_verify_db(user_session_current('user_id'), $_POST['current_password'] ?? '')) {
+            if (!user_password_verify_db($currentUserId, $_POST['current_password'] ?? '')) {
                 $errors[] = 'Your password was incorrect.';
             } else {
                 // Changing e-mail
@@ -100,8 +145,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     $errors[] = 'Unknown e-mail validation error.';
                             }
                         } else {
-                            user_email_set(user_session_current('user_id'), $_POST['email']['new']);
-                            audit_log(MSZ_AUDIT_PERSONAL_EMAIL_CHANGE, user_session_current('user_id'), [
+                            user_email_set($currentUserId, $_POST['email']['new']);
+                            audit_log(MSZ_AUDIT_PERSONAL_EMAIL_CHANGE, $currentUserId, [
                                 $_POST['email']['new'],
                             ]);
                         }
@@ -118,8 +163,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if ($checkPassword !== '') {
                             $errors[] = 'The given passwords was too weak.';
                         } else {
-                            user_password_set(user_session_current('user_id'), $_POST['password']['new']);
-                            audit_log(MSZ_AUDIT_PERSONAL_PASSWORD_CHANGE, user_session_current('user_id'));
+                            user_password_set($currentUserId, $_POST['password']['new']);
+                            audit_log(MSZ_AUDIT_PERSONAL_PASSWORD_CHANGE, $currentUserId);
                         }
                     }
                 }
@@ -131,17 +176,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $sessions = [
     'list' => [],
     'active' => user_session_current('session_id'),
-    'pagination' => pagination_create(user_session_count(user_session_current('user_id')), 15),
+    'pagination' => pagination_create(user_session_count($currentUserId), 15),
 ];
 
 $logins = [
     'list' => [],
-    'pagination' => pagination_create(user_login_attempts_count(user_session_current('user_id')), 15),
+    'pagination' => pagination_create(user_login_attempts_count($currentUserId), 15),
 ];
 
 $logs = [
     'list' => [],
-    'pagination' => pagination_create(audit_log_count(user_session_current('user_id')), 15),
+    'pagination' => pagination_create(audit_log_count($currentUserId), 15),
     'strings' => MSZ_AUDIT_LOG_STRINGS,
 ];
 
@@ -155,20 +200,20 @@ foreach (['sessions', 'logins', 'logs'] as $section) {
 $sessions['list'] = user_session_list(
     $sessions['pagination']['offset'],
     $sessions['pagination']['range'],
-    user_session_current('user_id')
+    $currentUserId
 );
 $logins['list'] = user_login_attempts_list(
     $logins['pagination']['offset'],
     $logins['pagination']['range'],
-    user_session_current('user_id')
+    $currentUserId
 );
 $logs['list'] = audit_log_list(
     $logs['pagination']['offset'],
     $logs['pagination']['range'],
-    user_session_current('user_id')
+    $currentUserId
 );
 
-$userRoles = user_role_all_user(user_session_current('user_id'));
+$userRoles = user_role_all_user($currentUserId);
 
 echo tpl_render('user.settings', [
     'errors' => $errors,
@@ -177,6 +222,7 @@ echo tpl_render('user.settings', [
     'logins' => $logins,
     'logs' => $logs,
     'user_roles' => $userRoles,
-    'user_display_role' => user_role_get_display(user_session_current('user_id')),
+    'user_display_role' => user_role_get_display($currentUserId),
     'is_restricted' => $isRestricted,
+    'settings_2fa_enabled' => $twoFactorInfo['totp_enabled'],
 ]);

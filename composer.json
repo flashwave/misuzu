@@ -7,7 +7,7 @@
         "issues": "https://github.com/flashwave/misuzu/issues"
     },
     "require": {
-        "php": ">=7.2",
+        "php": "^7.2",
         "ext-bcmath": "*",
         "ext-mbstring": "*",
         "twig/twig": "~2.4",
@@ -16,7 +16,8 @@
         "geoip2/geoip2": "~2.0",
         "twig/extensions": "^1.5",
         "filp/whoops": "^2.2",
-        "jublonet/codebird-php": "^3.1"
+        "jublonet/codebird-php": "^3.1",
+        "chillerlan/php-qrcode": "^3.0"
     },
     "autoload": {
         "classmap": [

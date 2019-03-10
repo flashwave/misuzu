@@ -59,7 +59,7 @@ function user_create(
 function user_find_for_login(string $usernameOrMail): array
 {
     $getUser = db_prepare('
-        SELECT `user_id`, `password`
+        SELECT `user_id`, `password`, `user_totp_key`
         FROM `msz_users`
         WHERE LOWER(`email`) = LOWER(:email)
         OR LOWER(`username`) = LOWER(:username)

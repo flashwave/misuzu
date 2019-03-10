@@ -1,0 +1,43 @@
+.settings__two-factor {
+    display: flex;
+    margin: 5px;
+
+    @media (max-width: @site-mobile-width) {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    &__code {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #fff;
+        flex: 0 0 auto;
+
+        &__image {
+            vertical-align: middle;
+            flex: 0 0 auto;
+        }
+
+        &__text {
+            color: #000;
+            flex: 0 0 auto;
+            font-size: 1.2em;
+            line-height: 1.5em;
+            font-family: @mio-font-mono;
+        }
+    }
+
+    &__settings {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        flex: 1 1 auto;
+
+        &__status {
+            font-size: 1.5em;
+            line-height: 2em;
+        }
+    }
+}

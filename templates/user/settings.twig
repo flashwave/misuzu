@@ -6,7 +6,8 @@
 {% set title = 'Settings' %}
 {% set menu = {
     'account': ['<i class="fas fa-user fa-fw"></i> Account', true],
-    'roles': ['<i class="fas fa-user-check"></i> Roles', not is_restricted],
+    'roles': ['<i class="fas fa-user-check fa-fw"></i> Roles', not is_restricted],
+    'tfa': ['<i class="fas fa-unlock-alt fa-fw"></i> Two Factor Authentication', true],
     'sessions': ['<i class="fas fa-key fa-fw"></i> Sessions', true],
     'login-attempts': ['<i class="fas fa-user-lock fa-fw"></i> Login Attempts', true],
     'account-log': ['<i class="fas fa-file-alt fa-fw"></i> Account Log', true],
@@ -40,7 +41,7 @@
         </div>
 
         <div class="settings__wrapper__content">
-            <form action="" method="post" class="container settings__container" id="account">
+            <form action="{{ url('settings-index') }}" method="post" class="container settings__container" id="account">
                 {{ container_title('<i class="fas fa-user fa-fw"></i> Account') }}
                 {{ input_csrf('settings') }}
 
@@ -143,6 +144,40 @@
                 </div>
             {% endif %}
 
+            <form action="{{ url('settings-index') }}" method="post" class="container settings__container" id="tfa">
+                {{ container_title('<i class="fas fa-unlock-alt fa-fw"></i> Two Factor Authentication') }}
+                {{ input_csrf('settings') }}
+
+                <div class="settings__description">
+                    <p>Secure your account by requiring a second step during log in in the form of a time based code. You can use applications like Authy, Google or Microsoft Authenticator or other compliant TOTP applications.</p>
+                </div>
+
+                <div class="settings__two-factor">
+                    {% if settings_2fa_image is defined and settings_2fa_code is defined %}
+                        <div class="settings__two-factor__code">
+                            <div class="settings__two-factor__code__text">
+                                {{ settings_2fa_code }}
+                            </div>
+                            <img src="{{ settings_2fa_image }}" alt="{{ settings_2fa_code }}" class="settings__two-factor__code__image">
+                        </div>
+                    {% endif %}
+
+                    <div class="settings__two-factor__settings">
+                        {% if settings_2fa_enabled %}
+                            <div class="settings__two-factor__settings__status">
+                                <i class="fas fa-lock fa-fw"></i> Two Factor Authentication is enabled!
+                            </div>
+                            <button class="input__button" name="tfa[enable]" value="0">Disable</button>
+                        {% else %}
+                            <div class="settings__two-factor__settings__status">
+                                <i class="fas fa-lock-open fa-fw"></i> Two Factor Authentication is disabled.
+                            </div>
+                            <button class="input__button" name="tfa[enable]" value="1">Enable</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+
             <div class="container settings__container" id="sessions">
                 {{ container_title('<i class="fas fa-key fa-fw"></i> Sessions') }}
                 {% set spagination = pagination(sessions.pagination, url('settings-index'), null, {
@@ -155,7 +190,7 @@
                 </div>
 
                 <div class="settings__sessions">
-                    <form action="" method="post" class="settings__sessions__all">
+                    <form action="{{ url('settings-index') }}" method="post" class="settings__sessions__all">
                         {{ input_csrf('settings') }}
                         {{ input_hidden('session', 'all') }}
 

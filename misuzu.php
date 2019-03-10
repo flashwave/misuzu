@@ -28,6 +28,7 @@ $errorHandler->register();
 
 require_once 'src/array.php';
 require_once 'src/audit_log.php';
+require_once 'src/base32.php';
 require_once 'src/changelog.php';
 require_once 'src/colour.php';
 require_once 'src/comments.php';
@@ -40,6 +41,7 @@ require_once 'src/integer.php';
 require_once 'src/mail.php';
 require_once 'src/manage.php';
 require_once 'src/news.php';
+require_once 'src/otp.php';
 require_once 'src/pagination.php';
 require_once 'src/perms.php';
 require_once 'src/string.php';

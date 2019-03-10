@@ -28,6 +28,7 @@ while (!empty($login->value('array'))) {
     }
 
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $loginRedirect = $login->redirect->value('string', '');
 
     if ($login->username->empty() || $login->password->empty()) {
         $notices[] = "You didn't fill in a username and/or password.";
@@ -39,12 +40,14 @@ while (!empty($login->value('array'))) {
         break;
     }
 
-    $userData = user_find_for_login($login->username->value('string', ''));
-    $loginFailedError = sprintf(
-        "Invalid username or password, %d attempt%s remaining.",
+    $loginUsername = $login->username->value('string', '');
+    $userData = user_find_for_login($loginUsername);
+    $attemptsRemainingError = sprintf(
+        "%d attempt%s remaining",
         $remainingAttempts - 1,
         $remainingAttempts === 2 ? '' : 's'
     );
+    $loginFailedError = "Invalid username or password, {$attemptsRemainingError}.";
 
     if (empty($userData) || $userData['user_id'] < 1) {
         user_login_attempt_record(false, null, $ipAddress, $userAgent);
@@ -52,19 +55,45 @@ while (!empty($login->value('array'))) {
         break;
     }
 
-    if (!password_verify($login->password->value('string', ''), $userData['password'])) {
+    $loginPassword = $login->password->value('string', '');
+
+    if (isset($login->tfa)) {
+        $loginPassword = openssl_decrypt($loginPassword, 'aes-256-ecb', config_get_default('insecure', 'Auth', 'password_key'));
+    }
+
+    if (!password_verify($loginPassword, $userData['password'])) {
         user_login_attempt_record(false, $userData['user_id'], $ipAddress, $userAgent);
         $notices[] = $loginFailedError;
         break;
     }
 
-    user_login_attempt_record(true, $userData['user_id'], $ipAddress, $userAgent);
-
     if ($loginPermission > 0 && !perms_check_user(MSZ_PERMS_GENERAL, $userData['user_id'], $loginPermission)) {
         $notices[] = "Login succeeded, but you're not allowed to browse the site right now.";
+        user_login_attempt_record(true, $userData['user_id'], $ipAddress, $userAgent);
         break;
     }
 
+    if (!empty($userData['user_totp_key'])) {
+        $currentCode = totp_generate($userData['user_totp_key']);
+
+        if (isset($login->tfa) && $currentCode !== $login->tfa->value('string', '')) {
+            $notices[] = "Invalid two factor code, {$attemptsRemainingError}.";
+            user_login_attempt_record(false, $userData['user_id'], $ipAddress, $userAgent);
+        }
+
+        if (!isset($login->tfa) || !empty($notices)) {
+            echo tpl_render('auth.twofactor', [
+                'login_notices' => $notices,
+                'login_username' => $loginUsername,
+                'login_redirect' => $loginRedirect,
+                // red flags, this should be fine but probably replaced with a token system going forward
+                'login_password' => openssl_encrypt($loginPassword, 'aes-256-ecb', config_get_default('insecure', 'Auth', 'password_key')),
+            ]);
+            return;
+        }
+    }
+
+    user_login_attempt_record(true, $userData['user_id'], $ipAddress, $userAgent);
     $sessionKey = user_session_create($userData['user_id'], $ipAddress, $userAgent);
 
     if (empty($sessionKey)) {
@@ -77,13 +106,11 @@ while (!empty($login->value('array'))) {
     $cookieValue = base64url_encode(user_session_cookie_pack($userData['user_id'], $sessionKey));
     setcookie('msz_auth', $cookieValue, $cookieLife, '/', '', true, true);
 
-    $redirect = $login->redirect->value('string', '');
-
-    if (!is_local_url($redirect)) {
-        $redirect = url('index');
+    if (!is_local_url($loginRedirect)) {
+        $loginRedirect = url('index');
     }
 
-    header("Location: {$redirect}");
+    header("Location: {$loginRedirect}");
     return;
 }
 
