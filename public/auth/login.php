@@ -102,6 +102,11 @@ while (!empty($login->value('array'))) {
     }
 
     user_session_start($userData['user_id'], $sessionKey);
+
+    if (user_password_needs_rehash($userData['password'])) {
+        user_password_set($userData['user_id'], $loginPassword);
+    }
+
     $cookieLife = strtotime(user_session_current('session_expires'));
     $cookieValue = base64url_encode(user_session_cookie_pack($userData['user_id'], $sessionKey));
     setcookie('msz_auth', $cookieValue, $cookieLife, '/', '', true, true);

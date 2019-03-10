@@ -102,6 +102,11 @@ function user_password_hash(string $password): string
     return password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO);
 }
 
+function user_password_needs_rehash(string $hash): bool
+{
+    return password_needs_rehash($hash, MSZ_USERS_PASSWORD_HASH_ALGO);
+}
+
 function user_password_set(int $userId, string $password): bool
 {
     $updatePassword = db_prepare('
