@@ -58,6 +58,9 @@ while ($canResetPassword) {
             throw new UnexpectedValueException('Password reset failed.');
         }
 
+        // disable two factor auth to prevent getting locked out of account entirely
+        user_totp_update($userId, null);
+
         user_recovery_token_invalidate($userId, $verificationCode);
 
         header(sprintf('Location: %s', url('auth-login', ['redirect' => '/'])));
