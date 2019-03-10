@@ -390,10 +390,7 @@ MIG;
 
     if (file_exists(MSZ_ROOT . '/.migrating')) {
         http_response_code(503);
-        echo tpl_render('auth.lockdown', [
-            'message' => "The site is currently updating, this shouldn't take long.<br><a href='javascript:location.reload(true)' class='link'>Retry</a>",
-            'message_title' => '<i class="fas fa-wrench"></i> Updating',
-        ]);
+        echo tpl_render('home.migration');
         exit;
     }
 

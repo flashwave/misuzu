@@ -1,0 +1,13 @@
+{% extends 'master_minimal.twig' %}
+{% from 'macros.twig' import container_title %}
+
+{% block content %}
+    <div class="container" style="max-width: 400px; margin: 2px auto">
+        {{ container_title('<i class="fas fa-wrench"></i> Updating') }}
+
+        <div style="margin: 5px;">
+            <p style="margin: 5px 0">The site is currently updating, this shouldn't take long.</p>
+            <p style="text-align: center"><a href="javascript:location.reload(true)" class="input__button">Retry</a></p>
+        </div>
+    </div>
+{% endblock %}

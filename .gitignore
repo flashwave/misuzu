@@ -7,6 +7,7 @@
 # Configuration
 /config/config.ini
 /.debug
+/.migrating
 
 # Storage
 /store
