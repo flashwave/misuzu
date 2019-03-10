@@ -5,18 +5,17 @@
 {% set title = 'Two Factor Authentication' %}
 
 {% block content %}
-    <form class="container auth__container auth__twofactor" method="post" action="{{ url('auth-login') }}">
+    <form class="container auth__container auth__twofactor" method="post" action="{{ url('auth-two-factor') }}">
         {{ container_title('<i class="fas fa-user-shield fa-fw"></i> Two Factor Authentication') }}
 
-        {{ input_csrf('login') }}
-        {{ input_hidden('login[redirect]', login_redirect) }}
-        {{ input_hidden('login[username]', login_username) }}
-        {{ input_hidden('login[password]', login_password) }}
+        {{ input_csrf('twofactor') }}
+        {{ input_hidden('twofactor[redirect]', twofactor_redirect) }}
+        {{ input_hidden('twofactor[token]', twofactor_token) }}
 
-        {% if login_notices|length > 0 %}
+        {% if twofactor_notices|length > 0 %}
             <div class="warning auth__warning">
                 <div class="warning__content">
-                    {% for notice in login_notices %}
+                    {% for notice in twofactor_notices %}
                         <p class="auth__warning__paragraph">{{ notice }}</p>
                     {% endfor %}
                 </div>
@@ -28,7 +27,7 @@
                Code
             </div>
             <div class="auth__label__value">
-                {{ input_text('login[tfa]', 'input__text--monospace auth__label__input', '', 'text', '', true, {'maxlength':6}, 1) }}
+                {{ input_text('twofactor[code]', 'input__text--monospace input__text--centre auth__label__input', '', 'text', '', true, {'maxlength':6}, 1) }}
             </div>
         </label>
 

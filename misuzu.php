@@ -57,6 +57,7 @@ require_once 'src/Forum/validate.php';
 require_once 'src/Net/geoip.php';
 require_once 'src/Net/ip.php';
 require_once 'src/Parsers/parse.php';
+require_once 'src/Users/auth.php';
 require_once 'src/Users/avatar.php';
 require_once 'src/Users/background.php';
 require_once 'src/Users/login_attempt.php';
@@ -207,6 +208,15 @@ if (PHP_SAPI === 'cli') {
                         'type' => 'func',
                         'run' => $runLowFreq,
                         'command' => 'forum_count_synchronise',
+                    ],
+                    [
+                        'name' => 'Clean up expired tfa tokens.',
+                        'type' => 'sql',
+                        'run' => true,
+                        'command' => "
+                            DELETE FROM `msz_auth_tfa`
+                            WHERE `tfa_created` < NOW() - INTERVAL 15 MINUTE
+                        ",
                     ],
                 ];
 

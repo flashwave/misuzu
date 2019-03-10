@@ -59,7 +59,7 @@ function user_create(
 function user_find_for_login(string $usernameOrMail): array
 {
     $getUser = db_prepare('
-        SELECT `user_id`, `password`, `user_totp_key`
+        SELECT `user_id`, `password`, `user_totp_key` IS NOT NULL AS `totp_enabled`
         FROM `msz_users`
         WHERE LOWER(`email`) = LOWER(:email)
         OR LOWER(`username`) = LOWER(:username)
@@ -126,7 +126,9 @@ function user_totp_info(int $userId): array
     }
 
     $getTwoFactorInfo = db_prepare('
-        SELECT `username`, `user_totp_key` IS NOT NULL AS `totp_enabled`
+        SELECT
+            `username`, `user_totp_key`,
+            `user_totp_key` IS NOT NULL AS `totp_enabled`
         FROM `msz_users`
         WHERE `user_id` = :user_id
     ');

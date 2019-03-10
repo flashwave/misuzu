@@ -19,6 +19,7 @@ define('MSZ_URLS', [
     'auth-reset'                        => ['/auth/password.php',       ['user' => '<user>']],
     'auth-logout'                       => ['/auth/logout.php',         ['token' => '{logout}']],
     'auth-resolve-user'                 => ['/auth/login.php',          ['resolve_user' => '<username>']],
+    'auth-two-factor'                   => ['/auth/twofactor.php',      ['token' => '<token>']],
 
     'changelog-index'                   => ['/changelog.php'],
     'changelog-change'                  => ['/changelog.php',           ['c' => '<change>']],

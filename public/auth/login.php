@@ -56,15 +56,14 @@ while (!empty($login->value('array'))) {
     }
 
     $loginPassword = $login->password->value('string', '');
-
-    if (isset($login->tfa)) {
-        $loginPassword = openssl_decrypt($loginPassword, 'aes-256-ecb', config_get_default('insecure', 'Auth', 'password_key'));
-    }
-
     if (!password_verify($loginPassword, $userData['password'])) {
         user_login_attempt_record(false, $userData['user_id'], $ipAddress, $userAgent);
         $notices[] = $loginFailedError;
         break;
+    }
+
+    if (user_password_needs_rehash($userData['password'])) {
+        user_password_set($userData['user_id'], $loginPassword);
     }
 
     if ($loginPermission > 0 && !perms_check_user(MSZ_PERMS_GENERAL, $userData['user_id'], $loginPermission)) {
@@ -73,24 +72,11 @@ while (!empty($login->value('array'))) {
         break;
     }
 
-    if (!empty($userData['user_totp_key'])) {
-        $currentCode = totp_generate($userData['user_totp_key']);
-
-        if (isset($login->tfa) && $currentCode !== $login->tfa->value('string', '')) {
-            $notices[] = "Invalid two factor code, {$attemptsRemainingError}.";
-            user_login_attempt_record(false, $userData['user_id'], $ipAddress, $userAgent);
-        }
-
-        if (!isset($login->tfa) || !empty($notices)) {
-            echo tpl_render('auth.twofactor', [
-                'login_notices' => $notices,
-                'login_username' => $loginUsername,
-                'login_redirect' => $loginRedirect,
-                // red flags, this should be fine but probably replaced with a token system going forward
-                'login_password' => openssl_encrypt($loginPassword, 'aes-256-ecb', config_get_default('insecure', 'Auth', 'password_key')),
-            ]);
-            return;
-        }
+    if ($userData['totp_enabled']) {
+        header(sprintf('Location: %s', url('auth-two-factor', [
+            'token' => user_auth_tfa_token_create($userData['user_id']),
+        ])));
+        return;
     }
 
     user_login_attempt_record(true, $userData['user_id'], $ipAddress, $userAgent);
@@ -102,10 +88,6 @@ while (!empty($login->value('array'))) {
     }
 
     user_session_start($userData['user_id'], $sessionKey);
-
-    if (user_password_needs_rehash($userData['password'])) {
-        user_password_set($userData['user_id'], $loginPassword);
-    }
 
     $cookieLife = strtotime(user_session_current('session_expires'));
     $cookieValue = base64url_encode(user_session_cookie_pack($userData['user_id'], $sessionKey));
@@ -121,7 +103,7 @@ while (!empty($login->value('array'))) {
 
 $welcomeMode = RequestVar::get()->welcome->value('bool', false);
 $loginUsername = $login->username->value('string') ?? RequestVar::get()->username->value('string', '');
-$loginRedirect = $welcomeMode ? '/' : RequestVar::get()->redirect->value('string') ?? $_SERVER['HTTP_REFERER'] ?? '/';
+$loginRedirect = $welcomeMode ? url('index') : RequestVar::get()->redirect->value('string') ?? $_SERVER['HTTP_REFERER'] ?? url('index');
 $sitePrivateMessage = $siteIsPrivate ? config_get_default('', 'Private', 'message') : '';
 $canResetPassword = $siteIsPrivate ? boolval(config_get_default(false, 'Private', 'password_reset')) : true;
 $canRegisterAccount = !$siteIsPrivate;
