@@ -119,6 +119,40 @@ function user_password_set(int $userId, string $password): bool
     return $updatePassword->execute();
 }
 
+function user_totp_info(int $userId): array
+{
+    if ($userId < 1) {
+        return [];
+    }
+
+    $getTwoFactorInfo = db_prepare('
+        SELECT `username`, `user_totp_key` IS NOT NULL AS `totp_enabled`
+        FROM `msz_users`
+        WHERE `user_id` = :user_id
+    ');
+    $getTwoFactorInfo->bindValue('user_id', $userId);
+
+    return db_fetch($getTwoFactorInfo);
+}
+
+function user_totp_update(int $userId, ?string $key): void
+{
+    if ($userId < 1) {
+        return;
+    }
+
+    $key = empty($key) ? null : $key;
+
+    $updateTotpKey = db_prepare('
+        UPDATE `msz_users`
+        SET `user_totp_key` = :key
+        WHERE `user_id` = :user_id
+    ');
+    $updateTotpKey->bindValue('user_id', $userId);
+    $updateTotpKey->bindValue('key', $key);
+    $updateTotpKey->execute();
+}
+
 function user_email_get(int $userId): string
 {
     if ($userId < 1) {

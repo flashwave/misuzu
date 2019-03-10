@@ -11,14 +11,7 @@ $errors = [];
 $currentUserId = user_session_current('user_id');
 $currentEmail = user_email_get($currentUserId);
 $isRestricted = user_warning_check_restriction($currentUserId);
-
-$getTwoFactorInfo = db_prepare('
-    SELECT `username`, `user_totp_key` IS NOT NULL AS `totp_enabled`
-    FROM `msz_users`
-    WHERE `user_id` = :user_id
-');
-$getTwoFactorInfo->bindValue('user_id', $currentUserId);
-$twoFactorInfo = db_fetch($getTwoFactorInfo);
+$twoFactorInfo = user_totp_info($currentUserId);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_verify('settings', $_POST['csrf'] ?? '')) {
@@ -79,13 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (isset($_POST['tfa']['enable']) && (bool)$twoFactorInfo['totp_enabled'] !== (bool)$_POST['tfa']['enable']) {
-            $updateTotpKey = db_prepare('
-                UPDATE `msz_users`
-                SET `user_totp_key` = :key
-                WHERE `user_id` = :user_id
-            ');
-            $updateTotpKey->bindValue('user_id', $currentUserId);
-
             if ((bool)$_POST['tfa']['enable']) {
                 $tfaKey = totp_generate_key();
 
@@ -102,16 +88,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     )),
                 ]);
 
-                $updateTotpKey->bindValue('key', $tfaKey);
+                user_totp_update($currentUserId, $tfaKey);
             } else {
-                $updateTotpKey->bindValue('key', null);
+                user_totp_update($currentUserId, null);
             }
 
-            if ($updateTotpKey->execute()) {
-                $twoFactorInfo['totp_enabled'] = !$twoFactorInfo['totp_enabled'];
-            } else {
-                $errors[] = 'Failed to save Two Factor Authentication state.';
-            }
+            $twoFactorInfo['totp_enabled'] = !$twoFactorInfo['totp_enabled'];
         }
 
         if (!empty($_POST['current_password'])) {
