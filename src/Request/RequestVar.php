@@ -1,5 +1,5 @@
 <?php
- namespace Misuzu\Request;
+namespace Misuzu\Request;
 
 class RequestVar
 {
@@ -15,17 +15,24 @@ class RequestVar
 
     public static function get(): RequestVar
     {
-        return new static($_GET ?? []);
+        static $instance = null;
+
+        if (is_null($instance)) {
+            $instance = new static($_GET ?? []);
+        }
+
+        return $instance;
     }
 
     public static function post(): RequestVar
     {
-        return new static($_POST ?? []);
-    }
+        static $instance = null;
 
-    public static function request(): RequestVar
-    {
-        return new static($_REQUEST);
+        if (is_null($instance)) {
+            $instance = new static($_POST ?? []);
+        }
+
+        return $instance;
     }
 
     public function __get(string $name)
@@ -57,44 +64,76 @@ class RequestVar
         return empty($this->value);
     }
 
+    public function raw()
+    {
+        return $this->value;
+    }
+
     public function select(string $name): RequestVar
     {
         switch ($this->type) {
             case 'array':
-                return new static($this->value[$name] ?? []);
+                return new static($this->value[$name] ?? null);
 
             case 'object':
-                return new static($this->value->{$name} ?? new \stdClass);
+                return new static($this->value->{$name} ?? null);
 
             default:
                 return new static(null);
         }
     }
 
+    public function string(?string $default = null): ?string
+    {
+        return mb_scrub(preg_replace('/[\x00-\x09\x0B-\x0C\x0D-\x1F\x7F]/u', '', (string)$this->value));
+    }
+
+    public function int(?int $default = null): ?int
+    {
+        return (int)$this->value == $this->value ? (int)$this->value : $default;
+    }
+
+    public function bool(?bool $default = null): bool
+    {
+        return (bool)$this->value == $this->value ? (bool)$this->value : $default;
+    }
+
+    public function float(?float $default = null): float
+    {
+        return (float)$this->value == $this->value ? (float)$this->value : $default;
+    }
+
+    // avoid using when possible
     public function value(string $type = 'string', $default = null)
     {
         if (!is_null($this->valueCasted)) {
-            $this->valueCasted;
+            return $this->valueCasted;
         }
 
         if ($this->type === 'NULL' || (($type === 'object' || $type === 'array') && $this->type !== $type)) {
-            return $default;
+            return $this->valueCasted = $default;
         }
 
-        if ($type !== 'string' && $this->type === 'string') {
+        if ($type === 'string') {
+            // Remove undesired control characters, can be circumvented by using ->raw()
+            $value = $this->string($default);
+        } elseif ($type !== 'string' && $this->type === 'string') {
             switch ($type) {
                 case 'boolean':
                 case 'bool':
-                    return (bool)$this->value;
+                    $value = $this->bool($default);
+                    break;
                 case 'integer':
                 case 'int':
-                    return (int)$this->value;
+                    $value = $this->int($default);
+                    break;
                 case 'double':
                 case 'float':
-                    return (float)$this->value;
+                    $value = $this->float($default);
+                    break;
             }
         } elseif ($type !== $this->type) {
-            return $default;
+            $value = $default;
         }
 
         return $this->valueCasted = $this->value;

@@ -1,4 +1,6 @@
 <?php
+use Misuzu\Request\RequestVar;
+
 require_once '../../misuzu.php';
 
 $currentUserId = user_session_current('user_id', 0);
@@ -12,7 +14,7 @@ tpl_vars([
     'can_manage_warns' => $canManageWarnings = perms_check($userPerms, MSZ_PERM_USER_MANAGE_WARNINGS),
 ]);
 
-switch ($_GET['v'] ?? null) {
+switch (RequestVar::get()->select('v')->string()) {
     default:
     case 'listing':
         if (!$canManageUsers && !$canManagePerms) {
@@ -63,7 +65,7 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $userId = (int)($_GET['u'] ?? 0);
+        $userId = RequestVar::get()->select('u')->int();
 
         if ($userId < 1) {
             echo render_error(404);
@@ -302,7 +304,7 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $roleId = $_GET['r'] ?? null;
+        $roleId = RequestVar::get()->select('r')->int();
 
         if ($canManagePerms) {
             tpl_var('permissions', $permissions = manage_perms_list(perms_get_role_raw($roleId ?? 0)));
@@ -587,13 +589,15 @@ switch ($_GET['v'] ?? null) {
                         user_warning_remove($warningId);
                         break;
                 }
-                header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? '?m=warnings' . (empty($_GET['u']) ? '' : '&u=' . (int)($_GET['u']))));
+                header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? url('manage-user-warnings', [
+                    'user' => RequestVar::get()->select('u')->int(),
+                ])));
                 return;
             }
         }
 
         if (empty($warningsUser)) {
-            $warningsUser = max(0, (int)($_GET['u'] ?? 0));
+            $warningsUser = max(0, RequestVar::get()->select('u')->int());
         }
 
         $warningsPagination = pagination_create(user_warning_global_count($warningsUser), 50);

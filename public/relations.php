@@ -1,4 +1,6 @@
 <?php
+use Misuzu\Request\RequestVar;
+
 require_once '../misuzu.php';
 
 // basing whether or not this is an xhr request on whether a referrer header is present
@@ -32,8 +34,8 @@ if (user_warning_check_expiration($userId, MSZ_WARN_BAN) > 0) {
     return;
 }
 
-$subjectId = (int)($_GET['u'] ?? 0);
-$relationType = (int)($_GET['m'] ?? -1);
+$subjectId = RequestVar::get()->select('u')->int();
+$relationType = RequestVar::get()->select('m')->int(-1);
 
 if (!user_relation_is_valid_type($relationType)) {
     echo render_info_or_json($isXHR, 'Invalid relation type.', 400);

@@ -1,4 +1,6 @@
 <?php
+use Misuzu\Request\RequestVar;
+
 require_once '../../misuzu.php';
 
 if (!user_session_active()) {
@@ -16,15 +18,15 @@ $forumPostingModes = [
 ];
 
 if (!empty($_POST)) {
-    $mode = $_POST['post']['mode'] ?? 'create';
-    $postId = max(0, (int)($_POST['post']['id'] ?? 0));
-    $topicId = max(0, (int)($_POST['post']['topic'] ?? 0));
-    $forumId = max(0, (int)($_POST['post']['forum'] ?? 0));
+    $mode = RequestVar::post()->post->mode->string('create');
+    $postId = max(0, RequestVar::post()->post->id->int());
+    $topicId = max(0, RequestVar::post()->post->topic->int());
+    $forumId = max(0, RequestVar::post()->post->forum->int());
 } else {
-    $mode = $_GET['m'] ?? 'create';
-    $postId = max(0, (int)($_GET['p'] ?? 0));
-    $topicId = max(0, (int)($_GET['t'] ?? 0));
-    $forumId = max(0, (int)($_GET['f'] ?? 0));
+    $mode = RequestVar::get()->select('m')->string('create');
+    $postId = max(0, RequestVar::get()->select('p')->int());
+    $topicId = max(0, RequestVar::get()->select('t')->int());
+    $forumId = max(0, RequestVar::get()->select('f')->int());
 }
 
 if (!in_array($mode, $forumPostingModes, true)) {

@@ -1,10 +1,13 @@
 <?php
+use Misuzu\Request\RequestVar;
+
+// We need this before Misuzu is loaded, so no RequestVar here
 $userAssetsMode = (string)($_GET['m'] ?? null);
 $misuzuBypassLockdown = $userAssetsMode === 'avatar';
 
 require_once '../misuzu.php';
 
-$userId = (int)($_GET['u'] ?? 0);
+$userId = RequestVar::get()->select('u')->int();
 $userExists = user_exists($userId);
 
 $canViewImages = !$userExists

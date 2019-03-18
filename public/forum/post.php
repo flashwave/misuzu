@@ -1,8 +1,10 @@
 <?php
+use Misuzu\Request\RequestVar;
+
 require_once '../../misuzu.php';
 
-$postId = (int)($_GET['p'] ?? 0);
-$postMode = (string)($_GET['m'] ?? '');
+$postId = RequestVar::get()->select('p')->int();
+$postMode = RequestVar::get()->select('m')->string();
 
 // basing whether or not this is an xhr request on whether a referrer header is present
 // this page is never directy accessed, under normal circumstances
