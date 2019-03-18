@@ -1,10 +1,9 @@
 <?php
 // Delete this file in April 2019
-use Misuzu\Request\RequestVar;
 
 require_once '../misuzu.php';
 
-switch (RequestVar::get()->select('m')->string()) {
+switch ($_GET['m'] ?? '') {
     case 'logout':
         echo tpl_render('auth.logout');
         break;

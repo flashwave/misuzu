@@ -3,7 +3,7 @@ use Misuzu\Request\RequestVar;
 
 require_once '../../misuzu.php';
 
-$forumId = RequestVar::get()->select('f')->int(0);
+$forumId = RequestVar::get()->select('f')->value('int');
 $forumId = max($forumId, 0);
 
 if ($forumId === 0) {

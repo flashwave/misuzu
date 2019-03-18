@@ -1,9 +1,7 @@
 <?php
-use Misuzu\Request\RequestVar;
-
 require_once '../../misuzu.php';
 
-switch (RequestVar::get()->select('v')->string()) {
+switch ($_GET['v'] ?? null) {
     case 'listing':
         $forums = db_query('SELECT * FROM `msz_forum_categories`');
         $rawPerms = forum_perms_create();
@@ -24,7 +22,7 @@ switch (RequestVar::get()->select('v')->string()) {
             FROM `msz_forum_categories`
             WHERE `forum_id` = :forum_id
         ');
-        $getForum->bindValue('forum_id', RequestVar::get()->select('f')->int());
+        $getForum->bindValue('forum_id', (int)($_GET['f'] ?? 0));
         $forum = db_fetch($getForum);
 
         if (!$forum) {

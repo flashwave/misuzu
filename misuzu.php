@@ -371,12 +371,6 @@ MIG;
     // we're running this again because ob_clean breaks gzip otherwise
     ob_start();
 
-    if (!mb_check_encoding()) {
-        http_response_code(415);
-        echo 'Invalid request encoding.';
-        exit;
-    }
-
     if (!is_readable(MSZ_STORAGE) || !is_writable(MSZ_STORAGE)) {
         echo 'Cannot access storage directory.';
         exit;

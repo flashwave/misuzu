@@ -96,7 +96,6 @@ define('MSZ_URLS', [
 
     'manage-user-index'                 => ['/manage/users.php',        ['v' => 'listing']],
     'manage-user-edit'                  => ['/manage/users.php',        ['v' => 'view', 'u' => '<user>']],
-    'manage-user-warnings'              => ['/manage/users.php',        ['v' => 'warnings', 'u' => '<user>']],
 
     'manage-role-index'                 => ['/manage/users.php',        ['v' => 'roles']],
     'manage-role-create'                => ['/manage/users.php',        ['v' => 'role']],

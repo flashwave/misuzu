@@ -1,11 +1,9 @@
 <?php
-use Misuzu\Request\RequestVar;
-
 require_once '../../misuzu.php';
 
-switch (RequestVar::get()->select('m')->string()) {
+switch ($_GET['m'] ?? '') {
     case 'mark':
-        $forumId = RequestVar::get()->select('f')->int();
+        $forumId = (int)($_GET['f'] ?? null);
         $markEntireForum = $forumId === 0;
 
         if (user_session_active() && csrf_verify('forum_mark', $_GET['c'] ?? '')) {

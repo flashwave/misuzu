@@ -1,10 +1,8 @@
 <?php
-use Misuzu\Request\RequestVar;
-
 require_once '../../misuzu.php';
 
-$postId = RequestVar::get()->select('p')->int();
-$topicId = RequestVar::get()->select('t')->int();
+$postId = (int)($_GET['p'] ?? 0);
+$topicId = (int)($_GET['t'] ?? 0);
 
 $topicUserId = user_session_current('user_id', 0);
 
@@ -55,7 +53,7 @@ $canDelete = !$topicIsDeleted && (
     )
 );
 
-$moderationMode = RequestVar::get()->select('m')->string();
+$moderationMode = (string)($_GET['m'] ?? '');
 $validModerationModes = [
     'delete', 'restore', 'nuke',
     'bump', 'lock', 'unlock',
@@ -93,7 +91,7 @@ if (in_array($moderationMode, $validModerationModes, true)) {
         return;
     }
 
-    switch ($moderationMode) {
+    switch ($_GET['m'] ?? '') {
         case 'delete':
             $canDeleteCode = forum_topic_can_delete($topic, $topicUserId);
             $canDeleteMsg = '';

@@ -8,7 +8,7 @@ if (!user_session_active()) {
     return;
 }
 
-if (csrf_verify('logout', RequestVar::get()->token->string())) {
+if (csrf_verify('logout', RequestVar::get()->token->value('string', ''))) {
     setcookie('msz_auth', '', -9001, '/', '', true, true);
     user_session_stop(true);
     header(sprintf('Location: %s', url('index')));
