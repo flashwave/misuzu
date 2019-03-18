@@ -364,6 +364,12 @@ MIG;
         }
     }
 } else {
+    if (!mb_check_encoding()) {
+        http_response_code(415);
+        echo 'Invalid request encoding.';
+        exit;
+    }
+
     if (!MSZ_DEBUG) {
         ob_start('ob_gzhandler');
     }
