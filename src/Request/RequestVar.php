@@ -85,7 +85,7 @@ class RequestVar
 
     public function string(?string $default = null): ?string
     {
-        return mb_scrub(preg_replace('/[\x00-\x09\x0B-\x0C\x0D-\x1F\x7F]/u', '', (string)$this->value));
+        return empty($this->value) ? $default : mb_scrub(preg_replace('/[\x00-\x09\x0B-\x0C\x0D-\x1F\x7F]/u', '', (string)$this->value));
     }
 
     public function int(?int $default = null): ?int
