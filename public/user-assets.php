@@ -4,7 +4,7 @@ $misuzuBypassLockdown = $userAssetsMode === 'avatar';
 
 require_once '../misuzu.php';
 
-$userId = !empty($_GET['u']) && is_string($_GET['u']) ? (int)$_GET['m'] : 0;
+$userId = !empty($_GET['u']) && is_string($_GET['u']) ? (int)$_GET['u'] : 0;
 $userExists = user_exists($userId);
 
 $canViewImages = !$userExists
