@@ -93,12 +93,12 @@ class RequestVar
         return empty($this->value) ? $default : (int)$this->value;
     }
 
-    public function bool(?bool $default = null): bool
+    public function bool(?bool $default = null): ?bool
     {
         return empty($this->value) ? $default : (bool)$this->value;
     }
 
-    public function float(?float $default = null): float
+    public function float(?float $default = null): ?float
     {
         return empty($this->value) ? $default : (float)$this->value;
     }
