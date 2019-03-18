@@ -182,14 +182,14 @@ function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $
             ON u.`user_id` = p.`user_id`
             LEFT JOIN `msz_roles` AS r
             ON r.`role_id` = u.`display_role`
-            WHERE `%3$s` = :topic_id
+            WHERE %3$s = :topic_id
             %1$s
             ORDER BY `post_id`
             %2$s
         ',
         $showDeleted ? '' : 'AND `post_deleted` IS NULL',
         $hasPagination ? 'LIMIT :offset, :take' : '',
-        $selectAuthor ? 'topic_id' : 'user_id'
+        $selectAuthor ? 'p.`user_id`' : 'p.`topic_id`'
     ));
     $getPosts->bindValue('topic_id', $topicId);
 
