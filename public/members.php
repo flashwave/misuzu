@@ -3,9 +3,9 @@ use Misuzu\Request\RequestVar;
 
 require_once '../misuzu.php';
 
-$roleId = RequestVar::get()->select('r')->value('int', MSZ_ROLE_MAIN);
-$orderBy = RequestVar::get()->select('ss')->value();
-$orderDir = RequestVar::get()->select('sd')->value();
+$roleId = RequestVar::get()->select('r')->int(MSZ_ROLE_MAIN);
+$orderBy = RequestVar::get()->select('ss')->string();
+$orderDir = RequestVar::get()->select('sd')->string();
 
 $orderDirs = [
     'asc' => 'Ascending',

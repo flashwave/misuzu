@@ -39,8 +39,8 @@ if (user_warning_check_expiration($currentUserId, MSZ_WARN_SILENCE) > 0) {
 header(csrf_http_header('comments'));
 $commentPerms = comments_get_perms($currentUserId);
 
-$commentId = RequestVar::get()->select('c')->value('int', 0);
-$commentMode = RequestVar::get()->select('m')->value();
+$commentId = RequestVar::get()->select('c')->int();
+$commentMode = RequestVar::get()->select('m')->string();
 
 switch ($commentMode) {
     case 'pin':
@@ -91,7 +91,7 @@ switch ($commentMode) {
             break;
         }
 
-        $vote = RequestVar::get()->select('v')->value('int', MSZ_COMMENTS_VOTE_INDIFFERENT);
+        $vote = RequestVar::get()->select('v')->int(MSZ_COMMENTS_VOTE_INDIFFERENT);
 
         if (!comments_vote_type_valid($vote)) {
             echo render_info_or_json($isXHR, 'Invalid vote action.', 400);

@@ -5,14 +5,14 @@ require_once '../misuzu.php';
 
 if (RequestVar::get()->isset('n')) {
     header(sprintf('Location: %s', url('news-post', [
-       'post' => RequestVar::get()->select('n')->value('int'),
+       'post' => RequestVar::get()->select('n')->int(),
     ])));
     http_response_code(301);
     return;
 }
 
-$categoryId = RequestVar::get()->select('c')->value('int');
-$postId = RequestVar::get()->select('p')->value('int');
+$categoryId = RequestVar::get()->select('c')->int();
+$postId = RequestVar::get()->select('p')->int();
 
 if ($postId > 0) {
     $post = news_post_get($postId);

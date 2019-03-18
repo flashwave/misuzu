@@ -31,7 +31,7 @@ while (!$restricted && !empty($register->value('array'))) {
         break;
     }
 
-    $checkSpamBot = mb_strtolower($register->question->value('string', ''));
+    $checkSpamBot = mb_strtolower($register->question->string(''));
     $spamBotValid = [
         '19', '21', 'nineteen', 'nine-teen', 'nine teen', 'twentyone', 'twenty-one', 'twenty one',
     ];
@@ -41,13 +41,13 @@ while (!$restricted && !empty($register->value('array'))) {
         break;
     }
 
-    $username = $register->username->value('string', '');
+    $username = $register->username->string('');
     $usernameValidation = user_validate_username($username, true);
     if ($usernameValidation !== '') {
         $notices[] = MSZ_USER_USERNAME_VALIDATION_STRINGS[$usernameValidation];
     }
 
-    $email = $register->email->value('string', '');
+    $email = $register->email->string('');
     $emailValidation = user_validate_email($email, true);
     if ($emailValidation !== '') {
         $notices[] = $emailValidation === 'in-use'
@@ -55,7 +55,7 @@ while (!$restricted && !empty($register->value('array'))) {
             : 'The e-mail address you entered is invalid!';
     }
 
-    $password = $register->password->value('string', '');
+    $password = $register->password->string('');
     if (user_validate_password($password) !== '') {
         $notices[] = 'Your password is too weak!';
     }
@@ -83,7 +83,7 @@ while (!$restricted && !empty($register->value('array'))) {
 
 echo tpl_render('auth.register', [
     'register_notices' => $notices,
-    'register_username' => $register->username->value('string', ''),
-    'register_email' => $register->email->value('string', ''),
+    'register_username' => $register->username->string(''),
+    'register_email' => $register->email->string(''),
     'register_restricted' => $restricted,
 ]);

@@ -4,7 +4,7 @@ use Misuzu\Request\RequestVar;
 
 require_once '../misuzu.php';
 
-switch (RequestVar::get()->select('m')->value()) {
+switch (RequestVar::get()->select('m')->string()) {
     case 'logout':
         echo tpl_render('auth.logout');
         break;

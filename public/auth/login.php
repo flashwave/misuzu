@@ -10,7 +10,7 @@ if (user_session_active()) {
 
 if (isset(RequestVar::get()->resolve_user)) {
     header('Content-Type: text/plain; charset=utf-8');
-    echo user_id_from_username(RequestVar::get()->resolve_user->value('string'));
+    echo user_id_from_username(RequestVar::get()->resolve_user->string());
     return;
 }
 
@@ -28,7 +28,7 @@ while (!empty($login->value('array'))) {
     }
 
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-    $loginRedirect = $login->redirect->value('string', '');
+    $loginRedirect = $login->redirect->string('');
 
     if ($login->username->empty() || $login->password->empty()) {
         $notices[] = "You didn't fill in a username and/or password.";
@@ -40,7 +40,7 @@ while (!empty($login->value('array'))) {
         break;
     }
 
-    $loginUsername = $login->username->value('string', '');
+    $loginUsername = $login->username->string('');
     $userData = user_find_for_login($loginUsername);
     $attemptsRemainingError = sprintf(
         "%d attempt%s remaining",
@@ -55,7 +55,7 @@ while (!empty($login->value('array'))) {
         break;
     }
 
-    $loginPassword = $login->password->value('string', '');
+    $loginPassword = $login->password->string('');
     if (!password_verify($loginPassword, $userData['password'])) {
         user_login_attempt_record(false, $userData['user_id'], $ipAddress, $userAgent);
         $notices[] = $loginFailedError;
@@ -101,9 +101,9 @@ while (!empty($login->value('array'))) {
     return;
 }
 
-$welcomeMode = RequestVar::get()->welcome->value('bool', false);
-$loginUsername = $login->username->value('string') ?? RequestVar::get()->username->value('string', '');
-$loginRedirect = $welcomeMode ? url('index') : RequestVar::get()->redirect->value('string') ?? $_SERVER['HTTP_REFERER'] ?? url('index');
+$welcomeMode = RequestVar::get()->welcome->bool(false);
+$loginUsername = $login->username->string() ?? RequestVar::get()->username->string('');
+$loginRedirect = $welcomeMode ? url('index') : RequestVar::get()->redirect->string() ?? $_SERVER['HTTP_REFERER'] ?? url('index');
 $sitePrivateMessage = $siteIsPrivate ? config_get_default('', 'Private', 'message') : '';
 $canResetPassword = $siteIsPrivate ? boolval(config_get_default(false, 'Private', 'password_reset')) : true;
 $canRegisterAccount = !$siteIsPrivate;
