@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Request\RequestVar;
-
 require_once '../../misuzu.php';
 
 if (user_session_active()) {
@@ -8,29 +6,29 @@ if (user_session_active()) {
     return;
 }
 
-if (isset(RequestVar::get()->resolve_user)) {
+if (isset($_GET['resolve_user']) && is_string($_GET['resolve_user'])) {
     header('Content-Type: text/plain; charset=utf-8');
-    echo user_id_from_username(RequestVar::get()->resolve_user->value('string'));
+    echo user_id_from_username($_GET['resolve_user']);
     return;
 }
 
-$login = RequestVar::post()->login;
 $notices = [];
 $siteIsPrivate = boolval(config_get_default(false, 'Private', 'enabled'));
 $loginPermission = $siteIsPrivate ? intval(config_get_default(0, 'Private', 'permission')) : 0;
 $ipAddress = ip_remote_address();
 $remainingAttempts = user_login_attempts_remaining($ipAddress);
 
-while (!empty($login->value('array'))) {
+while (!empty($_POST['login']) && is_array($_POST['login'])) {
     if (!csrf_verify('login', $_POST['csrf'] ?? '')) {
         $notices[] = 'Was unable to verify the request, please try again!';
         break;
     }
 
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-    $loginRedirect = $login->redirect->value('string', '');
+    $loginRedirect = empty($_POST['login']['redirect']) || !is_string($_POST['login']['redirect']) ? '' : $_POST['login']['redirect'];
 
-    if ($login->username->empty() || $login->password->empty()) {
+    if (empty($_POST['login']['username']) || empty($_POST['login']['password'])
+        || !is_string($_POST['login']['username']) || !is_string($_POST['login']['password'])) {
         $notices[] = "You didn't fill in a username and/or password.";
         break;
     }
@@ -40,8 +38,7 @@ while (!empty($login->value('array'))) {
         break;
     }
 
-    $loginUsername = $login->username->value('string', '');
-    $userData = user_find_for_login($loginUsername);
+    $userData = user_find_for_login($_POST['login']['username']);
     $attemptsRemainingError = sprintf(
         "%d attempt%s remaining",
         $remainingAttempts - 1,
@@ -55,8 +52,7 @@ while (!empty($login->value('array'))) {
         break;
     }
 
-    $loginPassword = $login->password->value('string', '');
-    if (!password_verify($loginPassword, $userData['password'])) {
+    if (!password_verify($_POST['login']['password'], $userData['password'])) {
         user_login_attempt_record(false, $userData['user_id'], $ipAddress, $userAgent);
         $notices[] = $loginFailedError;
         break;
@@ -101,9 +97,11 @@ while (!empty($login->value('array'))) {
     return;
 }
 
-$welcomeMode = RequestVar::get()->welcome->value('bool', false);
-$loginUsername = $login->username->value('string') ?? RequestVar::get()->username->value('string', '');
-$loginRedirect = $welcomeMode ? url('index') : RequestVar::get()->redirect->value('string') ?? $_SERVER['HTTP_REFERER'] ?? url('index');
+$welcomeMode = !empty($_GET['welcome']);
+$loginUsername = !empty($_POST['login']['username']) && is_string($_POST['login']['username']) ? $_POST['login']['username'] : (
+    !empty($_GET['username']) && is_string($_GET['username']) ? $_GET['username'] : ''
+);
+$loginRedirect = $welcomeMode ? url('index') : (!empty($_GET['redirect']) && is_string($_GET['redirect']) ? $_GET['redirect'] : null) ?? $_SERVER['HTTP_REFERER'] ?? url('index');
 $sitePrivateMessage = $siteIsPrivate ? config_get_default('', 'Private', 'message') : '';
 $canResetPassword = $siteIsPrivate ? boolval(config_get_default(false, 'Private', 'password_reset')) : true;
 $canRegisterAccount = !$siteIsPrivate;

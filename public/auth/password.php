@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Request\RequestVar;
-
 require_once '../../misuzu.php';
 
 if (user_session_active()) {
@@ -8,9 +6,11 @@ if (user_session_active()) {
     return;
 }
 
-$reset = RequestVar::post()->reset;
-$forgot = RequestVar::post()->forgot;
-$userId = $reset->user->value('int') ?? RequestVar::get()->user->value('int', 0);
+$reset = !empty($_POST['reset']) && is_array($_POST['reset']) ? $_POST['reset'] : [];
+$forgot = !empty($_POST['forgot']) && is_array($_POST['forgot']) ? $_POST['forgot'] : [];
+$userId = !empty($reset['user']) ? (int)$reset['user'] : (
+    !empty($_GET['user']) ? (int)$_GET['user'] : 0
+);
 $username = $userId > 0 ? user_username_from_id($userId) : '';
 
 if ($userId > 0 && empty($username)) {
@@ -25,21 +25,22 @@ $ipAddress = ip_remote_address();
 $remainingAttempts = user_login_attempts_remaining($ipAddress);
 
 while ($canResetPassword) {
-    if (!empty($reset->value('array', null)) && $userId > 0) {
+    if (!empty($reset) && $userId > 0) {
         if (!csrf_verify('passreset', $_POST['csrf'] ?? '')) {
             $notices[] = 'Was unable to verify the request, please try again!';
             break;
         }
 
-        $verificationCode = $reset->verification->value('string', '');
+        $verificationCode = !empty($reset['verification']) && is_string($reset['verification']) ? $reset['verification'] : '';
 
         if (!user_recovery_token_validate($userId, $verificationCode)) {
             $notices[] = 'Invalid verification code!';
             break;
         }
 
-        $passwordNew = $reset->password->new->value('string', '');
-        $passwordConfirm = $reset->password->confirm->value('string', '');
+        $password = !empty($reset['password']) && is_array($reset['password']) ? $reset['password'] : [];
+        $passwordNew = !empty($password['new']) && is_string($password['new']) ? $password['new'] : '';
+        $passwordConfirm = !empty($password['confirm']) && is_string($password['confirm']) ? $password['confirm'] : '';
 
         if (empty($passwordNew) || empty($passwordConfirm)
             || $passwordNew !== $passwordConfirm) {
@@ -67,13 +68,13 @@ while ($canResetPassword) {
         return;
     }
 
-    if (!empty($forgot->value('array', null))) {
+    if (!empty($forgot)) {
         if (!csrf_verify('passforgot', $_POST['csrf'] ?? '')) {
             $notices[] = 'Was unable to verify the request, please try again!';
             break;
         }
 
-        if ($forgot->email->empty()) {
+        if (empty($forgot['email']) || !is_string($forgot['email'])) {
             $notices[] = "You didn't supply an e-mail address.";
             break;
         }
@@ -83,7 +84,7 @@ while ($canResetPassword) {
             break;
         }
 
-        $forgotUser = user_find_for_reset($forgot->email->value('string'));
+        $forgotUser = user_find_for_reset($forgot['email']);
 
         if (empty($forgotUser)) {
             $notices[] = "This e-mail address is not registered with us.";
@@ -129,7 +130,7 @@ MSG;
 
 echo tpl_render($userId > 0 ? 'auth.password_reset' : 'auth.password_forgot', [
     'password_notices' => $notices,
-    'password_email' => $forgot->email->value('string', ''),
+    'password_email' => !empty($forget['email']) && is_string($forget['email']) ? $forget['email'] : '',
     'password_attempts_remaining' => $remainingAttempts,
     'password_user_id' => $userId,
     'password_username' => $username,

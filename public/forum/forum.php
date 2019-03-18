@@ -1,9 +1,7 @@
 <?php
-use Misuzu\Request\RequestVar;
-
 require_once '../../misuzu.php';
 
-$forumId = RequestVar::get()->select('f')->value('int');
+$forumId = !empty($_GET['f']) && !is_array($_GET['f']) ? (int)$_GET['f'] : 0;
 $forumId = max($forumId, 0);
 
 if ($forumId === 0) {

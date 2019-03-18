@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Request\RequestVar;
-
 require_once '../../misuzu.php';
 
 if (user_session_active()) {
@@ -8,12 +6,14 @@ if (user_session_active()) {
     return;
 }
 
-$twofactor = RequestVar::post()->twofactor;
+$twofactor = !empty($_POST['twofactor']) && is_array($_POST['twofactor']) ? $_POST['twofactor'] : [];
 $notices = [];
 $ipAddress = ip_remote_address();
 $remainingAttempts = user_login_attempts_remaining($ipAddress);
 $tokenInfo = user_auth_tfa_token_info(
-    RequestVar::get()->token->value('string') ?? $twofactor->token->value('string', '')
+    !empty($_GET['token']) && is_string($_GET['token']) ? $_GET['token'] : (
+        !empty($twofactor['token']) && is_string($twofactor['token']) ? $twofactor['token'] : ''
+    )
 );
 
 // checking user_totp_key specifically because there's a fringe chance that
@@ -23,16 +23,16 @@ if (empty($tokenInfo['user_totp_key'])) {
     return;
 }
 
-while (!empty($twofactor->value('array'))) {
+while (!empty($twofactor)) {
     if (!csrf_verify('twofactor', $_POST['csrf'] ?? '')) {
         $notices[] = 'Was unable to verify the request, please try again!';
         break;
     }
 
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-    $redirect = $twofactor->redirect->value('string', '');
+    $redirect = !empty($twofactor['redirect']) && is_string($twofactor['redirect']) ? $twofactor['redirect'] : '';
 
-    if ($twofactor->code->empty()) {
+    if (empty($twofactor['code']) || !is_string($twofactor['code'])) {
         $notices[] = 'Code field was empty.';
         break;
     }
@@ -42,11 +42,10 @@ while (!empty($twofactor->value('array'))) {
         break;
     }
 
-    $givenCode = $twofactor->code->value('string', '');
     $currentCode = totp_generate($tokenInfo['user_totp_key']);
     $previousCode = totp_generate($tokenInfo['user_totp_key'], time() - 30);
 
-    if ($currentCode !== $givenCode && $previousCode !== $givenCode) {
+    if ($currentCode !== $twofactor['code'] && $previousCode !== $twofactor['code']) {
         $notices[] = sprintf(
             "Invalid two factor code, %d attempt%s remaining",
             $remainingAttempts - 1,
@@ -81,7 +80,7 @@ while (!empty($twofactor->value('array'))) {
 
 echo tpl_render('auth.twofactor', [
     'twofactor_notices' => $notices,
-    'twofactor_redirect' => RequestVar::get()->redirect->value('string') ?? url('index'),
+    'twofactor_redirect' => !empty($_GET['redirect']) && is_string($_GET['redirect']) ? $_GET['redirect'] : url('index'),
     'twofactor_attempts_remaining' => $remainingAttempts,
     'twofactor_token' => $tokenInfo['tfa_token'],
 ]);
