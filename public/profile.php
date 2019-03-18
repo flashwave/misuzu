@@ -24,7 +24,7 @@ $canEdit = !$isBanned
     && user_session_active()
     && (
         $viewingOwnProfile
-        || user_check_super($userId)
+        || user_check_super($currentUserId)
         || (
             perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS)
             && user_check_authority($currentUserId, $userId)
