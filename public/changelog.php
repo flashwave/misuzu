@@ -3,10 +3,10 @@ use Misuzu\Request\RequestVar;
 
 require_once '../misuzu.php';
 
-$changelogChange = RequestVar::get()->select('c')->int();
-$changelogDate = RequestVar::get()->select('d')->string();
-$changelogUser = RequestVar::get()->select('u')->int();
-$changelogTags = RequestVar::get()->select('t')->string();
+$changelogChange = RequestVar::get()->select('c')->int(0);
+$changelogDate = RequestVar::get()->select('d')->string('');
+$changelogUser = RequestVar::get()->select('u')->int(0);
+$changelogTags = RequestVar::get()->select('t')->string('');
 
 tpl_var('comments_perms', $commentPerms = comments_get_perms(user_session_current('user_id', 0)));
 

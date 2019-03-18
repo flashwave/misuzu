@@ -3,7 +3,7 @@ namespace Misuzu\Request;
 
 class RequestVar
 {
-    private $value;
+    private $value = null;
     private $valueCasted = null;
     private $type;
 
@@ -90,17 +90,17 @@ class RequestVar
 
     public function int(?int $default = null): ?int
     {
-        return (int)$this->value == $this->value ? (int)$this->value : $default;
+        return empty($this->value) ? $default : (int)$this->value;
     }
 
     public function bool(?bool $default = null): bool
     {
-        return (bool)$this->value == $this->value ? (bool)$this->value : $default;
+        return empty($this->value) ? $default : (bool)$this->value;
     }
 
     public function float(?float $default = null): float
     {
-        return (float)$this->value == $this->value ? (float)$this->value : $default;
+        return empty($this->value) ? $default : (float)$this->value;
     }
 
     // avoid using when possible
