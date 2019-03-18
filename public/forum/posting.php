@@ -16,15 +16,15 @@ $forumPostingModes = [
 ];
 
 if (!empty($_POST)) {
-    $mode = $_POST['post']['mode'] ?? 'create';
-    $postId = max(0, (int)($_POST['post']['id'] ?? 0));
-    $topicId = max(0, (int)($_POST['post']['topic'] ?? 0));
-    $forumId = max(0, (int)($_POST['post']['forum'] ?? 0));
+    $mode = !empty($_POST['post']['mode']) && is_string($_POST['post']['mode']) ? $_POST['post']['mode'] : 'create';
+    $postId = !empty($_POST['post']['id']) && is_string($_POST['post']['id']) ? (int)$_POST['post']['id'] : 0;
+    $topicId = !empty($_POST['post']['topic']) && is_string($_POST['post']['topic']) ? (int)$_POST['post']['topic'] : 0;
+    $forumId = !empty($_POST['post']['forum']) && is_string($_POST['post']['forum']) ? (int)$_POST['post']['forum'] : 0;
 } else {
-    $mode = $_GET['m'] ?? 'create';
-    $postId = max(0, (int)($_GET['p'] ?? 0));
-    $topicId = max(0, (int)($_GET['t'] ?? 0));
-    $forumId = max(0, (int)($_GET['f'] ?? 0));
+    $mode = !empty($_GET['m']) && is_string($_GET['m']) ? $_GET['m'] : 'create';
+    $postId = !empty($_GET['p']) && is_string($_GET['p']) ? (int)$_GET['p'] : 0;
+    $topicId = !empty($_GET['t']) && is_string($_GET['t']) ? (int)$_GET['t'] : 0;
+    $forumId = !empty($_GET['f']) && is_string($_GET['f']) ? (int)$_GET['f'] : 0;
 }
 
 if (!in_array($mode, $forumPostingModes, true)) {

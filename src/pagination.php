@@ -43,5 +43,9 @@ function pagination_offset(array &$pagination, ?int $page): int
 
 function pagination_param(string $name = 'p', int $default = 1, ?array $source = null): int
 {
+    if (!isset(($source ?? $_GET)[$name]) || !is_string(($source ?? $_GET)[$name])) {
+        return $default;
+    }
+
     return (int)(($source ?? $_GET)[$name] ?? $default);
 }

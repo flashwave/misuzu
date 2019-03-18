@@ -1,7 +1,7 @@
 <?php
 require_once '../../misuzu.php';
 
-$forumId = !empty($_GET['f']) && !is_array($_GET['f']) ? (int)$_GET['f'] : 0;
+$forumId = !empty($_GET['f']) && is_string($_GET['f']) ? (int)$_GET['f'] : 0;
 $forumId = max($forumId, 0);
 
 if ($forumId === 0) {

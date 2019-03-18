@@ -1,9 +1,11 @@
 <?php
 require_once '../../misuzu.php';
 
-switch ($_GET['m'] ?? '') {
+$indexMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
+$forumId = !empty($_GET['f']) && is_string($_GET['f']) ? (int)$_GET['f'] : 0;
+
+switch ($indexMode) {
     case 'mark':
-        $forumId = (int)($_GET['f'] ?? null);
         $markEntireForum = $forumId === 0;
 
         if (user_session_active() && csrf_verify('forum_mark', $_GET['c'] ?? '')) {

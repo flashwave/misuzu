@@ -1,8 +1,10 @@
 <?php
 require_once '../../misuzu.php';
 
-$postId = (int)($_GET['p'] ?? 0);
-$topicId = (int)($_GET['t'] ?? 0);
+$postId = !empty($_GET['p']) && is_string($_GET['p']) ? (int)$_GET['p'] : 0;
+$topicId = !empty($_GET['t']) && is_string($_GET['t']) ? (int)$_GET['t'] : 0;
+$moderationMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
+$submissionConfirmed = !empty($_GET['confirm']) && is_string($_GET['confirm']) && $_GET['confirm'] === '1';
 
 $topicUserId = user_session_current('user_id', 0);
 
@@ -53,7 +55,6 @@ $canDelete = !$topicIsDeleted && (
     )
 );
 
-$moderationMode = (string)($_GET['m'] ?? '');
 $validModerationModes = [
     'delete', 'restore', 'nuke',
     'bump', 'lock', 'unlock',
@@ -91,7 +92,7 @@ if (in_array($moderationMode, $validModerationModes, true)) {
         return;
     }
 
-    switch ($_GET['m'] ?? '') {
+    switch ($moderationMode) {
         case 'delete':
             $canDeleteCode = forum_topic_can_delete($topic, $topicUserId);
             $canDeleteMsg = '';
@@ -150,7 +151,7 @@ if (in_array($moderationMode, $validModerationModes, true)) {
             }
 
             if (!$isXHR) {
-                if (isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
+                if (!$submissionConfirmed) {
                     header("Location: " . url(
                         'forum-topic',
                         ['topic' => $topic['topic_id']]
@@ -202,7 +203,7 @@ if (in_array($moderationMode, $validModerationModes, true)) {
             }
 
             if (!$isXHR) {
-                if (isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
+                if (!$submissionConfirmed) {
                     header("Location: " . url('forum-topic', [
                         'topic' => $topic['topic_id'],
                     ]));
@@ -245,7 +246,7 @@ if (in_array($moderationMode, $validModerationModes, true)) {
             }
 
             if (!$isXHR) {
-                if (isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
+                if (!$submissionConfirmed) {
                     header('Location: ' . url('forum-topic', [
                         'topic' => $topic['topic_id'],
                     ]));

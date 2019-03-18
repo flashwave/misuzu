@@ -1,7 +1,11 @@
 <?php
 require_once '../misuzu.php';
 
-$userId = user_find_for_profile($_GET['u'] ?? 0);
+$userId = !empty($_GET['u']) && is_string($_GET['u']) ? (int)$_GET['u'] : 0;
+$profileMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
+$isEditing = !empty($_GET['edit']) && is_string($_GET['edit']) ? (bool)$_GET['edit'] : !empty($_POST) && is_array($_POST);
+
+$userId = user_find_for_profile($userId);
 
 if ($userId < 1) {
     http_response_code(404);
@@ -9,8 +13,6 @@ if ($userId < 1) {
     return;
 }
 
-$mode = (string)($_GET['m'] ?? null);
-$isEditing = !empty($_GET['edit']) || !empty($_POST);
 $notices = [];
 
 $currentUserId = user_session_current('user_id', 0);
@@ -269,7 +271,7 @@ if (is_file($backgroundPath)) {
     }
 }
 
-switch ($mode) {
+switch ($profileMode) {
     default:
         echo render_error(404);
         return;
@@ -379,7 +381,7 @@ switch ($mode) {
 if (!empty($template)) {
     echo tpl_render($template, [
         'profile' => $profile,
-        'profile_mode' => $mode,
+        'profile_mode' => $profileMode,
         'profile_notices' => $notices,
         'profile_can_edit' => $canEdit,
         'profile_is_editing' => $isEditing,

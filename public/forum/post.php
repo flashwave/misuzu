@@ -1,8 +1,9 @@
 <?php
 require_once '../../misuzu.php';
 
-$postId = (int)($_GET['p'] ?? 0);
-$postMode = (string)($_GET['m'] ?? '');
+$postId = !empty($_GET['p']) && is_string($_GET['p']) ? (int)$_GET['p'] : 0;
+$postMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
+$submissionConfirmed = !empty($_GET['confirm']) && is_string($_GET['confirm']) && $_GET['confirm'] === '1';
 
 // basing whether or not this is an xhr request on whether a referrer header is present
 // this page is never directy accessed, under normal circumstances
@@ -115,7 +116,7 @@ switch ($postMode) {
         }
 
         if (!$isXHR) {
-            if ($postRequestVerified && isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
+            if ($postRequestVerified && !$submissionConfirmed) {
                 header("Location: " . url('forum-post', [
                     'post' => $postInfo['post_id'],
                     'post_fragment' => 'p' . $postInfo['post_id'],
@@ -165,7 +166,7 @@ switch ($postMode) {
         }
 
         if (!$isXHR) {
-            if ($postRequestVerified && isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
+            if ($postRequestVerified && !$submissionConfirmed) {
                 header("Location: " . url('forum-post', [
                     'post' => $postInfo['post_id'],
                     'post_fragment' => 'p' . $postInfo['post_id'],
@@ -207,7 +208,7 @@ switch ($postMode) {
         }
 
         if (!$isXHR) {
-            if ($postRequestVerified && isset($_GET['confirm']) && $_GET['confirm'] !== '1') {
+            if ($postRequestVerified && !$submissionConfirmed) {
                 header("Location: " . url('forum-post', [
                     'post' => $postInfo['post_id'],
                     'post_fragment' => 'p' . $postInfo['post_id'],

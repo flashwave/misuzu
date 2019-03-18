@@ -37,7 +37,11 @@ if (user_warning_check_expiration($currentUserId, MSZ_WARN_SILENCE) > 0) {
 header(csrf_http_header('comments'));
 $commentPerms = comments_get_perms($currentUserId);
 
-switch ($_GET['m'] ?? null) {
+$commentId = !empty($_GET['c']) && is_string($_GET['c']) ? (int)$_GET['c'] : 0;
+$commentMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
+$commentVote = !empty($_GET['v']) && is_string($_GET['v']) ? (int)$_GET['v'] : MSZ_COMMENTS_VOTE_INDIFFERENT;
+
+switch ($commentMode) {
     case 'pin':
     case 'unpin':
         if (!$commentPerms['can_pin']) {
@@ -45,8 +49,7 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        $comment = (int)($_GET['c'] ?? 0);
-        $commentInfo = comments_post_get($comment, false);
+        $commentInfo = comments_post_get($commentId, false);
 
         if (!$commentInfo || $commentInfo['comment_deleted'] !== null) {
             echo render_info_or_json($isXHR, "This comment doesn't exist!", 400);
@@ -58,7 +61,7 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        $isPinning = $_GET['m'] === 'pin';
+        $isPinning = $commentMode === 'pin';
 
         if ($isPinning && !empty($commentInfo['comment_pinned'])) {
             echo render_info_or_json($isXHR, 'This comment is already pinned.', 400);
@@ -87,15 +90,12 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        $vote = (int)($_GET['v'] ?? MSZ_COMMENTS_VOTE_INDIFFERENT);
-
-        if (!comments_vote_type_valid($vote)) {
+        if (!comments_vote_type_valid($commentVote)) {
             echo render_info_or_json($isXHR, 'Invalid vote action.', 400);
             break;
         }
 
-        $comment = (int)($_GET['c'] ?? 0);
-        $commentInfo = comments_post_get($comment, false);
+        $commentInfo = comments_post_get($commentId, false);
 
         if (!$commentInfo || $commentInfo['comment_deleted'] !== null) {
             echo render_info_or_json($isXHR, "This comment doesn't exist!", 400);
@@ -103,17 +103,17 @@ switch ($_GET['m'] ?? null) {
         }
 
         $voteResult = comments_vote_add(
-            $comment,
+            $commentInfo['comment_id'],
             user_session_current('user_id', 0),
-            $vote
+            $commentVote
         );
 
         if (!$isXHR) {
-            header('Location: ' . $redirect . '#comment-' . $comment);
+            header('Location: ' . $redirect . '#comment-' . $commentInfo['comment_id']);
             break;
         }
 
-        echo json_encode(comments_votes_get($comment));
+        echo json_encode(comments_votes_get($commentInfo['comment_id']));
         break;
 
     case 'delete':
@@ -122,8 +122,7 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        $comment = (int)($_GET['c'] ?? 0);
-        $commentInfo = comments_post_get($comment, false);
+        $commentInfo = comments_post_get($commentId, false);
 
         if (!$commentInfo) {
             echo render_info_or_json($isXHR, "This comment doesn't exist.", 400);
@@ -147,19 +146,19 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        if (!comments_post_delete($comment)) {
+        if (!comments_post_delete($commentInfo['comment_id'])) {
             echo render_info_or_json($isXHR, 'Failed to delete comment.', 500);
             break;
         }
 
         if ($isModAction) {
             audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE_MOD, $currentUserId, [
-                $comment,
+                $commentInfo['comment_id'],
                 (int)($commentInfo['user_id'] ?? 0),
                 $commentInfo['username'] ?? '(Deleted User)',
             ]);
         } else {
-            audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE, $currentUserId, [$comment]);
+            audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE, $currentUserId, [$commentInfo['comment_id']]);
         }
 
         if ($redirect) {
@@ -168,7 +167,7 @@ switch ($_GET['m'] ?? null) {
         }
 
         echo json_encode([
-            'id' => $comment,
+            'id' => $commentInfo['comment_id'],
         ]);
         break;
 
@@ -178,8 +177,7 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        $comment = (int)($_GET['c'] ?? 0);
-        $commentInfo = comments_post_get($comment, false);
+        $commentInfo = comments_post_get($commentId, false);
 
         if (!$commentInfo) {
             echo render_info_or_json($isXHR, "This comment doesn't exist.", 400);
@@ -191,24 +189,24 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        if (!comments_post_delete($comment, false)) {
+        if (!comments_post_delete($commentInfo['comment_id'], false)) {
             echo render_info_or_json($isXHR, 'Failed to restore comment.', 500);
             break;
         }
 
         audit_log(MSZ_AUDIT_COMMENT_ENTRY_RESTORE, $currentUserId, [
-            $comment,
+            $commentInfo['comment_id'],
             (int)($commentInfo['user_id'] ?? 0),
             $commentInfo['username'] ?? '(Deleted User)',
         ]);
 
         if ($redirect) {
-            header('Location: ' . $redirect . '#comment-' . $comment);
+            header('Location: ' . $redirect . '#comment-' . $commentInfo['comment_id']);
             break;
         }
 
         echo json_encode([
-            'id' => $comment,
+            'id' => $commentInfo['comment_id'],
         ]);
         break;
 
@@ -223,7 +221,7 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        $categoryId = (int)($_POST['comment']['category'] ?? 0);
+        $categoryId = !empty($_POST['comment']['category']) && is_string($_POST['comment']['category']) ? (int)$_POST['comment']['category'] : 0;
         $category = comments_category_info($categoryId);
 
         if (!$category) {
@@ -236,10 +234,10 @@ switch ($_GET['m'] ?? null) {
             break;
         }
 
-        $commentText = $_POST['comment']['text'] ?? '';
+        $commentText = !empty($_POST['comment']['text']) && is_string($_POST['comment']['text']) ? $_POST['comment']['text'] : '';
         $commentLock = !empty($_POST['comment']['lock']) && $commentPerms['can_lock'];
         $commentPin = !empty($_POST['comment']['pin']) && $commentPerms['can_pin'];
-        $commentReply = (int)($_POST['comment']['reply'] ?? 0);
+        $commentReply = !empty($_POST['comment']['reply']) && is_string($_POST['comment']['reply']) ? (int)$_POST['comment']['reply'] : 0;
 
         if ($commentLock) {
             comments_category_lock($categoryId, is_null($category['category_locked']));

@@ -1,9 +1,9 @@
 <?php
 require_once '../misuzu.php';
 
-$roleId = (int)($_GET['r'] ?? MSZ_ROLE_MAIN);
-$orderBy = mb_strtolower($_GET['ss'] ?? '');
-$orderDir = mb_strtolower($_GET['sd'] ?? '');
+$roleId = !empty($_GET['r']) && is_string($_GET['r']) ? (int)$_GET['r'] : MSZ_ROLE_MAIN;
+$orderBy = !empty($_GET['ss']) && is_string($_GET['ss']) ? mb_strtolower($_GET['ss']) : '';
+$orderDir = !empty($_GET['sd']) && is_string($_GET['sd']) ? mb_strtolower($_GET['sd']) : '';
 
 $orderDirs = [
     'asc' => 'Ascending',

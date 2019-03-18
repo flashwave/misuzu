@@ -1,10 +1,18 @@
 <?php
 require_once '../misuzu.php';
 
-$categoryId = isset($_GET['c']) ? (int)$_GET['c'] : null;
-$postId = isset($_GET['p']) ? (int)$_GET['p'] : (isset($_GET['n']) ? (int)$_GET['n'] : null);
+if (!empty($_GET['n']) && is_string($_GET['n'])) {
+    header('Location: ' . url('news-post', [
+        'post' => (int)$_GET['n'],
+    ]));
+    http_response_code(301);
+    return;
+}
 
-if ($postId !== null) {
+$categoryId = !empty($_GET['c']) && is_string($_GET['c']) ? (int)$_GET['c'] : 0;
+$postId = !empty($_GET['p']) && is_string($_GET['p']) ? (int)$_GET['p'] : 0;
+
+if ($postId > 0) {
     $post = news_post_get($postId);
 
     if (!$post) {
@@ -35,7 +43,7 @@ if ($postId !== null) {
     return;
 }
 
-if ($categoryId !== null) {
+if ($categoryId > 0) {
     $category = news_category_get($categoryId, true);
 
     if (empty($category)) {

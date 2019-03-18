@@ -32,8 +32,8 @@ if (user_warning_check_expiration($userId, MSZ_WARN_BAN) > 0) {
     return;
 }
 
-$subjectId = (int)($_GET['u'] ?? 0);
-$relationType = (int)($_GET['m'] ?? -1);
+$subjectId = !empty($_GET['u']) && is_string($_GET['u']) ? (int)$_GET['u'] : 0;
+$relationType = !empty($_GET['m']) && is_string($_GET['m']) ? (int)$_GET['m'] : -1;
 
 if (!user_relation_is_valid_type($relationType)) {
     echo render_info_or_json($isXHR, 'Invalid relation type.', 400);

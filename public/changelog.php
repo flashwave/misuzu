@@ -1,10 +1,10 @@
 <?php
 require_once '../misuzu.php';
 
-$changelogChange = (int)($_GET['c'] ?? 0);
-$changelogDate = $_GET['d'] ?? '';
-$changelogUser = (int)($_GET['u'] ?? 0);
-$changelogTags = $_GET['t'] ?? '';
+$changelogChange = !empty($_GET['c']) && is_string($_GET['c']) ? (int)$_GET['c'] : 0;
+$changelogDate = !empty($_GET['d']) && is_string($_GET['d']) ? (string)$_GET['d'] : '';
+$changelogUser = !empty($_GET['u']) && is_string($_GET['u']) ? (int)$_GET['u'] : 0;
+$changelogTags = !empty($_GET['t']) && is_string($_GET['t']) ? (string)$_GET['t'] : '';
 
 tpl_var('comments_perms', $commentPerms = comments_get_perms(user_session_current('user_id', 0)));
 

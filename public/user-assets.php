@@ -1,10 +1,10 @@
 <?php
-$userAssetsMode = (string)($_GET['m'] ?? null);
+$userAssetsMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
 $misuzuBypassLockdown = $userAssetsMode === 'avatar';
 
 require_once '../misuzu.php';
 
-$userId = (int)($_GET['u'] ?? 0);
+$userId = !empty($_GET['u']) && is_string($_GET['u']) ? (int)$_GET['m'] : 0;
 $userExists = user_exists($userId);
 
 $canViewImages = !$userExists

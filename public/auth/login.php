@@ -6,7 +6,7 @@ if (user_session_active()) {
     return;
 }
 
-if (isset($_GET['resolve_user']) && is_string($_GET['resolve_user'])) {
+if (!empty($_GET['resolve_user']) && is_string($_GET['resolve_user'])) {
     header('Content-Type: text/plain; charset=utf-8');
     echo user_id_from_username($_GET['resolve_user']);
     return;

@@ -107,7 +107,11 @@ function csrf_token(string $realm): string
 
 function csrf_verify(string $realm, $token): bool
 {
-    $token = (string)(is_array($token) && !empty($token[$realm]) ? $token[$realm] : $token);
+    $token = is_array($token) && !empty($token[$realm]) ? $token[$realm] : $token;
+
+    if (!is_string($token)) {
+        return false;
+    }
 
     return csrf_token_verify(
         $realm,
