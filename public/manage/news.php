@@ -1,11 +1,9 @@
 <?php
-use Misuzu\Request\RequestVar;
-
 require_once '../../misuzu.php';
 
 $newsPerms = perms_get_user(MSZ_PERMS_NEWS, user_session_current('user_id', 0));
 
-switch (RequestVar::get()->select('v')->string()) {
+switch ($_GET['v'] ?? null) {
     default:
     case 'posts':
         if (!perms_check($newsPerms, MSZ_PERM_NEWS_MANAGE_POSTS)) {
@@ -53,7 +51,7 @@ switch (RequestVar::get()->select('v')->string()) {
 
     case 'category':
         $category = [];
-        $categoryId = RequestVar::get()->select('c')->int();
+        $categoryId = (int)($_GET['c'] ?? null);
 
         if (!empty($_POST['category']) && csrf_verify('news_category', $_POST['csrf'] ?? '')) {
             $originalCategoryId = (int)($_POST['category']['id'] ?? null);
@@ -82,7 +80,7 @@ switch (RequestVar::get()->select('v')->string()) {
 
     case 'post':
         $post = [];
-        $postId = RequestVar::get()->select('p')->int();
+        $postId = (int)($_GET['p'] ?? null);
         $categories = news_categories_get(0, 0, false, false, true);
 
         if (!empty($_POST['post']) && csrf_verify('news_post', $_POST['csrf'] ?? '')) {

@@ -1,9 +1,7 @@
 <?php
-use Misuzu\Request\RequestVar;
-
 require_once '../misuzu.php';
 
-$userId = user_find_for_profile(RequestVar::get()->select('u')->value());
+$userId = user_find_for_profile($_GET['u'] ?? 0);
 
 if ($userId < 1) {
     http_response_code(404);
@@ -11,8 +9,8 @@ if ($userId < 1) {
     return;
 }
 
-$mode = RequestVar::get()->select('m')->string();
-$isEditing = RequestVar::get()->edit->bool() || !empty($_POST);
+$mode = (string)($_GET['m'] ?? null);
+$isEditing = !empty($_GET['edit']) || !empty($_POST);
 $notices = [];
 
 $currentUserId = user_session_current('user_id', 0);

@@ -13,7 +13,7 @@ $notices = [];
 $ipAddress = ip_remote_address();
 $remainingAttempts = user_login_attempts_remaining($ipAddress);
 $tokenInfo = user_auth_tfa_token_info(
-    RequestVar::get()->token->string() ?? $twofactor->token->string('')
+    RequestVar::get()->token->value('string') ?? $twofactor->token->value('string', '')
 );
 
 // checking user_totp_key specifically because there's a fringe chance that
@@ -30,7 +30,7 @@ while (!empty($twofactor->value('array'))) {
     }
 
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-    $redirect = $twofactor->redirect->string('');
+    $redirect = $twofactor->redirect->value('string', '');
 
     if ($twofactor->code->empty()) {
         $notices[] = 'Code field was empty.';
@@ -42,7 +42,7 @@ while (!empty($twofactor->value('array'))) {
         break;
     }
 
-    $givenCode = $twofactor->code->string('');
+    $givenCode = $twofactor->code->value('string', '');
     $currentCode = totp_generate($tokenInfo['user_totp_key']);
     $previousCode = totp_generate($tokenInfo['user_totp_key'], time() - 30);
 
@@ -81,7 +81,7 @@ while (!empty($twofactor->value('array'))) {
 
 echo tpl_render('auth.twofactor', [
     'twofactor_notices' => $notices,
-    'twofactor_redirect' => RequestVar::get()->redirect->string() ?? url('index'),
+    'twofactor_redirect' => RequestVar::get()->redirect->value('string') ?? url('index'),
     'twofactor_attempts_remaining' => $remainingAttempts,
     'twofactor_token' => $tokenInfo['tfa_token'],
 ]);

@@ -10,7 +10,7 @@ if (user_session_active()) {
 
 $reset = RequestVar::post()->reset;
 $forgot = RequestVar::post()->forgot;
-$userId = $reset->user->int() ?? RequestVar::get()->user->int(0);
+$userId = $reset->user->value('int') ?? RequestVar::get()->user->value('int', 0);
 $username = $userId > 0 ? user_username_from_id($userId) : '';
 
 if ($userId > 0 && empty($username)) {
@@ -31,15 +31,15 @@ while ($canResetPassword) {
             break;
         }
 
-        $verificationCode = $reset->verification->string('');
+        $verificationCode = $reset->verification->value('string', '');
 
         if (!user_recovery_token_validate($userId, $verificationCode)) {
             $notices[] = 'Invalid verification code!';
             break;
         }
 
-        $passwordNew = $reset->password->new->string('');
-        $passwordConfirm = $reset->password->confirm->string('');
+        $passwordNew = $reset->password->new->value('string', '');
+        $passwordConfirm = $reset->password->confirm->value('string', '');
 
         if (empty($passwordNew) || empty($passwordConfirm)
             || $passwordNew !== $passwordConfirm) {
@@ -83,7 +83,7 @@ while ($canResetPassword) {
             break;
         }
 
-        $forgotUser = user_find_for_reset($forgot->email->string());
+        $forgotUser = user_find_for_reset($forgot->email->value('string'));
 
         if (empty($forgotUser)) {
             $notices[] = "This e-mail address is not registered with us.";
@@ -129,7 +129,7 @@ MSG;
 
 echo tpl_render($userId > 0 ? 'auth.password_reset' : 'auth.password_forgot', [
     'password_notices' => $notices,
-    'password_email' => $forgot->email->string(''),
+    'password_email' => $forgot->email->value('string', ''),
     'password_attempts_remaining' => $remainingAttempts,
     'password_user_id' => $userId,
     'password_username' => $username,

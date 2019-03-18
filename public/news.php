@@ -1,20 +1,10 @@
 <?php
-use Misuzu\Request\RequestVar;
-
 require_once '../misuzu.php';
 
-if (RequestVar::get()->isset('n')) {
-    header(sprintf('Location: %s', url('news-post', [
-       'post' => RequestVar::get()->select('n')->int(),
-    ])));
-    http_response_code(301);
-    return;
-}
+$categoryId = isset($_GET['c']) ? (int)$_GET['c'] : null;
+$postId = isset($_GET['p']) ? (int)$_GET['p'] : (isset($_GET['n']) ? (int)$_GET['n'] : null);
 
-$categoryId = RequestVar::get()->select('c')->int();
-$postId = RequestVar::get()->select('p')->int();
-
-if ($postId > 0) {
+if ($postId !== null) {
     $post = news_post_get($postId);
 
     if (!$post) {
@@ -45,7 +35,7 @@ if ($postId > 0) {
     return;
 }
 
-if ($categoryId > 0) {
+if ($categoryId !== null) {
     $category = news_category_get($categoryId, true);
 
     if (empty($category)) {

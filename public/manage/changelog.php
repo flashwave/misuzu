@@ -1,11 +1,9 @@
 <?php
-use Misuzu\Request\RequestVar;
-
 require_once '../../misuzu.php';
 
 $changelogPerms = perms_get_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id', 0));
 
-switch (RequestVar::get()->select('v')->string()) {
+switch ($_GET['v'] ?? null) {
     default:
     case 'changes':
         if (!perms_check($changelogPerms, MSZ_PERM_CHANGELOG_MANAGE_CHANGES)) {
@@ -76,7 +74,7 @@ switch (RequestVar::get()->select('v')->string()) {
             break;
         }
 
-        $changeId = RequestVar::get()->select('c')->int();
+        $changeId = (int)($_GET['c'] ?? 0);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify('changelog_add', $_POST['csrf'] ?? '')) {
             if (!empty($_POST['change']) && is_array($_POST['change'])) {
@@ -263,7 +261,7 @@ switch (RequestVar::get()->select('v')->string()) {
             break;
         }
 
-        $tagId = RequestVar::get()->select('t')->int();
+        $tagId = (int)($_GET['t'] ?? 0);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify('changelog_tag', $_POST['csrf'] ?? '')) {
             if (!empty($_POST['tag']) && is_array($_POST['tag'])) {
@@ -328,7 +326,7 @@ switch (RequestVar::get()->select('v')->string()) {
             break;
         }
 
-        $actionId = RequestVar::get()->select('a')->int();
+        $actionId = (int)($_GET['a'] ?? 0);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify('changelog_action', $_POST['csrf'] ?? '')) {
             if (!empty($_POST['action']) && is_array($_POST['action'])) {

@@ -1,6 +1,4 @@
 <?php
-use Misuzu\Request\RequestVar;
-
 require_once '../misuzu.php';
 
 // basing whether or not this is an xhr request on whether a referrer header is present
@@ -39,10 +37,7 @@ if (user_warning_check_expiration($currentUserId, MSZ_WARN_SILENCE) > 0) {
 header(csrf_http_header('comments'));
 $commentPerms = comments_get_perms($currentUserId);
 
-$commentId = RequestVar::get()->select('c')->int();
-$commentMode = RequestVar::get()->select('m')->string();
-
-switch ($commentMode) {
+switch ($_GET['m'] ?? null) {
     case 'pin':
     case 'unpin':
         if (!$commentPerms['can_pin']) {
@@ -50,7 +45,8 @@ switch ($commentMode) {
             break;
         }
 
-        $commentInfo = comments_post_get($commentId, false);
+        $comment = (int)($_GET['c'] ?? 0);
+        $commentInfo = comments_post_get($comment, false);
 
         if (!$commentInfo || $commentInfo['comment_deleted'] !== null) {
             echo render_info_or_json($isXHR, "This comment doesn't exist!", 400);
@@ -62,7 +58,7 @@ switch ($commentMode) {
             break;
         }
 
-        $isPinning = $commentMode === 'pin';
+        $isPinning = $_GET['m'] === 'pin';
 
         if ($isPinning && !empty($commentInfo['comment_pinned'])) {
             echo render_info_or_json($isXHR, 'This comment is already pinned.', 400);
@@ -91,14 +87,15 @@ switch ($commentMode) {
             break;
         }
 
-        $vote = RequestVar::get()->select('v')->int(MSZ_COMMENTS_VOTE_INDIFFERENT);
+        $vote = (int)($_GET['v'] ?? MSZ_COMMENTS_VOTE_INDIFFERENT);
 
         if (!comments_vote_type_valid($vote)) {
             echo render_info_or_json($isXHR, 'Invalid vote action.', 400);
             break;
         }
 
-        $commentInfo = comments_post_get($commentId, false);
+        $comment = (int)($_GET['c'] ?? 0);
+        $commentInfo = comments_post_get($comment, false);
 
         if (!$commentInfo || $commentInfo['comment_deleted'] !== null) {
             echo render_info_or_json($isXHR, "This comment doesn't exist!", 400);
@@ -106,17 +103,17 @@ switch ($commentMode) {
         }
 
         $voteResult = comments_vote_add(
-            $commentInfo['comment_id'],
+            $comment,
             user_session_current('user_id', 0),
             $vote
         );
 
         if (!$isXHR) {
-            header('Location: ' . $redirect . '#comment-' . $commentInfo['comment_id']);
+            header('Location: ' . $redirect . '#comment-' . $comment);
             break;
         }
 
-        echo json_encode(comments_votes_get($commentInfo['comment_id']));
+        echo json_encode(comments_votes_get($comment));
         break;
 
     case 'delete':
@@ -125,7 +122,8 @@ switch ($commentMode) {
             break;
         }
 
-        $commentInfo = comments_post_get($commentId, false);
+        $comment = (int)($_GET['c'] ?? 0);
+        $commentInfo = comments_post_get($comment, false);
 
         if (!$commentInfo) {
             echo render_info_or_json($isXHR, "This comment doesn't exist.", 400);
@@ -149,19 +147,19 @@ switch ($commentMode) {
             break;
         }
 
-        if (!comments_post_delete($commentInfo['comment_id'])) {
+        if (!comments_post_delete($comment)) {
             echo render_info_or_json($isXHR, 'Failed to delete comment.', 500);
             break;
         }
 
         if ($isModAction) {
             audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE_MOD, $currentUserId, [
-                $commentInfo['comment_id'],
+                $comment,
                 (int)($commentInfo['user_id'] ?? 0),
                 $commentInfo['username'] ?? '(Deleted User)',
             ]);
         } else {
-            audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE, $currentUserId, [$commentInfo['comment_id']]);
+            audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE, $currentUserId, [$comment]);
         }
 
         if ($redirect) {
@@ -170,7 +168,7 @@ switch ($commentMode) {
         }
 
         echo json_encode([
-            'id' => $commentInfo['comment_id'],
+            'id' => $comment,
         ]);
         break;
 
@@ -180,7 +178,8 @@ switch ($commentMode) {
             break;
         }
 
-        $commentInfo = comments_post_get($commentId, false);
+        $comment = (int)($_GET['c'] ?? 0);
+        $commentInfo = comments_post_get($comment, false);
 
         if (!$commentInfo) {
             echo render_info_or_json($isXHR, "This comment doesn't exist.", 400);
@@ -198,18 +197,18 @@ switch ($commentMode) {
         }
 
         audit_log(MSZ_AUDIT_COMMENT_ENTRY_RESTORE, $currentUserId, [
-            $commentInfo['comment_id'],
+            $comment,
             (int)($commentInfo['user_id'] ?? 0),
             $commentInfo['username'] ?? '(Deleted User)',
         ]);
 
         if ($redirect) {
-            header('Location: ' . $redirect . '#comment-' . $commentInfo['comment_id']);
+            header('Location: ' . $redirect . '#comment-' . $comment);
             break;
         }
 
         echo json_encode([
-            'id' => $commentInfo['comment_id'],
+            'id' => $comment,
         ]);
         break;
 
