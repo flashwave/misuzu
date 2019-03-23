@@ -1,7 +1,7 @@
 <?php
 require_once '../misuzu.php';
 
-$showActivityFeed = user_session_active()
+$showActivityFeed = false; /*user_session_active()
     && MSZ_DEBUG /*perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), MSZ_PERM_GENERAL_TESTER)*/;
 
 if ($showActivityFeed) {
@@ -67,7 +67,7 @@ if ($showActivityFeed) {
 
     $birthdays = user_session_active() ? user_get_birthdays() : [];
 
-    $latestUser = db_fetch_all(db_query('
+    $latestUser = db_fetch(db_query('
         SELECT
             u.`user_id`, u.`username`, u.`user_created`,
             COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
