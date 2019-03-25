@@ -114,14 +114,19 @@ if (empty($filename) || !is_file($filename)) {
     return;
 }
 
-$entityTag = sprintf('W/"{%s-%d-%d}"', $userAssetsMode, $userId, filemtime($filename));
+$fileContents = file_get_contents($filename);
+$entityTag = sprintf('W/"{%s}"', hash('sha256', $fileContents));
 
 if (!empty($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $entityTag) {
     http_response_code(304);
     return;
 }
 
+$finfo = finfo_open(FILEINFO_MIME);
+$fmime = finfo_buffer($finfo, $fileContents);
+finfo_close($finfo);
+
 http_response_code(200);
-header(sprintf('Content-Type: %s', mime_content_type($filename)));
+header(sprintf('Content-Type: %s', $fmime));
 header(sprintf('ETag: %s', $entityTag));
-echo file_get_contents($filename);
+echo $fileContents;
