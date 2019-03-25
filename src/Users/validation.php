@@ -9,8 +9,8 @@ define('MSZ_USERNAME_MAX_LENGTH', 16);
 define('MSZ_USERNAME_REGEX', '[A-Za-z0-9-_]+');
 define('MSZ_USERNAME_REGEX_FULL', '#^' . MSZ_USERNAME_REGEX . '$#u');
 
-// Minimum entropy value for passwords.
-define('MSZ_PASSWORD_MIN_ENTROPY', 32);
+// Minimum amount of unique characters for passwords.
+define('MSZ_PASSWORD_MIN_UNIQUE', 6);
 
 function user_validate_username(string $username, bool $checkInUse = false): string
 {
@@ -82,14 +82,9 @@ function user_validate_email(string $email, bool $checkInUse = false): string
     return '';
 }
 
-function user_validate_password_entropy(string $password): int
-{
-    return unique_chars($password) * 8;
-}
-
 function user_validate_password(string $password): string
 {
-    if (user_validate_password_entropy($password) < MSZ_PASSWORD_MIN_ENTROPY) {
+    if (unique_chars($password) < MSZ_PASSWORD_MIN_UNIQUE) {
         return 'weak';
     }
 
