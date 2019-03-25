@@ -1,6 +1,6 @@
 {% extends 'master.twig' %}
 
-{% set image = url('user-avatar', {'user': profile.user_id}) %}
+{% set image = url('user-avatar', {'user': profile.user_id, 'res': 240}) %}
 {% set manage_link = '/manage/users.php?v=view&u=' ~ profile.user_id %}
 {% set stats = [
     {

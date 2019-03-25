@@ -76,7 +76,7 @@
 
                     <div class="landing__online">
                         {% for user in online_users %}
-                            <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="avatar landing__online__user" style="{{ user.user_colour|html_colour }};--avatar-url: url('{{ url('user-avatar', {'user': user.user_id}) }}');" title="{{ user.username }}">
+                            <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="avatar landing__online__user" style="{{ user.user_colour|html_colour }}; background-image: url('{{ url('user-avatar', {'user': user.user_id, 'res': 60}) }}');" title="{{ user.username }}">
                                 {{ user.username }}
                             </a>
                         {% endfor %}
@@ -90,7 +90,7 @@
 
                     {% for birthday in birthdays %}
                         <a class="landing__latest" style="{# birthday.user_colour|html_colour #}" href="{{ url('user-profile', {'user': birthday.user_id}) }}">
-                            <div class="avatar landing__latest__avatar" style="--avatar-url: url('{{ url('user-avatar', {'user': birthday.user_id}) }}')"></div>
+                            <div class="avatar landing__latest__avatar" style="background-image: url('{{ url('user-avatar', {'user': birthday.user_id, 'res': 100}) }}')"></div>
                             <div class="landing__latest__content">
                                 <div class="landing__latest__username">
                                     {{ birthday.username }}
@@ -109,7 +109,7 @@
                     {{ container_title('<i class="fas fa-user-plus fa-fw"></i> Newest User') }}
 
                     <a class="landing__latest" style="{{ latest_user.user_colour|html_colour }}" href="{{ url('user-profile', {'user': latest_user.user_id}) }}">
-                        <div class="avatar landing__latest__avatar" style="--avatar-url: url('{{ url('user-avatar', {'user': latest_user.user_id}) }}')"></div>
+                        <div class="avatar landing__latest__avatar" style="background-image: url('{{ url('user-avatar', {'user': latest_user.user_id, 'res': 100}) }}')"></div>
                         <div class="landing__latest__content">
                             <div class="landing__latest__username">
                                 {{ latest_user.username }}

@@ -124,10 +124,10 @@
 
             {% if current_user is defined %}
                 <a href="{{ url('user-profile', {'user': current_user.user_id}) }}" class="avatar header__desktop__user__avatar" title="{{ current_user.username }}"
-                    style="background-image:url('{{ url('user-avatar', {'user': current_user.user_id}) }}');{{ current_user.user_colour|html_colour }}"></a>
+                    style="background-image:url('{{ url('user-avatar', {'user': current_user.user_id, 'res': 120}) }}');{{ current_user.user_colour|html_colour }}"></a>
             {% else %}
                 <a href="{{ url('auth-login') }}" class="avatar header__desktop__user__avatar"
-                    style="background-image:url('{{ url('user-avatar') }}');"></a>
+                    style="background-image:url('{{ url('user-avatar', {'res': 120}) }}');"></a>
             {% endif %}
         </div>
     </div>
@@ -143,7 +143,7 @@
             </a>
 
             <label class="header__mobile__icon avatar header__mobile__avatar" for="toggle-mobile-header"
-                style="background-image:url('{{ url('user-avatar', {'user': current_user.user_id|default(0)}) }}');">
+                style="background-image:url('{{ url('user-avatar', {'user': current_user.user_id|default(0), 'res': 80}) }}');">
             </label>
         </div>
 

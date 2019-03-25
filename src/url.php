@@ -63,7 +63,7 @@ define('MSZ_URLS', [
     'user-profile-edit'                 => ['/profile.php',             ['u' => '<user>', 'edit' => '1']],
     'user-account-standing'             => ['/profile.php',             ['u' => '<user>'], 'account-standing'],
 
-    'user-avatar'                       => ['/user-assets.php',         ['u' => '<user>', 'm' => 'avatar']],
+    'user-avatar'                       => ['/user-assets.php',         ['u' => '<user>', 'm' => 'avatar', 'r' => '<res>']],
     'user-background'                   => ['/user-assets.php',         ['u' => '<user>', 'm' => 'background']],
 
     'user-relation-create'              => ['/relations.php',           ['u' => '<user>', 'm' => '<type>', 'c' => '{user_relation}']],

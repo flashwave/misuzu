@@ -19,7 +19,7 @@
                     <a href="{{ url('manage-user-edit', {'user': user.user_id}) }}" class="manage__user-item__background"></a>
 
                     <div class="manage__user-item__container">
-                        <div class="avatar manage__user-item__avatar" style="background-image: url('{{ url('user-avatar', {'user': user.user_id}) }}')"></div>
+                        <div class="avatar manage__user-item__avatar" style="background-image: url('{{ url('user-avatar', {'user': user.user_id, 'res': 80}) }}')"></div>
                         <div class="manage__user-item__info">
                             <div class="manage__user-item__name">
                                 {{ user.username }}

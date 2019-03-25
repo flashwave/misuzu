@@ -1,17 +1,51 @@
 <?php
 define('MSZ_USER_AVATAR_FORMAT', '%d.msz');
+define('MSZ_USER_AVATAR_RESOLUTION_DEFAULT', 200);
+define('MSZ_USER_AVATAR_RESOLUTION_ORIGINAL', 0);
+define('MSZ_USER_AVATAR_RESOLUTIONS', [
+    MSZ_USER_AVATAR_RESOLUTION_ORIGINAL,
+    40, 60, 80, 100, 120, 200, 240,
+]);
+
+function user_avatar_valid_resolution(int $resolution): bool
+{
+    return in_array($resolution, MSZ_USER_AVATAR_RESOLUTIONS, true);
+}
+
+function user_avatar_resolution_closest(int $resolution): int
+{
+    if ($resolution === 0) {
+        return MSZ_USER_AVATAR_RESOLUTION_ORIGINAL;
+    }
+
+    $closest = null;
+
+    foreach (MSZ_USER_AVATAR_RESOLUTIONS as $res) {
+        if ($res === MSZ_USER_AVATAR_RESOLUTION_ORIGINAL) {
+            continue;
+        }
+
+        if ($closest === null || abs($resolution - $closest) >= abs($res - $resolution)) {
+            $closest = $res;
+        }
+    }
+
+    return $closest;
+}
 
 function user_avatar_delete(int $userId): void
 {
     $avatarFileName = sprintf(MSZ_USER_AVATAR_FORMAT, $userId);
+    $avatarPathFormat = MSZ_STORAGE . '/avatars/%s/%s';
 
-    $deleteThis = [
-        MSZ_STORAGE . '/avatars/original/' . $avatarFileName,
-        MSZ_STORAGE . '/avatars/200x200/' . $avatarFileName,
-    ];
-
-    foreach ($deleteThis as $deleteAvatar) {
-        safe_delete($deleteAvatar);
+    foreach (MSZ_USER_AVATAR_RESOLUTIONS as $res) {
+        safe_delete(sprintf(
+            $avatarPathFormat,
+            $res === MSZ_USER_AVATAR_RESOLUTION_ORIGINAL
+                ? 'original'
+                : sprintf('%1$dx%1$d', $res),
+            $avatarFileName
+        ));
     }
 }
 

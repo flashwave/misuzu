@@ -203,7 +203,10 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     const commentAvatar: HTMLAnchorElement = commentContainer.appendChild(document.createElement('a'));
     commentAvatar.className = 'avatar comment__avatar';
     commentAvatar.href = urlFormat('user-profile', [{name:'user',value:comment.user_id}]);
-    commentAvatar.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [{name:'user',value:comment.user_id}]));
+    commentAvatar.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [
+        { name: 'user', value: comment.user_id },
+        { name: 'res', value: layer < 1 ? 100 : 80 }
+    ]));
 
     const commentContent: HTMLDivElement = commentContainer.appendChild(document.createElement('div'));
     commentContent.className = 'comment__content';
@@ -303,7 +306,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     // reply container
     const replyAvatar: HTMLDivElement = replyContainer.appendChild(document.createElement('div'));
     replyAvatar.className = 'avatar comment__avatar';
-    replyAvatar.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [{name:'user',value:comment.user_id}]));
+    replyAvatar.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [{name:'user',value:comment.user_id},{name:'res',value:80}]));
 
     const replyContent: HTMLDivElement = replyContainer.appendChild(document.createElement('div'));
     replyContent.className = 'comment__content';

@@ -69,7 +69,10 @@ function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTML
         if (xhr.readyState !== 4)
             return;
 
-        avatarElement.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [{name: 'user', value: xhr.responseText}]));
+        avatarElement.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [
+            { name: 'user', value: xhr.responseText },
+            { name: 'res', value: 100 },
+        ]));
     });
     xhr.open('GET', urlFormat('auth-resolve-user', [{name: 'username', value: encodeURIComponent(usernameElement.value)}]));
     xhr.send();

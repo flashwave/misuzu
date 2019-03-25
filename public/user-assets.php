@@ -27,16 +27,27 @@ switch ($userAssetsMode) {
             break;
         }
 
-        $dimensions = 200;
+        $dimensions = MSZ_USER_AVATAR_RESOLUTION_DEFAULT;
+
+        // todo: find closest dimensions
+        if (isset($_GET['r']) && is_string($_GET['r']) && ctype_digit($_GET['r'])) {
+            $dimensions = user_avatar_resolution_closest((int)$_GET['r']);
+        }
+
         $avatarFilename = sprintf('%d.msz', $userId);
+        $avatarOriginal = sprintf('%s/avatars/original/%s', MSZ_STORAGE, $avatarFilename);
+
+        if ($dimensions === MSZ_USER_AVATAR_RESOLUTION_ORIGINAL) {
+            $filename = $avatarOriginal;
+            break;
+        }
+
         $avatarStorage = sprintf('%1$s/avatars/%2$dx%2$d', MSZ_STORAGE, $dimensions);
         $avatarCropped = sprintf('%s/%s', $avatarStorage, $avatarFilename);
 
         if (is_file($avatarCropped)) {
             $filename = $avatarCropped;
         } else {
-            $avatarOriginal = sprintf('%s/avatars/original/%s', MSZ_STORAGE, $avatarFilename);
-
             if (is_file($avatarOriginal)) {
                 try {
                     mkdirs($avatarStorage, true);

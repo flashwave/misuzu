@@ -8,7 +8,7 @@
                 {% if post.user_id is not null %}
                     <div class="news__preview__user">
                         <a class="avatar news__preview__avatar"
-                            style="background-image:url('{{ url('user-avatar', {'user': post.user_id}) }}');"
+                            style="background-image:url('{{ url('user-avatar', {'user': post.user_id, 'res': 120}) }}');"
                             href="{{ url('user-profile', {'user': post.user_id}) }}">
                         </a>
 
@@ -54,7 +54,7 @@
                 {% if post.user_id is not null %}
                     <div class="news__post__user">
                         <a class="avatar news__post__avatar"
-                            style="background-image:url('{{ url('user-avatar', {'user': post.user_id}) }}');"
+                            style="background-image:url('{{ url('user-avatar', {'user': post.user_id, 'res': 120}) }}');"
                             href="{{ url('user-profile', {'user': post.user_id}) }}">
                         </a>
 

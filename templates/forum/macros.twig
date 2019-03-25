@@ -197,7 +197,7 @@
                             {% if forum.recent_post_user_id is not null %}
                                 <a href="{{ url('user-profile', {'user': forum.recent_post_user_id}) }}"
                                     class="avatar forum__category__avatar"
-                                    style="background-image:url('{{ url('user-avatar', {'user': forum.recent_post_user_id}) }}')">
+                                    style="background-image:url('{{ url('user-avatar', {'user': forum.recent_post_user_id, 'res': 80}) }}')">
                                 </a>
                             {% endif %}
                         {% endif %}
@@ -351,7 +351,7 @@
                 {% if topic.respondent_id is not null %}
                     <a href="{{ url('user-profile', {'user': topic.respondent_id}) }}"
                         class="avatar forum__topic__avatar"
-                        style="background-image:url('{{ url('user-avatar', {'user': topic.respondent_id}) }}')">
+                        style="background-image:url('{{ url('user-avatar', {'user': topic.respondent_id, 'res': 60}) }}')">
                     </a>
                 {% endif %}
             </div>
@@ -388,7 +388,7 @@
             <div class="forum__post__info__content">
                 {% if post.poster_id is not null %}
                     <a class="avatar forum__post__avatar"
-                        style="background-image:url('{{ url('user-avatar', {'user': post.poster_id}) }}');"
+                        style="background-image:url('{{ url('user-avatar', {'user': post.poster_id, 'res': 240}) }}');"
                         href="{{ url('user-profile', {'user': post.poster_id}) }}">
                     </a>
 
