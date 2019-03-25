@@ -20,7 +20,7 @@ class MarkdownParser extends Parsedown implements ParserInterface
         $object = parent::inlineImage($excerpt);
 
         if (!empty($object['element']['attributes']['src']) && !is_local_url($object['element']['attributes']['src'])) {
-            $object['element']['attributes']['src'] = proxy_media_url($object['element']['attributes']['src']);
+            $object['element']['attributes']['src'] = url_proxy_media($object['element']['attributes']['src']);
         }
 
         return $object;

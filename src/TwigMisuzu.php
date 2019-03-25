@@ -17,7 +17,7 @@ final class TwigMisuzu extends Twig_Extension
             new Twig_Filter('html_link', 'html_link'),
             new Twig_Filter('parse_line', 'parse_line'),
             new Twig_Filter('parse_text', 'parse_text'),
-            new Twig_Filter('asset_url', 'asset_url'),
+            new Twig_Filter('asset_url', [static::class, 'assetUrl']),
             new Twig_Filter('perms_check', 'perms_check'),
             new Twig_Filter('bg_settings', 'user_background_settings_strings'),
             new Twig_Filter('colour_contrast', 'colour_get_css_contrast'),
@@ -49,5 +49,16 @@ final class TwigMisuzu extends Twig_Extension
                 return microtime(true) - $time;
             }),
         ];
+    }
+
+    public static function assetUrl(string $path): string
+    {
+        $realPath = realpath(MSZ_ROOT . '/public/' . $path);
+
+        if ($realPath === false || !file_exists($realPath)) {
+            return $path;
+        }
+
+        return $path . '?' . filemtime($realPath);
     }
 }

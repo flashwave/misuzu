@@ -32,7 +32,7 @@ if (!empty($changelogDate)) {
     $dateParts = explode('-', $changelogDate, 3);
 
     if (count($dateParts) !== 3
-        || !array_test($dateParts, 'is_user_int')
+        || !array_test($dateParts, 'ctype_digit')
         || !checkdate($dateParts[1], $dateParts[2], $dateParts[0])) {
         echo render_error(404);
         return;

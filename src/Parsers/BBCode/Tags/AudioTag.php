@@ -10,7 +10,7 @@ final class AudioTag extends BBCodeTag
         return preg_replace_callback(
             '#\[audio\]((?:https?:\/\/).+?)\[/audio\]#',
             function ($matches) {
-                $mediaUrl = proxy_media_url($matches[1]);
+                $mediaUrl = url_proxy_media($matches[1]);
                 return "<audio controls src='{$mediaUrl}'></audio>";
             },
             $text

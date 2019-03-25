@@ -49,13 +49,19 @@ function user_validate_username(string $username, bool $checkInUse = false): str
     return '';
 }
 
+function user_validate_check_mx_record(string $email): bool
+{
+    $domain = mb_substr(mb_strstr($email, '@'), 1);
+    return checkdnsrr($domain, 'MX') || checkdnsrr($domain, 'A');
+}
+
 function user_validate_email(string $email, bool $checkInUse = false): string
 {
     if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
         return 'format';
     }
 
-    if (!check_mx_record($email)) {
+    if (!user_validate_check_mx_record($email)) {
         return 'dns';
     }
 
@@ -76,9 +82,14 @@ function user_validate_email(string $email, bool $checkInUse = false): string
     return '';
 }
 
+function user_validate_password_entropy(string $password): int
+{
+    return unique_chars($password) * 8;
+}
+
 function user_validate_password(string $password): string
 {
-    if (password_entropy($password) < MSZ_PASSWORD_MIN_ENTROPY) {
+    if (user_validate_password_entropy($password) < MSZ_PASSWORD_MIN_ENTROPY) {
         return 'weak';
     }
 

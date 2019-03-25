@@ -1,9 +1,4 @@
 <?php
-function password_entropy(string $password): int
-{
-    return count(count_chars(utf8_decode($password), 1)) * 8;
-}
-
 function safe_delete(string $path): void
 {
     $path = realpath($path);
@@ -32,44 +27,6 @@ function mkdirs(string $path, bool $recursive = false, int $mode = 0777): bool
     return mkdir($path, $mode, $recursive);
 }
 
-function check_mx_record(string $email): bool
-{
-    $domain = mb_substr(mb_strstr($email, '@'), 1);
-    return checkdnsrr($domain, 'MX') || checkdnsrr($domain, 'A');
-}
-
-function asset_url(string $path): string
-{
-    $realPath = realpath(MSZ_ROOT . '/public/' . $path);
-
-    if ($realPath === false || !file_exists($realPath)) {
-        return $path;
-    }
-
-    return $path . '?' . filemtime($realPath);
-}
-
-function dechex_pad(int $value, int $padding = 2): string
-{
-    return str_pad(dechex($value), $padding, '0', STR_PAD_LEFT);
-}
-
-function byte_symbol($bytes, $decimal = false)
-{
-    if ($bytes < 1) {
-        return "0 B";
-    }
-
-    $divider = $decimal ? 1000 : 1024;
-    $symbols = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
-
-    $exp = floor(log($bytes) / log($divider));
-    $bytes = $bytes / pow($divider, floor($exp));
-    $symbol = $symbols[$exp];
-
-    return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
-}
-
 function get_country_name(string $code): string
 {
     switch (strtolower($code)) {
@@ -85,53 +42,6 @@ function get_country_name(string $code): string
         default:
             return locale_get_display_region("-{$code}", 'en');
     }
-}
-
-function crop_image_centred_path(string $filename, int $target_width, int $target_height): \Imagick
-{
-    return crop_image_centred(new \Imagick($filename), $target_width, $target_height);
-}
-
-function crop_image_centred(Imagick $image, int $target_width, int $target_height): Imagick
-{
-    $image->setImageFormat($image->getNumberImages() > 1 ? 'gif' : 'png');
-    $image = $image->coalesceImages();
-
-    $width = $image->getImageWidth();
-    $height = $image->getImageHeight();
-
-    if ($width > $height) {
-        $resize_width = $width * $target_height / $height;
-        $resize_height = $target_height;
-    } else {
-        $resize_width = $target_width;
-        $resize_height = $height * $target_width / $width;
-    }
-
-    do {
-        $image->resizeImage(
-            $resize_width,
-            $resize_height,
-            Imagick::FILTER_LANCZOS,
-            0.9
-        );
-
-        $image->cropImage(
-            $target_width,
-            $target_height,
-            ($resize_width - $target_width) / 2,
-            ($resize_height - $target_height) / 2
-        );
-
-        $image->setImagePage(
-            $target_width,
-            $target_height,
-            0,
-            0
-        );
-    } while ($image->nextImage());
-
-    return $image->deconstructImages();
 }
 
 function pdo_prepare_array_update(array $keys, bool $useKeys = false, string $format = '%s'): string
@@ -261,33 +171,4 @@ function html_colour(?int $colour, $attribs = '--user-colour'): string
     }
 
     return $css;
-}
-
-function is_user_int($value): bool
-{
-    return ctype_digit(strval($value));
-}
-
-// https://secure.php.net/manual/en/function.base64-encode.php#103849
-function base64url_encode(string $data): string
-{
-    return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
-}
-
-function base64url_decode(string $data): string
-{
-    return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
-}
-
-function proxy_media_url(?string $url): ?string
-{
-    if (empty($url) || !config_get_default(false, 'Proxy', 'enabled') || is_local_url($url)) {
-        return $url;
-    }
-
-    $secret = config_get_default('insecure', 'Proxy', 'secret_key');
-    $url = base64url_encode($url);
-    $hash = hash_hmac('sha256', $url, $secret);
-
-    return url('media-proxy', compact('hash', 'url'));
 }

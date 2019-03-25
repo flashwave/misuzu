@@ -76,7 +76,7 @@ function colour_get_hex(int $colour, string $format = '#%s'): string
 {
     return sprintf(
         $format,
-        dechex_pad($colour & 0xFFFFFF, 6)
+        str_pad(dechex($colour & 0xFFFFFF), 6, '0', STR_PAD_LEFT)
     );
 }
 

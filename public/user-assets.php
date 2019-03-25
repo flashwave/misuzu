@@ -41,14 +41,47 @@ switch ($userAssetsMode) {
                 try {
                     mkdirs($avatarStorage, true);
 
-                    file_put_contents(
-                        $avatarCropped,
-                        crop_image_centred_path($avatarOriginal, $dimensions, $dimensions)->getImagesBlob(),
-                        LOCK_EX
-                    );
+                    $avatarImage = new Imagick($avatarOriginal);
+                    $avatarImage->setImageFormat($avatarImage->getNumberImages() > 1 ? 'gif' : 'png');
+                    $avatarImage = $avatarImage->coalesceImages();
 
-                    $filename = $avatarCropped;
+                    $avatarOriginalWidth = $avatarImage->getImageWidth();
+                    $avatarOriginalHeight = $avatarImage->getImageHeight();
+
+                    if ($avatarOriginalWidth > $avatarOriginalHeight) {
+                        $avatarWidth = $avatarOriginalWidth * $dimensions / $avatarOriginalHeight;
+                        $avatarHeight = $dimensions;
+                    } else {
+                        $avatarWidth = $dimensions;
+                        $avatarHeight = $avatarOriginalHeight * $dimensions / $avatarOriginalWidth;
+                    }
+
+                    do {
+                        $avatarImage->resizeImage(
+                            $avatarWidth,
+                            $avatarHeight,
+                            Imagick::FILTER_LANCZOS,
+                            0.9
+                        );
+
+                        $avatarImage->cropImage(
+                            $dimensions,
+                            $dimensions,
+                            ($avatarWidth - $dimensions) / 2,
+                            ($avatarHeight - $dimensions) / 2
+                        );
+
+                        $avatarImage->setImagePage(
+                            $dimensions,
+                            $dimensions,
+                            0,
+                            0
+                        );
+                    } while ($avatarImage->nextImage());
+
+                    $avatarImage->deconstructImages()->writeImages($filename = $avatarCropped, true);
                 } catch (Exception $ex) {
+                    // report error
                 }
             }
         }

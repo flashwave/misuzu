@@ -211,3 +211,16 @@ function url_construct(string $url, array $query = [], ?string $fragment = null)
 
     return $url;
 }
+
+function url_proxy_media(?string $url): ?string
+{
+    if (empty($url) || !config_get_default(false, 'Proxy', 'enabled') || is_local_url($url)) {
+        return $url;
+    }
+
+    $secret = config_get_default('insecure', 'Proxy', 'secret_key');
+    $url = base64url_encode($url);
+    $hash = hash_hmac('sha256', $url, $secret);
+
+    return url('media-proxy', compact('hash', 'url'));
+}

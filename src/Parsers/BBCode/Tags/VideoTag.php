@@ -35,7 +35,7 @@ final class VideoTag extends BBCodeTag
                     }
                 }
 
-                $mediaUrl = proxy_media_url($matches[1]);
+                $mediaUrl = url_proxy_media($matches[1]);
                 return sprintf('<video controls src="%s" style="max-width:100%%;max-height:100%%;"></video>', $mediaUrl);
             },
             $text
