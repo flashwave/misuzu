@@ -38,8 +38,11 @@ function user_session_find($sessionId, bool $byKey = false): array
 
     $findSession = db_prepare(sprintf('
         SELECT
-            `session_id`, `user_id`, INET6_NTOA(`session_ip`) as `session_ip`,
-            `session_country`, `session_user_agent`, `session_key`, `session_created`, `session_expires`, `session_active`
+            `session_id`, `user_id`,
+            INET6_NTOA(`session_ip`) as `session_ip`,
+            INET6_NTOA(`session_ip_last`) as `session_ip_last`,
+            `session_country`, `session_user_agent`, `session_key`, `session_created`,
+            `session_expires`, `session_active`, `session_expires_bump`
         FROM `msz_sessions`
         WHERE `%s` = :session_id
     ', $byKey ? 'session_key' : 'session_id'));
@@ -94,8 +97,10 @@ function user_session_list(int $offset, int $take, int $userId = 0): array
 
     $getSessions = db_prepare(sprintf('
         SELECT
-            `session_id`, `session_country`, `session_user_agent`, `session_created`, `session_expires`, `session_active`,
-            INET6_NTOA(`session_ip`) as `session_ip`
+            `session_id`, `session_country`, `session_user_agent`, `session_created`,
+            `session_expires`, `session_active`, `session_expires_bump`,
+            INET6_NTOA(`session_ip`) as `session_ip`,
+            INET6_NTOA(`session_ip_last`) as `session_ip_last`
         FROM `msz_sessions`
         WHERE %s
         ORDER BY `session_id` DESC
@@ -112,7 +117,7 @@ function user_session_list(int $offset, int $take, int $userId = 0): array
     return db_fetch_all($getSessions);
 }
 
-function user_session_bump_active(int $sessionId): void
+function user_session_bump_active(int $sessionId, string $ipAddress = null): void
 {
     if ($sessionId < 1) {
         return;
@@ -120,10 +125,13 @@ function user_session_bump_active(int $sessionId): void
 
     $bump = db_prepare('
         UPDATE `msz_sessions`
-        SET `session_active` = NOW()
+        SET `session_active` = NOW(),
+            `session_ip_last` = INET6_ATON(:last_ip),
+            `session_expires` = IF(`session_expires_bump`, NOW() + INTERVAL 1 MONTH, `session_expires`)
         WHERE `session_id` = :session_id
     ');
     $bump->bindValue('session_id', $sessionId);
+    $bump->bindValue('last_ip', $ipAddress ?? ip_remote_address());
     $bump->execute();
 }
 

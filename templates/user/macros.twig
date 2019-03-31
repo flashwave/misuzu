@@ -148,12 +148,23 @@
             <div class="settings__session__details">
                 <div class="settings__session__detail">
                     <div class="settings__session__detail__title">
-                        IP Address
+                        Created from IP
                     </div>
                     <div class="settings__session__detail__value">
                         {{ session.session_ip }}
                     </div>
                 </div>
+
+                {% if session.session_ip_last is not null %}
+                    <div class="settings__session__detail">
+                        <div class="settings__session__detail__title">
+                            Last used from IP
+                        </div>
+                        <div class="settings__session__detail__value">
+                            {{ session.session_ip_last }}
+                        </div>
+                    </div>
+                {% endif %}
 
                 <div class="settings__session__detail" title="{{ session.session_created|date('r') }}">
                     <div class="settings__session__detail__title">
@@ -166,7 +177,7 @@
 
                 <div class="settings__session__detail" title="{{ session.session_expires|date('r') }}">
                     <div class="settings__session__detail__title">
-                        Expires
+                        Expires{% if not session.session_expires_bump %} (static){% endif %}
                     </div>
                     <time class="settings__session__detail__value" datetime="{{ session.session_expires|date('c') }}">
                         {{ session.session_expires|time_diff }}
