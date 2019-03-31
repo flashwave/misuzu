@@ -202,7 +202,7 @@ function perms_check(int $perms, int $perm): bool
     return ($perms & $perm) > 0;
 }
 
-function perms_check_user(string $prefix, int $userId, int $perm): bool
+function perms_check_user(string $prefix, ?int $userId, int $perm): bool
 {
-    return perms_check(perms_get_user($prefix, $userId), $perm);
+    return $userId > 0 && perms_check(perms_get_user($prefix, $userId), $perm);
 }

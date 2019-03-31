@@ -1,0 +1,19 @@
+.forum__leaderboard__category {
+    display: inline-block;
+    color: inherit;
+    text-decoration: none;
+    margin: 2px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: background-color .2s;
+
+    &:hover,
+    &:focus {
+        background-color: fade(#fff, 20%);
+    }
+
+    &--active,
+    &:active {
+        background-color: fade(#fff, 10%);
+    }
+}

@@ -50,6 +50,7 @@ require_once 'src/twitter.php';
 require_once 'src/url.php';
 require_once 'src/zalgo.php';
 require_once 'src/Forum/forum.php';
+require_once 'src/Forum/leaderboard.php';
 require_once 'src/Forum/perms.php';
 require_once 'src/Forum/post.php';
 require_once 'src/Forum/topic.php';

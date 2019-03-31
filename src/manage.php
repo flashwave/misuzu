@@ -282,6 +282,11 @@ function manage_perms_list(array $rawPerms): array
                     'title' => 'Can manage forum sections.',
                     'perm' => MSZ_PERM_FORUM_MANAGE_FORUMS,
                 ],
+                [
+                    'section' => 'view-leaderboard',
+                    'title' => 'Can view the forum leaderboard live.',
+                    'perm' => MSZ_PERM_FORUM_VIEW_LEADERBOARD,
+                ],
             ],
         ],
         [

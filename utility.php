@@ -64,22 +64,6 @@ function pdo_prepare_array(array $keys, bool $useKeys = false, string $format = 
     return implode(', ', $parts);
 }
 
-function is_local_url(string $url): bool
-{
-    $length = mb_strlen($url);
-
-    if ($length < 1) {
-        return false;
-    }
-
-    if ($url[0] === '/' && ($length > 1 ? $url[1] !== '/' : true)) {
-        return true;
-    }
-
-    $prefix = 'http' . (empty($_SERVER['HTTPS']) ? '' : 's') . '://' . $_SERVER['HTTP_HOST'] . '/';
-    return starts_with($url, $prefix);
-}
-
 function render_error(int $code, string $template = 'errors.%d'): string
 {
     return render_info(null, $code, $template);

@@ -32,6 +32,7 @@ define('MSZ_URLS', [
     'news-category'                     => ['/news.php',                ['c' => '<category>', 'page' => '<page>']],
 
     'forum-index'                       => ['/forum'],
+    'forum-leaderboard'                 => ['/forum/leaderboard.php',   ['id' => '<id>', 'mode' => '<mode>']],
     'forum-mark-global'                 => ['/forum/index.php',         ['m' => 'mark', 'c' => '{forum_mark}']],
     'forum-mark-single'                 => ['/forum/index.php',         ['m' => 'mark', 'c' => '{forum_mark}', 'f' => '<forum>']],
     'forum-topic-new'                   => ['/forum/posting.php',       ['f' => '<forum>']],
@@ -223,4 +224,24 @@ function url_proxy_media(?string $url): ?string
     $hash = hash_hmac('sha256', $url, $secret);
 
     return url('media-proxy', compact('hash', 'url'));
+}
+
+function url_prefix(bool $trailingSlash = true): string
+{
+    return 'http' . (empty($_SERVER['HTTPS']) ? '' : 's') . '://' . $_SERVER['HTTP_HOST'] . ($trailingSlash ? '/' : '');
+}
+
+function is_local_url(string $url): bool
+{
+    $length = mb_strlen($url);
+
+    if ($length < 1) {
+        return false;
+    }
+
+    if ($url[0] === '/' && ($length > 1 ? $url[1] !== '/' : true)) {
+        return true;
+    }
+
+    return starts_with($url, url_prefix());
 }

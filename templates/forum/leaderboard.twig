@@ -1,0 +1,45 @@
+{% extends 'forum/master.twig' %}
+{% from 'forum/macros.twig' import forum_header %}
+
+{% set title = 'Forum Leaderboard » ' ~ leaderboard_name %}
+{% set canonical_url = url('forum-leaderboard', {
+    'id': leaderboard_id,
+    'mode': '',
+}) %}
+
+{% block content %}
+    {{ forum_header(title, [], false, canonical_url, [
+        {
+            'html': '<i class="fab fa-markdown fa-fw"></i> Markdown',
+            'url': url('forum-leaderboard', {'id': leaderboard_id, 'mode': 'markdown'}),
+            'display': leaderboard_mode != 'markdown',
+        },
+        {
+            'html': '<i class="fas fa-table fa-fw"></i> Table',
+            'url': url('forum-leaderboard', {'id': leaderboard_id}),
+            'display': leaderboard_mode == 'markdown',
+        },
+    ]) }}
+
+    <div class="container forum__leaderboard__categories">
+        {% for id, name in leaderboard_categories %}
+            <a href="{{ url('forum-leaderboard', {'id': id, 'mode': leaderboard_mode}) }}" class="forum__leaderboard__category{% if leaderboard_id == id %} forum__leaderboard__category--active{% endif %}">{{ name }}</a>
+        {% endfor %}
+    </div>
+
+    {% if leaderboard_mode == 'markdown' %}
+        <textarea class="input__textarea forum__leaderboard__markdown">{{ leaderboard_markdown }}</textarea>
+    {% else %}
+        {% for user in leaderboard_data %}
+            <div class="container forum__leaderboard__user forum__leaderboard__user--rank-{{ user.rank }}">
+                <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="forum__leaderboard__user__background"></a>
+                <div class="forum__leaderboard__user__content">
+                    <div class="forum__leaderboard__user__rank">{{ user.rank|number_format }}</div>
+                    <div class="avatar forum__leaderboard__user__avatar" style="background-image:url('{{ url('user-avatar', {'user': user.user_id, 'r': 80}) }}')"></div>
+                    <div class="forum__leaderboard__user__username">{{ user.username }}</div>
+                    <div class="forum__leaderboard__user__posts">{{ user.posts|number_format }} posts</div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

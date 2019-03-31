@@ -3,6 +3,7 @@
  * GLOBAL PERMISSIONS *
  **********************/
 define('MSZ_PERM_FORUM_MANAGE_FORUMS', 1);
+define('MSZ_PERM_FORUM_VIEW_LEADERBOARD', 2);
 
 /*************************
  * PER-FORUM PERMISSIONS *
