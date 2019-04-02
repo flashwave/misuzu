@@ -164,10 +164,10 @@ function forum_topic_mark_read(int $userId, int $topicId, int $forumId): void
 
         $markAsRead = db_prepare('
             UPDATE `msz_forum_topics_track`
-            SET `track_last_read` = NOW()
+            SET `track_last_read` = NOW(),
+                `forum_id` = :forum_id
             WHERE `user_id` = :user_id
             AND `topic_id` = :topic_id
-            AND `forum_id` = :forum_id
         ');
         $markAsRead->bindValue('user_id', $userId);
         $markAsRead->bindValue('topic_id', $topicId);
