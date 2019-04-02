@@ -71,20 +71,6 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $getRoles = db_prepare('
-            SELECT
-                r.`role_id`, r.`role_name`, r.`role_hierarchy`, r.`role_colour`,
-                (
-                    SELECT COUNT(`user_id`) > 0
-                    FROM `msz_user_roles`
-                    WHERE `role_id` = r.`role_id`
-                    AND `user_id` = :user_id
-                ) AS `has_role`
-            FROM `msz_roles` AS r
-        ');
-        $getRoles->bindValue('user_id', $userId);
-        $roles = db_fetch_all($getRoles);
-
         if ($canManagePerms) {
             tpl_var('permissions', $permissions = manage_perms_list(perms_get_user_raw($userId)));
         }
@@ -120,7 +106,7 @@ switch ($_GET['v'] ?? null) {
 
                     // STEP 1: Check for roles to be removed in the existing set.
                     //         Roles that the current users isn't allowed to touch (hierarchy) will stay.
-                    foreach($setRoles as $index => $role) {
+                    foreach($setRoles as $role) {
                         // Also prevent the main role from being removed.
                         if($role === MSZ_ROLE_MAIN || (!$isSuperUser && !user_role_check_authority($currentUserId, $role))) {
                             continue;
@@ -164,7 +150,7 @@ switch ($_GET['v'] ?? null) {
                         ');
                         $addRank->bindValue('user_id', $userId);
 
-                        foreach ($_POST['roles'] as $role) {
+                        foreach ($setRoles as $role) {
                             $addRank->bindValue('role_id', $role);
                             $addRank->execute();
                         }
@@ -311,6 +297,20 @@ switch ($_GET['v'] ?? null) {
             echo render_error(404);
             break;
         }
+
+        $getRoles = db_prepare('
+            SELECT
+                r.`role_id`, r.`role_name`, r.`role_hierarchy`, r.`role_colour`,
+                (
+                    SELECT COUNT(`user_id`) > 0
+                    FROM `msz_user_roles`
+                    WHERE `role_id` = r.`role_id`
+                    AND `user_id` = :user_id
+                ) AS `has_role`
+            FROM `msz_roles` AS r
+        ');
+        $getRoles->bindValue('user_id', $manageUser['user_id']);
+        $roles = db_fetch_all($getRoles);
 
         tpl_vars([
             'manage_user' => $manageUser,

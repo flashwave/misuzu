@@ -117,40 +117,33 @@ switch ($_GET['v'] ?? null) {
                 if ($changeId < 1) {
                     $changeId = db_last_insert_id();
                     audit_log(MSZ_AUDIT_CHANGELOG_ENTRY_CREATE, user_session_current('user_id', 0), [$changeId]);
-                    header('Location: ?v=change&c=' . $changeId);
-                    return;
                 } else {
                     audit_log(MSZ_AUDIT_CHANGELOG_ENTRY_EDIT, user_session_current('user_id', 0), [$changeId]);
                 }
             }
 
-            if (!empty($_POST['add_tag']) && is_numeric($_POST['add_tag'])) {
-                $addTag = db_prepare('REPLACE INTO `msz_changelog_change_tags` VALUES (:change_id, :tag_id)');
-                $addTag->bindValue('change_id', $changeId);
-                $addTag->bindValue('tag_id', $_POST['add_tag']);
+            if(!empty($_POST['tags']) && is_array($_POST['tags']) && array_test($_POST['tags'], 'ctype_digit')) {
+                $setTags = array_apply($_POST['tags'], 'intval');
 
-                if ($addTag->execute()) {
-                    audit_log(MSZ_AUDIT_CHANGELOG_TAG_ADD, user_session_current('user_id', 0), [
-                        $changeId,
-                        $_POST['add_tag']
-                    ]);
-                }
-            }
-
-            if (!empty($_POST['remove_tag']) && is_numeric($_POST['remove_tag'])) {
-                $removeTag = db_prepare('
+                $removeTags = db_prepare(sprintf('
                     DELETE FROM `msz_changelog_change_tags`
                     WHERE `change_id` = :change_id
-                    AND `tag_id` = :tag_id
-                ');
-                $removeTag->bindValue('change_id', $changeId);
-                $removeTag->bindValue('tag_id', $_POST['remove_tag']);
+                    AND `tag_id` NOT IN (%s)
+                ', implode(',', $setTags)));
+                $removeTags->bindValue('change_id', $changeId);
+                $removeTags->execute();
 
-                if ($removeTag->execute()) {
-                    audit_log(MSZ_AUDIT_CHANGELOG_TAG_REMOVE, user_session_current('user_id', 0), [
-                        $changeId,
-                        $_POST['remove_tag']
-                    ]);
+                $addTag = db_prepare('
+                    INSERT IGNORE INTO `msz_changelog_change_tags`
+                        (`change_id`, `tag_id`)
+                    VALUES
+                        (:change_id, :tag_id)
+                ');
+                $addTag->bindValue('change_id', $changeId);
+
+                foreach ($setTags as $role) {
+                    $addTag->bindValue('tag_id', $role);
+                    $addTag->execute();
                 }
             }
         }
@@ -172,45 +165,30 @@ switch ($_GET['v'] ?? null) {
             $getChange->bindValue('change_id', $changeId);
             $change = db_fetch($getChange);
 
-            if ($change) {
-                tpl_var('edit_change', $change);
-
-                $assignedTags = db_prepare('
-                    SELECT `tag_id`, `tag_name`
-                    FROM `msz_changelog_tags`
-                    WHERE `tag_id` IN (
-                        SELECT `tag_id`
-                        FROM `msz_changelog_change_tags`
-                        WHERE `change_id` = :change_id
-                    )
-                ');
-                $assignedTags->bindValue('change_id', $change['change_id']);
-                $assignedTags = db_fetch_all($assignedTags);
-
-                $availableTags = db_prepare('
-                    SELECT `tag_id`, `tag_name`
-                    FROM `msz_changelog_tags`
-                    WHERE `tag_archived` IS NULL
-                    AND `tag_id` NOT IN (
-                        SELECT `tag_id`
-                        FROM `msz_changelog_change_tags`
-                        WHERE `change_id` = :change_id
-                    )
-                ');
-                $availableTags->bindValue('change_id', $change['change_id']);
-                $availableTags = db_fetch_all($availableTags);
-
-                tpl_vars([
-                    'edit_change_assigned_tags' => $assignedTags,
-                    'edit_change_available_tags' => $availableTags,
-                ]);
-            } else {
+            if(!$change) {
                 header('Location: ?v=changes');
                 return;
             }
         }
 
-        echo tpl_render('manage.changelog.change_edit');
+        $getChangeTags = db_prepare('
+            SELECT
+                ct.`tag_id`, ct.`tag_name`,
+                (
+                    SELECT COUNT(`change_id`) > 0
+                    FROM `msz_changelog_change_tags`
+                    WHERE `tag_id` = ct.`tag_id`
+                    AND `change_id` = :change_id
+                ) AS `has_tag`
+            FROM `msz_changelog_tags` AS ct
+        ');
+        $getChangeTags->bindValue('change_id', $change['change_id'] ?? 0);
+        $changeTags = db_fetch_all($getChangeTags);
+
+        echo tpl_render('manage.changelog.change_edit', [
+            'edit_change' => $change ?? null,
+            'edit_change_tags' => $changeTags,
+        ]);
         break;
 
     case 'tags':

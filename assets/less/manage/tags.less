@@ -1,14 +1,17 @@
 .manage__tags {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-auto-flow: row dense;
-    grid-gap: 4px;
 
-    @media(max-width: 1000px) {
-        grid-template-columns: 1fr 1fr;
-    }
+    &--fixed {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-auto-flow: row dense;
+        grid-gap: 4px;
 
-    @media(max-width: 500px) {
-        grid-template-columns: 1fr;
+        @media(max-width: 1000px) {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        @media(max-width: 500px) {
+            grid-template-columns: 1fr;
+        }
     }
 }

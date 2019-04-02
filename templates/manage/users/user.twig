@@ -108,7 +108,7 @@
 
                 {# TODO: if the hierarchy of the current user is too low to touch the role then opacity should be lowered and input disabled #}
                 <div class="manage__user__details">
-                    <div class="manage__tags">
+                    <div class="manage__tags manage__tags--fixed">
                         {% for role in manage_roles %}
                             <label class="manage__tag" style="{{ role.role_colour|html_colour('--accent-colour') }}">
                                 <div class="manage__tag__background"></div>

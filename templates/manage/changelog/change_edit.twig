@@ -1,27 +1,27 @@
 {% extends 'manage/changelog/master.twig' %}
 {% from 'macros.twig' import container_title %}
-{% from '_layout/input.twig' import input_csrf, input_text, input_select %}
+{% from '_layout/input.twig' import input_csrf, input_text, input_select, input_checkbox %}
 
-{% if edit_change is defined %}
+{% if edit_change is not null %}
     {% set site_link = url('changelog-change', {'change': edit_change.change_id}) %}
 {% endif %}
 
 {% block manage_content %}
     <div class="container">
-        <form action="?v=change{{ edit_change is defined ? '&c=' ~ edit_change.change_id : '' }}" method="post">
+        <form action="?v=change{{ edit_change is not null ? '&c=' ~ edit_change.change_id : '' }}" method="post">
             {{ input_csrf('changelog_add') }}
 
-            {{ container_title(edit_change is defined ? 'Editing #' ~ edit_change.change_id : 'Adding a new change') }}
+            {{ container_title(edit_change is not null ? 'Editing #' ~ edit_change.change_id : 'Adding a new change') }}
 
             <div style="display: flex; margin: 2px 5px;">
                 {{ input_select('change[action]', changelog_actions, edit_change.action_id|default(0), 'action_name', 'action_id') }}
-                {{ input_text('change[log]', '', edit_change is defined ? edit_change.change_log : '', 'text', '', true, {'maxlength':255,'style':'flex-grow:1'}) }}
+                {{ input_text('change[log]', '', edit_change is not null ? edit_change.change_log : '', 'text', '', true, {'maxlength':255,'style':'flex-grow:1'}) }}
             </div>
 
             <label class="form__label">
                 <div class="form__label__text">Text</div>
                 <div class="form__label__input">
-                    <textarea class="input__textarea" name="change[text]" maxlength="65535">{{ edit_change is defined ? edit_change.change_text : '' }}</textarea>
+                    <textarea class="input__textarea" name="change[text]" maxlength="65535">{{ edit_change is not null ? edit_change.change_text : '' }}</textarea>
                 </div>
             </label>
 
@@ -42,43 +42,27 @@
             <label class="form__label">
                 <div class="form__label__text">Created</div>
                 <div class="form__label__input">
-                    {{ input_text('change[created]', '', (edit_change is defined ? edit_change.change_created : ''|date('Y-m-d H:i:s')), 'text', '', true) }}
+                    {{ input_text('change[created]', '', (edit_change is not null ? edit_change.change_created : ''|date('Y-m-d H:i:s')), 'text', '', true) }}
                 </div>
             </label>
+
+            <div class="manage__tags">
+                {% for tag in edit_change_tags %}
+                    <label class="manage__tag">
+                        <div class="manage__tag__background"></div>
+                        <div class="manage__tag__content">
+                            {{ input_checkbox('tags[]', '', tag.has_tag, 'manage__tag__checkbox', tag.tag_id) }}
+                            <div class="manage__tag__title">
+                                {{ tag.tag_name }}
+                            </div>
+                        </div>
+                    </label>
+                {% endfor %}
+            </div>
 
             <div>
                 <button class="input__button">Save</button>
             </div>
         </form>
-
-        {% if edit_change is defined %}
-            {{ container_title('Tags') }}
-
-            {% if edit_change_assigned_tags|length > 0 %}
-                <form method="post" action="">
-                    <label class="form__label">
-                        <div class="form__label__text">Assigned Tags</div>
-                        <div class="form__label__input">
-                            {{ input_select('remove_tag', edit_change_assigned_tags, '', 'tag_name', 'tag_id') }}
-                        </div>
-                    </label>
-
-                    <button class="input__button" name="csrf" value="{{ csrf_token('changelog_add') }}">Remove</button>
-                </form>
-            {% endif %}
-
-            {% if edit_change_available_tags|length > 0 %}
-                <form method="post" action="">
-                    <label class="form__label">
-                        <div class="form__label__text">Available Tags</div>
-                        <div class="form__label__input">
-                            {{ input_select('add_tag', edit_change_available_tags, '', 'tag_name', 'tag_id') }}
-                        </div>
-                    </label>
-
-                    <button class="input__button" name="csrf" value="{{ csrf_token('changelog_add') }}">Add</button>
-                </form>
-            {% endif %}
-        {% endif %}
     </div>
 {% endblock %}
