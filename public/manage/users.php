@@ -4,6 +4,7 @@ require_once '../../misuzu.php';
 $currentUserId = user_session_current('user_id', 0);
 $userPerms = perms_get_user(MSZ_PERMS_USER, $currentUserId);
 $isPostRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
+$isSuperUser = user_check_super($currentUserId);
 
 tpl_vars([
     'can_manage_users' => $canManageUsers = perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS),
@@ -70,29 +71,19 @@ switch ($_GET['v'] ?? null) {
             break;
         }
 
-        $getHasRoles = db_prepare('
-            SELECT `role_id`, `role_name`, `role_hierarchy`
-            FROM `msz_roles`
-            WHERE `role_id` IN (
-                SELECT `role_id`
-                FROM `msz_user_roles`
-                WHERE `user_id` = :user_id
-            )
+        $getRoles = db_prepare('
+            SELECT
+                r.`role_id`, r.`role_name`, r.`role_hierarchy`, r.`role_colour`,
+                (
+                    SELECT COUNT(`user_id`) > 0
+                    FROM `msz_user_roles`
+                    WHERE `role_id` = r.`role_id`
+                    AND `user_id` = :user_id
+                ) AS `has_role`
+            FROM `msz_roles` AS r
         ');
-        $getHasRoles->bindValue('user_id', $userId);
-        $hasRoles = db_fetch_all($getHasRoles);
-
-        $getAvailableRoles = db_prepare('
-            SELECT `role_id`, `role_name`, `role_hierarchy`
-            FROM `msz_roles`
-            WHERE `role_id` NOT IN (
-                SELECT `role_id`
-                FROM `msz_user_roles`
-                WHERE `user_id` = :user_id
-            )
-        ');
-        $getAvailableRoles->bindValue('user_id', $userId);
-        $availableRoles = db_fetch_all($getAvailableRoles);
+        $getRoles->bindValue('user_id', $userId);
+        $roles = db_fetch_all($getRoles);
 
         if ($canManagePerms) {
             tpl_var('permissions', $permissions = manage_perms_list(perms_get_user_raw($userId)));
@@ -103,16 +94,94 @@ switch ($_GET['v'] ?? null) {
         if ($isPostRequest) {
             if (!csrf_verify('users_edit', $_POST['csrf'] ?? '')) {
                 $notices[] = "Couldn't verify the request.";
-            } elseif (!user_check_super($currentUserId) && !user_check_authority($currentUserId, $userId)) {
+            } elseif (!$isSuperUser && !user_check_authority($currentUserId, $userId)) {
                 $notices[] = 'You are not allowed to administer this user.';
             } else {
                 $setUserInfo = [];
+
+                if (!empty($_POST['roles']) && is_array($_POST['roles']) && array_test($_POST['roles'], 'ctype_digit')) {
+                    // Fetch existing roles
+                    $existingRoles = db_prepare('
+                        SELECT `role_id`
+                        FROM `msz_user_roles`
+                        WHERE `user_id` = :user_id
+                    ');
+                    $existingRoles->bindValue('user_id', $userId);
+                    $existingRoles = db_fetch_all($existingRoles);
+
+                    // Initialise set array with existing role ids
+                    $setRoles = array_column($existingRoles, 'role_id');
+
+                    // Read user input array and throw intval on em
+                    $applyRoles = array_apply($_POST['roles'], 'intval');
+
+                    // Storage array for roles to dump
+                    $removeRoles = [];
+
+                    // STEP 1: Check for roles to be removed in the existing set.
+                    //         Roles that the current users isn't allowed to touch (hierarchy) will stay.
+                    foreach($setRoles as $index => $role) {
+                        // Also prevent the main role from being removed.
+                        if($role === MSZ_ROLE_MAIN || (!$isSuperUser && !user_role_check_authority($currentUserId, $role))) {
+                            continue;
+                        }
+
+                        if(!in_array($role, $applyRoles)) {
+                            $removeRoles[] = $role;
+                        }
+                    }
+
+                    // STEP 2: Purge the ones marked for removal.
+                    $setRoles = array_diff($setRoles, $removeRoles);
+
+                    // STEP 3: Add roles to the set array from the user input, if the user has authority over the given roles.
+                    foreach($applyRoles as $role) {
+                        if(!$isSuperUser && !user_role_check_authority($currentUserId, $role)) {
+                            continue;
+                        }
+
+                        if(!in_array($role, $setRoles)) {
+                            $setRoles[] = $role;
+                        }
+                    }
+
+                    if(!empty($setRoles)) {
+                        // The implode here probably sets off alarm bells, but the array is
+                        // guaranteed to only contain integers so it's probably fine.
+                        $removeRanks = db_prepare(sprintf('
+                            DELETE FROM `msz_user_roles`
+                            WHERE `user_id` = :user_id
+                            AND `role_id` NOT IN (%s)
+                        ', implode(',', $setRoles)));
+                        $removeRanks->bindValue('user_id', $userId);
+                        $removeRanks->execute();
+
+                        $addRank = db_prepare('
+                            INSERT IGNORE INTO `msz_user_roles`
+                                (`user_id`, `role_id`)
+                            VALUES
+                                (:user_id, :role_id)
+                        ');
+                        $addRank->bindValue('user_id', $userId);
+
+                        foreach ($_POST['roles'] as $role) {
+                            $addRank->bindValue('role_id', $role);
+                            $addRank->execute();
+                        }
+                    }
+                }
 
                 if (!empty($_POST['user']) && is_array($_POST['user'])) {
                     $setUserInfo['username'] = (string)($_POST['user']['username'] ?? '');
                     $setUserInfo['email'] = (string)($_POST['user']['email'] ?? '');
                     $setUserInfo['user_country'] = (string)($_POST['user']['country'] ?? '');
                     $setUserInfo['user_title'] = (string)($_POST['user']['title'] ?? '');
+
+                    $displayRole = (int)($_POST['user']['display_role'] ?? 0);
+
+                    if (user_role_has($userId, $displayRole)) {
+                        $setUserInfo['display_role'] = $displayRole;
+                    }
 
                     $usernameValidation = user_validate_username($setUserInfo['username']);
                     $emailValidation = user_validate_email($setUserInfo['email']);
@@ -206,10 +275,6 @@ switch ($_GET['v'] ?? null) {
                     }
                 }
 
-                if (isset($_POST['add_role']) && user_role_check_authority($currentUserId, (int)$_POST['add_role']['role'])) {
-                    user_role_add($userId, $_POST['add_role']['role']);
-                }
-
                 if (isset($_POST['manage_roles'])) {
                     switch ($_POST['manage_roles']['mode'] ?? '') {
                         case 'display':
@@ -217,7 +282,8 @@ switch ($_GET['v'] ?? null) {
                             break;
 
                         case 'remove':
-                            if ((int)$_POST['manage_roles']['role'] !== MSZ_ROLE_MAIN && user_role_check_authority($currentUserId, (int)$_POST['manage_roles']['role'])) {
+                            if ((int)$_POST['manage_roles']['role'] !== MSZ_ROLE_MAIN
+                                && user_role_check_authority($currentUserId, (int)$_POST['manage_roles']['role'])) {
                                 user_role_remove($userId, $_POST['manage_roles']['role']);
                             }
                             break;
@@ -247,11 +313,10 @@ switch ($_GET['v'] ?? null) {
         }
 
         tpl_vars([
-            'available_roles' => $availableRoles,
-            'has_roles' => $hasRoles,
             'manage_user' => $manageUser,
             'profile_fields' => user_profile_fields_get(),
             'manage_notices' => $notices,
+            'manage_roles' => $roles,
         ]);
         echo tpl_render('manage.users.user');
         break;

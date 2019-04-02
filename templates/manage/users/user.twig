@@ -106,12 +106,29 @@
                     {{ input_colour('colour[hex]', '', manage_user.user_colour|default(0)|colour_hex) }}
                 </div>
 
+                {# TODO: if the hierarchy of the current user is too low to touch the role then opacity should be lowered and input disabled #}
+                <div class="manage__user__details">
+                    <div class="manage__tags">
+                        {% for role in manage_roles %}
+                            <label class="manage__tag" style="{{ role.role_colour|html_colour('--accent-colour') }}">
+                                <div class="manage__tag__background"></div>
+                                <div class="manage__tag__content">
+                                    {{ input_checkbox('roles[]', '', role.has_role, 'manage__tag__checkbox', role.role_id) }}
+                                    <div class="manage__tag__title">
+                                        {{ role.role_name }}
+                                    </div>
+                                    {{ input_checkbox('user[display_role]', '', role.role_id == manage_user.display_role, 'manage__tag__checkbox', role.role_id, true) }}
+                                </div>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
                 <div class="manage__user__buttons">
                     <button class="input__button manage__user__button">Save</button>
                     <button class="input__button manage__user__button" type="reset">Reset</button>
                 </div>
             </form>
-
 
             {% if can_manage_perms %}
                 <form method="post" action="" class="container manage__user__container">
@@ -123,45 +140,6 @@
                     <div class="manage__user__buttons">
                         <button class="input__button manage__user__button">Save</button>
                         <button class="input__button manage__user__button" type="reset">Reset</button>
-                    </div>
-                </form>
-            {% endif %}
-        {% endif %}
-
-        {% if can_manage_users %}
-            {% if has_roles|length > 0 %}
-                <form method="post" action="" class="container">
-                    {{ container_title('Manage Roles') }}
-                    {{ input_csrf('users_edit') }}
-
-                    <div class="container__content">
-                        <label class="form__label">
-                            <div class="form__label__text">Has Roles</div>
-                            <div class="form__label__input">
-                                {{ input_select('manage_roles[role]', has_roles, manage_user.display_role, 'role_name', 'role_id') }}
-                            </div>
-                        </label>
-
-                        <button class="input__button" name="manage_roles[mode]" value="display">Set Display</button>
-                        <button class="input__button" name="manage_roles[mode]" value="remove">Remove</button>
-                    </div>
-                </form>
-            {% endif %}
-
-            {% if available_roles|length > 0 %}
-                <form method="post" action="" class="container">
-                    {{ container_title('Add role') }}
-                    {{ input_csrf('users_edit') }}
-
-                    <div class="container__content">
-                        <label class="form__label">
-                            <div class="form__label__text">Available Roles</div>
-                            <div class="form__label__input">
-                                {{ input_select('add_role[role]', available_roles, '', 'role_name', 'role_id') }}
-                            </div>
-                        </label>
-
-                        <button class="input__button">Add</button>
                     </div>
                 </form>
             {% endif %}
