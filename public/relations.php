@@ -33,7 +33,7 @@ if (user_warning_check_expiration($userId, MSZ_WARN_BAN) > 0) {
 }
 
 $subjectId = !empty($_GET['u']) && is_string($_GET['u']) ? (int)$_GET['u'] : 0;
-$relationType = !empty($_GET['m']) && is_string($_GET['m']) ? (int)$_GET['m'] : -1;
+$relationType = isset($_GET['m']) && is_string($_GET['m']) ? (int)$_GET['m'] : -1;
 
 if (!user_relation_is_valid_type($relationType)) {
     echo render_info_or_json($isXHR, 'Invalid relation type.', 400);
@@ -48,6 +48,12 @@ if ($userId < 1 || $subjectId < 1) {
 if (!user_relation_set($userId, $subjectId, $relationType)) {
     echo render_info_or_json($isXHR, "Failed to save relation.", 500);
     return;
+}
+
+
+if (($relationType === MSZ_USER_RELATION_NONE || $relationType === MSZ_USER_RELATION_FOLLOW)
+    && in_array($subjectId, explode(' ', config_get_default('', 'Relations', 'replicate_relation_with')))) {
+    user_relation_set($subjectId, $userId, $relationType);
 }
 
 if (!$isXHR) {
