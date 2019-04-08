@@ -10,7 +10,7 @@
         "php": "^7.2",
         "ext-bcmath": "*",
         "ext-mbstring": "*",
-        "twig/twig": "~2.4",
+        "twig/twig": "^2.0",
         "swiftmailer/swiftmailer": "~6.0",
         "erusev/parsedown": "~1.6",
         "geoip2/geoip2": "~2.0",
