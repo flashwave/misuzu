@@ -1,6 +1,6 @@
 interface UrlRegistryVariable {
     name: string;
-    value: string;
+    value: string | number;
 }
 
 interface UrlRegistryEntryQuery {
@@ -76,7 +76,7 @@ function urlVariable(value: string, vars: UrlRegistryVariable[]): string
 {
     if (value[0] === '<' && value.slice(-1) === '>') {
         const urvar: UrlRegistryVariable = vars.find(x => x.name == value.slice(1, -1));
-        return urvar ? urvar.value : '';
+        return urvar ? urvar.value.toString() : '';
     }
 
     if (value[0] === '[' && value.slice(-1) === ']') {
