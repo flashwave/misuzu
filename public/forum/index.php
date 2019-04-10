@@ -35,8 +35,7 @@ switch ($indexMode) {
                     = forum_get_children(
                         $sub['forum_id'],
                         user_session_current('user_id', 0),
-                        perms_check($sub['forum_permissions'], MSZ_FORUM_PERM_DELETE_ANY_POST),
-                        true
+                        perms_check($sub['forum_permissions'], MSZ_FORUM_PERM_DELETE_ANY_POST)
                     );
             }
         }

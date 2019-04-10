@@ -176,7 +176,7 @@ function commentsInit(): void {
 }
 
 function commentInputEventHandler(ev: KeyboardEvent): void {
-    if (ev.keyCode === 13 && ev.ctrlKey && !ev.altKey && !ev.shiftKey) {
+    if (ev.code === 'Enter' && ev.ctrlKey && !ev.altKey && !ev.shiftKey && !ev.metaKey) {
         const form: HTMLFormElement = (ev.target as HTMLTextAreaElement).form;
         commentPost(
             extractFormData(form, true),

@@ -18,7 +18,7 @@ let loginFormAvatarTimeout: number = 0;
 window.addEventListener('load', () => {
     console.log("%c     __  ____\n   /  |/  (_)______  ______  __  __\n  / /|_/ / / ___/ / / /_  / / / / /\n / /  / / (__  ) /_/ / / /_/ /_/ /\n/_/  /_/_/____/\\__,_/ /___/\\__,_/\nhttps://github.com/flashwave/misuzu", 'color: #8559a5');
 
-    timeago().render(document.querySelectorAll('time'));
+    timeago.render(document.querySelectorAll('time'));
     hljs.initHighlighting();
 
     initCSRF();
@@ -44,6 +44,20 @@ window.addEventListener('load', () => {
             loginFormUpdateAvatar(loginAvatar, loginUsername, true);
 
             loginUsername.addEventListener('keyup', () => loginFormUpdateAvatar(loginAvatar, loginUsername));
+        }
+    }
+
+    const ctrlSubmit: HTMLCollectionOf<HTMLInputElement> = document.getElementsByClassName('js-ctrl-enter-submit') as HTMLCollectionOf<HTMLInputElement>;
+
+    if (ctrlSubmit.length > 0) {
+        for (let i = 0; i < ctrlSubmit.length; i++) {
+            ctrlSubmit[i].addEventListener('keydown', ev => {
+                if (ev.code === 'Enter' /* i hate this fucking language so much */
+                    && ev.ctrlKey && !ev.altKey && !ev.shiftKey && !ev.metaKey) {
+                    ctrlSubmit[i].form.submit();
+                    ev.preventDefault();
+                }
+            });
         }
     }
 

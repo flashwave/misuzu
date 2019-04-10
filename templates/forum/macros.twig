@@ -170,7 +170,7 @@
             {% if forum.forum_type == constant('MSZ_FORUM_TYPE_DISCUSSION') or forum.forum_link_clicks is not null %}
                 <div class="forum__category__activity{% if forum.forum_link_clicks is not null %} forum__category__activity--empty{% endif %}">
                     {% if forum.forum_type != constant('MSZ_FORUM_TYPE_LINK') %}
-                        {% if forum.recent_topic_id is null %}
+                        {% if forum.recent_topic_id is not defined %}
                             <div class="forum__category__activity__none">
                                 There are no posts in this forum yet.
                             </div>
