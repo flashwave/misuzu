@@ -154,6 +154,10 @@ function forum_get_root_categories(int $userId): array
     $getRootForumCount->bindValue('perm_user_id_role', $userId);
     $categories[0]['forum_children'] = (int)($getRootForumCount->execute() ? $getRootForumCount->fetchColumn() : 0);
 
+    foreach ($categories as $key => $category) {
+        $categories[$key]['forum_unread'] = forum_read_status($category['forum_id'], $userId);
+    }
+
     return $categories;
 }
 
@@ -237,6 +241,67 @@ function forum_increment_clicks(int $forumId): void
     ', MSZ_FORUM_TYPE_LINK));
     $incrementLinkClicks->bindValue('forum_id', $forumId);
     $incrementLinkClicks->execute();
+}
+
+function forum_get_child_ids(int $forumId): array
+{
+    if ($forumId < 1) {
+        return [];
+    }
+
+    $getChildren = db_prepare('
+        SELECT `forum_id`
+        FROM `msz_forum_categories`
+        WHERE `forum_parent` = :forum_id
+    ');
+    $getChildren->bindValue('forum_id', $forumId);
+    $children = $getChildren->execute() ? $getChildren->fetchAll(PDO::FETCH_ASSOC) : [];
+
+    return array_column($children, 'forum_id');
+}
+
+function forum_read_status(int $forumId, int $userId): bool
+{
+    if ($userId < 1 || $forumId < 1) {
+        return false;
+    }
+
+    static $memoized = [];
+    $memoId = "{$forumId}-{$userId}";
+
+    if (array_key_exists($memoId, $memoized)) {
+        return $memoized[$memoId];
+    }
+
+    $children = forum_get_child_ids($forumId);
+
+    foreach ($children as $child) {
+        if (forum_read_status($child, $userId)) {
+            return $memoized[$memoId] = true;
+        }
+    }
+
+    $checkStatus = db_prepare('
+        SELECT COUNT(ti.`topic_id`)
+        FROM `msz_forum_topics` AS ti
+        LEFT JOIN `msz_forum_topics_track` AS tt
+        ON tt.`topic_id` = ti.`topic_id` AND tt.`user_id` = :user_id
+        WHERE ti.`forum_id` = :forum_id
+        AND ti.`topic_deleted` IS NULL
+        AND ti.`topic_bumped` >= NOW() - INTERVAL 1 MONTH
+        AND (
+            tt.`track_last_read` IS NULL
+            OR tt.`track_last_read` < ti.`topic_bumped`
+        )
+    ');
+    $checkStatus->bindValue('forum_id', $forumId);
+    $checkStatus->bindValue('user_id', $userId);
+
+    if ($checkStatus->execute() ? $checkStatus->fetchColumn() : false) {
+        return $memoized[$memoId] = true;
+    }
+
+    return $memoized[$memoId] = false;
 }
 
 function forum_read_status_sql(
@@ -361,7 +426,13 @@ function forum_get_children(int $parentId, int $userId, bool $showDeleted = fals
     $getListing->bindValue('user_for_check', $userId);
     $getListing->bindValue('parent_id', $parentId);
 
-    return db_fetch_all($getListing);
+    $listing = db_fetch_all($getListing);
+
+    foreach ($listing as $key => $forum) {
+        $listing[$key]['forum_unread'] = forum_read_status($forum['forum_id'], $userId);
+    }
+
+    return $listing;
 }
 
 function forum_timeout(int $forumId, int $userId): int
