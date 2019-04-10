@@ -240,7 +240,6 @@ function forum_increment_clicks(int $forumId): void
 }
 
 function forum_read_status_sql(
-    string $topic_id_param,
     string $user_param_sub,
     string $forum_id_param = 'f.`forum_id`',
     string $user_param = '`target_user_id`'
@@ -249,14 +248,12 @@ function forum_read_status_sql(
         '
             SELECT
                 %1$s > 0
-            AND
-                %2$s IS NOT NULL
             AND (
                 SELECT COUNT(ti.`topic_id`)
                 FROM `msz_forum_topics` AS ti
                 LEFT JOIN `msz_forum_topics_track` AS tt
-                ON tt.`topic_id` = ti.`topic_id` AND tt.`user_id` = %4$s
-                WHERE ti.`forum_id` = %3$s
+                ON tt.`topic_id` = ti.`topic_id` AND tt.`user_id` = %3$s
+                WHERE ti.`forum_id` = %2$s
                 AND ti.`topic_deleted` IS NULL
                 AND ti.`topic_bumped` >= NOW() - INTERVAL 1 MONTH
                 AND (
@@ -266,7 +263,6 @@ function forum_read_status_sql(
             )
         ',
         $user_param,
-        $topic_id_param,
         $forum_id_param,
         $user_param_sub
     );
@@ -281,15 +277,6 @@ define(
             (%1$s) AS `forum_unread`,
             (%4$s) AS `forum_permissions`
         FROM `msz_forum_categories` AS f
-        LEFT JOIN `msz_forum_topics` AS t
-        ON t.`topic_id` = (
-            SELECT `topic_id`
-            FROM `msz_forum_topics`
-            WHERE `forum_id` = f.`forum_id`
-            AND `topic_deleted` IS NULL
-            ORDER BY `topic_bumped` DESC
-            LIMIT 1
-        )
         WHERE `forum_parent` = :parent_id
         AND `forum_hidden` = false
         GROUP BY f.`forum_id`
@@ -355,7 +342,7 @@ function forum_get_children_query(bool $showDeleted = false, bool $small = false
         $small
             ? MSZ_FORUM_GET_CHILDREN_QUERY_SMALL
             : MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD,
-        forum_read_status_sql('t.`topic_id`', ':user_for_check'),
+        forum_read_status_sql(':user_for_check'),
         MSZ_FORUM_ROOT,
         MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'f.`forum_id`'),
