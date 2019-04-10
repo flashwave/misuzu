@@ -304,48 +304,18 @@ function forum_read_status(int $forumId, int $userId): bool
     return $memoized[$memoId] = false;
 }
 
-function forum_read_status_sql(
-    string $user_param_sub,
-    string $forum_id_param = 'f.`forum_id`',
-    string $user_param = '`target_user_id`'
-): string {
-    return sprintf(
-        '
-            SELECT
-                %1$s > 0
-            AND (
-                SELECT COUNT(ti.`topic_id`)
-                FROM `msz_forum_topics` AS ti
-                LEFT JOIN `msz_forum_topics_track` AS tt
-                ON tt.`topic_id` = ti.`topic_id` AND tt.`user_id` = %3$s
-                WHERE ti.`forum_id` = %2$s
-                AND ti.`topic_deleted` IS NULL
-                AND ti.`topic_bumped` >= NOW() - INTERVAL 1 MONTH
-                AND (
-                    tt.`track_last_read` IS NULL
-                    OR tt.`track_last_read` < ti.`topic_bumped`
-                )
-            )
-        ',
-        $user_param,
-        $forum_id_param,
-        $user_param_sub
-    );
-}
-
 define(
     'MSZ_FORUM_GET_CHILDREN_QUERY_SMALL',
     '
         SELECT
             :user_id AS `target_user_id`,
             f.`forum_id`, f.`forum_name`,
-            (%1$s) AS `forum_unread`,
-            (%4$s) AS `forum_permissions`
+            (%3$s) AS `forum_permissions`
         FROM `msz_forum_categories` AS f
         WHERE `forum_parent` = :parent_id
         AND `forum_hidden` = false
         GROUP BY f.`forum_id`
-        HAVING (`forum_permissions` & %5$d) > 0
+        HAVING (`forum_permissions` & %4$d) > 0
         ORDER BY f.`forum_order`
     '
 );
@@ -364,15 +334,14 @@ define(
             u.`user_id` AS `recent_post_user_id`,
             u.`username` AS `recent_post_username`,
             COALESCE(u.`user_colour`, r.`role_colour`) AS `recent_post_user_colour`,
-            (%1$s) AS `forum_unread`,
-            (%4$s) AS `forum_permissions`
+            (%3$s) AS `forum_permissions`
         FROM `msz_forum_categories` AS f
         LEFT JOIN `msz_forum_topics` AS t
         ON t.`topic_id` = (
             SELECT `topic_id`
             FROM `msz_forum_topics`
             WHERE `forum_id` = f.`forum_id`
-            %6$s
+            %5$s
             ORDER BY `topic_bumped` DESC
             LIMIT 1
         )
@@ -381,7 +350,7 @@ define(
             SELECT `post_id`
             FROM `msz_forum_posts`
             WHERE `topic_id` = t.`topic_id`
-            %7$s
+            %6$s
             ORDER BY `post_id` DESC
             LIMIT 1
         )
@@ -392,11 +361,11 @@ define(
         WHERE f.`forum_parent` = :parent_id
         AND f.`forum_hidden` = 0
         AND (
-            (f.`forum_parent` = %2$d AND f.`forum_type` != %3$d)
-            OR f.`forum_parent` != %2$d
+            (f.`forum_parent` = %1$d AND f.`forum_type` != %2$d)
+            OR f.`forum_parent` != %1$d
         )
         GROUP BY f.`forum_id`
-        HAVING (`forum_permissions` & %5$d) > 0
+        HAVING (`forum_permissions` & %4$d) > 0
         ORDER BY f.`forum_order`
     '
 );
@@ -407,7 +376,6 @@ function forum_get_children_query(bool $showDeleted = false, bool $small = false
         $small
             ? MSZ_FORUM_GET_CHILDREN_QUERY_SMALL
             : MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD,
-        forum_read_status_sql(':user_for_check'),
         MSZ_FORUM_ROOT,
         MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'f.`forum_id`'),
@@ -423,7 +391,6 @@ function forum_get_children(int $parentId, int $userId, bool $showDeleted = fals
     $getListing->bindValue('user_id', $userId);
     $getListing->bindValue('perm_user_id_user', $userId);
     $getListing->bindValue('perm_user_id_role', $userId);
-    $getListing->bindValue('user_for_check', $userId);
     $getListing->bindValue('parent_id', $parentId);
 
     $listing = db_fetch_all($getListing);
