@@ -135,11 +135,14 @@ if (!empty($_POST)) {
         $notices[] = 'Could not verify request.';
     } else {
         $isEditingTopic = empty($topic) || ($mode === 'edit' && $post['is_opening_post']);
-        $timeoutCheck = max(1, forum_timeout($forumId, user_session_current('user_id')));
 
-        if ($timeoutCheck < 5) {
-            $notices[] = sprintf("You're posting too quickly! Please wait %s seconds before posting again.", number_format($timeoutCheck));
-            $notices[] = "It's possible that your post went through successfully and you pressed the submit button twice by accident.";
+        if ($mode === 'create') {
+            $timeoutCheck = max(1, forum_timeout($forumId, user_session_current('user_id')));
+
+            if ($timeoutCheck < 5) {
+                $notices[] = sprintf("You're posting too quickly! Please wait %s seconds before posting again.", number_format($timeoutCheck));
+                $notices[] = "It's possible that your post went through successfully and you pressed the submit button twice by accident.";
+            }
         }
 
         if ($isEditingTopic) {
