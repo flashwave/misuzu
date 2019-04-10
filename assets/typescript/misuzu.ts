@@ -18,7 +18,7 @@ let loginFormAvatarTimeout: number = 0;
 window.addEventListener('load', () => {
     console.log("%c     __  ____\n   /  |/  (_)______  ______  __  __\n  / /|_/ / / ___/ / / /_  / / / / /\n / /  / / (__  ) /_/ / / /_/ /_/ /\n/_/  /_/_/____/\\__,_/ /___/\\__,_/\nhttps://github.com/flashwave/misuzu", 'color: #8559a5');
 
-    timeago().render(document.querySelectorAll('time'));
+    timeago.render(document.querySelectorAll('time'));
     hljs.initHighlighting();
 
     initCSRF();
