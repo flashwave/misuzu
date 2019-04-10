@@ -13,6 +13,11 @@ function git_commit_hash(bool $long = false): string
     return git_commit_info($long ? MSZ_GIT_FORMAT_HASH_LONG : MSZ_GIT_FORMAT_HASH_SHORT);
 }
 
+function git_branch(): string
+{
+    return trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
+}
+
 function git_tag(): string
 {
     return trim(shell_exec('git describe --abbrev=0 --tags'));

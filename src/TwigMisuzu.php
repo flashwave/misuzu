@@ -37,6 +37,7 @@ final class TwigMisuzu extends Twig_Extension
             new Twig_Function('get_browser', 'get_browser'),
             new Twig_Function('git_commit_hash', 'git_commit_hash'),
             new Twig_Function('git_tag', 'git_tag'),
+            new Twig_Function('git_branch', 'git_branch'),
             new Twig_Function('csrf_token', 'csrf_token'),
             new Twig_Function('csrf_input', 'csrf_html'),
             new Twig_Function('sql_query_count', 'db_query_count'),
