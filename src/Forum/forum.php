@@ -155,7 +155,7 @@ function forum_get_root_categories(int $userId): array
     $categories[0]['forum_children'] = (int)($getRootForumCount->execute() ? $getRootForumCount->fetchColumn() : 0);
 
     foreach ($categories as $key => $category) {
-        $categories[$key]['forum_unread'] = forum_read_status($category['forum_id'], $userId);
+        $categories[$key]['forum_unread'] = forum_topics_unread($category['forum_id'], $userId);
     }
 
     return $categories;
@@ -260,7 +260,7 @@ function forum_get_child_ids(int $forumId): array
     return array_column($children, 'forum_id');
 }
 
-function forum_read_status(int $forumId, int $userId): bool
+function forum_topics_unread(int $forumId, int $userId): int
 {
     if ($userId < 1 || $forumId < 1) {
         return false;
@@ -273,15 +273,14 @@ function forum_read_status(int $forumId, int $userId): bool
         return $memoized[$memoId];
     }
 
+    $memoized[$memoId] = 0;
     $children = forum_get_child_ids($forumId);
 
     foreach ($children as $child) {
-        if (forum_read_status($child, $userId)) {
-            return $memoized[$memoId] = true;
-        }
+        $memoized[$memoId] += forum_topics_unread($child, $userId);
     }
 
-    $checkStatus = db_prepare('
+    $countUnread = db_prepare('
         SELECT COUNT(ti.`topic_id`)
         FROM `msz_forum_topics` AS ti
         LEFT JOIN `msz_forum_topics_track` AS tt
@@ -294,14 +293,11 @@ function forum_read_status(int $forumId, int $userId): bool
             OR tt.`track_last_read` < ti.`topic_bumped`
         )
     ');
-    $checkStatus->bindValue('forum_id', $forumId);
-    $checkStatus->bindValue('user_id', $userId);
+    $countUnread->bindValue('forum_id', $forumId);
+    $countUnread->bindValue('user_id', $userId);
+    $memoized[$memoId] += (int)($countUnread->execute() ? $countUnread->fetchColumn() : 0);
 
-    if ($checkStatus->execute() ? $checkStatus->fetchColumn() : false) {
-        return $memoized[$memoId] = true;
-    }
-
-    return $memoized[$memoId] = false;
+    return $memoized[$memoId];
 }
 
 define(
@@ -396,7 +392,7 @@ function forum_get_children(int $parentId, int $userId, bool $showDeleted = fals
     $listing = db_fetch_all($getListing);
 
     foreach ($listing as $key => $forum) {
-        $listing[$key]['forum_unread'] = forum_read_status($forum['forum_id'], $userId);
+        $listing[$key]['forum_unread'] = forum_topics_unread($forum['forum_id'], $userId);
     }
 
     return $listing;
