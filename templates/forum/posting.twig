@@ -74,7 +74,7 @@
                     </span>
                 </div>
 
-                <textarea name="post[text]" class="forum__post__text forum__post__text--edit js-forum-posting-text" placeholder="Type your post content here...">{{ posting_defaults.text|default(posting_post.post_text|default('')) }}</textarea>
+                <textarea name="post[text]" class="forum__post__text forum__post__text--edit js-forum-posting-text js-ctrl-enter-submit" placeholder="Type your post content here...">{{ posting_defaults.text|default(posting_post.post_text|default('')) }}</textarea>
                 <div class="forum__post__text js-forum-posting-preview" hidden></div>
 
                 <div class="forum__post__options">

@@ -47,6 +47,20 @@ window.addEventListener('load', () => {
         }
     }
 
+    const ctrlSubmit: HTMLCollectionOf<HTMLInputElement> = document.getElementsByClassName('js-ctrl-enter-submit') as HTMLCollectionOf<HTMLInputElement>;
+
+    if (ctrlSubmit.length > 0) {
+        for (let i = 0; i < ctrlSubmit.length; i++) {
+            ctrlSubmit[i].addEventListener('keydown', ev => {
+                if (ev.code === 'Enter' /* i hate this fucking language so much */
+                    && ev.ctrlKey && !ev.altKey && !ev.shiftKey && !ev.metaKey) {
+                    ctrlSubmit[i].form.submit();
+                    ev.preventDefault();
+                }
+            });
+        }
+    }
+
     commentsInit();
     forumPostingInit();
 });
