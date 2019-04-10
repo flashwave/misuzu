@@ -361,22 +361,6 @@ function forum_latest_post(int $forumId, int $userId): array
 }
 
 define(
-    'MSZ_FORUM_GET_CHILDREN_QUERY_SMALL',
-    '
-        SELECT
-            :user_id AS `target_user_id`,
-            f.`forum_id`, f.`forum_name`,
-            (%3$s) AS `forum_permissions`
-        FROM `msz_forum_categories` AS f
-        WHERE `forum_parent` = :parent_id
-        AND `forum_hidden` = false
-        GROUP BY f.`forum_id`
-        HAVING (`forum_permissions` & %4$d) > 0
-        ORDER BY f.`forum_order`
-    '
-);
-
-define(
     'MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD',
     '
         SELECT
@@ -398,24 +382,35 @@ define(
     '
 );
 
-function forum_get_children_query(bool $showDeleted = false, bool $small = false): string
+function forum_get_children(int $parentId, int $userId, bool $showDeleted = false): array
 {
-    return sprintf(
-        $small
-            ? MSZ_FORUM_GET_CHILDREN_QUERY_SMALL
-            : MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD,
+    $getListing = db_prepare(sprintf(
+        '
+            SELECT
+                :user_id AS `target_user_id`,
+                f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`,
+                f.`forum_link`, f.`forum_link_clicks`, f.`forum_archived`, f.`forum_colour`,
+                f.`forum_count_topics`, f.`forum_count_posts`,
+                (%3$s) AS `forum_permissions`
+            FROM `msz_forum_categories` AS f
+            WHERE f.`forum_parent` = :parent_id
+            AND f.`forum_hidden` = 0
+            AND (
+                (f.`forum_parent` = %1$d AND f.`forum_type` != %2$d)
+                OR f.`forum_parent` != %1$d
+            )
+            GROUP BY f.`forum_id`
+            HAVING (`forum_permissions` & %4$d) > 0
+            ORDER BY f.`forum_order`
+        ',
         MSZ_FORUM_ROOT,
         MSZ_FORUM_TYPE_CATEGORY,
         forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'f.`forum_id`'),
         MSZ_FORUM_PERM_SET_READ,
         $showDeleted ? '' : 'AND `topic_deleted` IS NULL',
         $showDeleted ? '' : 'AND `post_deleted` IS NULL'
-    );
-}
+    ));
 
-function forum_get_children(int $parentId, int $userId, bool $showDeleted = false, bool $small = false): array
-{
-    $getListing = db_prepare(forum_get_children_query($showDeleted, $small));
     $getListing->bindValue('user_id', $userId);
     $getListing->bindValue('perm_user_id_user', $userId);
     $getListing->bindValue('perm_user_id_role', $userId);
