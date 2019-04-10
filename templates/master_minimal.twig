@@ -44,7 +44,7 @@
                     ''|date('Y') }} /
                     {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_tag)|html_link(git_tag, 'footer__link') }}
                     # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__link') }}
-                    {% if git_branch != 'master' %}
+                    {% if git_branch != 'HEAD' %}
                         ({{ ('https://github.com/flashwave/misuzu/tree/' ~ git_branch)|html_link(git_branch, 'footer__link') }})
                     {% endif %}
                 </div>
