@@ -360,28 +360,6 @@ function forum_latest_post(int $forumId, int $userId): array
     return $memoized[$memoId] = $currentLast;
 }
 
-define(
-    'MSZ_FORUM_GET_CHILDREN_QUERY_STANDARD',
-    '
-        SELECT
-            :user_id AS `target_user_id`,
-            f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`,
-            f.`forum_link`, f.`forum_link_clicks`, f.`forum_archived`, f.`forum_colour`,
-            f.`forum_count_topics`, f.`forum_count_posts`,
-            (%3$s) AS `forum_permissions`
-        FROM `msz_forum_categories` AS f
-        WHERE f.`forum_parent` = :parent_id
-        AND f.`forum_hidden` = 0
-        AND (
-            (f.`forum_parent` = %1$d AND f.`forum_type` != %2$d)
-            OR f.`forum_parent` != %1$d
-        )
-        GROUP BY f.`forum_id`
-        HAVING (`forum_permissions` & %4$d) > 0
-        ORDER BY f.`forum_order`
-    '
-);
-
 function forum_get_children(int $parentId, int $userId, bool $showDeleted = false): array
 {
     $getListing = db_prepare(sprintf(
