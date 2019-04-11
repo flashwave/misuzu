@@ -37,16 +37,17 @@
             <div class="footer__background"></div>
             <div class="footer__wrapper">
                 {% autoescape false %}
-                {% set git_tag = git_tag() %}
-                {% set git_branch = git_branch() %}
                 <div class="footer__copyright">
                     {{ 'https://flash.moe'|html_link('Flashwave', 'footer__link') }} 2013-{{
                     ''|date('Y') }} /
-                    {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_tag)|html_link(git_tag, 'footer__link') }}
-                    # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__link') }}
+                    {% set git_branch = git_branch() %}
                     {% if git_branch != 'HEAD' %}
-                        ({{ ('https://github.com/flashwave/misuzu/tree/' ~ git_branch)|html_link(git_branch, 'footer__link') }})
+                        {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_branch)|html_link(git_branch, 'footer__link') }}
+                    {% else %}
+                        {% set git_tag = git_tag() %}
+                        {{ ('https://github.com/flashwave/misuzu/tree/' ~ git_tag)|html_link(git_tag, 'footer__link') }}
                     {% endif %}
+                    # {{ ('https://github.com/flashwave/misuzu/commit/' ~ git_commit_hash(true))|html_link(git_commit_hash(), 'footer__link') }}
                 </div>
                 {% endautoescape %}
             </div>
