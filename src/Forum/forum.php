@@ -270,7 +270,6 @@ function forum_get_child_ids(int $forumId): array
     return $memoized[$forumId] = array_column($children, 'forum_id');
 }
 
-// TODO: Permissions checks
 function forum_topics_unread(int $forumId, int $userId): int
 {
     if ($userId < 1 || $forumId < 1) {
@@ -291,27 +290,33 @@ function forum_topics_unread(int $forumId, int $userId): int
         $memoized[$memoId] += forum_topics_unread($child, $userId);
     }
 
-    $countUnread = db_prepare('
-        SELECT COUNT(ti.`topic_id`)
-        FROM `msz_forum_topics` AS ti
-        LEFT JOIN `msz_forum_topics_track` AS tt
-        ON tt.`topic_id` = ti.`topic_id` AND tt.`user_id` = :user_id
-        WHERE ti.`forum_id` = :forum_id
-        AND ti.`topic_deleted` IS NULL
-        AND ti.`topic_bumped` >= NOW() - INTERVAL 1 MONTH
-        AND (
-            tt.`track_last_read` IS NULL
-            OR tt.`track_last_read` < ti.`topic_bumped`
-        )
-    ');
+    $countUnread = db_prepare(sprintf(
+        '
+            SELECT COUNT(ti.`topic_id`)
+            FROM `msz_forum_topics` AS ti
+            LEFT JOIN `msz_forum_topics_track` AS tt
+            ON tt.`topic_id` = ti.`topic_id` AND tt.`user_id` = :user_id
+            WHERE ti.`forum_id` = :forum_id
+            AND (%s) > %d
+            AND ti.`topic_deleted` IS NULL
+            AND ti.`topic_bumped` >= NOW() - INTERVAL 1 MONTH
+            AND (
+                tt.`track_last_read` IS NULL
+                OR tt.`track_last_read` < ti.`topic_bumped`
+            )
+        ',
+        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'ti.`forum_id`'),
+        MSZ_FORUM_PERM_SET_READ
+    ));
     $countUnread->bindValue('forum_id', $forumId);
     $countUnread->bindValue('user_id', $userId);
+    $countUnread->bindValue('perm_user_id_user', $userId);
+    $countUnread->bindValue('perm_user_id_role', $userId);
     $memoized[$memoId] += (int)($countUnread->execute() ? $countUnread->fetchColumn() : 0);
 
     return $memoized[$memoId];
 }
 
-// TODO: Permission checks
 function forum_latest_post(int $forumId, int $userId): array
 {
     if ($forumId < 1) {
@@ -325,26 +330,34 @@ function forum_latest_post(int $forumId, int $userId): array
         return $memoized[$memoId];
     }
 
-    $getLastPost = db_prepare('
-        SELECT
-            p.`post_id` AS `recent_post_id`, t.`topic_id` AS `recent_topic_id`,
-            t.`topic_title` AS `recent_topic_title`, t.`topic_bumped` AS `recent_topic_bumped`,
-            p.`post_created` AS `recent_post_created`,
-            u.`user_id` AS `recent_post_user_id`,
-            u.`username` AS `recent_post_username`,
-            COALESCE(u.`user_colour`, r.`role_colour`) AS `recent_post_user_colour`,
-            UNIX_TIMESTAMP(p.`post_created`) AS `post_created_unix`
-        FROM `msz_forum_posts` AS p
-        LEFT JOIN `msz_forum_topics` AS t
-        ON t.`topic_id` = p.`topic_id`
-        LEFT JOIN `msz_users` AS u
-        ON u.`user_id` = p.`user_id`
-        LEFT JOIN `msz_roles` AS r
-        ON r.`role_id` = u.`display_role`
-        WHERE p.`forum_id` = :forum_id
-        ORDER BY p.`post_id` DESC
-    ');
+    $getLastPost = db_prepare(sprintf(
+        '
+            SELECT
+                p.`post_id` AS `recent_post_id`, t.`topic_id` AS `recent_topic_id`,
+                t.`topic_title` AS `recent_topic_title`, t.`topic_bumped` AS `recent_topic_bumped`,
+                p.`post_created` AS `recent_post_created`,
+                u.`user_id` AS `recent_post_user_id`,
+                u.`username` AS `recent_post_username`,
+                COALESCE(u.`user_colour`, r.`role_colour`) AS `recent_post_user_colour`,
+                UNIX_TIMESTAMP(p.`post_created`) AS `post_created_unix`
+            FROM `msz_forum_posts` AS p
+            LEFT JOIN `msz_forum_topics` AS t
+            ON t.`topic_id` = p.`topic_id`
+            LEFT JOIN `msz_users` AS u
+            ON u.`user_id` = p.`user_id`
+            LEFT JOIN `msz_roles` AS r
+            ON r.`role_id` = u.`display_role`
+            WHERE p.`forum_id` = :forum_id
+            AND p.`post_deleted` IS NULL
+            AND (%s) > %d
+            ORDER BY p.`post_id` DESC
+        ',
+        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 't.`forum_id`'),
+        MSZ_FORUM_PERM_SET_READ
+    ));
     $getLastPost->bindValue('forum_id', $forumId);
+    $getLastPost->bindValue('perm_user_id_user', $userId);
+    $getLastPost->bindValue('perm_user_id_role', $userId);
     $currentLast = db_fetch($getLastPost);
 
     $children = forum_get_child_ids($forumId);
