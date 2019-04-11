@@ -342,6 +342,7 @@ function forum_latest_post(int $forumId, int $userId): array
         LEFT JOIN `msz_roles` AS r
         ON r.`role_id` = u.`display_role`
         WHERE p.`forum_id` = :forum_id
+        AND p.`post_deleted` IS NULL
         ORDER BY p.`post_id` DESC
     ');
     $getLastPost->bindValue('forum_id', $forumId);
