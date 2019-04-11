@@ -66,8 +66,8 @@ function manage_get_menu(int $userId): array
         $menu['Changelog']['Changes'] = '/manage/changelog.php?v=changes';
     }
 
-    if (perms_check($perms['changelog'], MSZ_PERM_CHANGELOG_MANAGE_TAGS | MSZ_PERM_CHANGELOG_MANAGE_ACTIONS)) {
-        $menu['Changelog']['Action & Tags'] = '/manage/changelog.php?v=tags';
+    if (perms_check($perms['changelog'], MSZ_PERM_CHANGELOG_MANAGE_TAGS)) {
+        $menu['Changelog']['Tags'] = '/manage/changelog.php?v=tags';
     }
 
     return $menu;
@@ -338,11 +338,6 @@ function manage_perms_list(array $rawPerms): array
                     'section' => 'manage-tags',
                     'title' => 'Can manage tags.',
                     'perm' => MSZ_PERM_CHANGELOG_MANAGE_TAGS,
-                ],
-                [
-                    'section' => 'manage-actions',
-                    'title' => 'Can manage action types.',
-                    'perm' => MSZ_PERM_CHANGELOG_MANAGE_ACTIONS,
                 ],
             ],
         ],

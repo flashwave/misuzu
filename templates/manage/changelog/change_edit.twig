@@ -14,7 +14,7 @@
             {{ container_title(edit_change is not null ? 'Editing #' ~ edit_change.change_id : 'Adding a new change') }}
 
             <div style="display: flex; margin: 2px 5px;">
-                {{ input_select('change[action]', changelog_actions, edit_change.action_id|default(0), 'action_name', 'action_id') }}
+                {{ input_select('change[action]', changelog_actions, edit_change.change_action|default(0), 'action_name', 'action_id') }}
                 {{ input_text('change[log]', '', edit_change is not null ? edit_change.change_log : '', 'text', '', true, {'maxlength':255,'style':'flex-grow:1'}) }}
             </div>
 

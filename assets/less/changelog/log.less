@@ -1,6 +1,8 @@
 .changelog__log {
-    border: 1px solid var(--accent-colour);
-    background-color: var(--accent-colour);
+    --action-colour: var(--accent-colour);
+
+    border: 1px solid var(--action-colour);
+    background-color: var(--action-colour);
     display: flex;
     align-items: stretch;
     flex: 1 0 auto;
@@ -9,17 +11,13 @@
     &__action {
         display: block;
         padding: 6px 2px;
-        background-color: var(--accent-colour);
-        border-right: 1px solid var(--accent-colour);
+        background-color: var(--action-colour);
+        border-right: 1px solid var(--action-colour);
         writing-mode: sideways-lr;
         text-orientation: sideways;
         letter-spacing: 1px;
         text-align: center;
         flex: 0 0 auto;
-
-        &--dark {
-            color: var(--text-colour-inverted);
-        }
     }
 
     &__text {

@@ -54,14 +54,11 @@ if ($showActivityFeed) {
 
     $changelog = db_fetch_all(db_query('
         SELECT
-            c.`change_id`, c.`change_log`,
-            a.`action_name`, a.`action_colour`, a.`action_class`,
-            DATE(`change_created`) as `change_date`,
-            !ISNULL(c.`change_text`) as `change_has_text`
-        FROM `msz_changelog_changes` as c
-        LEFT JOIN `msz_changelog_actions` as a
-        ON a.`action_id` = c.`action_id`
-        ORDER BY c.`change_created` DESC
+            `change_id`, `change_log`, `change_action`,
+            DATE(`change_created`) AS `change_date`,
+            !ISNULL(`change_text`) AS `change_has_text`
+        FROM `msz_changelog_changes`
+        ORDER BY `change_created` DESC
         LIMIT 10
     '));
 

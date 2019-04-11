@@ -1,39 +1,47 @@
 <?php
 define('MSZ_PERM_CHANGELOG_MANAGE_CHANGES', 1);
 define('MSZ_PERM_CHANGELOG_MANAGE_TAGS', 1 << 1);
-define('MSZ_PERM_CHANGELOG_MANAGE_ACTIONS', 1 << 2);
+//define('MSZ_PERM_CHANGELOG_MANAGE_ACTIONS', 1 << 2); Deprecated, actions are hardcoded now
 
-function changelog_action_add(string $name, ?int $colour = null, ?string $class = null): int
+define('MSZ_CHANGELOG_ACTION_ADD', 1);
+define('MSZ_CHANGELOG_ACTION_REMOVE', 2);
+define('MSZ_CHANGELOG_ACTION_UPDATE', 3);
+define('MSZ_CHANGELOG_ACTION_FIX', 4);
+define('MSZ_CHANGELOG_ACTION_IMPORT', 5);
+define('MSZ_CHANGELOG_ACTION_REVERT', 6);
+define('MSZ_CHANGELOG_ACTIONS', [
+    MSZ_CHANGELOG_ACTION_ADD => 'add',
+    MSZ_CHANGELOG_ACTION_REMOVE => 'remove',
+    MSZ_CHANGELOG_ACTION_UPDATE => 'update',
+    MSZ_CHANGELOG_ACTION_FIX => 'fix',
+    MSZ_CHANGELOG_ACTION_IMPORT => 'import',
+    MSZ_CHANGELOG_ACTION_REVERT => 'revert',
+]);
+
+function changelog_action_name(int $action): string
 {
-    if ($colour === null) {
-        $colour = colour_none();
-    }
-
-    $class = preg_replace('#[^a-z]#', '', mb_strtolower($class ?? $name));
-
-    $addAction = db_prepare('
-        INSERT INTO `msz_changelog_actions`
-            (`action_name`, `action_colour`, `action_class`)
-        VALUES
-            (:action_name, :action_colour, :action_class)
-    ');
-    $addAction->bindValue('action_name', $name);
-    $addAction->bindValue('action_colour', $colour);
-    $addAction->bindValue('action_class', $class);
-
-    return $addAction->execute() ? (int)db_last_insert_id() : 0;
+    return changelog_action_is_valid($action) ? MSZ_CHANGELOG_ACTIONS[$action] : '';
 }
 
-function changelog_entry_create(int $userId, int $actionId, string $log, string $text = null): int
+function changelog_action_is_valid(int $action): bool
 {
+    return array_key_exists($action, MSZ_CHANGELOG_ACTIONS);
+}
+
+function changelog_entry_create(int $userId, int $action, string $log, string $text = null): int
+{
+    if (!changelog_action_is_valid($action)) {
+        return -1;
+    }
+
     $createChange = db_prepare('
         INSERT INTO `msz_changelog_changes`
-            (`user_id`, `action_id`, `change_log`, `change_text`)
+            (`user_id`, `change_action`, `change_log`, `change_text`)
         VALUES
-            (:user_id, :action_id, :change_log, :change_text)
+            (:user_id, :action, :change_log, :change_text)
     ');
     $createChange->bindValue('user_id', $userId);
-    $createChange->bindValue('action_id', $actionId);
+    $createChange->bindValue('action', $action);
     $createChange->bindValue('change_log', $log);
     $createChange->bindValue('change_text', $text);
 
@@ -42,19 +50,16 @@ function changelog_entry_create(int $userId, int $actionId, string $log, string 
 
 define('MSZ_CHANGELOG_GET_QUERY', '
     SELECT
-        c.`change_id`, c.`change_log`,
-        a.`action_name`, a.`action_colour`, a.`action_class`,
+        c.`change_id`, c.`change_log`, c.`change_action`,
         u.`user_id`, u.`username`,
-        DATE(`change_created`) as `change_date`,
-        !ISNULL(c.`change_text`) as `change_has_text`,
-        COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-    FROM `msz_changelog_changes` as c
-    LEFT JOIN `msz_users` as u
+        DATE(`change_created`) AS `change_date`,
+        !ISNULL(c.`change_text`) AS `change_has_text`,
+        COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
+    FROM `msz_changelog_changes` AS c
+    LEFT JOIN `msz_users` AS u
     ON u.`user_id` = c.`user_id`
-    LEFT JOIN `msz_roles` as r
+    LEFT JOIN `msz_roles` AS r
     ON r.`role_id` = u.`display_role`
-    LEFT JOIN `msz_changelog_actions` as a
-    ON a.`action_id` = c.`action_id`
     WHERE %s
     AND %s
     GROUP BY `change_created`, `change_id`
@@ -125,19 +130,16 @@ function changelog_change_get(int $changeId): array
 {
     $getChange = db_prepare('
         SELECT
-            c.`change_id`, c.`change_created`, c.`change_log`, c.`change_text`,
-            a.`action_name`, a.`action_colour`, a.`action_class`,
-            u.`user_id`, u.`username`, u.`display_role` as `user_role`,
-            DATE(`change_created`) as `change_date`,
-            COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
-            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-        FROM `msz_changelog_changes` as c
-        LEFT JOIN `msz_users` as u
+            c.`change_id`, c.`change_created`, c.`change_log`, c.`change_text`, c.`change_action`,
+            u.`user_id`, u.`username`, u.`display_role` AS `user_role`,
+            DATE(`change_created`) AS `change_date`,
+            COALESCE(u.`user_title`, r.`role_title`) AS `user_title`,
+            COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
+        FROM `msz_changelog_changes` AS c
+        LEFT JOIN `msz_users` AS u
         ON u.`user_id` = c.`user_id`
-        LEFT JOIN `msz_roles` as r
+        LEFT JOIN `msz_roles` AS r
         ON r.`role_id` = u.`display_role`
-        LEFT JOIN `msz_changelog_actions` as a
-        ON a.`action_id` = c.`action_id`
         WHERE `change_id` = :change_id
     ');
     $getChange->bindValue('change_id', $changeId);

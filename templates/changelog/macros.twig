@@ -40,13 +40,29 @@
                 </a>
             {% endif %}
 
-            <a class="changelog__entry__action{{ change.action_class is defined and change.action_class is not null ? ' changelog__entry__action--' ~ change.action_class : '' }} changelog__entry__action--{{ change.action_colour|colour_contrast }}"
+            {% if change.change_action == constant('MSZ_CHANGELOG_ACTION_ADD') %}
+                {% set action_name = 'Added' %}
+            {% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_REMOVE') %}
+                {% set action_name = 'Removed' %}
+            {% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_UPDATE') %}
+                {% set action_name = 'Updated' %}
+            {% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_FIX') %}
+                {% set action_name = 'Fixed' %}
+            {% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_IMPORT') %}
+                {% set action_name = 'Imported' %}
+            {% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_REVERT') %}
+                {% set action_name = 'Reverted' %}
+            {% else %}
+                {% set action_name = 'Unknown' %}
+            {% endif %}
+
+            <a class="changelog__entry__action changelog__action--{{ changelog_action_name(change.change_action) }}"
                 href="{{ change_url|format(change.change_id) }}"
                 {% if change.action_colour is defined %}style="{{ change.action_colour|html_colour('--action-colour') }}"{% endif %}
-                {% if is_small %}title="{{ change.action_name|default('Unknown') }}"{% endif %}>
+                {% if is_small %}title="{{ action_name }}"{% endif %}>
                 {% if not is_small %}
                     <div class="changelog__entry__action__text">
-                        {{ change.action_name|default('Unknown') }}
+                        {{ action_name }}
                     </div>
                 {% endif %}
             </a>

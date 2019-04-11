@@ -26,18 +26,15 @@ switch ($_GET['v'] ?? null) {
 
         $getChanges = db_prepare('
             SELECT
-                c.`change_id`, c.`change_log`, c.`change_created`,
-                a.`action_name`, a.`action_colour`, a.`action_class`,
+                c.`change_id`, c.`change_log`, c.`change_created`, c.`change_action`,
                 u.`user_id`, u.`username`,
-                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
-                DATE(`change_created`) as `change_date`,
-                !ISNULL(c.`change_text`) as `change_has_text`
-            FROM `msz_changelog_changes` as c
-            LEFT JOIN `msz_changelog_actions` as a
-            ON a.`action_id` = c.`action_id`
-            LEFT JOIN `msz_users` as u
+                COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`,
+                DATE(`change_created`) AS `change_date`,
+                !ISNULL(c.`change_text`) AS `change_has_text`
+            FROM `msz_changelog_changes` AS c
+            LEFT JOIN `msz_users` AS u
             ON u.`user_id` = c.`user_id`
-            LEFT JOIN `msz_roles` as r
+            LEFT JOIN `msz_roles` AS r
             ON r.`role_id` = u.`display_role`
             ORDER BY c.`change_id` DESC
             LIMIT :offset, :take
@@ -83,7 +80,7 @@ switch ($_GET['v'] ?? null) {
                         UPDATE `msz_changelog_changes`
                         SET `change_log` = :log,
                             `change_text` = :text,
-                            `action_id` = :action,
+                            `change_action` = :action,
                             `user_id` = :user,
                             `change_created` = :created
                         WHERE `change_id` = :change_id
@@ -93,7 +90,7 @@ switch ($_GET['v'] ?? null) {
                     $postChange = db_prepare('
                         INSERT INTO `msz_changelog_changes`
                             (
-                                `change_log`, `change_text`, `action_id`,
+                                `change_log`, `change_text`, `change_action`,
                                 `user_id`, `change_created`
                             )
                         VALUES
@@ -148,17 +145,22 @@ switch ($_GET['v'] ?? null) {
             }
         }
 
-        $actions = db_query('
-            SELECT `action_id`, `action_name`
-            FROM `msz_changelog_actions`
-        ')->fetchAll(PDO::FETCH_ASSOC);
+        $actions = [
+            ['action_id' => MSZ_CHANGELOG_ACTION_ADD, 'action_name' => 'Added'],
+            ['action_id' => MSZ_CHANGELOG_ACTION_REMOVE, 'action_name' => 'Removed'],
+            ['action_id' => MSZ_CHANGELOG_ACTION_UPDATE, 'action_name' => 'Updated'],
+            ['action_id' => MSZ_CHANGELOG_ACTION_FIX, 'action_name' => 'Fixed'],
+            ['action_id' => MSZ_CHANGELOG_ACTION_IMPORT, 'action_name' => 'Imported'],
+            ['action_id' => MSZ_CHANGELOG_ACTION_REVERT, 'action_name' => 'Reverted'],
+        ];
+
         tpl_var('changelog_actions', $actions);
 
         if ($changeId > 0) {
             $getChange = db_prepare('
                 SELECT
                     `change_id`, `change_log`, `change_text`, `user_id`,
-                    `action_id`, `change_created`
+                    `change_action`, `change_created`
                 FROM `msz_changelog_changes`
                 WHERE `change_id` = :change_id
             ');
@@ -193,26 +195,10 @@ switch ($_GET['v'] ?? null) {
 
     case 'tags':
         $canManageTags = perms_check($changelogPerms, MSZ_PERM_CHANGELOG_MANAGE_TAGS);
-        $canManageActions = perms_check($changelogPerms, MSZ_PERM_CHANGELOG_MANAGE_ACTIONS);
 
-        if (!$canManageTags && !$canManageActions) {
+        if (!$canManageTags) {
             echo render_error(403);
             break;
-        }
-
-        if ($canManageActions) {
-            $getActions = db_prepare('
-                SELECT
-                    a.`action_id`, a.`action_name`, a.`action_colour`,
-                    (
-                        SELECT COUNT(c.`action_id`)
-                        FROM `msz_changelog_changes` as c
-                        WHERE c.`action_id` = a.`action_id`
-                    ) as `action_count`
-                FROM `msz_changelog_actions` as a
-                ORDER BY a.`action_id` ASC
-            ');
-            tpl_var('changelog_actions', db_fetch_all($getActions));
         }
 
         if ($canManageTags) {
@@ -230,7 +216,7 @@ switch ($_GET['v'] ?? null) {
             tpl_var('changelog_tags', db_fetch_all($getTags));
         }
 
-        echo tpl_render('manage.changelog.actions_tags');
+        echo tpl_render('manage.changelog.tags');
         break;
 
     case 'tag':
@@ -296,79 +282,5 @@ switch ($_GET['v'] ?? null) {
         }
 
         echo tpl_render('manage.changelog.tag_edit');
-        break;
-
-    case 'action':
-        if (!perms_check($changelogPerms, MSZ_PERM_CHANGELOG_MANAGE_ACTIONS)) {
-            echo render_error(403);
-            break;
-        }
-
-        $actionId = (int)($_GET['a'] ?? 0);
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify('changelog_action', $_POST['csrf'] ?? '')) {
-            if (!empty($_POST['action']) && is_array($_POST['action'])) {
-                if ($actionId > 0) {
-                    $updateAction = db_prepare('
-                        UPDATE `msz_changelog_actions`
-                        SET `action_name` = :name,
-                            `action_colour` = :colour,
-                            `action_class` = :class
-                        WHERE `action_id` = :id
-                    ');
-                    $updateAction->bindValue('id', $actionId);
-                } else {
-                    $updateAction = db_prepare('
-                        INSERT INTO `msz_changelog_actions`
-                            (`action_name`, `action_colour`, `action_class`)
-                        VALUES
-                            (:name, :colour, :class)
-                    ');
-                }
-
-                $actionColour = colour_create();
-
-                if (!empty($_POST['action']['colour']['inherit'])) {
-                    colour_set_inherit($actionColour);
-                } else {
-                    colour_set_red($actionColour, $_POST['action']['colour']['red']);
-                    colour_set_green($actionColour, $_POST['action']['colour']['green']);
-                    colour_set_blue($actionColour, $_POST['action']['colour']['blue']);
-                }
-
-                $updateAction->bindValue('name', $_POST['action']['name']);
-                $updateAction->bindValue('colour', $actionColour);
-                $updateAction->bindValue('class', $_POST['action']['class']);
-                $updateAction->execute();
-
-                if ($actionId < 1) {
-                    $actionId = db_last_insert_id();
-                    audit_log(MSZ_AUDIT_CHANGELOG_ACTION_CREATE, user_session_current('user_id', 0), [$actionId]);
-                    header('Location: ?v=action&a=' . $actionId);
-                    return;
-                } else {
-                    audit_log(MSZ_AUDIT_CHANGELOG_ACTION_EDIT, user_session_current('user_id', 0), [$actionId]);
-                }
-            }
-        }
-
-        if ($actionId > 0) {
-            $getAction = db_prepare('
-                SELECT `action_id`, `action_name`, `action_colour`, `action_class`
-                FROM `msz_changelog_actions`
-                WHERE `action_id` = :action_id
-            ');
-            $getAction->bindValue('action_id', $actionId);
-            $action = db_fetch($getAction);
-
-            if ($action) {
-                tpl_var('edit_action', $action);
-            } else {
-                header('Location: ?v=actions');
-                return;
-            }
-        }
-
-        echo tpl_render('manage.changelog.action_edit');
         break;
 }

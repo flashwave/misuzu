@@ -7,10 +7,26 @@
 {% set manage_link = '/manage/changelog.php?v=change&c=' ~ change.change_id %}
 {% set description = change.change_log %}
 
+{% if change.change_action == constant('MSZ_CHANGELOG_ACTION_ADD') %}
+    {% set action_name = 'Added' %}
+{% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_REMOVE') %}
+    {% set action_name = 'Removed' %}
+{% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_UPDATE') %}
+    {% set action_name = 'Updated' %}
+{% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_FIX') %}
+    {% set action_name = 'Fixed' %}
+{% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_IMPORT') %}
+    {% set action_name = 'Imported' %}
+{% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_REVERT') %}
+    {% set action_name = 'Reverted' %}
+{% else %}
+    {% set action_name = 'Unknown' %}
+{% endif %}
+
 {% block content %}
-    <div class="container changelog__log" style="{{ change.action_colour|html_colour('--accent-colour') }}">
-        <div class="changelog__log__action {{ change.action_class is defined and change.action_class is not null ? ' changelog__log__action--' ~ change.action_class : '' }} changelog__log__action--{{ change.action_colour|colour_contrast }}">
-            {{ change.action_name }}
+    <div class="container changelog__log changelog__action--{{ changelog_action_name(change.change_action) }}">
+        <div class="changelog__log__action">
+            {{ action_name }}
         </div>
 
         <div class="changelog__log__text">
