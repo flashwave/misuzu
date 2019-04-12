@@ -297,7 +297,7 @@ function forum_topics_unread(int $forumId, int $userId): int
             LEFT JOIN `msz_forum_topics_track` AS tt
             ON tt.`topic_id` = ti.`topic_id` AND tt.`user_id` = :user_id
             WHERE ti.`forum_id` = :forum_id
-            AND (%s) > %d
+            AND ((%s) & %d) > 0
             AND ti.`topic_deleted` IS NULL
             AND ti.`topic_bumped` >= NOW() - INTERVAL 1 MONTH
             AND (
@@ -349,10 +349,10 @@ function forum_latest_post(int $forumId, int $userId): array
             ON r.`role_id` = u.`display_role`
             WHERE p.`forum_id` = :forum_id
             AND p.`post_deleted` IS NULL
-            AND (%s) > %d
+            AND ((%s) & %d) > 0
             ORDER BY p.`post_id` DESC
         ',
-        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 't.`forum_id`'),
+        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'p.`forum_id`'),
         MSZ_FORUM_PERM_SET_READ
     ));
     $getLastPost->bindValue('forum_id', $forumId);
