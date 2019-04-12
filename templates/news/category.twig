@@ -9,6 +9,19 @@
     'page': news_pagination.page > 2 ? news_pagination.page : 0,
 }) %}
 
+{% set feeds = [
+    {
+        'type': 'rss',
+        'title': '',
+        'url': url('news-category-feed-rss', {'category': category.category_id}),
+    },
+    {
+        'type': 'atom',
+        'title': '',
+        'url': url('news-category-feed-atom', {'category': category.category_id}),
+    },
+] %}
+
 {% block content %}
     <div class="news__container">
         <div class="news__preview__listing">
@@ -41,6 +54,29 @@
                     </div>
                 </div>
             {% endif %}
+
+            <div class="container">
+                {{ container_title('Feeds') }}
+
+                <div class="news__feeds">
+                    <a href="{{ url('news-category-feed-atom', {'category': category.category_id}) }}" class="news__feed">
+                        <div class="news__feed__icon">
+                            <i class="fas fa-rss"></i>
+                        </div>
+                        <div class="news__feed__type">
+                            Atom
+                        </div>
+                    </a>
+                    <a href="{{ url('news-category-feed-rss', {'category': category.category_id}) }}" class="news__feed">
+                        <div class="news__feed__icon">
+                            <i class="fas fa-rss"></i>
+                        </div>
+                        <div class="news__feed__type">
+                            RSS
+                        </div>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

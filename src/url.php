@@ -30,6 +30,10 @@ define('MSZ_URLS', [
     'news-post'                         => ['/news.php',                ['p' => '<post>']],
     'news-post-comments'                => ['/news.php',                ['p' => '<post>'], 'comments'],
     'news-category'                     => ['/news.php',                ['c' => '<category>', 'page' => '<page>']],
+    'news-feed-rss'                     => ['/news.php/rss'],
+    'news-category-feed-rss'            => ['/news.php/rss',            ['c' => '<category>']],
+    'news-feed-atom'                    => ['/news.php/atom'],
+    'news-category-feed-atom'           => ['/news.php/atom',           ['c' => '<category>']],
 
     'forum-index'                       => ['/forum'],
     'forum-leaderboard'                 => ['/forum/leaderboard.php',   ['id' => '<id>', 'mode' => '<mode>']],

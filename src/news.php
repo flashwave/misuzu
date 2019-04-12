@@ -297,3 +297,85 @@ function news_post_get(int $postId): array
     $getPost->bindValue(':post_id', $postId);
     return db_fetch($getPost);
 }
+
+function news_feed(string $type, array $posts, array $info): string
+{
+    $document = new DOMDocument('1.0', 'utf-8');
+    $urlPrefix = url_prefix(false);
+    $htmlUrl = $urlPrefix . $info['html-url'];
+    $feedUrl = $urlPrefix . $info['feed-url'];
+
+    if ($type === 'rss') {
+        $dateFormat = 'r';
+        $rss = $document->appendChild($document->createElement('rss'));
+        $rss->setAttribute('version', '2.0');
+        $rss->setAttribute('xmlns:atom', 'http://www.w3.org/2005/Atom');
+        $feed = $rss->appendChild($document->createElement('channel'));
+        $feed->appendChild($document->createElement('ttl', '900'));
+    } else {
+        $dateFormat = 'c';
+        $feed = $document->appendChild($document->createElement('feed'));
+        $feed->setAttribute('xmlns', 'http://www.w3.org/2005/Atom');
+        $link = $feed->appendChild($document->createElement('link'));
+        $link->setAttribute('href', $htmlUrl);
+    }
+
+    $feed->appendChild($document->createElement('title', $info['title']));
+    $feed->appendChild($document->createElement(
+        $type === 'rss' ? 'description' : 'subtitle', $info['subtitle']
+    ));
+    $feed->appendChild($document->createElement(
+        $type === 'rss' ? 'link' : 'id', $htmlUrl
+    ));
+    $feed->appendChild($document->createElement(
+        $type === 'rss' ? 'pubDate' : 'updated',
+        date($dateFormat, strtotime($posts[0]['post_created']))
+    ));
+    $link = $feed->appendChild($document->createElement($type === 'rss' ? 'atom:link' : 'link'));
+    $link->setAttribute('rel', 'self');
+    $link->setAttribute('href', $feedUrl);
+
+    foreach ($posts as $post) {
+        $entry = $feed->appendChild($document->createElement($type === 'rss' ? 'item' : 'entry'));
+        $entry->appendChild($document->createElement('title', $post['post_title']));
+        $entry->appendChild($document->createElement(
+            $type === 'rss' ? 'link' : 'id',
+            $urlPrefix . url('news-post', ['post' => $post['post_id']])
+        ));
+        $entry->appendChild($document->createElement(
+            $type === 'rss' ? 'pubDate' : 'updated',
+            date($dateFormat, strtotime($post['post_created']))
+        ));
+
+        $entry->appendChild($document->createElement(
+            $type === 'rss' ? 'description' : 'summary',
+            first_paragraph($post['post_text'])
+        ));
+
+        if ($type === 'rss') {
+            $entry->appendChild($document->createElement(
+                'comments',
+                $urlPrefix . url('news-post-comments', ['post' => $post['post_id']])
+            ));
+            $guid = $entry->appendChild($document->createElement(
+                'guid',
+                $urlPrefix . url('news-post', ['post' => $post['post_id']])
+            ));
+            $guid->setAttribute('isPermaLink', 'true');
+        } else {
+            $link = $entry->appendChild($document->createElement('link'));
+            $link->setAttribute('href', $urlPrefix . url('news-post', ['post' => $post['post_id']]));
+            $link->setAttribute('type', 'text/html');
+            $html = $entry->appendChild($document->createElement(
+                'content',
+                htmlentities(parse_text($post['post_text'], MSZ_PARSER_MARKDOWN))
+            ));
+            $html->setAttribute('type', 'html');
+            $author = $entry->appendChild($document->createElement('author'));
+            $author->appendChild($document->createElement('name', $post['username']));
+            $author->appendChild($document->createElement('uri', $urlPrefix . url('user-profile', ['user' => $post['user_id']])));
+        }
+    }
+
+    return $document->saveXML();
+}

@@ -8,6 +8,19 @@
 }) %}
 {% set manage_link = '/manage/news.php?v=index' %}
 
+{% set feeds = [
+    {
+        'type': 'rss',
+        'title': '',
+        'url': url('news-feed-rss'),
+    },
+    {
+        'type': 'atom',
+        'title': '',
+        'url': url('news-feed-atom'),
+    },
+] %}
+
 {% block content %}
     <div class="news__container">
         <div class="news__preview__listing">
@@ -35,6 +48,29 @@
                             </div>
                         </a>
                     {% endfor %}
+                </div>
+            </div>
+
+            <div class="container">
+                {{ container_title('Feeds') }}
+
+                <div class="news__feeds">
+                    <a href="{{ url('news-feed-atom') }}" class="news__feed">
+                        <div class="news__feed__icon">
+                            <i class="fas fa-rss"></i>
+                        </div>
+                        <div class="news__feed__type">
+                            Atom
+                        </div>
+                    </a>
+                    <a href="{{ url('news-feed-rss') }}" class="news__feed">
+                        <div class="news__feed__icon">
+                            <i class="fas fa-rss"></i>
+                        </div>
+                        <div class="news__feed__type">
+                            RSS
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>

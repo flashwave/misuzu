@@ -56,4 +56,10 @@
             <link rel="og:url" href="{{ canonical_url }}">
         {% endif %}
     {% endif %}
+
+    {% if feeds is defined and feeds is iterable %}
+        {% for feed in feeds %}
+            <link rel="alternate" type="application/{{ feed.type }}+xml" title="{{ feed.title|default(feed.type) }}" href="{{ feed.url }}">
+        {% endfor %}
+    {% endif %}
 {% endspaceless %}

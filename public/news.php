@@ -9,6 +9,7 @@ if (!empty($_GET['n']) && is_string($_GET['n'])) {
     return;
 }
 
+$feedMode = trim($_SERVER['PATH_INFO'] ?? '', '/');
 $categoryId = !empty($_GET['c']) && is_string($_GET['c']) ? (int)$_GET['c'] : 0;
 $postId = !empty($_GET['p']) && is_string($_GET['p']) ? (int)$_GET['p'] : 0;
 
@@ -67,8 +68,23 @@ if ($categoryId > 0) {
 
     $featured = news_posts_get(0, 10, $category['category_id'], true);
 
-    tpl_var('news_pagination', $categoryPagination);
-    echo tpl_render('news.category', compact('category', 'posts', 'featured'));
+    if ($feedMode === 'rss' || $feedMode === 'atom') {
+        header("Content-Type: application/{$feedMode}+xml; charset=utf-8");
+        echo news_feed($feedMode, $posts, [
+            'title' => config_get('Site', 'name') . ' » ' . $category['category_name'],
+            'subtitle' => $category['category_description'],
+            'html-url' => url('news-category', ['category' => $category['category_id']]),
+            'feed-url' => url("news-category-feed-{$feedMode}", ['category' => $category['category_id']]),
+        ]);
+        return;
+    }
+
+    echo tpl_render('news.category', [
+        'category' => $category,
+        'posts' => $posts,
+        'featured' => $featured,
+        'news_pagination' => $categoryPagination,
+    ]);
     return;
 }
 
@@ -94,5 +110,19 @@ if (!$posts) {
     return;
 }
 
-tpl_var('news_pagination', $newsPagination);
-echo tpl_render('news.index', compact('categories', 'posts'));
+if ($feedMode === 'rss' || $feedMode === 'atom') {
+    header("Content-Type: application/{$feedMode}+xml; charset=utf-8");
+    echo news_feed($feedMode, $posts, [
+        'title' => config_get('Site', 'name') . ' » Featured News',
+        'subtitle' => 'A live featured news feed.',
+        'html-url' => url('news-index'),
+        'feed-url' => url("news-feed-{$feedMode}"),
+    ]);
+    return;
+}
+
+echo tpl_render('news.index', [
+    'categories' => $categories,
+    'posts' => $posts,
+    'news_pagination' => $newsPagination,
+]);
