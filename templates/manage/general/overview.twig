@@ -1,13 +1,63 @@
 {% extends 'manage/general/master.twig' %}
 {% from 'macros.twig' import container_title %}
 
+{% set stat_names = {
+    'stat_users_total': 'Total Users',
+    'stat_users_deleted': 'Deleted Users',
+    'stat_users_active': 'Active Users',
+    'stat_audit_logs': 'Logged Actions',
+    'stat_changelog_entries': 'Changelogs',
+    'stat_comment_categories_total': 'Comment Sections',
+    'stat_comment_categories_locked': 'Locked Comment Sections',
+    'stat_comment_posts_total': 'Total Comments',
+    'stat_comment_posts_deleted': 'Deleted Comments',
+    'stat_comment_posts_replies': 'Comment Replies',
+    'stat_comment_posts_pinned': 'Pinned Comments',
+    'stat_comment_posts_edited': 'Edited Comments',
+    'stat_comment_likes': 'Comments Like Votes',
+    'stat_comment_dislikes': 'Comments Dislike Votes',
+    'stat_forum_posts_total': 'Total Forum Posts',
+    'stat_forum_posts_deleted': 'Deleted Forum Posts',
+    'stat_forum_posts_edited': 'Edited Forum Posts',
+    'stat_forum_posts_plain': 'Forum Posts using Plain Text',
+    'stat_forum_posts_bbcode': 'Forum Posts using BBCode',
+    'stat_forum_posts_markdown': 'Forum Posts using Markdown',
+    'stat_forum_posts_signature': 'Forum Posts with Visible Signature',
+    'stat_forum_topics_total': 'Total Forum Topics',
+    'stat_forum_topics_normal': 'Regular Forum Topics',
+    'stat_forum_topics_pinned': 'Pinned Forum Topics',
+    'stat_forum_topics_announce': 'Announcement Forum Topics',
+    'stat_forum_topics_global_announce': 'Global Announcement Forum Topics',
+    'stat_forum_topics_deleted': 'Deleted Forum Topics',
+    'stat_forum_topics_locked': 'Locked Forum Topics',
+    'stat_blacklist': 'Blacklisted IP addresses',
+    'stat_login_attempts_total': 'Total Login Attempts',
+    'stat_login_attempts_failed': 'Failed Login Attempts',
+    'stat_user_sessions': 'Active User Sessions',
+    'stat_user_password_resets': 'Pending Password Resets',
+    'stat_user_relations': 'User Relations',
+    'stat_user_warnings': 'User Warnings',
+} %}
+
 {% block manage_content %}
-    <div class="container">
+    <div class="container container--lazy">
         {{ container_title('Overview') }}
 
         <div class="container__content">
             <p>Welcome to Manage, here you can manage things.</p>
-            <p>Please teach me how to give a shit about management panel. -flashwave</p>
+        </div>
+    </div>
+
+    <div class="container container--lazy">
+        {{ container_title('Statistics') }}
+
+        <div class="manage__statistics">
+            {% for name, value in statistics %}
+                <div class="manage__statistic" id="{{ name }}">
+                    <div class="manage__statistic__name">{{ stat_names[name]|default(name) }}</div>
+                    <div class="manage__statistic__value">{{ value|number_format }}</div>
+                </div>
+            {% endfor %}
         </div>
     </div>
 {% endblock %}
