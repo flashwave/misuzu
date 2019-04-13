@@ -1,0 +1,59 @@
+{% extends 'home/master.twig' %}
+{% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_text %}
+
+{% set canonical_url = url('search-query', {'query': search_query}) %}
+
+{% block content %}
+    <div class="container container--lazy">
+        {{ container_title('Search') }}
+        <form method="get" action="{{ url('search-index') }}" style="margin:0">
+            {{ input_text('q', '', search_query, 'text', 'What are you looking for?', false, null, 1, true) }}
+            <button class="input__button" tabindex="2">Search</button>
+        </form>
+        <a href="#topics" class="link">Topics ({{ forum_topics|length|number_format }})</a>
+        <a href="#posts" class="link">Posts ({{ forum_posts|length|number_format }})</a>
+        <a href="#users" class="link">Users ({{ users|length|number_format }})</a>
+        <a href="#news" class="link">News ({{ news_posts|length|number_format }})</a>
+    </div>
+
+    {% if search_query|length > 0 %}
+        <div id="topics" class="container container--lazy">
+            {{ container_title('Topics (%s)'|format(forum_topics|length|number_format)) }}
+            {% for topic in forum_topics %}
+                <a href="{{ url('forum-topic', {'topic': topic.topic_id}) }}" class="link">
+                    {{ topic.topic_title }}
+                </a><br>
+            {% endfor %}
+        </div>
+
+        <div id="posts" class="container container--lazy">
+            {{ container_title('Posts (%s)'|format(forum_posts|length|number_format)) }}
+
+            {% for post in forum_posts %}
+                <a href="{{ url('forum-post', {'post': post.post_id, 'post_fragment': 'p' ~ post.post_id}) }}" class="link">
+                    Reply by {{ post.username }} in "{{ post.topic_title }}"
+                </a><br>
+            {% endfor %}
+        </div>
+
+        <div id="users" class="container container--lazy">
+            {{ container_title('Users (%s)'|format(users|length|number_format)) }}
+            {% for user in users %}
+                <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="link">
+                    {{ user.username }}
+                </a><br>
+            {% endfor %}
+        </div>
+
+        <div id="news" class="container container--lazy">
+            {{ container_title('News (%s)'|format(news_posts|length|number_format)) }}
+            {% for post in news_posts %}
+                <a href="{{ url('news-post', {'post': post.post_id}) }}" class="link">
+                    {{ post.post_title }}
+                </a><br>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}
+

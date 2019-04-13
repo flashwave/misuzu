@@ -12,6 +12,9 @@ define('MSZ_URLS', [
     'info'                              => ['/info.php/<title>'],
     'media-proxy'                       => ['/proxy.php/<hash>/<url>'],
 
+    'search-index'                      => ['/search.php'],
+    'search-query'                      => ['/search.php',              ['q' => '<query>', 't' => '<type>']],
+
     'auth-login'                        => ['/auth/login.php',          ['username' => '<username>', 'redirect' => '<redirect>']],
     'auth-login-welcome'                => ['/auth/login.php',          ['welcome' => '1', 'username' => '<username>']],
     'auth-register'                     => ['/auth/register.php'],
