@@ -15,26 +15,38 @@
         </div>
     </form>
 
-    <div class="container container--lazy">
-        {{ container_title('Categories') }}
-        <a href="#topics" class="link">Topics ({{ forum_topics|length|number_format }})</a>
-        <a href="#posts" class="link">Posts ({{ forum_posts|length|number_format }})</a>
-        <a href="#users" class="link">Users ({{ users|length|number_format }})</a>
-        <a href="#news" class="link">News ({{ news_posts|length|number_format }})</a>
-    </div>
+    {% if forum_topics|length > 0 or forum_posts|length > 0 or users|length > 0 or news_posts|length > 0 %}
+        <div class="container container--lazy">
+            {{ container_title('<i class="fas fa-folder fa-fw"></i> Categories') }}
+            {% if forum_topics|length > 0 %}<a href="#topics" class="link">Topics ({{ forum_topics|length|number_format }})</a>{% endif %}
+            {% if forum_posts|length > 0 %}<a href="#posts" class="link">Posts ({{ forum_posts|length|number_format }})</a>{% endif %}
+            {% if users|length > 0 %}<a href="#users" class="link">Users ({{ users|length|number_format }})</a>{% endif %}
+            {% if news_posts|length > 0 %}<a href="#news" class="link">News ({{ news_posts|length|number_format }})</a>{% endif %}
+        </div>
+    {% elseif search_query|length > 0 %}
+        <div class="container container--lazy">
+            {{ container_title('<i class="fas fa-search-minus fa-fw"></i> Nothing found!') }}
 
-    {% if search_query|length > 0 %}
+            <div class="container__content">
+                No results found using that query, try something else!
+            </div>
+        </div>
+    {% endif %}
+
+    {% if forum_topics|length > 0 %}
         <div id="topics" class="container container--lazy">
-            {{ container_title('Topics (%s)'|format(forum_topics|length|number_format)) }}
+            {{ container_title('<i class="fas fa-comments fa-fw"></i> Topics (%s)'|format(forum_topics|length|number_format)) }}
             {% for topic in forum_topics %}
                 <a href="{{ url('forum-topic', {'topic': topic.topic_id}) }}" class="link">
                     {{ topic.topic_title }}
                 </a><br>
             {% endfor %}
         </div>
+    {% endif %}
 
+    {% if forum_posts|length > 0 %}
         <div id="posts" class="container container--lazy">
-            {{ container_title('Posts (%s)'|format(forum_posts|length|number_format)) }}
+            {{ container_title('<i class="fas fa-comment fa-fw"></i> Posts (%s)'|format(forum_posts|length|number_format)) }}
 
             {% for post in forum_posts %}
                 <a href="{{ url('forum-post', {'post': post.post_id, 'post_fragment': 'p' ~ post.post_id}) }}" class="link">
@@ -42,9 +54,11 @@
                 </a><br>
             {% endfor %}
         </div>
+    {% endif %}
 
+    {% if users|length > 0 %}
         <div id="users" class="container container--lazy">
-            {{ container_title('Users (%s)'|format(users|length|number_format)) }}
+            {{ container_title('<i class="fas fa-users fa-fw"></i> Users (%s)'|format(users|length|number_format)) }}
 
             <div class="userlist">
                 {% for user in users %}
@@ -54,9 +68,11 @@
                 {% endfor %}
             </div>
         </div>
+    {% endif %}
 
+    {% if news_posts|length > 0 %}
         <div id="news" class="container container--lazy">
-            {{ container_title('News (%s)'|format(news_posts|length|number_format)) }}
+            {{ container_title('<i class="fas fa-newspaper fa-fw"></i> News (%s)'|format(news_posts|length|number_format)) }}
             {% for post in news_posts %}
                 <a href="{{ url('news-post', {'post': post.post_id}) }}" class="link">
                     {{ post.post_title }}
