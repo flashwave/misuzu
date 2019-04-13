@@ -5,12 +5,16 @@
 {% set canonical_url = url('search-query', {'query': search_query}) %}
 
 {% block content %}
+    <form class="search__input" method="get" action="{{ url('search-index') }}">
+        <div class="search__input__background"></div>
+        <div class="search__input__container">
+            {{ input_text('q', 'search__input__text', search_query, 'text', 'What are you looking for?', false, null, 1, true, true) }}
+            <button class="search__input__button" tabindex="2"><i class="fas fa-search fa-fw"></i></button>
+        </div>
+    </form>
+
     <div class="container container--lazy">
-        {{ container_title('Search') }}
-        <form method="get" action="{{ url('search-index') }}" style="margin:0">
-            {{ input_text('q', '', search_query, 'text', 'What are you looking for?', false, null, 1, true) }}
-            <button class="input__button" tabindex="2">Search</button>
-        </form>
+        {{ container_title('Categories') }}
         <a href="#topics" class="link">Topics ({{ forum_topics|length|number_format }})</a>
         <a href="#posts" class="link">Posts ({{ forum_posts|length|number_format }})</a>
         <a href="#users" class="link">Users ({{ users|length|number_format }})</a>
