@@ -26,12 +26,62 @@ if (!empty($searchQuery)) {
     $findForumPosts->bindValue('query', $searchQuery);
     $forumPosts = db_fetch_all($findForumPosts);
 
-    $findUsers = db_prepare('
-        SELECT `user_id`, `username`
-        FROM `msz_users`
-        WHERE LOWER(`username`) LIKE CONCAT("%", LOWER(:query), "%");
-    ');
+    $findUsers = db_prepare(sprintf(
+        '
+            SELECT
+                :current_user_id AS `current_user_id`,
+                u.`user_id`, u.`username`, u.`user_country`,
+                u.`user_created`, u.`user_active`, r.`role_id`,
+                COALESCE(u.`user_title`, r.`role_title`) AS `user_title`,
+                COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`,
+                (
+                    SELECT COUNT(`topic_id`)
+                    FROM `msz_forum_topics`
+                    WHERE `user_id` = u.`user_id`
+                    AND `topic_deleted` IS NULL
+                ) AS `user_count_topics`,
+                (
+                    SELECT COUNT(`post_Id`)
+                    FROM `msz_forum_posts`
+                    WHERE `user_id` = u.`user_id`
+                    AND `post_deleted` IS NULL
+                ) AS `user_count_posts`,
+                (
+                    SELECT COUNT(`subject_id`)
+                    FROM `msz_user_relations`
+                    WHERE `user_id` = u.`user_id`
+                    AND `relation_type` = %1$d
+                ) AS `user_count_following`,
+                (
+                    SELECT COUNT(`user_id`)
+                    FROM `msz_user_relations`
+                    WHERE `subject_id` = u.`user_id`
+                    AND `relation_type` = %1$d
+                ) AS `user_count_followers`,
+                (
+                    SELECT `relation_type` = %1$d
+                    FROM `msz_user_relations`
+                    WHERE `user_id` = `current_user_id`
+                    AND `subject_id` = u.`user_id`
+                ) AS `user_is_following`,
+                (
+                    SELECT `relation_type` = %1$d
+                    FROM `msz_user_relations`
+                    WHERE `user_id` = u.`user_id`
+                    AND `subject_id` = `current_user_id`
+                ) AS `user_is_follower`
+            FROM `msz_users` AS u
+            LEFT JOIN `msz_roles` AS r
+            ON r.`role_id` = u.`display_role`
+            LEFT JOIN `msz_user_roles` AS ur
+            ON ur.`user_id` = u.`user_id`
+            WHERE LOWER(u.`username`) LIKE CONCAT("%%", LOWER(:query), "%%")
+            GROUP BY u.`user_id`
+        ',
+        MSZ_USER_RELATION_FOLLOW
+    ));
     $findUsers->bindValue('query', $searchQuery);
+    $findUsers->bindValue('current_user_id', user_session_current('user_id', 0));
     $users = db_fetch_all($findUsers);
 
     $findNewsPosts = db_prepare('

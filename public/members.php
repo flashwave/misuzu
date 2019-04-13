@@ -101,8 +101,8 @@ $getUsers = db_prepare(sprintf(
             :current_user_id AS `current_user_id`,
             u.`user_id`, u.`username`, u.`user_country`,
             u.`user_created`, u.`user_active`, r.`role_id`,
-            COALESCE(u.`user_title`, r.`role_title`) as `user_title`,
-            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
+            COALESCE(u.`user_title`, r.`role_title`) AS `user_title`,
+            COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`,
             (
                 SELECT COUNT(`topic_id`)
                 FROM `msz_forum_topics`
@@ -139,10 +139,10 @@ $getUsers = db_prepare(sprintf(
                 WHERE `user_id` = u.`user_id`
                 AND `subject_id` = `current_user_id`
             ) AS `user_is_follower`
-        FROM `msz_users` as u
-        LEFT JOIN `msz_roles` as r
+        FROM `msz_users` AS u
+        LEFT JOIN `msz_roles` AS r
         ON r.`role_id` = u.`display_role`
-        LEFT JOIN `msz_user_roles` as ur
+        LEFT JOIN `msz_user_roles` AS ur
         ON ur.`user_id` = u.`user_id`
         WHERE ur.`role_id` = :role_id
         %1$s

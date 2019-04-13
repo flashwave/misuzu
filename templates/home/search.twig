@@ -1,6 +1,7 @@
 {% extends 'home/master.twig' %}
 {% from 'macros.twig' import container_title %}
 {% from '_layout/input.twig' import input_text %}
+{% from 'user/macros.twig' import user_card %}
 
 {% set title = search_query|length < 1 ? 'Search' : 'Looking for ' ~ search_query %}
 {% set canonical_url = url('search-query', {'query': search_query}) %}
@@ -44,11 +45,14 @@
 
         <div id="users" class="container container--lazy">
             {{ container_title('Users (%s)'|format(users|length|number_format)) }}
-            {% for user in users %}
-                <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="link">
-                    {{ user.username }}
-                </a><br>
-            {% endfor %}
+
+            <div class="userlist">
+                {% for user in users %}
+                    <div class="userlist__item">
+                        {{ user_card(user) }}
+                    </div>
+                {% endfor %}
+            </div>
         </div>
 
         <div id="news" class="container container--lazy">
