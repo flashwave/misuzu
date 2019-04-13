@@ -2,6 +2,7 @@
 {% from 'macros.twig' import container_title %}
 {% from '_layout/input.twig' import input_text %}
 
+{% set title = search_query|length < 1 ? 'Search' : 'Looking for ' ~ search_query %}
 {% set canonical_url = url('search-query', {'query': search_query}) %}
 
 {% block content %}
