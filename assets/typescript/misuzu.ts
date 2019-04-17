@@ -8,6 +8,7 @@
 /// <reference path="UserRelations.ts" />
 /// <reference path="Forum/Posting.ts" />
 /// <reference path="UrlRegistry.ts" />
+/// <reference path="Forum/Polls.ts" />
 
 declare const timeago: any;
 declare const hljs: any;
@@ -63,6 +64,7 @@ window.addEventListener('load', () => {
 
     commentsInit();
     forumPostingInit();
+    forumPollsInit();
 });
 
 function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTMLInputElement, force: boolean = false): void {

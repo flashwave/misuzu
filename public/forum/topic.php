@@ -38,6 +38,11 @@ if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     return;
 }
 
+if (!empty($topic['poll_id'])) {
+    $pollOptions = forum_poll_options($topic['poll_id']);
+    $pollAnswers = [];
+}
+
 $topicIsLocked = !empty($topic['topic_locked']);
 $topicIsArchived = !empty($topic['topic_archived']);
 $topicPostsTotal = (int)($topic['topic_count_posts'] + $topic['topic_count_posts_deleted']);
@@ -363,4 +368,5 @@ echo tpl_render('forum.topic', [
     'topic_can_nuke_or_restore' => $canNukeOrRestore,
     'topic_can_bump' => $canBumpTopic,
     'topic_can_lock' => $canLockTopic,
+    'topic_poll_options' => $pollOptions ?? [],
 ]);

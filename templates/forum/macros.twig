@@ -466,3 +466,49 @@
         </div>
     </div>
 {% endmacro %}
+
+{% macro forum_poll(poll, options, results) %}
+    {% from '_layout/input.twig' import input_csrf, input_checkbox %}
+
+    {% if options is iterable and options|length > 0 %}
+        <form method="post" action="{{ url('forum-poll-vote') }}" class="container forum__poll js-forum-poll"
+            data-poll-id="{{ poll.poll_id }}" data-poll-max-votes="{{ poll.poll_max_votes }}">
+            {{ input_csrf('forum_poll') }}
+
+            <div class="forum__poll__options">
+                {% for option in options %}
+                    {{ input_checkbox(
+                        'polls[' ~ poll.poll_id ~ ']', option.option_text, false,
+                        'forum__poll__option', option.option_id, poll.poll_max_votes <= 1,
+                        null, poll.poll_expired
+                    ) }}
+                {% endfor %}
+            </div>
+
+            {% if poll.poll_max_votes > 1 %}
+                <div class="forum__poll__remaining js-forum-poll-remaining" hidden>
+                    You have <span class="forum__poll__remaining__num">
+                        <span class="js-forum-poll-remaining-count">{{ poll.poll_max_votes }}</span> vote<span class="js-forum-poll-remaining-plural" hidden>s</span>
+                    </span> remaining.
+                </div>
+            {% endif %}
+
+            {% if poll.poll_expires is not null %}
+                <div class="forum__poll__expires">
+                    {% if poll.poll_expired %}
+                        Voting has finished, you can no longer vote.
+                    {% else %}
+                        Voting on this poll will close <time class="forum__poll__expires__datetime" datetime="{{ poll.poll_expires|date('c') }}" title="{{ poll.poll_expires|date('r') }}">{{ poll.poll_expires|time_diff }}</time>.
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div class="forum__poll__buttons">
+                <button class="input__button forum__poll__button">Vote</button>
+                {% if poll.poll_preview_results %}
+                    <a class="input__button forum__poll__button">Results</a>
+                {% endif %}
+            </div>
+        </form>
+    {% endif %}
+{% endmacro %}

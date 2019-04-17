@@ -23,11 +23,12 @@
 {% endspaceless %}
 {% endmacro %}
 
-{% macro input_checkbox_raw(name, checked, class, value, radio, attributes) %}
+{% macro input_checkbox_raw(name, checked, class, value, radio, attributes, disabled) %}
 {% spaceless %}
     <input type="{{ radio ? 'radio' : 'checkbox' }}" class="{{ class|length > 0 ? class : 'input__checkbox__input' }}"
         {% if name|length > 0 %}name="{{ name }}"{% endif %}
         {% if checked %}checked{% endif %}
+        {% if disabled %}disabled{% endif %}
         {% if value|length > 0 %}value="{{ value }}"{% endif %}
         {% for name, value in attributes|default([]) %}
             {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
@@ -35,11 +36,11 @@
 {% endspaceless %}
 {% endmacro %}
 
-{% macro input_checkbox(name, text, checked, class, value, radio, attributes) %}
+{% macro input_checkbox(name, text, checked, class, value, radio, attributes, disabled) %}
 {% from _self import input_checkbox_raw %}
 {% spaceless %}
-    <label class="input__checkbox{% if radio %} input__checkbox--radio{% endif %}{{ class|length > 0 ? ' ' ~ class : '' }}">
-        {{ input_checkbox_raw(name, checked, '', value, radio, attributes) }}
+    <label class="input__checkbox{% if radio %} input__checkbox--radio{% endif %}{% if disabled %} input__checkbox--disabled{% endif %}{{ class|length > 0 ? ' ' ~ class : '' }}">
+        {{ input_checkbox_raw(name, checked, '', value, radio, attributes, disabled) }}
         <div class="input__checkbox__display">
             <div class="input__checkbox__display__icon"></div>
         </div>

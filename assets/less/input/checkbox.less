@@ -1,7 +1,10 @@
 .input__checkbox {
     display: inline-flex;
     margin: 1px 0;
-    cursor: pointer;
+
+    &:not(&--disabled) {
+        cursor: pointer;
+    }
 
     &--radio &__display,
     &--radio &__display__icon {
@@ -12,6 +15,7 @@
         display: inline-block;
         position: absolute;
         z-index: -1000;
+        visibility: hidden;
     }
 
     &__display {
@@ -43,13 +47,17 @@
         opacity: 1;
     }
 
-    &:hover &__display,
-    &__input:focus ~ &__display {
+    &:not(&--disabled):hover &__display,
+    &:not(&--disabled) &__input:focus ~ &__display {
         border-color: var(--accent-colour);
     }
 
     &__text {
         display: inline-block;
         margin-left: 4px;
+    }
+
+    &--disabled {
+        opacity: .5;
     }
 }

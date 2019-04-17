@@ -1,0 +1,41 @@
+.forum__poll {
+    margin: 2px 0;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &__options {
+        display: flex;
+        flex-direction: column;
+        max-width: 500px;
+        min-width: 100%;
+
+        @media (min-width: 400px) {
+            min-width: 300px;
+        }
+    }
+
+    &__option {
+        padding: 2px;
+    }
+
+    &__remaining,
+    &__expires {
+        line-height: 1.5em;
+
+        &__num,
+        &__datetime {
+            font-weight: 700;
+        }
+    }
+
+    &__buttons {
+        display: flex;
+        margin-top: 2px;
+    }
+
+    &__button {
+        margin: 0 2px;
+    }
+}

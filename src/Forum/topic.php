@@ -76,6 +76,8 @@ function forum_topic_get(int $topicId, bool $allowDeleted = false): array
             SELECT
                 t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`, t.`topic_created`,
                 f.`forum_archived` as `topic_archived`, t.`topic_deleted`, t.`topic_bumped`,
+                tp.`poll_id`, tp.`poll_max_votes`, tp.`poll_expires`, tp.`poll_preview_results`,
+                (tp.`poll_expires` < CURRENT_TIMESTAMP) AS `poll_expired`,
                 fp.`topic_id` as `author_post_id`, fp.`user_id` as `author_user_id`,
                 (
                     SELECT COUNT(`post_id`)
@@ -98,6 +100,8 @@ function forum_topic_get(int $topicId, bool $allowDeleted = false): array
                 FROM `msz_forum_posts`
                 WHERE `topic_id` = t.`topic_id`
             )
+            LEFT JOIN `msz_forum_polls` AS tp
+            ON tp.`poll_id` = t.`poll_id`
             WHERE t.`topic_id` = :topic_id
             %s
         ',
