@@ -59,7 +59,7 @@ function user_create(
 function user_find_for_login(string $usernameOrMail): array
 {
     $getUser = db_prepare('
-        SELECT `user_id`, `password`, `user_totp_key` IS NOT NULL AS `totp_enabled`
+        SELECT `user_id`, `password`, `user_totp_key` IS NOT NULL AS `totp_enabled`, `user_deleted`
         FROM `msz_users`
         WHERE LOWER(`email`) = LOWER(:email)
         OR LOWER(`username`) = LOWER(:username)
@@ -75,6 +75,7 @@ function user_find_for_reset(string $email): array
         SELECT `user_id`, `username`, `email`
         FROM `msz_users`
         WHERE LOWER(`email`) = LOWER(:email)
+        AND `user_deleted` IS NULL
     ');
     $getUser->bindValue('email', $email);
     return db_fetch($getUser);

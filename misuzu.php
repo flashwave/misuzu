@@ -426,12 +426,9 @@ MIG;
         $cookieData = user_session_cookie_unpack(base64url_decode($_COOKIE['msz_auth']));
 
         if (!empty($cookieData) && user_session_start($cookieData['user_id'], $cookieData['session_token'])) {
-            user_bump_last_active($cookieData['user_id']);
-            user_session_bump_active(user_session_current('session_id'));
-
             $getUserDisplayInfo = db_prepare('
                 SELECT
-                    u.`user_id`, u.`username`, u.`user_background_settings`,
+                    u.`user_id`, u.`username`, u.`user_background_settings`, u.`user_deleted`,
                     COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
                 FROM `msz_users` AS u
                 LEFT JOIN `msz_roles` AS r
@@ -442,10 +439,20 @@ MIG;
             $userDisplayInfo = db_fetch($getUserDisplayInfo);
 
             if ($userDisplayInfo) {
-                $userDisplayInfo['general_perms'] = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
-                $userDisplayInfo['comments_perms'] = perms_get_user(MSZ_PERMS_COMMENTS, $userDisplayInfo['user_id']);
-                $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_BAN);
-                $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_SILENCE);
+                if (!is_null($userDisplayInfo['user_deleted'])) {
+                    setcookie('msz_auth', '', -9001, '/', '', true, true);
+                    user_session_stop(true);
+                    $userDisplayInfo = [];
+                } else {
+                    user_bump_last_active($cookieData['user_id']);
+                    user_session_bump_active(user_session_current('session_id'));
+
+                    // unfuck this
+                    $userDisplayInfo['general_perms'] = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
+                    $userDisplayInfo['comments_perms'] = perms_get_user(MSZ_PERMS_COMMENTS, $userDisplayInfo['user_id']);
+                    $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_BAN);
+                    $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_SILENCE);
+                }
             }
         }
     }
