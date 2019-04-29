@@ -52,6 +52,11 @@ while (!empty($_POST['login']) && is_array($_POST['login'])) {
         break;
     }
 
+    if (empty($userData['password'])) {
+        $notices[] = 'Your password has been invalidated, please reset it.';
+        break;
+    }
+
     if (!password_verify($_POST['login']['password'], $userData['password'])) {
         user_login_attempt_record(false, $userData['user_id'], $ipAddress, $userAgent);
         $notices[] = $loginFailedError;
