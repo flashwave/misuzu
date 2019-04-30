@@ -1,3 +1,12 @@
+interface Permissions {
+    general: number;
+    user: number;
+    changelog: number;
+    news: number;
+    forum: number;
+    comments: number;
+}
+
 enum CommentPermission {
     Create = 1,
     //EditOwn = 1 << 1,
@@ -16,7 +25,7 @@ function checkPerm(perms: number, perm: number): boolean {
 }
 
 function checkUserPerm(set: string, perm: number): boolean {
-    const perms: number = getCurrentUser(set + '_perms') as number;
+    const perms: number = (getCurrentUser('perms')[set] || 0) as number;
 
     if (!perms) {
         return false;

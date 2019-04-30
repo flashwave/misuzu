@@ -1,7 +1,7 @@
 <?php
 require_once '../../misuzu.php';
 
-$newsPerms = perms_get_user(MSZ_PERMS_NEWS, user_session_current('user_id', 0));
+$newsPerms = perms_get_user(user_session_current('user_id', 0))[MSZ_PERMS_NEWS];
 
 switch ($_GET['v'] ?? null) {
     default:

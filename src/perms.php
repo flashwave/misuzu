@@ -47,38 +47,61 @@ function perms_get_key(string $prefix, string $suffix): string
     return $prefix . '_perms_' . $suffix;
 }
 
-function perms_get_user(string $prefix, int $user): int
+function perms_get_select(array $modes = MSZ_PERM_MODES, string $allow = MSZ_PERMS_ALLOW, string $deny = MSZ_PERMS_DENY): string
 {
-    if (!in_array($prefix, MSZ_PERM_MODES) || $user < 0) {
-        return 0;
+    $select = '';
+
+    if (empty($select)) {
+        foreach ($modes as $mode) {
+            $select .= sprintf(
+                '(BIT_OR(`%1$s_perms_%2$s`) &~ BIT_OR(`%1$s_perms_%3$s`)) AS `%1$s`,',
+                $mode, $allow, $deny
+            );
+        }
+
+        $select = substr($select, 0, -1);
     }
 
-    static $perms = [];
+    return $select;
+}
 
-    if (isset($perms[$user][$prefix])) {
-        return $perms[$user][$prefix];
+function perms_get_blank(array $modes = MSZ_PERM_MODES): array
+{
+    return array_fill_keys($modes, 0);
+}
+
+function perms_get_user(int $user): array
+{
+    if ($user < 1) {
+        return perms_get_blank();
     }
 
-    $allowKey = perms_get_key($prefix, MSZ_PERMS_ALLOW);
-    $denyKey = perms_get_key($prefix, MSZ_PERMS_DENY);
+    static $memo = [];
 
-    $getPerms = db_prepare("
-        SELECT :user_id AS `select_user`, (
-            SELECT BIT_OR(`{$allowKey}`) &~ BIT_OR(`{$denyKey}`)
+    if (array_key_exists($user, $memo)) {
+        return $memo[$user];
+    }
+
+    $getPerms = db_prepare(sprintf(
+        '
+            SELECT %s
             FROM `msz_permissions`
-            WHERE (`user_id` = `select_user` AND `role_id` IS NULL)
+            WHERE (`user_id` = :user_id_1 AND `role_id` IS NULL)
             OR (
                 `user_id` IS NULL
                 AND `role_id` IN (
                     SELECT `role_id`
                     FROM `msz_user_roles`
-                    WHERE `user_id` = `select_user`
+                    WHERE `user_id` = :user_id_2
                 )
             )
-        )
-    ");
-    $getPerms->bindValue('user_id', $user);
-    return $perms[$user][$prefix] = (int)($getPerms->execute() ? $getPerms->fetchColumn(1) : 0);
+        ',
+        perms_get_select()
+    ));
+    $getPerms->bindValue('user_id_1', $user);
+    $getPerms->bindValue('user_id_2', $user);
+
+    return $memo[$user] = db_fetch($getPerms);
 }
 
 function perms_delete_user(int $user): bool
@@ -96,29 +119,30 @@ function perms_delete_user(int $user): bool
     return $deletePermissions->execute();
 }
 
-function perms_get_role(string $prefix, int $role): int
+function perms_get_role(int $role): array
 {
-    if (!in_array($prefix, MSZ_PERM_MODES) || $role < 1) {
-        return 0;
+    if ($role < 1) {
+        return perms_get_blank();
     }
 
-    static $perms = [];
+    static $memo = [];
 
-    if (isset($perms[$role][$prefix])) {
-        return $perms[$role][$prefix];
+    if (array_key_exists($role, $memo)) {
+        return $memo[$role];
     }
 
-    $allowKey = perms_get_key($prefix, MSZ_PERMS_ALLOW);
-    $denyKey = perms_get_key($prefix, MSZ_PERMS_DENY);
-
-    $getPerms = db_prepare("
-        SELECT `{$allowKey}` &~ `{$denyKey}`
-        FROM `msz_permissions`
-        WHERE `role_id` = :role_id
-        AND `user_id` IS NULL
-    ");
+    $getPerms = db_prepare(sprintf(
+        '
+            SELECT %s
+            FROM `msz_permissions`
+            WHERE `role_id` = :role_id
+            AND `user_id` IS NULL
+        ',
+        perms_get_select()
+    ));
     $getPerms->bindValue('role_id', $role);
-    return $perms[$role][$prefix] = (int)($getPerms->execute() ? $getPerms->fetchColumn() : 0);
+
+    return $memo[$role] = db_fetch($getPerms);
 }
 
 function perms_get_user_raw(int $user): array
@@ -204,5 +228,20 @@ function perms_check(int $perms, int $perm): bool
 
 function perms_check_user(string $prefix, ?int $userId, int $perm): bool
 {
-    return $userId > 0 && perms_check(perms_get_user($prefix, $userId), $perm);
+    return $userId > 0 && perms_check(perms_get_user($userId)[$prefix] ?? 0, $perm);
+}
+
+function perms_check_bulk(int $perms, array $set): array
+{
+    foreach ($set as $key => $perm) {
+        $set[$key] = perms_check($perms, $perm);
+    }
+
+    return $set;
+}
+
+function perms_check_user_bulk(string $prefix, ?int $userId, array $set): array
+{
+    $perms = perms_get_user($userId)[$prefix] ?? 0;
+    return perms_check_bulk($perms, $set);
 }

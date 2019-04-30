@@ -242,8 +242,8 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     commentTime.className = 'comment__date';
     commentTime.title = commentDate.toLocaleString();
     commentTime.dateTime = commentDate.toISOString();
-    commentTime.textContent = timeago().format(commentDate);
-    timeago().render(commentTime);
+    commentTime.textContent = timeago.format(commentDate);
+    timeago.render(commentTime);
 
     // actions
     if (checkUserPerm('comments', CommentPermission.Vote)) {

@@ -20,7 +20,7 @@ $viewingAsGuest = $currentUserId === 0;
 $viewingOwnProfile = $currentUserId === $userId;
 
 $isBanned = user_warning_check_restriction($userId);
-$userPerms = perms_get_user(MSZ_PERMS_USER, $currentUserId);
+$userPerms = perms_get_user($currentUserId)[MSZ_PERMS_USER];
 $canManageWarnings = perms_check($userPerms, MSZ_PERM_USER_MANAGE_WARNINGS);
 $canEdit = !$isBanned
     && user_session_active()
@@ -39,14 +39,14 @@ if ($isEditing) {
         return;
     }
 
-    $perms = [
-        'edit_profile' => perms_check($userPerms, MSZ_PERM_USER_EDIT_PROFILE),
-        'edit_avatar' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_AVATAR),
-        'edit_background' => perms_check($userPerms, MSZ_PERM_USER_CHANGE_BACKGROUND),
-        'edit_about' => perms_check($userPerms, MSZ_PERM_USER_EDIT_ABOUT),
-        'edit_birthdate' => perms_check($userPerms, MSZ_PERM_USER_EDIT_BIRTHDATE),
-        'edit_signature' => perms_check($userPerms, MSZ_PERM_USER_EDIT_SIGNATURE),
-    ];
+    $perms = perms_check_bulk($userPerms, [
+        'edit_profile' => MSZ_PERM_USER_EDIT_PROFILE,
+        'edit_avatar' => MSZ_PERM_USER_CHANGE_AVATAR,
+        'edit_background' => MSZ_PERM_USER_CHANGE_BACKGROUND,
+        'edit_about' => MSZ_PERM_USER_EDIT_ABOUT,
+        'edit_birthdate' => MSZ_PERM_USER_EDIT_BIRTHDATE,
+        'edit_signature' => MSZ_PERM_USER_EDIT_SIGNATURE,
+    ]);
 
     tpl_vars([
         'perms' => $perms,

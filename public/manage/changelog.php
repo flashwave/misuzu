@@ -1,7 +1,7 @@
 <?php
 require_once '../../misuzu.php';
 
-$changelogPerms = perms_get_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id', 0));
+$changelogPerms = perms_get_user(user_session_current('user_id', 0))[MSZ_PERMS_CHANGELOG];
 
 switch ($_GET['v'] ?? null) {
     default:

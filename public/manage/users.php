@@ -2,7 +2,7 @@
 require_once '../../misuzu.php';
 
 $currentUserId = user_session_current('user_id', 0);
-$userPerms = perms_get_user(MSZ_PERMS_USER, $currentUserId);
+$userPerms = perms_get_user($currentUserId)[MSZ_PERMS_USER];
 $isPostRequest = $_SERVER['REQUEST_METHOD'] === 'POST';
 $isSuperUser = user_check_super($currentUserId);
 

@@ -1,72 +1,68 @@
 <?php
 function manage_get_menu(int $userId): array
 {
-    $perms = [];
+    $perms = perms_get_user($userId);
 
-    foreach (MSZ_PERM_MODES as $mode) {
-        $perms[$mode] = perms_get_user($mode, $userId);
-    }
-
-    if (!perms_check($perms['general'], MSZ_PERM_GENERAL_CAN_MANAGE)) {
+    if (!perms_check($perms[MSZ_PERMS_GENERAL], MSZ_PERM_GENERAL_CAN_MANAGE)) {
         return [];
     }
 
     $menu = [];
     $menu['General']['Overview'] = '/manage/index.php?v=overview';
 
-    if (perms_check($perms['general'], MSZ_PERM_GENERAL_VIEW_LOGS)) {
+    if (perms_check($perms[MSZ_PERMS_GENERAL], MSZ_PERM_GENERAL_VIEW_LOGS)) {
         $menu['General']['Logs'] = '/manage/index.php?v=logs';
     }
 
-    if (perms_check($perms['general'], MSZ_PERM_GENERAL_MANAGE_EMOTICONS)) {
+    if (perms_check($perms[MSZ_PERMS_GENERAL], MSZ_PERM_GENERAL_MANAGE_EMOTICONS)) {
         $menu['General']['Emoticons'] = '/manage/index.php?v=emoticons';
     }
 
-    if (perms_check($perms['general'], MSZ_PERM_GENERAL_MANAGE_SETTINGS)) {
+    if (perms_check($perms[MSZ_PERMS_GENERAL], MSZ_PERM_GENERAL_MANAGE_SETTINGS)) {
         $menu['General']['Settings'] = '/manage/index.php?v=settings';
     }
 
-    if (perms_check($perms['general'], MSZ_PERM_GENERAL_MANAGE_BLACKLIST)) {
+    if (perms_check($perms[MSZ_PERMS_GENERAL], MSZ_PERM_GENERAL_MANAGE_BLACKLIST)) {
         $menu['General']['IP Blacklist'] = '/manage/index.php?v=blacklist';
     }
 
-    if (perms_check($perms['user'], MSZ_PERM_USER_MANAGE_USERS | MSZ_PERM_USER_MANAGE_PERMS)) {
+    if (perms_check($perms[MSZ_PERMS_USER], MSZ_PERM_USER_MANAGE_USERS | MSZ_PERM_USER_MANAGE_PERMS)) {
         $menu['Users']['Listing'] = '/manage/users.php?v=listing';
     }
 
-    if (perms_check($perms['user'], MSZ_PERM_USER_MANAGE_ROLES | MSZ_PERM_USER_MANAGE_PERMS)) {
+    if (perms_check($perms[MSZ_PERMS_USER], MSZ_PERM_USER_MANAGE_ROLES | MSZ_PERM_USER_MANAGE_PERMS)) {
         $menu['Users']['Roles'] = '/manage/users.php?v=roles';
     }
 
-    if (perms_check($perms['user'], MSZ_PERM_USER_MANAGE_REPORTS)) {
+    if (perms_check($perms[MSZ_PERMS_USER], MSZ_PERM_USER_MANAGE_REPORTS)) {
         $menu['Users']['Reports'] = '/manage/users.php?v=reports';
     }
 
-    if (perms_check($perms['user'], MSZ_PERM_USER_MANAGE_WARNINGS)) {
+    if (perms_check($perms[MSZ_PERMS_USER], MSZ_PERM_USER_MANAGE_WARNINGS)) {
         $menu['Users']['Warnings'] = '/manage/users.php?v=warnings';
     }
 
-    if (perms_check($perms['news'], MSZ_PERM_NEWS_MANAGE_POSTS)) {
+    if (perms_check($perms[MSZ_PERMS_NEWS], MSZ_PERM_NEWS_MANAGE_POSTS)) {
         $menu['News']['Posts'] = '/manage/news.php?v=posts';
     }
 
-    if (perms_check($perms['news'], MSZ_PERM_NEWS_MANAGE_CATEGORIES)) {
+    if (perms_check($perms[MSZ_PERMS_NEWS], MSZ_PERM_NEWS_MANAGE_CATEGORIES)) {
         $menu['News']['Categories'] = '/manage/news.php?v=categories';
     }
 
-    if (perms_check($perms['forum'], MSZ_PERM_FORUM_MANAGE_FORUMS)) {
+    if (perms_check($perms[MSZ_PERMS_FORUM], MSZ_PERM_FORUM_MANAGE_FORUMS)) {
         $menu['Forum']['Listing'] = '/manage/forum.php?v=listing';
     }
 
-    if (perms_check($perms['forum'], 0)) {
+    if (perms_check($perms[MSZ_PERMS_FORUM], 0)) {
         $menu['Forum']['Settings'] = '/manage/forum.php?v=settings';
     }
 
-    if (perms_check($perms['changelog'], MSZ_PERM_CHANGELOG_MANAGE_CHANGES)) {
+    if (perms_check($perms[MSZ_PERMS_CHANGELOG], MSZ_PERM_CHANGELOG_MANAGE_CHANGES)) {
         $menu['Changelog']['Changes'] = '/manage/changelog.php?v=changes';
     }
 
-    if (perms_check($perms['changelog'], MSZ_PERM_CHANGELOG_MANAGE_TAGS)) {
+    if (perms_check($perms[MSZ_PERMS_CHANGELOG], MSZ_PERM_CHANGELOG_MANAGE_TAGS)) {
         $menu['Changelog']['Tags'] = '/manage/changelog.php?v=tags';
     }
 
@@ -161,7 +157,7 @@ function manage_perms_list(array $rawPerms): array
 {
     return manage_perms_calculate($rawPerms, [
         [
-            'section' => 'general',
+            'section' => MSZ_PERMS_GENERAL,
             'title' => 'General',
             'perms' => [
                 [
@@ -197,7 +193,7 @@ function manage_perms_list(array $rawPerms): array
             ],
         ],
         [
-            'section' => 'user',
+            'section' => MSZ_PERMS_USER,
             'title' => 'User',
             'perms' => [
                 [
@@ -258,7 +254,7 @@ function manage_perms_list(array $rawPerms): array
             ],
         ],
         [
-            'section' => 'news',
+            'section' => MSZ_PERMS_NEWS,
             'title' => 'News',
             'perms' => [
                 [
@@ -274,7 +270,7 @@ function manage_perms_list(array $rawPerms): array
             ],
         ],
         [
-            'section' => 'forum',
+            'section' => MSZ_PERMS_FORUM,
             'title' => 'Forum',
             'perms' => [
                 [
@@ -290,7 +286,7 @@ function manage_perms_list(array $rawPerms): array
             ],
         ],
         [
-            'section' => 'comments',
+            'section' => MSZ_PERMS_COMMENTS,
             'title' => 'Comments',
             'perms' => [
                 [
@@ -326,7 +322,7 @@ function manage_perms_list(array $rawPerms): array
             ],
         ],
         [
-            'section' => 'changelog',
+            'section' => MSZ_PERMS_CHANGELOG,
             'title' => 'Changelog',
             'perms' => [
                 [
@@ -348,7 +344,7 @@ function manage_forum_perms_list(array $rawPerms): array
 {
     return manage_perms_calculate($rawPerms, [
         [
-            'section' => 'forum',
+            'section' => MSZ_FORUM_PERMS_GENERAL,
             'title' => 'Forum',
             'perms' => [
                 [

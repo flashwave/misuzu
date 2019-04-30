@@ -89,15 +89,14 @@ function comments_parse_for_display(string $text): string
 // for every comment section.
 function comments_get_perms(int $userId): array
 {
-    $perms = perms_get_user(MSZ_PERMS_COMMENTS, $userId);
-    return [
-        'can_comment' => perms_check($perms, MSZ_PERM_COMMENTS_CREATE),
-        'can_delete' => perms_check($perms, MSZ_PERM_COMMENTS_DELETE_OWN | MSZ_PERM_COMMENTS_DELETE_ANY),
-        'can_delete_any' => perms_check($perms, MSZ_PERM_COMMENTS_DELETE_ANY),
-        'can_pin' => perms_check($perms, MSZ_PERM_COMMENTS_PIN),
-        'can_lock' => perms_check($perms, MSZ_PERM_COMMENTS_LOCK),
-        'can_vote' => perms_check($perms, MSZ_PERM_COMMENTS_VOTE),
-    ];
+    return perms_check_user_bulk(MSZ_PERMS_COMMENTS, $userId, [
+        'can_comment' => MSZ_PERM_COMMENTS_CREATE,
+        'can_delete' => MSZ_PERM_COMMENTS_DELETE_OWN | MSZ_PERM_COMMENTS_DELETE_ANY,
+        'can_delete_any' => MSZ_PERM_COMMENTS_DELETE_ANY,
+        'can_pin' => MSZ_PERM_COMMENTS_PIN,
+        'can_lock' => MSZ_PERM_COMMENTS_LOCK,
+        'can_vote' => MSZ_PERM_COMMENTS_VOTE,
+    ]);
 }
 
 function comments_pin_status(int $comment, bool $mode): ?string

@@ -447,9 +447,7 @@ MIG;
                     user_bump_last_active($cookieData['user_id']);
                     user_session_bump_active(user_session_current('session_id'));
 
-                    // unfuck this
-                    $userDisplayInfo['general_perms'] = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
-                    $userDisplayInfo['comments_perms'] = perms_get_user(MSZ_PERMS_COMMENTS, $userDisplayInfo['user_id']);
+                    $userDisplayInfo['perms'] = perms_get_user($userDisplayInfo['user_id']);
                     $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_BAN);
                     $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_SILENCE);
                 }
@@ -472,9 +470,7 @@ MIG;
                 $privatePermission = (int)config_get_default(0, 'Private', 'permission');
 
                 if ($privatePermission > 0) {
-                    $generalPerms = perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']);
-
-                    if (!perms_check($generalPerms, $privatePermission)) {
+                    if (!perms_check_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'], $privatePermission)) {
                         unset($userDisplayInfo);
                         user_session_stop(); // au revoir
                     }
@@ -493,7 +489,7 @@ MIG;
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
     $hasManageAccess = !empty($userDisplayInfo['user_id'])
         && !user_warning_check_restriction($userDisplayInfo['user_id'])
-        && perms_check(perms_get_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id']), MSZ_PERM_GENERAL_CAN_MANAGE);
+        && perms_check_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'], MSZ_PERM_GENERAL_CAN_MANAGE);
     tpl_var('has_manage_access', $hasManageAccess);
 
     if ($inManageMode) {
