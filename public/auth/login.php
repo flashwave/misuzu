@@ -64,7 +64,7 @@ while (!empty($_POST['login']) && is_array($_POST['login'])) {
     }
 
     if (user_password_needs_rehash($userData['password'])) {
-        user_password_set($userData['user_id'], $loginPassword);
+        user_password_set($userData['user_id'], $_POST['login']['password']);
     }
 
     if ($loginPermission > 0 && !perms_check_user(MSZ_PERMS_GENERAL, $userData['user_id'], $loginPermission)) {
