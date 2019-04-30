@@ -119,22 +119,16 @@ function forum_get_root_categories(int $userId): array
                     SELECT COUNT(`forum_id`)
                     FROM `msz_forum_categories` AS sf
                     WHERE sf.`forum_parent` = f.`forum_id`
-                ) AS `forum_children`,
-                (%2$s) AS `forum_permissions`
+                ) AS `forum_children`
             FROM `msz_forum_categories` AS f
             WHERE f.`forum_parent` = 0
             AND f.`forum_type` = %1$d
             AND f.`forum_hidden` = 0
             GROUP BY f.`forum_id`
-            HAVING (`forum_permissions` & %3$d) > 0
             ORDER BY f.`forum_order`
         ',
-        MSZ_FORUM_TYPE_CATEGORY,
-        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'f.`forum_id`'),
-        MSZ_FORUM_PERM_SET_READ
+        MSZ_FORUM_TYPE_CATEGORY
     ));
-    $getCategories->bindValue('perm_user_id_user', $userId);
-    $getCategories->bindValue('perm_user_id_role', $userId);
     $categories = array_merge([MSZ_FORUM_ROOT_DATA], db_fetch_all($getCategories));
 
     $getRootForumCount = db_prepare(sprintf(
@@ -143,18 +137,20 @@ function forum_get_root_categories(int $userId): array
             FROM `msz_forum_categories`
             WHERE `forum_parent` = %d
             AND `forum_type` != %d
-            AND (%s & %d) > 0
         ",
         MSZ_FORUM_ROOT,
-        MSZ_FORUM_TYPE_CATEGORY,
-        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, '`forum_id`'),
-        MSZ_FORUM_PERM_SET_READ
+        MSZ_FORUM_TYPE_CATEGORY
     ));
-    $getRootForumCount->bindValue('perm_user_id_user', $userId);
-    $getRootForumCount->bindValue('perm_user_id_role', $userId);
     $categories[0]['forum_children'] = (int)($getRootForumCount->execute() ? $getRootForumCount->fetchColumn() : 0);
 
     foreach ($categories as $key => $category) {
+        $categories[$key]['forum_permissions'] = $perms = forum_perms_get_user($category['forum_id'], $userId)[MSZ_FORUM_PERMS_GENERAL];
+
+        if (!perms_check($perms, MSZ_FORUM_PERM_SET_READ)) {
+            unset($categories[$key]);
+            continue;
+        }
+
         $categories[$key] = array_merge(
             $category,
             ['forum_unread' => forum_topics_unread($category['forum_id'], $userId)],
@@ -172,27 +168,20 @@ function forum_get_breadcrumbs(
     array $indexLink = ['Forums' => '/forum/']
 ): array {
     $breadcrumbs = [];
-    $getBreadcrumbs = db_prepare('
-        WITH RECURSIVE breadcrumbs(forum_id, forum_name, forum_parent, forum_type) as (
-            SELECT c.`forum_id`, c.`forum_name`, c.`forum_parent`, c.`forum_type`
-            FROM `msz_forum_categories` as c
-            WHERE `forum_id` = :forum_id
-            UNION ALL
-            SELECT p.`forum_id`, p.`forum_name`, p.`forum_parent`, p.`forum_type`
-            FROM `msz_forum_categories` as p
-            INNER JOIN breadcrumbs
-            ON p.`forum_id` = breadcrumbs.forum_parent
-        )
-        SELECT * FROM breadcrumbs
+    $getBreadcrumb = db_prepare('
+        SELECT `forum_id`, `forum_name`, `forum_type`, `forum_parent`
+        FROM `msz_forum_categories`
+        WHERE `forum_id` = :forum_id
     ');
-    $getBreadcrumbs->bindValue('forum_id', $forumId);
-    $breadcrumbsDb = db_fetch_all($getBreadcrumbs);
 
-    if (!$breadcrumbsDb) {
-        return [$indexLink];
-    }
+    while($forumId > 0) {
+        $getBreadcrumb->bindValue('forum_id', $forumId);
+        $breadcrumb = db_fetch($getBreadcrumb);
 
-    foreach ($breadcrumbsDb as $breadcrumb) {
+        if(empty($breadcrumb)) {
+            break;
+        }
+
         $breadcrumbs[$breadcrumb['forum_name']] = sprintf(
             $breadcrumb['forum_parent'] === MSZ_FORUM_ROOT
             && $breadcrumb['forum_type'] === MSZ_FORUM_TYPE_CATEGORY
@@ -200,6 +189,7 @@ function forum_get_breadcrumbs(
                 : $linkFormat,
             $breadcrumb['forum_id']
         );
+        $forumId = $breadcrumb['forum_parent'];
     }
 
     return array_reverse($breadcrumbs + $indexLink);
@@ -208,27 +198,24 @@ function forum_get_breadcrumbs(
 function forum_get_colour(int $forumId): int
 {
     $getColours = db_prepare('
-        WITH RECURSIVE breadcrumbs(forum_id, forum_parent, forum_colour) as (
-            SELECT c.`forum_id`, c.`forum_parent`, c.`forum_colour`
-            FROM `msz_forum_categories` as c
-            WHERE `forum_id` = :forum_id
-            UNION ALL
-            SELECT p.`forum_id`, p.`forum_parent`, p.`forum_colour`
-            FROM `msz_forum_categories` as p
-            INNER JOIN breadcrumbs
-            ON p.`forum_id` = breadcrumbs.forum_parent
-        )
-        SELECT * FROM breadcrumbs
+        SELECT `forum_id`, `forum_parent`, `forum_colour`
+        FROM `msz_forum_categories`
+        WHERE `forum_id` = :forum_id
     ');
-    $getColours->bindValue('forum_id', $forumId);
-    $colours = db_fetch_all($getColours);
 
-    if ($colours) {
-        foreach ($colours as $colour) {
-            if ($colour['forum_colour'] !== null) {
-                return $colour['forum_colour'];
-            }
+    while($forumId > 0) {
+        $getColours->bindValue('forum_id', $forumId);
+        $colourInfo = db_fetch($getColours);
+
+        if(empty($colourInfo)) {
+            break;
         }
+
+        if(!empty($colourInfo['forum_colour'])) {
+            return $colourInfo['forum_colour'];
+        }
+
+        $forumId = $colourInfo['forum_parent'];
     }
 
     return colour_none();
@@ -245,6 +232,28 @@ function forum_increment_clicks(int $forumId): void
     ', MSZ_FORUM_TYPE_LINK));
     $incrementLinkClicks->bindValue('forum_id', $forumId);
     $incrementLinkClicks->execute();
+}
+
+function forum_get_parent_id(int $forumId): int
+{
+    if ($forumId < 1) {
+        return 0;
+    }
+
+    static $memoized = [];
+
+    if (array_key_exists($forumId, $memoized)) {
+        return $memoized[$forumId];
+    }
+
+    $getParent = db_prepare('
+        SELECT `forum_parent`
+        FROM `msz_forum_categories`
+        WHERE `forum_id` = :forum_id
+    ');
+    $getParent->bindValue('forum_id', $forumId);
+
+    return (int)($getParent->execute() ? $getParent->fetchColumn() : 0);
 }
 
 function forum_get_child_ids(int $forumId): array
@@ -290,29 +299,24 @@ function forum_topics_unread(int $forumId, int $userId): int
         $memoized[$memoId] += forum_topics_unread($child, $userId);
     }
 
-    $countUnread = db_prepare(sprintf(
-        '
+    if (forum_perms_check_user(MSZ_FORUM_PERMS_GENERAL, $forumId, $userId, MSZ_FORUM_PERM_SET_READ)) {
+        $countUnread = db_prepare('
             SELECT COUNT(ti.`topic_id`)
             FROM `msz_forum_topics` AS ti
             LEFT JOIN `msz_forum_topics_track` AS tt
             ON tt.`topic_id` = ti.`topic_id` AND tt.`user_id` = :user_id
             WHERE ti.`forum_id` = :forum_id
-            AND ((%s) & %d) > 0
             AND ti.`topic_deleted` IS NULL
             AND ti.`topic_bumped` >= NOW() - INTERVAL 1 MONTH
             AND (
                 tt.`track_last_read` IS NULL
                 OR tt.`track_last_read` < ti.`topic_bumped`
             )
-        ',
-        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'ti.`forum_id`'),
-        MSZ_FORUM_PERM_SET_READ
-    ));
-    $countUnread->bindValue('forum_id', $forumId);
-    $countUnread->bindValue('user_id', $userId);
-    $countUnread->bindValue('perm_user_id_user', $userId);
-    $countUnread->bindValue('perm_user_id_role', $userId);
-    $memoized[$memoId] += (int)($countUnread->execute() ? $countUnread->fetchColumn() : 0);
+        ');
+        $countUnread->bindValue('forum_id', $forumId);
+        $countUnread->bindValue('user_id', $userId);
+        $memoized[$memoId] += (int)($countUnread->execute() ? $countUnread->fetchColumn() : 0);
+    }
 
     return $memoized[$memoId];
 }
@@ -330,34 +334,31 @@ function forum_latest_post(int $forumId, int $userId): array
         return $memoized[$memoId];
     }
 
-    $getLastPost = db_prepare(sprintf(
-        '
-            SELECT
-                p.`post_id` AS `recent_post_id`, t.`topic_id` AS `recent_topic_id`,
-                t.`topic_title` AS `recent_topic_title`, t.`topic_bumped` AS `recent_topic_bumped`,
-                p.`post_created` AS `recent_post_created`,
-                u.`user_id` AS `recent_post_user_id`,
-                u.`username` AS `recent_post_username`,
-                COALESCE(u.`user_colour`, r.`role_colour`) AS `recent_post_user_colour`,
-                UNIX_TIMESTAMP(p.`post_created`) AS `post_created_unix`
-            FROM `msz_forum_posts` AS p
-            LEFT JOIN `msz_forum_topics` AS t
-            ON t.`topic_id` = p.`topic_id`
-            LEFT JOIN `msz_users` AS u
-            ON u.`user_id` = p.`user_id`
-            LEFT JOIN `msz_roles` AS r
-            ON r.`role_id` = u.`display_role`
-            WHERE p.`forum_id` = :forum_id
-            AND p.`post_deleted` IS NULL
-            AND ((%s) & %d) > 0
-            ORDER BY p.`post_id` DESC
-        ',
-        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'p.`forum_id`'),
-        MSZ_FORUM_PERM_SET_READ
-    ));
+    if (!forum_perms_check_user(MSZ_FORUM_PERMS_GENERAL, $forumId, $userId, MSZ_FORUM_PERM_SET_READ)) {
+        return $memoized[$memoId] = [];
+    }
+
+    $getLastPost = db_prepare('
+        SELECT
+            p.`post_id` AS `recent_post_id`, t.`topic_id` AS `recent_topic_id`,
+            t.`topic_title` AS `recent_topic_title`, t.`topic_bumped` AS `recent_topic_bumped`,
+            p.`post_created` AS `recent_post_created`,
+            u.`user_id` AS `recent_post_user_id`,
+            u.`username` AS `recent_post_username`,
+            COALESCE(u.`user_colour`, r.`role_colour`) AS `recent_post_user_colour`,
+            UNIX_TIMESTAMP(p.`post_created`) AS `post_created_unix`
+        FROM `msz_forum_posts` AS p
+        LEFT JOIN `msz_forum_topics` AS t
+        ON t.`topic_id` = p.`topic_id`
+        LEFT JOIN `msz_users` AS u
+        ON u.`user_id` = p.`user_id`
+        LEFT JOIN `msz_roles` AS r
+        ON r.`role_id` = u.`display_role`
+        WHERE p.`forum_id` = :forum_id
+        AND p.`post_deleted` IS NULL
+        ORDER BY p.`post_id` DESC
+    ');
     $getLastPost->bindValue('forum_id', $forumId);
-    $getLastPost->bindValue('perm_user_id_user', $userId);
-    $getLastPost->bindValue('perm_user_id_role', $userId);
     $currentLast = db_fetch($getLastPost);
 
     $children = forum_get_child_ids($forumId);
@@ -373,7 +374,7 @@ function forum_latest_post(int $forumId, int $userId): array
     return $memoized[$memoId] = $currentLast;
 }
 
-function forum_get_children(int $parentId, int $userId, bool $showDeleted = false): array
+function forum_get_children(int $parentId, int $userId): array
 {
     $getListing = db_prepare(sprintf(
         '
@@ -381,8 +382,7 @@ function forum_get_children(int $parentId, int $userId, bool $showDeleted = fals
                 :user_id AS `target_user_id`,
                 f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`,
                 f.`forum_link`, f.`forum_link_clicks`, f.`forum_archived`, f.`forum_colour`,
-                f.`forum_count_topics`, f.`forum_count_posts`,
-                (%3$s) AS `forum_permissions`
+                f.`forum_count_topics`, f.`forum_count_posts`
             FROM `msz_forum_categories` AS f
             WHERE f.`forum_parent` = :parent_id
             AND f.`forum_hidden` = 0
@@ -391,25 +391,25 @@ function forum_get_children(int $parentId, int $userId, bool $showDeleted = fals
                 OR f.`forum_parent` != %1$d
             )
             GROUP BY f.`forum_id`
-            HAVING (`forum_permissions` & %4$d) > 0
             ORDER BY f.`forum_order`
         ',
         MSZ_FORUM_ROOT,
-        MSZ_FORUM_TYPE_CATEGORY,
-        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'f.`forum_id`'),
-        MSZ_FORUM_PERM_SET_READ,
-        $showDeleted ? '' : 'AND `topic_deleted` IS NULL',
-        $showDeleted ? '' : 'AND `post_deleted` IS NULL'
+        MSZ_FORUM_TYPE_CATEGORY
     ));
 
     $getListing->bindValue('user_id', $userId);
-    $getListing->bindValue('perm_user_id_user', $userId);
-    $getListing->bindValue('perm_user_id_role', $userId);
     $getListing->bindValue('parent_id', $parentId);
 
     $listing = db_fetch_all($getListing);
 
     foreach ($listing as $key => $forum) {
+        $listing[$key]['forum_permissions'] = $perms = forum_perms_get_user($forum['forum_id'], $userId)[MSZ_FORUM_PERMS_GENERAL];
+
+        if (!perms_check($perms, MSZ_FORUM_PERM_SET_READ)) {
+            unset($listing[$key]);
+            continue;
+        }
+
         $listing[$key] = array_merge(
             $forum,
             ['forum_unread' => forum_topics_unread($forum['forum_id'], $userId)],
@@ -454,13 +454,10 @@ function forum_mark_read(?int $forumId, int $userId): void
             AND t.`topic_bumped` >= NOW() - INTERVAL 1 MONTH
             %1$s
             GROUP BY t.`topic_id`
-            HAVING ((%2$s) & %3$d) > 0
             ON DUPLICATE KEY UPDATE
                 `track_last_read` = NOW()
         ',
-        $entireForum ? '' : 'AND t.`forum_id` = :forum',
-        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 't.`forum_id`', 'u.`user_id`', 'u.`user_id`'),
-        MSZ_FORUM_PERM_SET_READ
+        $entireForum ? '' : 'AND t.`forum_id` = :forum'
     ));
     $doMark->bindValue('user', $userId);
 

@@ -19,15 +19,11 @@ function array_apply(array $array, callable $func): array
     return $array;
 }
 
-if (!function_exists('array_key_first')) {
-    // https://secure.php.net/manual/en/function.array-key-first.php#123301
-    function array_key_first(array $array)
-    {
-        if (count($array)) {
-            reset($array);
-            return key($array);
-        }
-
-        return null;
+function array_bit_or(array $array1, array $array2): array
+{
+    foreach ($array1 as $key => $value) {
+        $array1[$key] |= $array2[$key] ?? 0;
     }
+
+    return $array1;
 }

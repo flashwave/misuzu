@@ -64,24 +64,26 @@ function forum_post_find(int $postId, int $userId): array
         '
             SELECT
                 p.`post_id`, p.`topic_id`,
-                ((%s) & %d) as `can_view_deleted`,
                 (
                     SELECT COUNT(`post_id`)
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = p.`topic_id`
                     AND `post_id` < p.`post_id`
-                    AND (`can_view_deleted` OR `post_deleted` IS NULL)
+                    AND `post_deleted` IS NULL
                     ORDER BY `post_id`
-                ) as `preceeding_post_count`
+                ) as `preceeding_post_count`,
+                (
+                    SELECT COUNT(`post_id`)
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = p.`topic_id`
+                    AND `post_id` < p.`post_id`
+                    AND `post_deleted` IS NOT NULL
+                    ORDER BY `post_id`
+                ) as `preceeding_post_deleted_count`
             FROM `msz_forum_posts` AS p
             WHERE p.`post_id` = :post_id
-        ',
-        forum_perms_get_user_sql(MSZ_FORUM_PERMS_GENERAL, 'p.`forum_id`'),
-        MSZ_FORUM_PERM_DELETE_ANY_POST
-    ));
+        '));
     $getPostInfo->bindValue('post_id', $postId);
-    $getPostInfo->bindValue('perm_user_id_user', $userId);
-    $getPostInfo->bindValue('perm_user_id_role', $userId);
     return db_fetch($getPostInfo);
 }
 
@@ -232,7 +234,7 @@ function forum_post_can_delete($postId, ?int $userId = null): int
     }
 
     $isSystemReq    = $userId === null;
-    $perms          = $isSystemReq ? 0      : forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $post['forum_id'], $userId);
+    $perms          = $isSystemReq ? 0      : forum_perms_get_user($post['forum_id'], $userId)[MSZ_FORUM_PERMS_GENERAL];
     $canDeleteAny   = $isSystemReq ? true   : perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST);
     $canViewPost    = $isSystemReq ? true   : perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM);
     $postIsDeleted  = !empty($post['post_deleted']);

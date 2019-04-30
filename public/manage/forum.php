@@ -4,7 +4,7 @@ require_once '../../misuzu.php';
 switch ($_GET['v'] ?? null) {
     case 'listing':
         $forums = db_query('SELECT * FROM `msz_forum_categories`');
-        $rawPerms = forum_perms_create();
+        $rawPerms = perms_create(MSZ_FORUM_PERM_MODES);
         $perms = manage_forum_perms_list($rawPerms);
 
         if (!empty($_POST['perms']) && is_array($_POST['perms'])) {

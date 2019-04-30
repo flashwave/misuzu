@@ -451,7 +451,7 @@ function forum_topic_can_delete($topicId, ?int $userId = null): int
     }
 
     $isSystemReq    = $userId === null;
-    $perms          = $isSystemReq ? 0      : forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], $userId);
+    $perms          = $isSystemReq ? 0      : forum_perms_get_user($topic['forum_id'], $userId)[MSZ_FORUM_PERMS_GENERAL];
     $canDeleteAny   = $isSystemReq ? true   : perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST);
     $canViewPost    = $isSystemReq ? true   : perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM);
     $postIsDeleted  = !empty($topic['topic_deleted']);

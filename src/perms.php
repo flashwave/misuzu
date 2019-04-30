@@ -14,32 +14,23 @@ define('MSZ_PERM_MODES', [
 define('MSZ_PERMS_ALLOW', 'allow');
 define('MSZ_PERMS_DENY', 'deny');
 
-define('MSZ_PERM_SETS', [
-    MSZ_PERMS_ALLOW, MSZ_PERMS_DENY,
-]);
-
-function perms_get_keys(): array
+function perms_get_keys(array $modes = MSZ_PERM_MODES): array
 {
     $perms = [];
 
     foreach (MSZ_PERM_MODES as $mode) {
-        foreach (MSZ_PERM_SETS as $set) {
-            $perms[] = perms_get_key($mode, $set);
-        }
+        $perms[] = [
+            perms_get_key($mode, MSZ_PERMS_ALLOW),
+            perms_get_key($mode, MSZ_PERMS_DENY),
+        ];
     }
 
     return $perms;
 }
 
-function perms_create(): array
+function perms_create(array $modes = MSZ_PERM_MODES): array
 {
-    $perms = [];
-
-    foreach (perms_get_keys() as $key) {
-        $perms[$key] = 0;
-    }
-
-    return $perms;
+    return array_fill_keys(perms_get_keys($modes), 0);
 }
 
 function perms_get_key(string $prefix, string $suffix): string

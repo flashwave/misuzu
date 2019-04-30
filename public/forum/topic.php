@@ -18,7 +18,7 @@ if ($topicId < 1 && $postId > 0) {
 
 $topic = forum_topic_get($topicId, true);
 $perms = $topic
-    ? forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $topic['forum_id'], $topicUserId)
+    ? forum_perms_get_user($topic['forum_id'], $topicUserId)[MSZ_FORUM_PERMS_GENERAL]
     : 0;
 
 if (user_warning_check_restriction($topicUserId)) {
@@ -329,7 +329,13 @@ if ($canDeleteAny) {
 $topicPagination = pagination_create($topicPosts, MSZ_FORUM_POSTS_PER_PAGE);
 
 if (isset($postInfo['preceeding_post_count'])) {
-    $postsPage = floor($postInfo['preceeding_post_count'] / $topicPagination['range']) + 1;
+    $preceedingPosts = $postInfo['preceeding_post_count'];
+
+    if ($canDeleteAny) {
+        $preceedingPosts += $postInfo['preceeding_post_deleted_count'];
+    }
+
+    $postsPage = floor($preceedingPosts / $topicPagination['range']) + 1;
 }
 
 $postsOffset = pagination_offset($topicPagination, $postsPage ?? pagination_param('page'));

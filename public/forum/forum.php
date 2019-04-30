@@ -17,7 +17,7 @@ if (empty($forum) || ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK && empty($foru
     return;
 }
 
-$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], $forumUserId);
+$perms = forum_perms_get_user($forum['forum_id'], $forumUserId)[MSZ_FORUM_PERMS_GENERAL];
 
 if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     echo render_error(403);
@@ -58,11 +58,11 @@ $topics = $forumMayHaveTopics
 $forumMayHaveChildren = forum_may_have_children($forum['forum_type']);
 
 if ($forumMayHaveChildren) {
-    $forum['forum_subforums'] = forum_get_children($forum['forum_id'], $forumUserId, MSZ_FORUM_POSTS_PER_PAGE);
+    $forum['forum_subforums'] = forum_get_children($forum['forum_id'], $forumUserId);
 
     foreach ($forum['forum_subforums'] as $skey => $subforum) {
         $forum['forum_subforums'][$skey]['forum_subforums']
-            = forum_get_children($subforum['forum_id'], $forumUserId, MSZ_FORUM_POSTS_PER_PAGE, true);
+            = forum_get_children($subforum['forum_id'], $forumUserId);
     }
 }
 

@@ -78,7 +78,7 @@ if (empty($forum)) {
     return;
 }
 
-$perms = forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $forum['forum_id'], user_session_current('user_id'));
+$perms = forum_perms_get_user($forum['forum_id'], user_session_current('user_id'))[MSZ_FORUM_PERMS_GENERAL];
 
 if ($forum['forum_archived']
     || (!empty($topic['topic_locked']) && !perms_check($perms, MSZ_FORUM_PERM_LOCK_TOPIC))

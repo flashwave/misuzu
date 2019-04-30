@@ -22,8 +22,7 @@ switch ($indexMode) {
         foreach ($categories as $key => $category) {
             $categories[$key]['forum_subforums'] = forum_get_children(
                 $category['forum_id'],
-                user_session_current('user_id', 0),
-                perms_check($category['forum_permissions'], MSZ_FORUM_PERM_DELETE_ANY_POST)
+                user_session_current('user_id', 0)
             );
 
             foreach ($categories[$key]['forum_subforums'] as $skey => $sub) {
@@ -34,8 +33,7 @@ switch ($indexMode) {
                 $categories[$key]['forum_subforums'][$skey]['forum_subforums']
                     = forum_get_children(
                         $sub['forum_id'],
-                        user_session_current('user_id', 0),
-                        perms_check($sub['forum_permissions'], MSZ_FORUM_PERM_DELETE_ANY_POST)
+                        user_session_current('user_id', 0)
                     );
             }
         }

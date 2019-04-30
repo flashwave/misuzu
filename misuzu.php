@@ -4,6 +4,11 @@ namespace Misuzu;
 define('MSZ_STARTUP', microtime(true));
 define('MSZ_ROOT', __DIR__);
 define('MSZ_DEBUG', is_file(MSZ_ROOT . '/.debug'));
+define('MSZ_PHP_MIN_VER', '7.3.0');
+
+if (version_compare(PHP_VERSION, MSZ_PHP_MIN_VER, '<')) {
+    die('Misuzu requires <i>at least</i> PHP <b>' . MSZ_PHP_MIN_VER . '</b> to run.');
+}
 
 error_reporting(MSZ_DEBUG ? -1 : 0);
 ini_set('display_errors', MSZ_DEBUG ? 'On' : 'Off');

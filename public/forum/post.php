@@ -55,7 +55,9 @@ if ($isXHR) {
 }
 
 $postInfo = forum_post_get($postId, true);
-$perms = empty($postInfo) ? 0 : forum_perms_get_user(MSZ_FORUM_PERMS_GENERAL, $postInfo['forum_id'], $currentUserId);
+$perms = empty($postInfo)
+    ? 0
+    : forum_perms_get_user($postInfo['forum_id'], $currentUserId)[MSZ_FORUM_PERMS_GENERAL];
 
 switch ($postMode) {
     case 'delete':
@@ -244,7 +246,9 @@ switch ($postMode) {
         break;
 
     default: // function as an alt for topic.php?p= by default
-        if (!empty($postInfo['post_deleted']) && !perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST)) {
+        $canDeleteAny = perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST);
+
+        if (!empty($postInfo['post_deleted']) && !$canDeleteAny) {
             echo render_error(404);
             break;
         }
@@ -256,8 +260,13 @@ switch ($postMode) {
             break;
         }
 
+        if ($canDeleteAny) {
+            $postInfo['preceeding_post_count'] += $postInfo['preceeding_post_deleted_count'];
+        }
+
+        unset($postInfo['preceeding_post_deleted_count']);
+
         if ($isXHR) {
-            unset($postFind['can_view_deleted']);
             echo json_encode($postFind);
             break;
         }
