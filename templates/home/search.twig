@@ -58,12 +58,20 @@
         {% endif %}
     </div>
 
-    {% if not (forum_topics|length > 0 or forum_posts|length > 0 or users|length > 0 or news_posts|length > 0) %}
-        <div class="container search__container">
-            {{ container_title('<i class="fas fa-search-minus fa-fw"></i> Nothing found!') }}
-
-            <div class="container__content">
-                No results found using that query, try something else!
+    {% if search_query is not empty and not (
+        forum_topics|length > 0 or forum_posts|length > 0 or users|length > 0 or news_posts|length > 0
+    ) %}
+        <div class="container search__container search__none">
+            <div class="search__none__icon">
+                <i class="fas fa-search-minus fa-fw"></i>
+            </div>
+            <div class="search__none__content">
+                <div class="search__none__title">
+                    Nothing found!
+                </div>
+                <div class="search__none__details">
+                    No results found using that query, try something else!
+                </div>
             </div>
         </div>
     {% endif %}
