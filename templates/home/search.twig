@@ -2,6 +2,7 @@
 {% from 'macros.twig' import container_title %}
 {% from '_layout/input.twig' import input_text %}
 {% from 'user/macros.twig' import user_card %}
+{% from 'forum/macros.twig' import forum_topic_listing %}
 
 {% set title = search_query|length < 1 ? 'Search' : 'Looking for ' ~ search_query %}
 {% set canonical_url = url('search-query', {'query': search_query}) %}
@@ -68,20 +69,13 @@
     {% endif %}
 
     {% if forum_topics|length > 0 %}
-        <div class="container search__container">
-            <div class="search__anchor" id="topics"></div>
-            {{ container_title('<i class="fas fa-comments fa-fw"></i> Topics (%s)'|format(forum_topics|length|number_format)) }}
-            {% for topic in forum_topics %}
-                <a href="{{ url('forum-topic', {'topic': topic.topic_id}) }}" class="link">
-                    {{ topic.topic_title }}
-                </a><br>
-            {% endfor %}
-        </div>
+        <div class="search__anchor" id="topics"></div>
+        {{ forum_topic_listing(forum_topics) }}
     {% endif %}
 
     {% if forum_posts|length > 0 %}
+        <div class="search__anchor" id="posts"></div>
         <div class="container search__container">
-            <div class="search__anchor" id="posts"></div>
             {{ container_title('<i class="fas fa-comment fa-fw"></i> Posts (%s)'|format(forum_posts|length|number_format)) }}
 
             {% for post in forum_posts %}
@@ -93,8 +87,8 @@
     {% endif %}
 
     {% if users|length > 0 %}
+        <div class="search__anchor" id="users"></div>
         <div class="container search__container">
-            <div class="search__anchor" id="users"></div>
             {{ container_title('<i class="fas fa-users fa-fw"></i> Users (%s)'|format(users|length|number_format)) }}
 
             <div class="userlist">
@@ -108,8 +102,8 @@
     {% endif %}
 
     {% if news_posts|length > 0 %}
+        <div class="search__anchor" id="news"></div>
         <div class="container search__container">
-            <div class="search__anchor" id="news"></div>
             {{ container_title('<i class="fas fa-newspaper fa-fw"></i> News (%s)'|format(news_posts|length|number_format)) }}
             {% for post in news_posts %}
                 <a href="{{ url('news-post', {'post': post.post_id}) }}" class="link">

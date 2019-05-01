@@ -383,6 +383,87 @@ function forum_topic_listing_user(int $authorId, int $userId, int $offset = 0, i
     return db_fetch_all($getTopics);
 }
 
+function forum_topic_listing_search(string $query, int $userId): array
+{
+    $getTopics = db_prepare(sprintf(
+        '
+            SELECT
+                :user_id AS `target_user_id`,
+                t.`topic_id`, t.`topic_title`, t.`topic_locked`, t.`topic_type`, t.`topic_created`,
+                t.`topic_bumped`, t.`topic_deleted`, t.`topic_count_views`,
+                au.`user_id` AS `author_id`, au.`username` AS `author_name`,
+                COALESCE(au.`user_colour`, ar.`role_colour`) AS `author_colour`,
+                lp.`post_id` AS `response_id`,
+                lp.`post_created` AS `response_created`,
+                lu.`user_id` AS `respondent_id`,
+                lu.`username` AS `respondent_name`,
+                COALESCE(lu.`user_colour`, lr.`role_colour`) AS `respondent_colour`,
+                (
+                    SELECT COUNT(`post_id`)
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = t.`topic_id`
+                    AND `post_deleted` IS NULL
+                ) AS `topic_count_posts`,
+                (
+                    SELECT CEIL(COUNT(`post_id`) / %2$d)
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = t.`topic_id`
+                    AND `post_deleted` IS NULL
+                ) AS `topic_pages`,
+                (
+                    SELECT
+                        `target_user_id` > 0
+                    AND
+                        t.`topic_bumped` > NOW() - INTERVAL 1 MONTH
+                    AND (
+                        SELECT COUNT(ti.`topic_id`) < 1
+                        FROM `msz_forum_topics_track` AS tt
+                        RIGHT JOIN `msz_forum_topics` AS ti
+                        ON ti.`topic_id` = tt.`topic_id`
+                        WHERE ti.`topic_id` = t.`topic_id`
+                        AND tt.`user_id` = `target_user_id`
+                        AND `track_last_read` >= `topic_bumped`
+                    )
+                ) AS `topic_unread`,
+                (
+                    SELECT COUNT(`post_id`) > 0
+                    FROM `msz_forum_posts`
+                    WHERE `topic_id` = t.`topic_id`
+                    AND `user_id` = `target_user_id`
+                    LIMIT 1
+                ) AS `topic_participated`
+            FROM `msz_forum_topics` AS t
+            LEFT JOIN `msz_users` AS au
+            ON t.`user_id` = au.`user_id`
+            LEFT JOIN `msz_roles` AS ar
+            ON ar.`role_id` = au.`display_role`
+            LEFT JOIN `msz_forum_posts` AS lp
+            ON lp.`post_id` = (
+                SELECT `post_id`
+                FROM `msz_forum_posts`
+                WHERE `topic_id` = t.`topic_id`
+                AND `post_deleted` IS NULL
+                ORDER BY `post_id` DESC
+                LIMIT 1
+            )
+            LEFT JOIN `msz_users` AS lu
+            ON lu.`user_id` = lp.`user_id`
+            LEFT JOIN `msz_roles` AS lr
+            ON lr.`role_id` = lu.`display_role`
+            WHERE MATCH(`topic_title`)
+            AGAINST (:query IN NATURAL LANGUAGE MODE)
+            AND t.`topic_deleted` IS NULL
+            ORDER BY FIELD(t.`topic_type`, %1$s) DESC, t.`topic_bumped` DESC
+        ',
+        implode(',', array_reverse(MSZ_TOPIC_TYPE_ORDER)),
+        MSZ_FORUM_POSTS_PER_PAGE
+    ));
+    $getTopics->bindValue('query', $query);
+    $getTopics->bindValue('user_id', $userId);
+
+    return db_fetch_all($getTopics);
+}
+
 function forum_topic_lock(int $topicId): bool
 {
     if ($topicId < 1) {

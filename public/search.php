@@ -4,14 +4,7 @@ require_once '../misuzu.php';
 $searchQuery = !empty($_GET['q']) && is_string($_GET['q']) ? $_GET['q'] : '';
 
 if (!empty($searchQuery)) {
-    $findForumTopics = db_prepare('
-        SELECT `topic_id`, `topic_title`
-        FROM `msz_forum_topics`
-        WHERE MATCH(`topic_title`)
-        AGAINST (:query IN NATURAL LANGUAGE MODE);
-    ');
-    $findForumTopics->bindValue('query', $searchQuery);
-    $forumTopics = db_fetch_all($findForumTopics);
+    $forumTopics = forum_topic_listing_search($searchQuery, user_session_current('user_id', 0));
 
     $findForumPosts = db_prepare('
         SELECT fp.`post_id`, fp.`post_text`, ft.`topic_title`, u.`username`
