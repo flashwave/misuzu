@@ -1,6 +1,7 @@
 .input__checkbox {
     display: inline-flex;
     margin: 1px 0;
+    overflow: hidden;
 
     &:not(&--disabled) {
         cursor: pointer;
@@ -15,7 +16,7 @@
         display: inline-block;
         position: absolute;
         z-index: -1000;
-        visibility: hidden;
+        top: -100%;
     }
 
     &__display {
