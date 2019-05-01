@@ -70,7 +70,7 @@
 
     {% if forum_topics|length > 0 %}
         <div class="search__anchor" id="topics"></div>
-        {{ forum_topic_listing(forum_topics) }}
+        {{ forum_topic_listing(forum_topics, 'Topics (%d)'|format(forum_topics|length)) }}
     {% endif %}
 
     {% if forum_posts|length > 0 %}

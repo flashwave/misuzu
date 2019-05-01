@@ -229,12 +229,12 @@
     {% endif %}
 {% endmacro %}
 
-{% macro forum_topic_listing(topics) %}
+{% macro forum_topic_listing(topics, title) %}
     {% from _self import forum_topic_entry %}
     {% from 'macros.twig' import container_title %}
 
     <div class="container forum__topics">
-        {{ container_title('<i class="fas fa-comments fa-fw"></i> Topics') }}
+        {{ container_title('<i class="fas fa-comments fa-fw"></i> ' ~ title|default('Topics')) }}
 
         <div class="forum__topics__list">
             {% if topics|length > 0 %}
