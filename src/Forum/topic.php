@@ -75,26 +75,31 @@ function forum_topic_get(int $topicId, bool $allowDeleted = false): array
         '
             SELECT
                 t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`, t.`topic_created`,
-                f.`forum_archived` as `topic_archived`, t.`topic_deleted`, t.`topic_bumped`,
-                tp.`poll_id`, tp.`poll_max_votes`, tp.`poll_expires`, tp.`poll_preview_results`,
+                f.`forum_archived` AS `topic_archived`, t.`topic_deleted`, t.`topic_bumped`,
+                tp.`poll_id`, tp.`poll_max_votes`, tp.`poll_expires`, tp.`poll_preview_results`, tp.`poll_change_vote`,
                 (tp.`poll_expires` < CURRENT_TIMESTAMP) AS `poll_expired`,
-                fp.`topic_id` as `author_post_id`, fp.`user_id` as `author_user_id`,
+                fp.`topic_id` AS `author_post_id`, fp.`user_id` AS `author_user_id`,
                 (
                     SELECT COUNT(`post_id`)
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = t.`topic_id`
                     AND `post_deleted` IS NULL
-                ) as `topic_count_posts`,
+                ) AS `topic_count_posts`,
                 (
                     SELECT COUNT(`post_id`)
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = t.`topic_id`
                     AND `post_deleted` IS NOT NULL
-                ) as `topic_count_posts_deleted`
-            FROM `msz_forum_topics` as t
-            LEFT JOIN `msz_forum_categories` as f
+                ) AS `topic_count_posts_deleted`,
+                (
+                    SELECT COUNT(*)
+                    FROM `msz_forum_polls_answers`
+                    WHERE `poll_id` = tp.`poll_id`
+                ) AS `poll_votes`
+            FROM `msz_forum_topics` AS t
+            LEFT JOIN `msz_forum_categories` AS f
             ON f.`forum_id` = t.`forum_id`
-            LEFT JOIN `msz_forum_posts` as fp
+            LEFT JOIN `msz_forum_posts` AS fp
             ON fp.`post_id` = (
                 SELECT MIN(`post_id`)
                 FROM `msz_forum_posts`

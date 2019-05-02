@@ -56,7 +56,7 @@
 {% block content %}
     {{ forum_header(topic_info.topic_title, topic_breadcrumbs, false, canonical_url, topic_actions) }}
     {{ topic_notice }}
-    {{ forum_poll(topic_info, topic_poll_options) }}
+    {{ forum_poll(topic_info, topic_poll_options, topic_poll_user_answers, topic_poll_preview_results, topic_info.topic_id) }}
     {{ topic_tools }}
     {{ forum_post_listing(topic_posts, current_user.user_id|default(0), topic_perms) }}
     {{ topic_tools }}

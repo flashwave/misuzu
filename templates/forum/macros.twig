@@ -467,28 +467,59 @@
     </div>
 {% endmacro %}
 
-{% macro forum_poll(poll, options, results) %}
-    {% from '_layout/input.twig' import input_csrf, input_checkbox %}
+{% macro forum_poll(poll, options, user_answers, preview_results, topic_id) %}
+    {% from '_layout/input.twig' import input_csrf, input_hidden, input_checkbox %}
+    {% set user_answers = user_answers is empty or user_answers is not iterable ? [] : user_answers %}
+
+    {% set display_results = preview_results|default(poll.poll_expired) %}
 
     {% if options is iterable and options|length > 0 %}
+        {% if display_results %}
+        <div class="container forum__poll">
+        {% else %}
         <form method="post" action="{{ url('forum-poll-vote') }}" class="container forum__poll js-forum-poll"
             data-poll-id="{{ poll.poll_id }}" data-poll-max-votes="{{ poll.poll_max_votes }}">
             {{ input_csrf('forum_poll') }}
+            {{ input_hidden('poll[id]', poll.poll_id) }}
+        {% endif %}
 
-            <div class="forum__poll__options">
-                {% for option in options %}
-                    {{ input_checkbox(
-                        'polls[' ~ poll.poll_id ~ ']', option.option_text, false,
-                        'forum__poll__option', option.option_id, poll.poll_max_votes <= 1,
-                        null, poll.poll_expired
-                    ) }}
-                {% endfor %}
-            </div>
+            {% if display_results %}
+                <div class="forum__poll__results">
+                    {% for option in options %}
+                        {% set percent = (option.option_votes / poll.poll_votes) * 100 %}
 
-            {% if poll.poll_max_votes > 1 %}
-                <div class="forum__poll__remaining js-forum-poll-remaining" hidden>
+                        <div class="forum__poll__result">
+                            <div class="forum__poll__result__background" style="width: {{ percent }}%">
+                            </div>
+                            <div class="forum__poll__result__container">
+                                <div class="forum__poll__result__text">{{ option.option_text }}</div>
+                                <div class="forum__poll__result__votes">{{ option.option_votes|number_format }}</div>
+                                <div class="forum__poll__result__percent">{{ percent|number_format(2) }}%</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="forum__poll__options">
+                    {% for option in options %}
+                        {{ input_checkbox(
+                            'poll[answers][]',
+                            option.option_text, option.option_id in user_answers, 'forum__poll__option',
+                            option.option_id, poll.poll_max_votes <= 1,
+                            null, poll.poll_expired
+                        ) }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if poll.poll_expired %}
+                <div class="forum__poll__remaining">
+                    This poll got <span class="forum__poll__remaining__num">{{ poll.poll_votes|number_format }} vote{{ poll.poll_votes == 1 ?: 's' }}</span>
+                </div>
+            {% elseif poll.poll_max_votes > 1 %}
+                <div class="forum__poll__remaining js-forum-poll-remaining">
                     You have <span class="forum__poll__remaining__num">
-                        <span class="js-forum-poll-remaining-count">{{ poll.poll_max_votes }}</span> vote<span class="js-forum-poll-remaining-plural" hidden>s</span>
+                        <span class="js-forum-poll-remaining-count">{{ poll.poll_max_votes }}</span> vote<span class="js-forum-poll-remaining-plural">s</span>
                     </span> remaining.
                 </div>
             {% endif %}
@@ -496,19 +527,31 @@
             {% if poll.poll_expires is not null %}
                 <div class="forum__poll__expires">
                     {% if poll.poll_expired %}
-                        Voting has finished, you can no longer vote.
+                        Polling closed
                     {% else %}
-                        Voting on this poll will close <time class="forum__poll__expires__datetime" datetime="{{ poll.poll_expires|date('c') }}" title="{{ poll.poll_expires|date('r') }}">{{ poll.poll_expires|time_diff }}</time>.
+                        Polling will close
                     {% endif %}
+                    <time class="forum__poll__expires__datetime" datetime="{{ poll.poll_expires|date('c') }}" title="{{ poll.poll_expires|date('r') }}">{{ poll.poll_expires|time_diff }}</time>.
                 </div>
             {% endif %}
 
             <div class="forum__poll__buttons">
-                <button class="input__button forum__poll__button">Vote</button>
-                {% if poll.poll_preview_results %}
-                    <a class="input__button forum__poll__button">Results</a>
+                {% if display_results %}
+                    {% if not poll.poll_expired %}
+                        <a class="input__button forum__poll__button" href="{{ url('forum-poll-view', {'topic': topic_id}) }}">Vote</a>
+                    {% endif %}
+                {% else %}
+                    <button class="input__button forum__poll__button">Vote</button>
+                    {% if poll.poll_preview_results %}
+                        <a class="input__button forum__poll__button" href="{{ url('forum-poll-results', {'topic': topic_id}) }}">Results</a>
+                    {% endif %}
                 {% endif %}
             </div>
+
+        {% if display_results %}
+        </div>
+        {% else %}
         </form>
+        {% endif %}
     {% endif %}
 {% endmacro %}
