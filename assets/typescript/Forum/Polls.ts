@@ -11,8 +11,6 @@ function forumPollsInit(): void {
 }
 
 function forumPollInit(poll: HTMLFormElement): void {
-    console.log(poll);
-
     const options: HTMLNodeListOf<HTMLInputElement> = poll.getElementsByClassName('input__checkbox__input'),
         votesRemaining: HTMLDivElement = poll.querySelector('.js-forum-poll-remaining'),
         votesRemainingCount: HTMLSpanElement = poll.querySelector('.js-forum-poll-remaining-count'),

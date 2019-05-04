@@ -41,7 +41,6 @@ if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
 if (!empty($topic['poll_id'])) {
     $pollOptions = forum_poll_get_options($topic['poll_id']);
     $pollUserAnswers = forum_poll_get_user_answers($topic['poll_id'], $topicUserId);
-    $pollPreviewResults = $topic['poll_preview_results'] && !empty($_GET['poll']) && is_string($_GET['poll']) && $_GET['poll'] === 'results';
 }
 
 $topicIsLocked = !empty($topic['topic_locked']);
@@ -377,5 +376,4 @@ echo tpl_render('forum.topic', [
     'topic_can_lock' => $canLockTopic,
     'topic_poll_options' => $pollOptions ?? [],
     'topic_poll_user_answers' => $pollUserAnswers ?? [],
-    'topic_poll_preview_results' => $pollPreviewResults ?? false,
 ]);

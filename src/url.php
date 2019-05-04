@@ -60,8 +60,6 @@ define('MSZ_URLS', [
     'forum-post-nuke'                   => ['/forum/post.php',          ['p' => '<post>', 'm' => 'nuke']],
     'forum-post-quote'                  => ['/forum/posting.php',       ['q' => '<post>']],
     'forum-post-edit'                   => ['/forum/posting.php',       ['p' => '<post>', 'm' => 'edit']],
-    'forum-poll-view'                   => ['/forum/topic.php',         ['t' => '<topic>']],
-    'forum-poll-results'                => ['/forum/topic.php',         ['t' => '<topic>', 'poll' => 'results']],
     'forum-poll-vote'                   => ['/forum/poll.php'],
 
     'user-list'                         => ['/members.php',             ['r' => '<role>', 'ss' => '<sort>', 'sd' => '<direction>', 'p' => '<page>']],

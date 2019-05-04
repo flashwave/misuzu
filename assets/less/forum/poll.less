@@ -1,9 +1,18 @@
 .forum__poll {
-    margin: 2px 0;
-    padding: 5px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+
+    &__container {
+        margin: 2px 0;
+        padding: 5px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    &__toggle,
+    &__toggle:checked ~ &__container--poll,
+    &__toggle:not(:checked) ~ &__container--results {
+        display: none;
+    }
 
     &__options {
         display: flex;
@@ -19,6 +28,7 @@
     &__results {
         max-width: 800px;
         width: 100%;
+        padding: 0 1px;
     }
 
     &__option {
