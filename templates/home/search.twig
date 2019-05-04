@@ -2,7 +2,7 @@
 {% from 'macros.twig' import container_title %}
 {% from '_layout/input.twig' import input_text %}
 {% from 'user/macros.twig' import user_card %}
-{% from 'forum/macros.twig' import forum_topic_listing %}
+{% from 'forum/macros.twig' import forum_topic_listing, forum_post_listing %}
 
 {% set title = search_query|length < 1 ? 'Search' : 'Looking for ' ~ search_query %}
 {% set canonical_url = url('search-query', {'query': search_query}) %}
@@ -86,11 +86,7 @@
         <div class="container search__container">
             {{ container_title('<i class="fas fa-comment fa-fw"></i> Posts (%s)'|format(forum_posts|length|number_format)) }}
 
-            {% for post in forum_posts %}
-                <a href="{{ url('forum-post', {'post': post.post_id, 'post_fragment': 'p' ~ post.post_id}) }}" class="link">
-                    Reply by {{ post.username }} in "{{ post.topic_title }}"
-                </a><br>
-            {% endfor %}
+            {{ forum_post_listing(forum_posts) }}
         </div>
     {% endif %}
 

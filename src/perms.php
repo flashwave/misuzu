@@ -210,9 +210,9 @@ function perms_get_role_raw(int $role): array
     return $perms;
 }
 
-function perms_check(int $perms, int $perm): bool
+function perms_check(?int $perms, ?int $perm): bool
 {
-    return ($perms & $perm) > 0;
+    return (($perms ?? 0) & ($perm ?? 0)) > 0;
 }
 
 function perms_check_user(string $prefix, ?int $userId, int $perm): bool

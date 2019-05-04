@@ -5,19 +5,7 @@ $searchQuery = !empty($_GET['q']) && is_string($_GET['q']) ? $_GET['q'] : '';
 
 if (!empty($searchQuery)) {
     $forumTopics = forum_topic_listing_search($searchQuery, user_session_current('user_id', 0));
-
-    $findForumPosts = db_prepare('
-        SELECT fp.`post_id`, fp.`post_text`, ft.`topic_title`, u.`username`
-        FROM `msz_forum_posts` AS fp
-        LEFT JOIN `msz_forum_topics` AS ft
-        ON ft.`topic_id` = fp.`topic_id`
-        LEFT JOIN `msz_users` AS u
-        ON u.`user_id` = fp.`user_id`
-        WHERE MATCH(fp.`post_text`)
-        AGAINST (:query IN NATURAL LANGUAGE MODE);
-    ');
-    $findForumPosts->bindValue('query', $searchQuery);
-    $forumPosts = db_fetch_all($findForumPosts);
+    $forumPosts = forum_post_search($searchQuery);
 
     $findUsers = db_prepare(sprintf(
         '

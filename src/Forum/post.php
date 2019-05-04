@@ -131,6 +131,50 @@ function forum_post_get(int $postId, bool $allowDeleted = false): array
     return db_fetch($getPost);
 }
 
+function forum_post_search(string $query): array
+{
+    $searchPosts = db_prepare('
+        SELECT
+            p.`post_id`, p.`post_text`, p.`post_created`, p.`post_parse`, p.`post_display_signature`,
+            p.`topic_id`, p.`post_deleted`, p.`post_edited`, p.`topic_id`, p.`forum_id`,
+            INET6_NTOA(p.`post_ip`) AS `post_ip`,
+            u.`user_id` AS `poster_id`, u.`username` AS `poster_name`,
+            u.`user_created` AS `poster_joined`, u.`user_country` AS `poster_country`,
+            u.`user_signature_content` AS `poster_signature_content`, u.`user_signature_parser` AS `poster_signature_parser`,
+            COALESCE(u.`user_colour`, r.`role_colour`) AS `poster_colour`,
+            COALESCE(u.`user_title`, r.`role_title`) AS `poster_title`,
+            (
+                SELECT COUNT(`post_id`)
+                FROM `msz_forum_posts`
+                WHERE `user_id` = p.`user_id`
+                AND `post_deleted` IS NULL
+            ) AS `poster_post_count`,
+            (
+                SELECT MIN(`post_id`) = p.`post_id`
+                FROM `msz_forum_posts`
+                WHERE `topic_id` = p.`topic_id`
+            ) AS `is_opening_post`,
+            (
+                SELECT `user_id` = u.`user_id`
+                FROM `msz_forum_posts`
+                WHERE `topic_id` = p.`topic_id`
+                ORDER BY `post_id`
+                LIMIT 1
+            ) AS `is_original_poster`
+        FROM `msz_forum_posts` AS p
+        LEFT JOIN `msz_users` AS u
+        ON u.`user_id` = p.`user_id`
+        LEFT JOIN `msz_roles` AS r
+        ON r.`role_id` = u.`display_role`
+        WHERE MATCH(p.`post_text`)
+        AGAINST (:query IN NATURAL LANGUAGE MODE)
+        AND `post_deleted` IS NULL
+        ORDER BY `post_id`
+    ');
+    $searchPosts->bindValue('query', $query);
+    return db_fetch_all($searchPosts);
+}
+
 function forum_post_count_user(int $userId, bool $showDeleted = false): int
 {
     $getPosts = db_prepare(sprintf(
