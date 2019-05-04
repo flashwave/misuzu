@@ -9,7 +9,7 @@ function forum_perms_get_user(?int $forum, int $user): array
 {
     $perms = perms_get_blank(MSZ_FORUM_PERM_MODES);
 
-    if ($user < 1 || $forum < 0) {
+    if ($user < 0 || $forum < 0) {
         return $perms;
     }
 
@@ -33,7 +33,8 @@ function forum_perms_get_user(?int $forum, int $user): array
             FROM `msz_forum_permissions`
             WHERE (`forum_id` = :forum_id OR `forum_id` IS NULL)
             AND (
-                (`user_id` = :user_id_1 AND `role_id` IS NULL)
+                (`user_id` IS NULL AND `role_id` IS NULL)
+                OR (`user_id` = :user_id_1 AND `role_id` IS NULL)
                 OR (
                     `user_id` IS NULL
                     AND `role_id` IN (
@@ -161,5 +162,5 @@ function forum_perms_get_role_raw(?int $forum, ?int $role): array
 
 function forum_perms_check_user(string $prefix, ?int $forumId, ?int $userId, int $perm): bool
 {
-    return $userId > 0 && perms_check(forum_perms_get_user($forumId, $userId)[$prefix] ?? 0, $perm);
+    return perms_check(forum_perms_get_user($forumId, $userId)[$prefix] ?? 0, $perm);
 }
