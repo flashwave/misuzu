@@ -18,7 +18,7 @@ function perms_get_keys(array $modes = MSZ_PERM_MODES): array
 {
     $perms = [];
 
-    foreach (MSZ_PERM_MODES as $mode) {
+    foreach ($modes as $mode) {
         $perms[] = perms_get_key($mode, MSZ_PERMS_ALLOW);
         $perms[] = perms_get_key($mode, MSZ_PERMS_DENY);
     }
