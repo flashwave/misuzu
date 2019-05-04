@@ -34,6 +34,13 @@
     {
         'title': 'Forum',
         'url': url('forum-index'),
+        'menu': [
+            {
+                'title': 'Leaderboard',
+                'url': url('forum-leaderboard'),
+                'display': current_user.perms.forum|default(0)|perms_check(constant('MSZ_PERM_FORUM_VIEW_LEADERBOARD')),
+            },
+        ],
     },
     {
         'title': 'Chat',
@@ -102,20 +109,24 @@
 
         <div class="header__desktop__menus">
             {% for item in site_menu %}
-                <div class="header__desktop__menu">
-                    {{ item.url|html_link(item.title, {'class': 'header__desktop__link header__desktop__menu__link'})|raw }}
+                {% if item.display is not defined or item.display %}
+                    <div class="header__desktop__menu">
+                        {{ item.url|html_link(item.title, {'class': 'header__desktop__link header__desktop__menu__link'})|raw }}
 
-                    {% if item.menu is defined and item.menu is iterable %}
-                        <div class="header__desktop__submenu">
-                            <div class="header__desktop__submenu__background"></div>
-                            <div class="header__desktop__submenu__content">
-                                {% for subitem in item.menu %}
-                                    {{ subitem.url|html_link(subitem.title, {'class': 'header__desktop__link header__desktop__submenu__link'})|raw }}
-                                {% endfor %}
+                        {% if item.menu is defined and item.menu is iterable %}
+                            <div class="header__desktop__submenu">
+                                <div class="header__desktop__submenu__background"></div>
+                                <div class="header__desktop__submenu__content">
+                                    {% for subitem in item.menu %}
+                                        {% if subitem.display is not defined or subitem.display %}
+                                            {{ subitem.url|html_link(subitem.title, {'class': 'header__desktop__link header__desktop__submenu__link'})|raw }}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
                             </div>
-                        </div>
-                    {% endif %}
-                </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
             {% endfor %}
         </div>
 
