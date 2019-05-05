@@ -202,7 +202,7 @@ function forum_poll_get_topic(int $poll): array
     }
 
     $getTopic = db_prepare("
-        SELECT `forum_id`, `topic_id`
+        SELECT `forum_id`, `topic_id`, `topic_locked`
         FROM `msz_forum_topics`
         WHERE `poll_id` = :poll
     ");

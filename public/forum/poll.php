@@ -48,6 +48,11 @@ if (empty($poll)) {
 
 $topicInfo = forum_poll_get_topic($poll['poll_id']);
 
+if (!is_null($topicInfo['topic_locked'])) {
+    echo "The topic associated with this poll has been locked.<br>";
+    return;
+}
+
 if (!forum_perms_check_user(
     MSZ_FORUM_PERMS_GENERAL, $topicInfo['forum_id'],
     $currentUserId, MSZ_FORUM_PERM_SET_READ

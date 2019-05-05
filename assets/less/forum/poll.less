@@ -70,6 +70,10 @@
             opacity: .2;
         }
 
+        &--voted &__background {
+            opacity: .4;
+        }
+
         &__container {
             display: flex;
             justify-content: center;
@@ -78,6 +82,10 @@
         &__text {
             flex: 1 1 auto;
             padding: 5px;
+        }
+
+        &--voted &__text {
+            font-weight: 700;
         }
 
         &__votes {

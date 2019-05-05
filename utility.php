@@ -64,6 +64,9 @@ function pdo_prepare_array(array $keys, bool $useKeys = false, string $format = 
     return implode(', ', $parts);
 }
 
+// render_error, render_info and render_info_or_json should be redone a bit better
+// following a uniform format so there can be a global handler for em
+
 function render_error(int $code, string $template = 'errors.%d'): string
 {
     return render_info(null, $code, $template);

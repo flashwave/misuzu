@@ -467,24 +467,27 @@
     </div>
 {% endmacro %}
 
-{% macro forum_poll(poll, options, user_answers, topic_id) %}
+{% macro forum_poll(poll, options, user_answers, topic_id, can_vote, preview_results) %}
     {% from '_layout/input.twig' import input_csrf, input_hidden, input_checkbox, input_checkbox_raw %}
     {% set user_answers = user_answers is empty or user_answers is not iterable ? [] : user_answers %}
     {% set user_answered = user_answers|length > 0 %}
-    {% set results_available = user_answered or poll.poll_expired or poll.poll_preview_results %}
-    {% set can_vote = not poll.poll_expired and (poll.poll_change_vote or not user_answered) %}
+    {% set results_available = preview_results or user_answered or poll.poll_expired or poll.poll_preview_results %}
+    {% set options_available = not poll.poll_expired and (poll.poll_change_vote or not user_answered) %}
     {% set display_results = user_answered or poll.poll_expired %}
 
     {% if options is iterable and options|length > 0 %}
         <div class="forum__poll">
             {% if results_available %}
-                {{ input_checkbox_raw('', display_results, 'forum__poll__toggle', '', false, {'id':'forum-poll-toggle'}) }}
+                {% if options_available %}
+                    {{ input_checkbox_raw('', display_results, 'forum__poll__toggle', '', false, {'id':'forum-poll-toggle'}) }}
+                {% endif %}
+
                 <div class="container forum__poll__container forum__poll__container--results">
                     <div class="forum__poll__results">
                         {% for option in options %}
                             {% set percent = poll.poll_votes < 1 ? 0 : (option.option_votes / poll.poll_votes) * 100 %}
 
-                            <div class="forum__poll__result">
+                            <div class="forum__poll__result{% if option.option_id in user_answers %} forum__poll__result--voted{% endif %}">
                                 <div class="forum__poll__result__background" style="width: {{ percent }}%">
                                 </div>
                                 <div class="forum__poll__result__container">
@@ -506,7 +509,7 @@
                         </div>
                     {% endif %}
 
-                    {% if can_vote %}
+                    {% if options_available %}
                         <div class="forum__poll__buttons">
                             <label class="input__button forum__poll__button" for="forum-poll-toggle">Vote</label>
                         </div>
@@ -514,7 +517,7 @@
                 </div>
             {% endif %}
 
-            {% if can_vote %}
+            {% if options_available %}
                 <form method="post" action="{{ url('forum-poll-vote') }}" class="container forum__poll__container forum__poll__container--poll js-forum-poll"
                     data-poll-id="{{ poll.poll_id }}" data-poll-max-votes="{{ poll.poll_max_votes }}">
                     {{ input_csrf('forum_poll') }}
@@ -525,12 +528,13 @@
                             {{ input_checkbox(
                                 'poll[answers][]',
                                 option.option_text, option.option_id in user_answers, 'forum__poll__option',
-                                option.option_id, poll.poll_max_votes <= 1
+                                option.option_id, poll.poll_max_votes <= 1,
+                                null, not can_vote
                             ) }}
                         {% endfor %}
                     </div>
 
-                    {% if poll.poll_max_votes > 1 %}
+                    {% if can_vote and poll.poll_max_votes > 1 %}
                         <div class="forum__poll__remaining js-forum-poll-remaining">
                             You have <span class="forum__poll__remaining__num">
                                 <span class="js-forum-poll-remaining-count">{{ poll.poll_max_votes }}</span> vote<span class="js-forum-poll-remaining-plural">s</span>
@@ -545,7 +549,9 @@
                     {% endif %}
 
                     <div class="forum__poll__buttons">
-                        <button class="input__button forum__poll__button">Vote</button>
+                        {% if can_vote %}
+                            <button class="input__button forum__poll__button">Vote</button>
+                        {% endif %}
                         {% if results_available %}
                             <label class="input__button forum__poll__button" for="forum-poll-toggle">Results</label>
                         {% endif %}
