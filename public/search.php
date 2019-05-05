@@ -6,6 +6,7 @@ $searchQuery = !empty($_GET['q']) && is_string($_GET['q']) ? $_GET['q'] : '';
 if (!empty($searchQuery)) {
     $forumTopics = forum_topic_listing_search($searchQuery, user_session_current('user_id', 0));
     $forumPosts = forum_post_search($searchQuery);
+    $newsPosts = news_posts_search($searchQuery);
 
     $findUsers = db_prepare(sprintf(
         '
@@ -64,15 +65,6 @@ if (!empty($searchQuery)) {
     $findUsers->bindValue('query', $searchQuery);
     $findUsers->bindValue('current_user_id', user_session_current('user_id', 0));
     $users = db_fetch_all($findUsers);
-
-    $findNewsPosts = db_prepare('
-        SELECT `post_id`, `post_title`, `post_text`
-        FROM `msz_news_posts`
-        WHERE MATCH(`post_title`, `post_text`)
-        AGAINST (:query IN NATURAL LANGUAGE MODE);
-    ');
-    $findNewsPosts->bindValue('query', $searchQuery);
-    $newsPosts = db_fetch_all($findNewsPosts);
 }
 
 echo tpl_render('home.search', [

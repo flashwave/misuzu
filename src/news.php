@@ -264,6 +264,38 @@ function news_posts_get(
     return db_fetch_all($getPosts);
 }
 
+function news_posts_search(string $query): array {
+    $searchPosts = db_prepare('
+        SELECT
+            p.`post_id`, p.`post_is_featured`, p.`post_title`, p.`post_text`, p.`comment_section_id`,
+            p.`post_created`, p.`post_updated`, p.`post_deleted`, p.`post_scheduled`,
+            c.`category_id`, c.`category_name`,
+            u.`user_id`, u.`username`,
+            COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`,
+            (
+                SELECT COUNT(`comment_id`)
+                FROM `msz_comments_posts`
+                WHERE `category_id` = `comment_section_id`
+                AND `comment_deleted` IS NULL
+            ) as `post_comments`
+        FROM `msz_news_posts` as p
+        LEFT JOIN `msz_news_categories` as c
+        ON p.`category_id` = c.`category_id`
+        LEFT JOIN `msz_users` as u
+        ON p.`user_id` = u.`user_id`
+        LEFT JOIN `msz_roles` as r
+        ON u.`display_role` = r.`role_id`
+        WHERE MATCH(`post_title`, `post_text`)
+        AGAINST (:query IN NATURAL LANGUAGE MODE)
+        AND p.`post_deleted` IS NULL
+        AND p.`post_scheduled` < NOW()
+        ORDER BY p.`post_created` DESC
+    ');
+    $searchPosts->bindValue('query', $query);
+
+    return db_fetch_all($searchPosts);
+}
+
 function news_post_comments_set(int $postId, int $sectionId): void
 {
     db_prepare('

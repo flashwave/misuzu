@@ -3,6 +3,7 @@
 {% from '_layout/input.twig' import input_text %}
 {% from 'user/macros.twig' import user_card %}
 {% from 'forum/macros.twig' import forum_topic_listing, forum_post_listing %}
+{% from 'news/macros.twig' import news_preview %}
 
 {% set title = search_query|length < 1 ? 'Search' : 'Looking for ' ~ search_query %}
 {% set canonical_url = url('search-query', {'query': search_query}) %}
@@ -110,9 +111,7 @@
         <div class="container search__container">
             {{ container_title('<i class="fas fa-newspaper fa-fw"></i> News (%s)'|format(news_posts|length|number_format)) }}
             {% for post in news_posts %}
-                <a href="{{ url('news-post', {'post': post.post_id}) }}" class="link">
-                    {{ post.post_title }}
-                </a><br>
+                {{ news_preview(post) }}
             {% endfor %}
         </div>
     {% endif %}
