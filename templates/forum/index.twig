@@ -15,7 +15,8 @@
                     category.forum_colour,
                     category.forum_id == constant('MSZ_FORUM_ROOT')
                         ? ''
-                        : 'f' ~ category.forum_id
+                        : 'f' ~ category.forum_id,
+                    category.forum_icon|default('')
                 ) }}
             {% endif %}
         {% endfor %}

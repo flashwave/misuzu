@@ -93,7 +93,7 @@ function forum_get(int $forumId, bool $showDeleted = false): array
         '
             SELECT
                 `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_archived`,
-                `forum_link_clicks`, `forum_parent`, `forum_colour`,
+                `forum_link_clicks`, `forum_parent`, `forum_colour`, `forum_icon`,
                 (
                     SELECT COUNT(`topic_id`)
                     FROM `msz_forum_topics`
@@ -114,7 +114,7 @@ function forum_get_root_categories(int $userId): array
     $getCategories = db_prepare(sprintf(
         '
             SELECT
-                f.`forum_id`, f.`forum_name`, f.`forum_type`, f.`forum_colour`,
+                f.`forum_id`, f.`forum_name`, f.`forum_type`, f.`forum_colour`, f.`forum_icon`,
                 (
                     SELECT COUNT(`forum_id`)
                     FROM `msz_forum_categories` AS sf
@@ -380,7 +380,7 @@ function forum_get_children(int $parentId, int $userId): array
         '
             SELECT
                 :user_id AS `target_user_id`,
-                f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`,
+                f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`, f.`forum_icon`,
                 f.`forum_link`, f.`forum_link_clicks`, f.`forum_archived`, f.`forum_colour`,
                 f.`forum_count_topics`, f.`forum_count_posts`
             FROM `msz_forum_categories` AS f

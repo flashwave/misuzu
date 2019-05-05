@@ -1,11 +1,11 @@
-{% macro forum_category_listing(forums, title, colour, id) %}
+{% macro forum_category_listing(forums, title, colour, id, icon) %}
     {% from _self import forum_category_entry %}
     {% from 'macros.twig' import container_title %}
 
     <div class="container forum__categories"
         {% if colour is not null %}style="{{ colour|html_colour('--accent-colour') }}"{% endif %}
         {% if id|length > 0 %}id="{{ id }}"{% endif %}>
-        {{ container_title('<i class="fas fa-folder fa-fw"></i> ' ~ title) }}
+        {{ container_title('<span class="' ~ icon|default('fas fa-folder fa-fw') ~ '"></span> ' ~ title) }}
 
         {% if forums|length > 0 %}
             <div class="forum__categories__list">
@@ -107,21 +107,22 @@
     {% endif %}
 {% endmacro %}
 
-{% macro forum_category_entry(forum, forum_unread, forum_type) %}
-    {% set forum_type = forum_type|default(null) %}
+{% macro forum_category_entry(forum, forum_unread, forum_icon) %}
     {% set forum_unread = forum_unread|default(forum.forum_unread|default(false)) ? 'unread' : 'read' %}
 
-    {% if forum_type is null %}
-        {% if forum.forum_archived is defined and forum.forum_archived %}
-            {% set forum_type = 'fas fa-archive' %}
+    {% if forum_icon is empty %}
+        {% if forum.forum_icon is defined and forum.forum_icon is not empty %}
+            {% set forum_icon = forum.forum_icon %}
+        {% elseif forum.forum_archived is defined and forum.forum_archived %}
+            {% set forum_icon = 'fas fa-archive fa-fw' %}
         {% elseif forum.forum_type is defined and forum.forum_type != constant('MSZ_FORUM_TYPE_DISCUSSION') %}
             {% if forum.forum_type == constant('MSZ_FORUM_TYPE_LINK') %}
-                {% set forum_type = 'fas fa-link' %}
+                {% set forum_icon = 'fas fa-link fa-fw' %}
             {% elseif forum.forum_type == constant('MSZ_FORUM_TYPE_CATEGORY') %}
-                {% set forum_type = 'fas fa-folder' %}
+                {% set forum_icon = 'fas fa-folder fa-fw' %}
             {% endif %}
         {% else %}
-            {% set forum_type = 'fas fa-comments' %}
+            {% set forum_icon = 'fas fa-comments fa-fw' %}
         {% endif %}
     {% endif %}
 
@@ -130,7 +131,7 @@
 
         <div class="forum__category__container">
             <div class="forum__category__icon forum__category__icon--{{ forum_unread }}">
-                <i class="{{ forum_type }} fa-fw"></i>
+                <span class="{{ forum_icon }}"></span>
             </div>
 
             <div class="forum__category__details">
