@@ -180,12 +180,16 @@
 
             <div class="header__mobile__navigation">
                 {% for item in site_menu %}
-                    {{ item.url|html_link(item.title, {'class': 'header__mobile__link header__mobile__link--primary'})|raw }}
+                    {% if item.display is not defined or item.display %}
+                        {{ item.url|html_link(item.title, {'class': 'header__mobile__link header__mobile__link--primary'})|raw }}
 
-                    {% if item.menu is defined and item.menu is iterable %}
-                        {% for subitem in item.menu %}
-                            {{ subitem.url|html_link(subitem.title, {'class': 'header__mobile__link'})|raw }}
-                        {% endfor %}
+                        {% if item.menu is defined and item.menu is iterable %}
+                            {% for subitem in item.menu %}
+                                {% if subitem.display is not defined or subitem.display %}
+                                    {{ subitem.url|html_link(subitem.title, {'class': 'header__mobile__link'})|raw }}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
             </div>
