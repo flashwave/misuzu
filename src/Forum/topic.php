@@ -666,3 +666,19 @@ function forum_topic_nuke(int $topicId): bool
     $nukeTopic->bindValue('topic', $topicId);
     return $nukeTopic->execute();
 }
+
+function forum_topic_priority(int $topic): array
+{
+    if($topic < 1) {
+        return [];
+    }
+
+    $getPriority = db_prepare('
+        SELECT tp.`topic_id`, tp.`topic_priority`
+        FROM `msz_forum_topics_priority` AS tp
+        LEFT JOIN `msz_users` AS u
+        ON u.`user_id` = tp.`user_id`
+    ');
+
+    return db_fetch_all($getPriority);
+}

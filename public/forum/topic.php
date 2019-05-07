@@ -43,6 +43,10 @@ if (!empty($topic['poll_id'])) {
     $pollUserAnswers = forum_poll_get_user_answers($topic['poll_id'], $topicUserId);
 }
 
+if (forum_has_priority_voting($topic['forum_type'])) {
+    $topicPriority = forum_topic_priority($topic['topic_id']);
+}
+
 $topicIsLocked = !empty($topic['topic_locked']);
 $topicIsArchived = !empty($topic['topic_archived']);
 $topicPostsTotal = (int)($topic['topic_count_posts'] + $topic['topic_count_posts_deleted']);
