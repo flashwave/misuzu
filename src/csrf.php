@@ -1,9 +1,6 @@
 <?php
 define('MSZ_CSRF_TOLERANCE', 30 * 60); // DO NOT EXCEED 16-BIT INTEGER SIZES, SHIT _WILL_ BREAK
 define('MSZ_CSRF_HTML', '<input type="hidden" name="%1$s[%3$s]" value="%2$s">');
-define('MSZ_CSRF_SECRET_STORE', '_msz_csrf_secret');
-define('MSZ_CSRF_IDENTITY_STORE', '_msz_csrf_identity');
-define('MSZ_CSRF_TOKEN_STORE', '_msz_csrf_tokens');
 define('MSZ_CSRF_HASH_ALGO', 'sha256');
 define('MSZ_CSRF_TOKEN_LENGTH', 76); // 8 + 4 + 64
 
@@ -78,31 +75,55 @@ function csrf_token_verify(
 }
 
 // Sets some defaults
-function csrf_init(string $secretKey, string $identity): void
+function csrf_settings(?string $secretKey = null, ?string $identity = null): array
 {
-    $GLOBALS[MSZ_CSRF_SECRET_STORE] = $secretKey;
-    $GLOBALS[MSZ_CSRF_IDENTITY_STORE] = $identity;
-    $GLOBALS[MSZ_CSRF_TOKEN_STORE] = [];
+    static $settings = [];
+
+    if(!empty($secretKey) && !empty($identity)) {
+        $settings = [
+            'secret_key' => $secretKey,
+            'identity' => $identity,
+        ];
+    }
+
+    return $settings;
+}
+
+function csrf_cache(?string $realm = null, $token = null) //: string|array
+{
+    static $store = [];
+
+    if(!empty($realm)) {
+        if(empty($store[$realm]) && !empty($token)) {
+            if(is_callable($token)) {
+                $store[$realm] = $token();
+            } elseif (is_string($token)) {
+                $store[$realm] = $token();
+            }
+        }
+
+        return $store[$realm] ?? '';
+    }
+
+    return $store;
 }
 
 function csrf_is_ready(): bool
 {
-    return !empty($GLOBALS[MSZ_CSRF_SECRET_STORE])
-        && !empty($GLOBALS[MSZ_CSRF_IDENTITY_STORE])
-        && is_array($GLOBALS[MSZ_CSRF_TOKEN_STORE]);
+    return !empty(csrf_settings());
 }
 
 function csrf_token(string $realm): string
 {
-    if (array_key_exists($realm, $GLOBALS[MSZ_CSRF_TOKEN_STORE])) {
-        return $GLOBALS[MSZ_CSRF_TOKEN_STORE][$realm];
-    }
+    return csrf_cache($realm, function() use ($realm) {
+        $settings = csrf_settings();
 
-    return $GLOBALS[MSZ_CSRF_TOKEN_STORE][$realm] = csrf_token_create(
-        $realm,
-        $GLOBALS[MSZ_CSRF_IDENTITY_STORE],
-        $GLOBALS[MSZ_CSRF_SECRET_STORE]
-    );
+        return csrf_token_create(
+            $realm,
+            $settings['identity'],
+            $settings['secret_key']
+        );
+    });
 }
 
 function csrf_verify(string $realm, $token): bool
@@ -113,11 +134,13 @@ function csrf_verify(string $realm, $token): bool
         return false;
     }
 
+    $settings = csrf_settings();
+
     return csrf_token_verify(
         $realm,
         $token,
-        $GLOBALS[MSZ_CSRF_IDENTITY_STORE],
-        $GLOBALS[MSZ_CSRF_SECRET_STORE]
+        $settings['identity'],
+        $settings['secret_key']
     );
 }
 
@@ -151,10 +174,8 @@ function csrf_get_list(): array
 {
     $list = [];
 
-    if (!empty($GLOBALS[MSZ_CSRF_TOKEN_STORE])) {
-        foreach ($GLOBALS[MSZ_CSRF_TOKEN_STORE] as $realm => $token) {
-            $list[] = compact('realm', 'token');
-        }
+    foreach (csrf_cache() as $realm => $token) {
+        $list[] = compact('realm', 'token');
     }
 
     return $list;

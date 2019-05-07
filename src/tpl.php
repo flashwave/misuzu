@@ -3,7 +3,6 @@ use Misuzu\Twig;
 use Misuzu\TwigMisuzu;
 
 define('MSZ_TPL_FILE_EXT', '.twig');
-define('MSZ_TPL_VARS_STORE', '_msz_tpl_vars');
 
 function tpl_init(array $options = []): void
 {
@@ -14,8 +13,6 @@ function tpl_init(array $options = []): void
         'debug' => false,
     ], $options);
 
-    $GLOBALS[MSZ_TPL_VARS_STORE] = [];
-
     $loader = new Twig_Loader_Filesystem;
     $twig = new Twig($loader, $options);
     $twig->addExtension(new Twig_Extensions_Extension_Date);
@@ -24,12 +21,18 @@ function tpl_init(array $options = []): void
 
 function tpl_var(string $key, $value): void
 {
-    $GLOBALS[MSZ_TPL_VARS_STORE][$key] = $value;
+    tpl_vars([$key => $value]);
 }
 
-function tpl_vars(array $vars): void
+function tpl_vars(array $append = []): array
 {
-    $GLOBALS[MSZ_TPL_VARS_STORE] = array_merge($GLOBALS[MSZ_TPL_VARS_STORE], $vars);
+    static $vars = [];
+
+    if(!empty($append)) {
+        $vars = array_merge_recursive($vars, $append);
+    }
+
+    return $vars;
 }
 
 function tpl_add_path(string $path): void
@@ -64,5 +67,5 @@ function tpl_render(string $path, array $vars = []): string
         tpl_vars($vars);
     }
 
-    return Twig::instance()->render($path, $GLOBALS[MSZ_TPL_VARS_STORE]);
+    return Twig::instance()->render($path, tpl_vars());
 }

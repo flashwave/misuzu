@@ -1,8 +1,4 @@
 <?php
-define('MSZ_DATABASE_OBJECTS_STORE', '_msz_database_connects');
-define('MSZ_DATABASE_DEFAULT_NAME_STORE', '_msz_database_default');
-define('MSZ_DATABASE_OPTIONS_STORE', '_msz_database_options');
-
 define('MSZ_DATABASE_SUPPORTED', [
     'mysql',
     'sqlite',
@@ -15,22 +11,34 @@ define('MSZ_DATABASE_MYSQL_DEFAULTS', [
 // Output of PDOException::getCode() is string for god knows what reason
 define('MSZ_DATABASE_DUPLICATE_KEY', '23000');
 
-function db_setup(array $databases, ?string $default = null): void
+function db_settings(?array $databases = [], ?string $default = null): array
 {
-    $GLOBALS[MSZ_DATABASE_OPTIONS_STORE] = $databases;
-    $GLOBALS[MSZ_DATABASE_DEFAULT_NAME_STORE] = $default ?? key($databases);
-}
+    static $settings = [];
 
-function db_connection(?string $name = null): ?PDO
-{
-    $name = $name ?? $GLOBALS[MSZ_DATABASE_DEFAULT_NAME_STORE] ?? '';
-
-    if (empty($GLOBALS[MSZ_DATABASE_OBJECTS_STORE][$name])
-        && !empty($GLOBALS[MSZ_DATABASE_OPTIONS_STORE][$name])) {
-        return db_connect($name, $GLOBALS[MSZ_DATABASE_OPTIONS_STORE][$name]);
+    if(!empty($databases)) {
+        $settings['databases'] = array_merge_recursive($settings['databases'] ?? [], $databases);
+        $settings['default'] = $default ?? $settings['default'] ?? array_key_first($settings['databases']);
     }
 
-    return $GLOBALS[MSZ_DATABASE_OBJECTS_STORE][$name] ?? null;
+    return $settings;
+}
+
+function db_connection(?string $name = null, bool $skipConnect = false, ?PDO $object = null): ?PDO
+{
+    static $connections = [];
+
+    $settings = db_settings();
+    $name = $name ?? $settings['default'] ?? '';
+
+    if (!$skipConnect && empty($connections[$name])) {
+        if(!empty($object)) {
+            $connections[$name] = $object;
+        } elseif(!empty($settings['databases'][$name])) {
+            return db_connect($name, $settings['databases'][$name]);
+        }
+    }
+
+    return $connections[$name] ?? null;
 }
 
 function db_prepare(string $statement, ?string $connection = null, $options = []): PDOStatement
@@ -88,12 +96,14 @@ define('MSZ_DATABASE_CONNECT_NO_DATABASE', 3);
 
 function db_connect(string $name, ?array $options = null)
 {
-    if (!empty($GLOBALS[MSZ_DATABASE_OBJECTS_STORE][$name])) {
-        return $GLOBALS[MSZ_DATABASE_OBJECTS_STORE][$name];
+    $existing = db_connection($name, true);
+
+    if (!empty($existing)) {
+        return $existing;
     }
 
     if ($options === null) {
-        $options = $GLOBALS[MSZ_DATABASE_OPTIONS_STORE][$name] ?? [];
+        $options = db_settings()['databases'][$name] ?? [];
     }
 
     if (!in_array($options['driver'], MSZ_DATABASE_SUPPORTED)) {
@@ -150,5 +160,5 @@ function db_connect(string $name, ?array $options = null)
         $pdoOptions
     );
 
-    return $GLOBALS[MSZ_DATABASE_OBJECTS_STORE][$name] = $connection;
+    return db_connection($name, false, $connection);
 }

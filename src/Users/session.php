@@ -1,5 +1,4 @@
 <?php
-define('MSZ_SESSION_DATA_STORE', '_msz_user_session_data');
 define('MSZ_SESSION_KEY_SIZE', 64);
 
 function user_session_create(
@@ -80,8 +79,8 @@ function user_session_count($userId = 0): int
     $getCount = db_prepare(sprintf('
         SELECT COUNT(`session_id`)
         FROM `msz_sessions`
-        WHERE %s
-    ', $userId < 1 ? '1' : '`user_id` = :user_id'));
+        %s
+    ', $userId < 1 ? '' : 'WHERE `user_id` = :user_id'));
 
     if ($userId >= 1) {
         $getCount->bindValue('user_id', $userId);
@@ -137,6 +136,17 @@ function user_session_bump_active(int $sessionId, string $ipAddress = null): voi
 
 // the functions below this line are imperative
 
+function user_session_data(?array $newData = null): array
+{
+    static $data = [];
+
+    if(!is_null($newData)) {
+        $data = $newData;
+    }
+
+    return $data;
+}
+
 function user_session_start(int $userId, string $sessionKey): bool
 {
     $session = user_session_find($sessionKey, true);
@@ -151,36 +161,36 @@ function user_session_start(int $userId, string $sessionKey): bool
         return false;
     }
 
-    $GLOBALS[MSZ_SESSION_DATA_STORE] = $session;
+    user_session_data($session);
     return true;
 }
 
 function user_session_stop(bool $delete = false): void
 {
-    if (empty($GLOBALS[MSZ_SESSION_DATA_STORE])) {
+    if (empty(user_session_data())) {
         return;
     }
 
     if ($delete) {
-        user_session_delete($GLOBALS[MSZ_SESSION_DATA_STORE]['session_id']);
+        user_session_delete(user_session_data()['session_id']);
     }
 
-    $GLOBALS[MSZ_SESSION_DATA_STORE] = [];
+    user_session_data([]);
 }
 
 function user_session_current(?string $variable = null, $default = null)
 {
     if (empty($variable)) {
-        return $GLOBALS[MSZ_SESSION_DATA_STORE] ?? [];
+        return user_session_data() ?? [];
     }
 
-    return $GLOBALS[MSZ_SESSION_DATA_STORE][$variable] ?? $default;
+    return user_session_data()[$variable] ?? $default;
 }
 
 function user_session_active(): bool
 {
-    return !empty($GLOBALS[MSZ_SESSION_DATA_STORE])
-        && time() < strtotime($GLOBALS[MSZ_SESSION_DATA_STORE]['session_expires']);
+    return !empty(user_session_data())
+        && time() < strtotime(user_session_data()['session_expires']);
 }
 
 define('MSZ_SESSION_COOKIE_VERSION', 1);

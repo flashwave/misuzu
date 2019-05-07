@@ -1,7 +1,4 @@
 <?php
-define('MSZ_MAIL_STORE_OBJECT', '_msz_mail_swiftmailer');
-define('MSZ_MAIL_STORE_OPTIONS', '_msz_mail_options');
-
 define('MSZ_MAIL_NULL', Swift_NullTransport::class);
 define('MSZ_MAIL_SMTP', Swift_SmtpTransport::class);
 define('MSZ_MAIL_SENDMAIL', Swift_SendmailTransport::class);
@@ -14,25 +11,43 @@ define('MSZ_MAIL_METHODS', [
 define('MSZ_MAIL_DEFAULT_SENDER_NAME', 'Misuzu System');
 define('MSZ_MAIL_DEFAULT_SENDER_ADDRESS', 'sys@msz.lh');
 
-function mail_prepare(array $options): void
+function mail_settings($param = null)
 {
-    $GLOBALS[MSZ_MAIL_STORE_OPTIONS] = $options;
+    static $settings = [];
+
+    if(!empty($param)) {
+        if(is_array($param)) {
+            $settings = array_merge_recursive($settings, $param);
+        } elseif(is_string($param)) {
+            return $settings[$param] ?? null;
+        }
+    }
+
+    return $settings;
 }
 
 function mail_init_if_prepared(): bool
 {
-    return !empty($GLOBALS[MSZ_MAIL_STORE_OBJECT]) || (
-        !empty($GLOBALS[MSZ_MAIL_STORE_OPTIONS]) && mail_init($GLOBALS[MSZ_MAIL_STORE_OPTIONS])
-    );
+    return !empty(mail_instance()) || mail_init(mail_settings());
+}
+
+function mail_instance($newObject = null) {
+    static $object = null;
+
+    if(!empty($newObject)) {
+        $object = $newObject;
+    }
+
+    return $object;
 }
 
 function mail_init(array $options = []): bool
 {
-    if (!empty($GLOBALS[MSZ_MAIL_STORE_OBJECT])) {
+    if (!empty(mail_instance())) {
         return true;
     }
 
-    $GLOBALS[MSZ_MAIL_STORE_OPTIONS] = $options;
+    mail_settings($options);
     $method = $options['method'] ?? '';
 
     if (array_key_exists($method, MSZ_MAIL_METHODS)) {
@@ -70,15 +85,15 @@ function mail_init(array $options = []): bool
             break;
     }
 
-    $GLOBALS[MSZ_MAIL_STORE_OBJECT] = $transport;
+    mail_instance($transport);
     return true;
 }
 
 function mail_default_sender(): array
 {
     return [
-        $GLOBALS[MSZ_MAIL_STORE_OPTIONS]['sender_email'] ?? MSZ_MAIL_DEFAULT_SENDER_ADDRESS =>
-        $GLOBALS[MSZ_MAIL_STORE_OPTIONS]['sender_name'] ?? MSZ_MAIL_DEFAULT_SENDER_NAME
+        mail_settings('sender_email') ?? MSZ_MAIL_DEFAULT_SENDER_ADDRESS =>
+        mail_settings('sender_name') ?? MSZ_MAIL_DEFAULT_SENDER_NAME
     ];
 }
 
@@ -88,7 +103,7 @@ function mail_send(Swift_Message $mail): int
         return 0;
     }
 
-    return $GLOBALS[MSZ_MAIL_STORE_OBJECT]->send($mail);
+    return mail_instance()->send($mail);
 }
 
 function mail_compose(

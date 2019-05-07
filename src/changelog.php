@@ -95,7 +95,7 @@ function changelog_get_changes(string $date, int $user, int $offset, int $take):
     return db_fetch_all($prep);
 }
 
-define('CHANGELOG_COUNT_QUERY', '
+define('MSZ_CHANGELOG_COUNT_QUERY', '
     SELECT COUNT(`change_id`)
     FROM `msz_changelog_changes`
     WHERE %s
@@ -108,7 +108,7 @@ function changelog_count_changes(string $date, int $user): int
     $hasUser = $user > 0;
 
     $query = sprintf(
-        CHANGELOG_COUNT_QUERY,
+        MSZ_CHANGELOG_COUNT_QUERY,
         $hasDate ? 'DATE(`change_created`) = :date' : '1',
         $hasUser ? '`user_id` = :user' : '1'
     );

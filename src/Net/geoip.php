@@ -1,30 +1,42 @@
 <?php
-use GeoIp2\Database\Reader;
-
-define('MSZ_GEOIP_INSTANCE_STORE', '_msz_maxmind_geoip');
-define('MSZ_GEOIP_CACHE_STORE', '_msz_geoip_cache');
+use GeoIp2\Database\Reader as GeoIPDBReader;
 
 function geoip_init(?string $database = null): void
 {
-    if (!empty($GLOBALS[MSZ_GEOIP_INSTANCE_STORE])) {
-        $GLOBALS[MSZ_GEOIP_INSTANCE_STORE]->close();
+    $existing = geoip_instance();
+
+    if (!empty($existing)) {
+        $existing->close();
     }
 
-    $GLOBALS[MSZ_GEOIP_INSTANCE_STORE] = new Reader($database ?? config_get('GeoIP', 'database_path'));
+    geoip_instance(new GeoIPDBReader($database ?? config_get('GeoIP', 'database_path')));
+}
+
+function geoip_instance(?GeoIPDBReader $newInstance = null): ?GeoIPDBReader
+{
+    static $instance = null;
+
+    if(!empty($newInstance)) {
+        $instance = $newInstance;
+    }
+
+    return $instance;
 }
 
 function geoip_cache(string $section, string $ipAddress, callable $value)
 {
-    if (empty($GLOBALS[MSZ_GEOIP_CACHE_STORE][$ipAddress][$section])) {
-        $GLOBALS[MSZ_GEOIP_CACHE_STORE][$ipAddress][$section] = $value();
+    static $memo = [];
+
+    if (empty($meme[$ipAddress][$section])) {
+        $memo[$ipAddress][$section] = $value();
     }
 
-    return $GLOBALS[MSZ_GEOIP_CACHE_STORE][$ipAddress][$section] ?? null;
+    return $memo[$ipAddress][$section] ?? null;
 }
 
 function geoip_country(string $ipAddress)
 {
     return geoip_cache('country', $ipAddress, function () use ($ipAddress) {
-        return $GLOBALS[MSZ_GEOIP_INSTANCE_STORE]->country($ipAddress);
+        return geoip_instance()->country($ipAddress);
     });
 }

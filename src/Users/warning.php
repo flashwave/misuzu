@@ -223,18 +223,17 @@ function user_warning_check_ip(string $address): bool
     return (bool)($checkAddress->execute() ? $checkAddress->fetchColumn() : false);
 }
 
-define('MSZ_WARN_EXPIRATION_CACHE', '_msz_user_warning_expiration');
-
 function user_warning_check_expiration(int $userId, int $type): int
 {
     if ($userId < 1 || !user_warning_has_duration($type)) {
         return 0;
     }
 
-    if (!isset($GLOBALS[MSZ_WARN_EXPIRATION_CACHE]) || !is_array($GLOBALS[MSZ_WARN_EXPIRATION_CACHE])) {
-        $GLOBALS[MSZ_WARN_EXPIRATION_CACHE] = [];
-    } elseif (array_key_exists($type, $GLOBALS[MSZ_WARN_EXPIRATION_CACHE]) && array_key_exists($userId, $GLOBALS[MSZ_WARN_EXPIRATION_CACHE][$type])) {
-        return $GLOBALS[MSZ_WARN_EXPIRATION_CACHE][$type][$userId];
+    static $memo = [];
+    $memoId = "{$userId}-{$type}";
+
+    if(array_key_exists($memoId, $memo)) {
+        return $memo[$memoId];
     }
 
     $getExpiration = db_prepare('
@@ -251,10 +250,8 @@ function user_warning_check_expiration(int $userId, int $type): int
     $getExpiration->bindValue('user', $userId);
     $expiration = $getExpiration->execute() ? $getExpiration->fetchColumn() : '';
 
-    return $GLOBALS[MSZ_WARN_EXPIRATION_CACHE][$type][$userId] = (empty($expiration) ? 0 : strtotime($expiration));
+    return $memo[$memoId] = (empty($expiration) ? 0 : strtotime($expiration));
 }
-
-define('MSZ_WARN_RESTRICTION_CACHE', '_msz_user_warning_restriction');
 
 function user_warning_check_restriction(int $userId): bool
 {
@@ -262,10 +259,10 @@ function user_warning_check_restriction(int $userId): bool
         return false;
     }
 
-    if (!isset($GLOBALS[MSZ_WARN_RESTRICTION_CACHE]) || !is_array($GLOBALS[MSZ_WARN_RESTRICTION_CACHE])) {
-        $GLOBALS[MSZ_WARN_RESTRICTION_CACHE] = [];
-    } elseif (array_key_exists($userId, $GLOBALS[MSZ_WARN_RESTRICTION_CACHE])) {
-        return $GLOBALS[MSZ_WARN_RESTRICTION_CACHE][$userId];
+    static $memo = [];
+
+    if(array_key_exists($userId, $memo)) {
+        return $memo[$userId];
     }
 
     $checkAddress = db_prepare(sprintf(
@@ -280,5 +277,5 @@ function user_warning_check_restriction(int $userId): bool
         implode(',', MSZ_WARN_TYPES_HAS_DURATION)
     ));
     $checkAddress->bindValue('user', $userId);
-    return $GLOBALS[MSZ_WARN_RESTRICTION_CACHE][$userId] = (bool)($checkAddress->execute() ? $checkAddress->fetchColumn() : false);
+    return $memo[$userId] = (bool)($checkAddress->execute() ? $checkAddress->fetchColumn() : false);
 }

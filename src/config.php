@@ -1,5 +1,14 @@
 <?php
-define('MSZ_CONFIG_STORE', '_msz_configuration_store');
+function config_store(?array $append = null): array
+{
+    static $store = [];
+
+    if(!is_null($append)) {
+        $store = array_merge_recursive($store, $append);
+    }
+
+    return $store;
+}
 
 function config_load(string $path, bool $isText = false): void
 {
@@ -7,16 +16,12 @@ function config_load(string $path, bool $isText = false): void
         ? parse_ini_string($path, true, INI_SCANNER_TYPED)
         : parse_ini_file($path, true, INI_SCANNER_TYPED);
 
-    if (!is_array($GLOBALS[MSZ_CONFIG_STORE] ?? null)) {
-        $GLOBALS[MSZ_CONFIG_STORE] = [];
-    }
-
-    $GLOBALS[MSZ_CONFIG_STORE] = array_merge_recursive($GLOBALS[MSZ_CONFIG_STORE], $config);
+    config_store($config);
 }
 
 function config_get(string ...$key)
 {
-    $value = $GLOBALS[MSZ_CONFIG_STORE];
+    $value = config_store();
 
     for ($i = 0; $i < count($key); $i++) {
         if (empty($value[$key[$i]])) {

@@ -78,7 +78,7 @@ require_once 'src/Users/validation.php';
 require_once 'src/Users/warning.php';
 
 config_load(MSZ_ROOT . '/config/config.ini');
-mail_prepare(config_get_default([], 'Mail'));
+mail_settings(config_get_default([], 'Mail'));
 
 if (!empty($errorReporter)) {
     $errorReporter->setReportInfo(
@@ -87,7 +87,7 @@ if (!empty($errorReporter)) {
     );
 }
 
-db_setup([
+db_settings([
     'mysql-main' => config_get_default([], 'Database.mysql-main')
 ]);
 
@@ -460,7 +460,7 @@ MIG;
         }
     }
 
-    csrf_init(
+    csrf_settings(
         config_get_default('insecure', 'CSRF', 'secret_key'),
         empty($userDisplayInfo) ? ip_remote_address() : $cookieData['session_token']
     );
