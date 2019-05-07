@@ -30,6 +30,6 @@ function migrate_up(PDO $conn): void
 function migrate_down(PDO $conn): void
 {
     $conn->exec("
-        DROP TABLE ...
+        DROP TABLE `msz_forum_topics_priority`
     ");
 }
