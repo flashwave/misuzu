@@ -76,7 +76,7 @@
         <div class="container forum__actions">
             <div class="forum__actions__buttons">
                 {% if can_topic %}
-                    <a href="{{ url('forum-topic-new', {'forum': info.forum_id}) }}" class="input__button forum__actions__button">New Topic</a>
+                    <a href="{{ url('forum-topic-new', {'forum': info.forum_id}) }}" class="input__button forum__actions__button">{{ info.forum_type == constant('MSZ_FORUM_TYPE_FEATURE') ? 'New Request' : 'New Topic' }}</a>
                 {% endif %}
             </div>
 
@@ -116,7 +116,9 @@
         {% elseif forum.forum_archived is defined and forum.forum_archived %}
             {% set forum_icon = 'fas fa-archive fa-fw' %}
         {% elseif forum.forum_type is defined and forum.forum_type != constant('MSZ_FORUM_TYPE_DISCUSSION') %}
-            {% if forum.forum_type == constant('MSZ_FORUM_TYPE_LINK') %}
+            {% if forum.forum_type == constant('MSZ_FORUM_TYPE_FEATURE') %}
+                {% set forum_icon = 'fas fa-star fa-fw' %}
+            {% elseif forum.forum_type == constant('MSZ_FORUM_TYPE_LINK') %}
                 {% set forum_icon = 'fas fa-link fa-fw' %}
             {% elseif forum.forum_type == constant('MSZ_FORUM_TYPE_CATEGORY') %}
                 {% set forum_icon = 'fas fa-folder fa-fw' %}
@@ -161,14 +163,14 @@
                         <div class="forum__category__stat" title="Clicks">{{ forum.forum_link_clicks|number_format }}</div>
                     </div>
                 {% endif %}
-            {% elseif forum.forum_type != constant('MSZ_FORUM_TYPE_CATEGORY') %}
+            {% elseif forum_may_have_children(forum.forum_type) %}
                 <div class="forum__category__stats">
                     <div class="forum__category__stat" title="Topics">{{ forum.forum_count_topics|number_format }}</div>
                     <div class="forum__category__stat" title="Posts">{{ forum.forum_count_posts|number_format }}</div>
                 </div>
             {% endif %}
 
-            {% if forum.forum_type == constant('MSZ_FORUM_TYPE_DISCUSSION') or forum.forum_link_clicks is not null %}
+            {% if forum_may_have_topics(forum.forum_type) or forum.forum_link_clicks is not null %}
                 <div class="forum__category__activity{% if forum.forum_link_clicks is not null %} forum__category__activity--empty{% endif %}">
                     {% if forum.forum_type != constant('MSZ_FORUM_TYPE_LINK') %}
                         {% if forum.recent_topic_id is not defined %}
@@ -251,24 +253,25 @@
     </div>
 {% endmacro %}
 
-{% macro forum_topic_entry(topic, topic_type, topic_unread) %}
-    {% set topic_type = topic_type|default(null) %}
+{% macro forum_topic_entry(topic, topic_icon, topic_unread) %}
     {% set topic_unread = topic_unread|default(topic.topic_unread|default(false)) %}
     {% set topic_important = topic.topic_type == constant('MSZ_TOPIC_TYPE_STICKY') or topic.topic_type == constant('MSZ_TOPIC_TYPE_ANNOUNCEMENT') or topic.topic_type == constant('MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT') %}
 
-    {% if topic_type is null %}
+    {% if topic_icon is null %}
         {% if topic.topic_deleted is defined and topic.topic_deleted is not null %}
-            {% set topic_type = 'fas fa-trash-alt' %}
+            {% set topic_icon = 'fas fa-trash-alt' %}
         {% elseif topic.topic_type is defined and topic.topic_type != constant('MSZ_TOPIC_TYPE_DISCUSSION') %}
             {% if topic.topic_type == constant('MSZ_TOPIC_TYPE_ANNOUNCEMENT') or topic.topic_type == constant('MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT') %}
-                {% set topic_type = 'fas fa-bullhorn' %}
+                {% set topic_icon = 'fas fa-bullhorn' %}
             {% elseif topic.topic_type == constant('MSZ_TOPIC_TYPE_STICKY') %}
-                {% set topic_type = 'fas fa-thumbtack' %}
+                {% set topic_icon = 'fas fa-thumbtack' %}
             {% endif %}
         {% elseif topic.topic_locked is defined and topic.topic_locked is not null %}
-            {% set topic_type = 'fas fa-lock' %}
+            {% set topic_icon = 'fas fa-lock' %}
+        {% elseif forum_has_priority_voting(topic.forum_type) %}
+            {% set topic_icon = 'far fa-star' %}
         {% else %}
-            {% set topic_type = (topic_unread ? 'fas' : 'far') ~ ' fa-comment' %}
+            {% set topic_icon = (topic_unread ? 'fas' : 'far') ~ ' fa-comment' %}
         {% endif %}
     {% endif %}
 
@@ -277,7 +280,11 @@
 
         <div class="forum__topic__container">
             <div class="forum__topic__icon forum__topic__icon--{{ topic_unread ? 'unread' : 'read' }}">
-                <i class="{{ topic_type }} fa-fw"></i>
+                <i class="{{ topic_icon }} fa-fw"></i>
+
+                {% if forum_has_priority_voting(topic.forum_type) %}
+                    <div class="forum__topic__icon__priority">{{ topic.topic_priority|number_format }}</div>
+                {% endif %}
 
                 {% if topic.topic_participated %}
                     <div class="forum__topic__icon__participated" title="You have posted in this topic"></div>

@@ -51,7 +51,8 @@ $topics = $forumMayHaveTopics
         $forumUserId,
         $topicsOffset,
         $forumPagination['range'],
-        perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST)
+        perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST),
+        forum_has_priority_voting($forum['forum_type'])
     )
     : [];
 
