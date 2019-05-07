@@ -256,6 +256,7 @@
 {% macro forum_topic_entry(topic, topic_icon, topic_unread) %}
     {% set topic_unread = topic_unread|default(topic.topic_unread|default(false)) %}
     {% set topic_important = topic.topic_type == constant('MSZ_TOPIC_TYPE_STICKY') or topic.topic_type == constant('MSZ_TOPIC_TYPE_ANNOUNCEMENT') or topic.topic_type == constant('MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT') %}
+    {% set has_priority_voting = forum_has_priority_voting(topic.forum_type) %}
 
     {% if topic_icon is null %}
         {% if topic.topic_deleted is defined and topic.topic_deleted is not null %}
@@ -268,7 +269,7 @@
             {% endif %}
         {% elseif topic.topic_locked is defined and topic.topic_locked is not null %}
             {% set topic_icon = 'fas fa-lock' %}
-        {% elseif forum_has_priority_voting(topic.forum_type) %}
+        {% elseif has_priority_voting %}
             {% set topic_icon = 'far fa-star' %}
         {% else %}
             {% set topic_icon = (topic_unread ? 'fas' : 'far') ~ ' fa-comment' %}
@@ -280,9 +281,9 @@
 
         <div class="forum__topic__container">
             <div class="forum__topic__icon forum__topic__icon--{{ topic_unread ? 'unread' : 'read' }}">
-                <i class="{{ topic_icon }} fa-fw"></i>
+                <i class="{{ topic_icon }} fa-fw{% if has_priority_voting %} forum__topic__icon--faded{% endif %}"></i>
 
-                {% if forum_has_priority_voting(topic.forum_type) %}
+                {% if has_priority_voting %}
                     <div class="forum__topic__icon__priority">{{ topic.topic_priority|number_format }}</div>
                 {% endif %}
 
@@ -568,4 +569,21 @@
             {% endif %}
         </div>
     {% endif %}
+{% endmacro %}
+
+{% macro forum_priority_votes(topic, votes) %}
+    <div class="container forum__priority">
+        <div class="forum__priority__votes">
+            {% for vote in votes %}
+                <div title="{{ vote.username }} ({{ vote.topic_priority|number_format }})" class="forum__priority__vote" style="{{ vote.user_colour|html_colour }}">
+                    {% for i in 0..vote.topic_priority %}
+                        <span class="forum__priority__star fas fa-star fa-fw"></span>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="forum__priority__input">
+            <button class="input__button">Vote for this feature</button>
+        </div>
+    </div>
 {% endmacro %}

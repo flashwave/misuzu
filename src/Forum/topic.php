@@ -75,7 +75,7 @@ function forum_topic_get(int $topicId, bool $allowDeleted = false): array
         '
             SELECT
                 t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`, t.`topic_created`,
-                f.`forum_archived` AS `topic_archived`, t.`topic_deleted`, t.`topic_bumped`,
+                f.`forum_archived` AS `topic_archived`, t.`topic_deleted`, t.`topic_bumped`, f.`forum_type`,
                 tp.`poll_id`, tp.`poll_max_votes`, tp.`poll_expires`, tp.`poll_preview_results`, tp.`poll_change_vote`,
                 (tp.`poll_expires` < CURRENT_TIMESTAMP) AS `poll_expired`,
                 fp.`topic_id` AS `author_post_id`, fp.`user_id` AS `author_user_id`,
@@ -674,11 +674,18 @@ function forum_topic_priority(int $topic): array
     }
 
     $getPriority = db_prepare('
-        SELECT tp.`topic_id`, tp.`topic_priority`
+        SELECT
+            tp.`topic_id`, tp.`topic_priority`,
+            u.`user_id`, u.`username`,
+            COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
         FROM `msz_forum_topics_priority` AS tp
         LEFT JOIN `msz_users` AS u
         ON u.`user_id` = tp.`user_id`
+        LEFT JOIN `msz_roles` AS r
+        ON u.`display_role` = r.`role_id`
+        WHERE `topic_id` = :topic
     ');
+    $getPriority->bindValue('topic', $topic);
 
     return db_fetch_all($getPriority);
 }

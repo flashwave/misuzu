@@ -8,7 +8,8 @@
         forum_topic_locked,
         forum_header,
         forum_topic_tools,
-        forum_poll
+        forum_poll,
+        forum_priority_votes
 %}
 
 {% set title = topic_info.topic_title %}
@@ -56,6 +57,9 @@
 {% block content %}
     {{ forum_header(topic_info.topic_title, topic_breadcrumbs, false, canonical_url, topic_actions) }}
     {{ topic_notice }}
+    {% if forum_has_priority_voting(topic_info.forum_type) %}
+        {{ forum_priority_votes(topic_info, topic_priority_votes) }}
+    {% endif %}
     {{ forum_poll(topic_info, topic_poll_options, topic_poll_user_answers, topic_info.topic_id, current_user.user_id|default(0) > 0, topic_info.author_user_id == current_user.user_id|default(0)) }}
     {{ topic_tools }}
     {{ forum_post_listing(topic_posts, current_user.user_id|default(0), topic_perms) }}

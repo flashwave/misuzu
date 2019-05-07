@@ -380,4 +380,5 @@ echo tpl_render('forum.topic', [
     'topic_can_lock' => $canLockTopic,
     'topic_poll_options' => $pollOptions ?? [],
     'topic_poll_user_answers' => $pollUserAnswers ?? [],
+    'topic_priority_votes' => $topicPriority ?? [],
 ]);
