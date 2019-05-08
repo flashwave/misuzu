@@ -280,7 +280,7 @@
         <a href="{{ url('forum-topic', {'topic': topic.topic_id}) }}" class="forum__topic__link"></a>
 
         <div class="forum__topic__container">
-            <div class="forum__topic__icon forum__topic__icon--{{ topic_unread ? 'unread' : 'read' }}">
+            <div class="forum__topic__icon forum__topic__icon--{{ topic_unread ? 'unread' : 'read' }}{% if has_priority_voting %} forum__topic__icon--wide{% endif %}">
                 <i class="{{ topic_icon }} fa-fw{% if has_priority_voting %} forum__topic__icon--faded{% endif %}"></i>
 
                 {% if has_priority_voting %}
