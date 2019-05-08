@@ -53,6 +53,7 @@ define('MSZ_URLS', [
     'forum-topic-delete'                => ['/forum/topic.php',         ['t' => '<topic>', 'm' => 'delete', 'csrf[forum_post]' => '{forum_post}']],
     'forum-topic-restore'               => ['/forum/topic.php',         ['t' => '<topic>', 'm' => 'restore', 'csrf[forum_post]' => '{forum_post}']],
     'forum-topic-nuke'                  => ['/forum/topic.php',         ['t' => '<topic>', 'm' => 'nuke', 'csrf[forum_post]' => '{forum_post}']],
+    'forum-topic-priority'              => ['/forum/topic-priority.php', ['t' => '<topic>', 'b' => '<bump>']],
     'forum-post'                        => ['/forum/topic.php',         ['p' => '<post>'], '<post_fragment>'],
     'forum-post-create'                 => ['/forum/posting.php',       ['t' => '<topic>']],
     'forum-post-delete'                 => ['/forum/post.php',          ['p' => '<post>', 'm' => 'delete']],

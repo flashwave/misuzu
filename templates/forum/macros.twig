@@ -576,14 +576,14 @@
         <div class="forum__priority__votes">
             {% for vote in votes %}
                 <div title="{{ vote.username }} ({{ vote.topic_priority|number_format }})" class="forum__priority__vote" style="{{ vote.user_colour|html_colour }}">
-                    {% for i in 0..vote.topic_priority %}
+                    {% for i in 1..vote.topic_priority %}
                         <span class="forum__priority__star fas fa-star fa-fw"></span>
                     {% endfor %}
                 </div>
             {% endfor %}
         </div>
         <div class="forum__priority__input">
-            <button class="input__button">Vote for this feature</button>
+            <a class="input__button" href="{{ url('forum-topic-priority', {'topic':topic.topic_id}) }}">Vote for this feature</a>
         </div>
     </div>
 {% endmacro %}

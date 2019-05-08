@@ -689,3 +689,24 @@ function forum_topic_priority(int $topic): array
 
     return db_fetch_all($getPriority);
 }
+
+function forum_topic_priority_increase(int $topic, int $user, int $bump = 1): void
+{
+    if($topic < 1 || $user < 1 || $bump === 0) {
+        return;
+    }
+
+    $bumpPriority = db_prepare('
+        INSERT INTO `msz_forum_topics_priority`
+            (`topic_id`, `user_id`, `topic_priority`)
+        VALUES
+            (:topic, :user, :bump1)
+        ON DUPLICATE KEY UPDATE
+            `topic_priority` = `topic_priority` + :bump2
+    ');
+    $bumpPriority->bindValue('topic', $topic);
+    $bumpPriority->bindValue('user', $user);
+    $bumpPriority->bindValue('bump1', $bump);
+    $bumpPriority->bindValue('bump2', $bump);
+    $bumpPriority->execute();
+}
