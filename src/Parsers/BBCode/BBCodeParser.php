@@ -35,6 +35,7 @@ class BBCodeParser implements ParserInterface
                 new Tags\UnderlineTag,
                 new Tags\StrikeTag,
                 new Tags\ImageTag,
+                new Tags\ZalgoTag,
 
                 // Links
                 new Tags\NamedUrlTag,
