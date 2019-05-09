@@ -73,8 +73,16 @@
         align-items: center;
         padding: 1px 1px 0 2px;
 
+        &--wide {
+            width: 60px;
+        }
+
         &--unread {
             background-color: var(--accent-colour);
+        }
+
+        &--faded {
+            opacity: .3;
         }
 
         &__participated {
@@ -87,6 +95,17 @@
             border-radius: 100%;
             box-shadow: 0 1px 2px #111;
             pointer-events: initial;
+        }
+
+        &__priority {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            line-height: 30px;
+            font-size: .9em;
+            text-align: center;
         }
     }
 

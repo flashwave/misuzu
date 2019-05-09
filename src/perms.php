@@ -210,27 +210,28 @@ function perms_get_role_raw(int $role): array
     return $perms;
 }
 
-function perms_check(?int $perms, ?int $perm): bool
+function perms_check(?int $perms, ?int $perm, bool $strict = false): bool
 {
-    return (($perms ?? 0) & ($perm ?? 0)) > 0;
+    $and = ($perms ?? 0) & ($perm ?? 0);
+    return $strict ? $and === $perm : $and > 0;
 }
 
-function perms_check_user(string $prefix, ?int $userId, int $perm): bool
+function perms_check_user(string $prefix, ?int $userId, int $perm, bool $strict = false): bool
 {
-    return $userId > 0 && perms_check(perms_get_user($userId)[$prefix] ?? 0, $perm);
+    return $userId > 0 && perms_check(perms_get_user($userId)[$prefix] ?? 0, $perm, $strict);
 }
 
-function perms_check_bulk(int $perms, array $set): array
+function perms_check_bulk(int $perms, array $set, bool $strict = false): array
 {
     foreach ($set as $key => $perm) {
-        $set[$key] = perms_check($perms, $perm);
+        $set[$key] = perms_check($perms, $perm, $strict);
     }
 
     return $set;
 }
 
-function perms_check_user_bulk(string $prefix, ?int $userId, array $set): array
+function perms_check_user_bulk(string $prefix, ?int $userId, array $set, bool $strict = false): array
 {
     $perms = perms_get_user($userId)[$prefix] ?? 0;
-    return perms_check_bulk($perms, $set);
+    return perms_check_bulk($perms, $set, $strict);
 }

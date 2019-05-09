@@ -75,7 +75,7 @@ function forum_topic_get(int $topicId, bool $allowDeleted = false): array
         '
             SELECT
                 t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`, t.`topic_created`,
-                f.`forum_archived` AS `topic_archived`, t.`topic_deleted`, t.`topic_bumped`,
+                f.`forum_archived` AS `topic_archived`, t.`topic_deleted`, t.`topic_bumped`, f.`forum_type`,
                 tp.`poll_id`, tp.`poll_max_votes`, tp.`poll_expires`, tp.`poll_preview_results`, tp.`poll_change_vote`,
                 (tp.`poll_expires` < CURRENT_TIMESTAMP) AS `poll_expired`,
                 fp.`topic_id` AS `author_post_id`, fp.`user_id` AS `author_user_id`,
@@ -185,15 +185,19 @@ function forum_topic_mark_read(int $userId, int $topicId, int $forumId): void
     }
 }
 
-function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $take = 0, bool $showDeleted = false): array
-{
+function forum_topic_listing(
+    int $forumId,               int $userId,
+    int $offset = 0,            int $take = 0,
+    bool $showDeleted = false,  bool $sortByPriority = false
+): array {
     $hasPagination = $offset >= 0 && $take > 0;
     $getTopics = db_prepare(sprintf(
         '
             SELECT
                 :user_id AS `target_user_id`,
                 t.`topic_id`, t.`topic_title`, t.`topic_locked`, t.`topic_type`, t.`topic_created`,
-                t.`topic_bumped`, t.`topic_deleted`, t.`topic_count_views`,
+                t.`topic_bumped`, t.`topic_deleted`, t.`topic_count_views`, f.`forum_type`,
+                COALESCE(SUM(tp.`topic_priority`), 0) AS `topic_priority`,
                 au.`user_id` AS `author_id`, au.`username` AS `author_name`,
                 COALESCE(au.`user_colour`, ar.`role_colour`) AS `author_colour`,
                 lp.`post_id` AS `response_id`,
@@ -236,6 +240,10 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
                     LIMIT 1
                 ) AS `topic_participated`
             FROM `msz_forum_topics` AS t
+            LEFT JOIN `msz_forum_topics_priority` AS tp
+            ON tp.`topic_id` = t.`topic_id`
+            LEFT JOIN `msz_forum_categories` AS f
+            ON f.`forum_id` = t.`forum_id`
             LEFT JOIN `msz_users` AS au
             ON t.`user_id` = au.`user_id`
             LEFT JOIN `msz_roles` AS ar
@@ -258,7 +266,8 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
                 OR t.`topic_type` = %3$d
             )
             %1$s
-            ORDER BY FIELD(t.`topic_type`, %4$s) DESC, t.`topic_bumped` DESC
+            GROUP BY t.`topic_id`
+            ORDER BY FIELD(t.`topic_type`, %4$s) DESC, %7$s t.`topic_bumped` DESC
             %2$s
         ',
         $showDeleted ? '' : 'AND t.`topic_deleted` IS NULL',
@@ -266,7 +275,8 @@ function forum_topic_listing(int $forumId, int $userId, int $offset = 0, int $ta
         MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT,
         implode(',', array_reverse(MSZ_TOPIC_TYPE_ORDER)),
         $showDeleted ? '' : 'AND `post_deleted` IS NULL',
-        MSZ_FORUM_POSTS_PER_PAGE
+        MSZ_FORUM_POSTS_PER_PAGE,
+        $sortByPriority ? '`topic_priority` DESC,' : ''
     ));
     $getTopics->bindValue('forum_id', $forumId);
     $getTopics->bindValue('user_id', $userId);
@@ -655,4 +665,48 @@ function forum_topic_nuke(int $topicId): bool
     ');
     $nukeTopic->bindValue('topic', $topicId);
     return $nukeTopic->execute();
+}
+
+function forum_topic_priority(int $topic): array
+{
+    if($topic < 1) {
+        return [];
+    }
+
+    $getPriority = db_prepare('
+        SELECT
+            tp.`topic_id`, tp.`topic_priority`,
+            u.`user_id`, u.`username`,
+            COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
+        FROM `msz_forum_topics_priority` AS tp
+        LEFT JOIN `msz_users` AS u
+        ON u.`user_id` = tp.`user_id`
+        LEFT JOIN `msz_roles` AS r
+        ON u.`display_role` = r.`role_id`
+        WHERE `topic_id` = :topic
+    ');
+    $getPriority->bindValue('topic', $topic);
+
+    return db_fetch_all($getPriority);
+}
+
+function forum_topic_priority_increase(int $topic, int $user, int $bump = 1): void
+{
+    if($topic < 1 || $user < 1 || $bump === 0) {
+        return;
+    }
+
+    $bumpPriority = db_prepare('
+        INSERT INTO `msz_forum_topics_priority`
+            (`topic_id`, `user_id`, `topic_priority`)
+        VALUES
+            (:topic, :user, :bump1)
+        ON DUPLICATE KEY UPDATE
+            `topic_priority` = `topic_priority` + :bump2
+    ');
+    $bumpPriority->bindValue('topic', $topic);
+    $bumpPriority->bindValue('user', $user);
+    $bumpPriority->bindValue('bump1', $bump);
+    $bumpPriority->bindValue('bump2', $bump);
+    $bumpPriority->execute();
 }

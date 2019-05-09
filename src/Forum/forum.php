@@ -19,6 +19,7 @@ define('MSZ_FORUM_PERM_STICKY_TOPIC', 1 << 14);
 define('MSZ_FORUM_PERM_ANNOUNCE_TOPIC', 1 << 15);
 define('MSZ_FORUM_PERM_GLOBAL_ANNOUNCE_TOPIC', 1 << 16);
 define('MSZ_FORUM_PERM_BUMP_TOPIC', 1 << 17);
+define('MSZ_FORUM_PERM_PRIORITY_VOTE', 1 << 18);
 
 define('MSZ_FORUM_PERM_CREATE_POST', 1 << 20);
 define('MSZ_FORUM_PERM_EDIT_POST', 1 << 21);
@@ -42,24 +43,33 @@ define(
     | MSZ_FORUM_PERM_DELETE_POST
     | MSZ_FORUM_PERM_DELETE_ANY_POST
     | MSZ_FORUM_PERM_BUMP_TOPIC
+    | MSZ_FORUM_PERM_PRIORITY_VOTE
 );
 
 define('MSZ_FORUM_TYPE_DISCUSSION', 0);
 define('MSZ_FORUM_TYPE_CATEGORY', 1);
 define('MSZ_FORUM_TYPE_LINK', 2);
+define('MSZ_FORUM_TYPE_FEATURE', 3);
 define('MSZ_FORUM_TYPES', [
     MSZ_FORUM_TYPE_DISCUSSION,
     MSZ_FORUM_TYPE_CATEGORY,
     MSZ_FORUM_TYPE_LINK,
+    MSZ_FORUM_TYPE_FEATURE,
 ]);
 
 define('MSZ_FORUM_MAY_HAVE_CHILDREN', [
     MSZ_FORUM_TYPE_DISCUSSION,
     MSZ_FORUM_TYPE_CATEGORY,
+    MSZ_FORUM_TYPE_FEATURE,
 ]);
 
 define('MSZ_FORUM_MAY_HAVE_TOPICS', [
     MSZ_FORUM_TYPE_DISCUSSION,
+    MSZ_FORUM_TYPE_FEATURE,
+]);
+
+define('MSZ_FORUM_HAS_PRIORITY_VOTING', [
+    MSZ_FORUM_TYPE_FEATURE,
 ]);
 
 define('MSZ_FORUM_ROOT', 0);
@@ -85,6 +95,11 @@ function forum_may_have_children(int $forumType): bool
 function forum_may_have_topics(int $forumType): bool
 {
     return in_array($forumType, MSZ_FORUM_MAY_HAVE_TOPICS);
+}
+
+function forum_has_priority_voting(int $forumType): bool
+{
+    return in_array($forumType, MSZ_FORUM_HAS_PRIORITY_VOTING);
 }
 
 function forum_get(int $forumId, bool $showDeleted = false): array
