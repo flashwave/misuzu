@@ -393,6 +393,11 @@ function manage_forum_perms_list(array $rawPerms): array
                     'perm' => MSZ_FORUM_PERM_BUMP_TOPIC,
                 ],
                 [
+                    'section' => 'can-priority-vote',
+                    'title' => 'Can vote on topic priority.',
+                    'perm' => MSZ_FORUM_PERM_PRIORITY_VOTE,
+                ],
+                [
                     'section' => 'can-create-post',
                     'title' => 'Can make posts (reply only, if create topic is disallowed).',
                     'perm' => MSZ_FORUM_PERM_CREATE_POST,

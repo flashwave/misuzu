@@ -160,7 +160,7 @@ function forum_perms_get_role_raw(?int $forum, ?int $role): array
     return $perms;
 }
 
-function forum_perms_check_user(string $prefix, ?int $forumId, ?int $userId, int $perm): bool
+function forum_perms_check_user(string $prefix, ?int $forumId, ?int $userId, int $perm, bool $strict = false): bool
 {
-    return perms_check(forum_perms_get_user($forumId, $userId)[$prefix] ?? 0, $perm);
+    return perms_check(forum_perms_get_user($forumId, $userId)[$prefix] ?? 0, $perm, $strict);
 }

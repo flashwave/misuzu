@@ -571,7 +571,7 @@
     {% endif %}
 {% endmacro %}
 
-{% macro forum_priority_votes(topic, votes) %}
+{% macro forum_priority_votes(topic, votes, can_vote) %}
     <div class="container forum__priority">
         <div class="forum__priority__votes">
             {% for vote in votes %}
@@ -582,8 +582,13 @@
                 </div>
             {% endfor %}
         </div>
-        <div class="forum__priority__input">
-            <a class="input__button" href="{{ url('forum-topic-priority', {'topic':topic.topic_id}) }}">Vote for this feature</a>
-        </div>
+
+        {% if can_vote %}
+            <div class="forum__priority__input">
+                <a class="input__button" href="{{ url('forum-topic-priority', {'topic':topic.topic_id}) }}">
+                    Vote for this feature
+                </a>
+            </div>
+        {% endif %}
     </div>
 {% endmacro %}
