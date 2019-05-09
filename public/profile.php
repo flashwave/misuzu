@@ -335,7 +335,7 @@ switch ($profileMode) {
 
         tpl_vars([
             'title' => $profile['username'] . ' / topics',
-            'canonical_url' => url('user-profile-forum-topics', ['user' => $userId]),
+            'canonical_url' => url('user-profile-forum-topics', ['user' => $userId, 'page' => pagination_param()]),
             'profile_topics' => $topics,
             'profile_topics_pagination' => $topicsPagination,
         ]);
@@ -353,6 +353,13 @@ switch ($profileMode) {
         }
 
         $posts = forum_post_listing($userId, $postsOffset, $postsPagination['range'], false, true);
+
+        tpl_vars([
+            'title' => $profile['username'] . ' / posts',
+            'canonical_url' => url('user-profile-forum-posts', ['user' => $userId, 'page' => pagination_param()]),
+            'profile_posts' => $posts,
+            'profile_posts_pagination' => $postsPagination,
+        ]);
         break;
 
     case '':

@@ -1,15 +1,23 @@
 {% extends 'profile/master.twig' %}
 {% from 'macros.twig' import pagination %}
-{% from 'forum/macros.twig' import forum_topic_listing %}
+{% from 'forum/macros.twig' import forum_post_listing %}
 
 {% block content %}
     <div class="profile">
         {% include 'profile/_layout/header.twig' %}
 
-        {# if profile_relation_pagination.pages > 1 %}
-            <div class="container profile__pagination">
-                {{ pagination(profile_relation_pagination, canonical_url) }}
-            </div>
-        {% endif #}
+        {% set sp = profile_posts_pagination.pages > 1
+            ? '<div class="container profile__pagination">' ~ pagination(profile_posts_pagination, canonical_url) ~ '</div>'
+            : '' %}
+
+        {% if sp is not empty %}
+            {{ sp|raw }}
+        {% endif %}
+
+        {{ forum_post_listing(profile_posts) }}
+
+        {% if sp is not empty %}
+            {{ sp|raw }}
+        {% endif %}
     </div>
 {% endblock %}
