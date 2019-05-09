@@ -46,6 +46,7 @@ final class TwigMisuzu extends Twig_Extension
             new Twig_Function('get_csrf_tokens', 'csrf_get_list'),
             new Twig_Function('url', 'url'),
             new Twig_Function('url_list', 'url_list'),
+            new Twig_Function('changelog_action_name', 'changelog_action_name'),
             new Twig_Function('forum_may_have_children', 'forum_may_have_children'),
             new Twig_Function('forum_may_have_topics', 'forum_may_have_topics'),
             new Twig_Function('forum_has_priority_voting', 'forum_has_priority_voting'),
