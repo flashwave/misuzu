@@ -88,11 +88,12 @@
                     {% if stat.value|default(false) %}
                         {% set is_date = stat.is_date|default(false) %}
                         {% set is_url = stat.url is defined %}
+                        {% set active_class = stat.active|default(false) ? ' profile__header__stat--active' : '' %}
 
                         {% if is_url %}
-                            <a class="profile__header__stat profile__header__stat--link" href="{{ stat.url }}">
+                            <a class="profile__header__stat profile__header__stat--link{{ active_class }}" href="{{ stat.url }}">
                         {% else %}
-                            <div class="profile__header__stat{% if is_date %} profile__header__stat--date" title="{{ stat.value|date('r') }}{% endif %}">
+                            <div class="profile__header__stat{{ active_class }}{% if is_date %} profile__header__stat--date" title="{{ stat.value|date('r') }}{% endif %}">
                         {% endif %}
                             <div class="profile__header__stat__name">
                                 {{ stat.title }}

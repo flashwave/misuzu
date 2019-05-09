@@ -200,17 +200,19 @@
 
         &--link {
             cursor: pointer;
-
-            &:hover,
-            &:focus {
-                border-bottom: 2px solid var(--accent-colour);
-            }
         }
 
         @media (max-width: @site-mobile-width) {
             &--date &__value {
                 text-align: right;
             }
+        }
+
+        &--link:hover,
+        &--link:focus,
+        &--link:active,
+        &--active {
+            border-bottom: 2px solid var(--accent-colour);
         }
     }
 

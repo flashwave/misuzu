@@ -17,21 +17,25 @@
         'title': 'Following',
         'value': profile.following_count,
         'url': url('user-profile-following', {'user': profile.user_id}),
+        'active': profile_mode == 'following',
     },
     {
         'title': 'Followers',
         'value': profile.followers_count,
         'url': url('user-profile-followers', {'user': profile.user_id}),
+        'active': profile_mode == 'followers',
     },
     {
         'title': 'Topics',
         'value': profile.forum_topic_count,
         'url': url('user-profile-forum-topics', {'user': profile.user_id}),
+        'active': profile_mode == 'forum-topics',
     },
     {
         'title': 'Posts',
         'value': profile.forum_post_count,
         'url': url('user-profile-forum-posts', {'user': profile.user_id}),
+        'active': profile_mode == 'forum-posts',
     },
     {
         'title': 'Comments',
