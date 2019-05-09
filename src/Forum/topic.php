@@ -315,7 +315,7 @@ function forum_topic_listing_user(int $authorId, int $userId, int $offset = 0, i
             SELECT
                 :user_id AS `target_user_id`,
                 t.`topic_id`, t.`topic_title`, t.`topic_locked`, t.`topic_type`, t.`topic_created`,
-                t.`topic_bumped`, t.`topic_deleted`, t.`topic_count_views`,
+                t.`topic_bumped`, t.`topic_deleted`, t.`topic_count_views`, f.`forum_type`,
                 au.`user_id` AS `author_id`, au.`username` AS `author_name`,
                 COALESCE(au.`user_colour`, ar.`role_colour`) AS `author_colour`,
                 lp.`post_id` AS `response_id`,
@@ -358,6 +358,8 @@ function forum_topic_listing_user(int $authorId, int $userId, int $offset = 0, i
                     LIMIT 1
                 ) AS `topic_participated`
             FROM `msz_forum_topics` AS t
+            LEFT JOIN `msz_forum_categories` AS f
+            ON f.`forum_id` = t.`forum_id`
             LEFT JOIN `msz_users` AS au
             ON t.`user_id` = au.`user_id`
             LEFT JOIN `msz_roles` AS ar
@@ -405,7 +407,7 @@ function forum_topic_listing_search(string $query, int $userId): array
             SELECT
                 :user_id AS `target_user_id`,
                 t.`topic_id`, t.`topic_title`, t.`topic_locked`, t.`topic_type`, t.`topic_created`,
-                t.`topic_bumped`, t.`topic_deleted`, t.`topic_count_views`,
+                t.`topic_bumped`, t.`topic_deleted`, t.`topic_count_views`, f.`forum_type`,
                 au.`user_id` AS `author_id`, au.`username` AS `author_name`,
                 COALESCE(au.`user_colour`, ar.`role_colour`) AS `author_colour`,
                 lp.`post_id` AS `response_id`,
@@ -448,6 +450,8 @@ function forum_topic_listing_search(string $query, int $userId): array
                     LIMIT 1
                 ) AS `topic_participated`
             FROM `msz_forum_topics` AS t
+            LEFT JOIN `msz_forum_categories` AS f
+            ON f.`forum_id` = t.`forum_id`
             LEFT JOIN `msz_users` AS au
             ON t.`user_id` = au.`user_id`
             LEFT JOIN `msz_roles` AS ar
