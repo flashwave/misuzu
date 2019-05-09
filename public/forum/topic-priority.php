@@ -1,6 +1,10 @@
 <?php
 require_once '../../misuzu.php';
 
+if (!MSZ_DEBUG) {
+    return;
+}
+
 $topicId = !empty($_GET['t']) && is_string($_GET['t']) ? (int)$_GET['t'] : 0;
 $topicUserId = user_session_current('user_id', 0);
 
