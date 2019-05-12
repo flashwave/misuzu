@@ -52,6 +52,10 @@ while (!$restricted && !empty($register)) {
             : 'The e-mail address you entered is invalid!';
     }
 
+    if ($register['password_confirm'] !== $register['password']) {
+        $notices[] = 'The given passwords don\'t match.';
+    }
+
     if (user_validate_password($register['password']) !== '') {
         $notices[] = 'Your password is too weak!';
     }

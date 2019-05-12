@@ -48,7 +48,7 @@
                             Username
                         </div>
                         <div class="auth__label__value">
-                            {{ input_text('register[username]', 'auth__label__input', register_username, 'text', '', true, null, 1, true) }}
+                            {{ input_text('register[username]', 'auth__label__input', register_username, 'text', '', true, null, 10, true) }}
                         </div>
                     </label>
 
@@ -57,7 +57,16 @@
                             Password
                         </div>
                         <div class="auth__label__value">
-                            {{ input_text('register[password]', 'auth__label__input', '', 'password', '', true, null, 2) }}
+                            {{ input_text('register[password]', 'auth__label__input', '', 'password', '', true, null, 20) }}
+                        </div>
+                    </label>
+
+                    <label class="auth__label">
+                        <div class="auth__label__text">
+                            Confirm Password
+                        </div>
+                        <div class="auth__label__value">
+                            {{ input_text('register[password_confirm]', 'auth__label__input', '', 'password', '', true, null, 30) }}
                         </div>
                     </label>
 
@@ -66,7 +75,7 @@
                             E-mail
                         </div>
                         <div class="auth__label__value">
-                            {{ input_text('register[email]', 'auth__label__input', register_email, 'text', '', true, null, 3) }}
+                            {{ input_text('register[email]', 'auth__label__input', register_email, 'text', '', true, null, 40) }}
                         </div>
                     </label>
 
@@ -75,13 +84,13 @@
                             What is the outcome of nine plus ten?
                         </div>
                         <div class="auth__label__value">
-                            {{ input_text('register[question]', 'auth__label__input', '', 'text', '', true, null, 4) }}
+                            {{ input_text('register[question]', 'auth__label__input', '', 'text', '', true, null, 50) }}
                         </div>
                     </label>
 
                     <div class="auth__buttons">
-                        <button class="input__button auth__buttons__button" tabindex="5">Create your account</button>
-                        <a href="{{ url('auth-login') }}" class="input__button auth__buttons__button auth__buttons__button--minor" tabindex="6">Log in</a>
+                        <button class="input__button auth__buttons__button" tabindex="60">Create your account</button>
+                        <a href="{{ url('auth-login') }}" class="input__button auth__buttons__button auth__buttons__button--minor" tabindex="70">Log in</a>
                     </div>
                 {% endif %}
             </div>
