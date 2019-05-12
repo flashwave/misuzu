@@ -77,6 +77,63 @@
                 <textarea name="post[text]" class="forum__post__text forum__post__text--edit js-forum-posting-text js-ctrl-enter-submit" placeholder="Type your post content here...">{{ posting_defaults.text|default(posting_post.post_text|default('')) }}</textarea>
                 <div class="forum__post__text js-forum-posting-preview" hidden></div>
 
+                <div class="forum__post__actions forum__post__actions--bbcode" hidden>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--bb-bold" title="Bold [b]<text>[/b]" data-tag-open="[b]" data-tag-close="[/b]">
+                        <i class="fas fa-bold fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--bb-italic" title="Italic [i]<text>[/i]" data-tag-open="[i]" data-tag-close="[/i]">
+                        <i class="fas fa-italic fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--bb-underline" title="Underline [u]<text>[/u]" data-tag-open="[u]" data-tag-close="[/u]">
+                        <i class="fas fa-underline fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--bb-strike" title="Strikethrough [s]<text>[/s]" data-tag-open="[s]" data-tag-close="[/s]">
+                        <i class="fas fa-strikethrough fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--bb-link" title="Link [url]<url>[/url] or [url=<url>]<text>[/url]" data-tag-open="[url=]" data-tag-close="[/url]">
+                        <i class="fas fa-link fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--bb-image" title="Image [img]<url>[/img]" data-tag-open="[img]" data-tag-close="[/img]">
+                        <i class="fas fa-image fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--bb-code" title="Code [code]<code>[/code]" data-tag-open="[code]" data-tag-close="[/code]">
+                        <i class="fas fa-code fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--bb-audio" title="Audio [audio]<url>[/url]" data-tag-open="[audio]" data-tag-close="[/audio]">
+                        <i class="fas fa-music fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--bb-video" title="Video [video]<url>[/video]" data-tag-open="[video]" data-tag-close="[/video]">
+                        <i class="fas fa-video fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--bb-zalgo" title="Zalgo [zalgo]<text>[/zalgo]" data-tag-open="[zalgo]" data-tag-close="[/zalgo]">
+                        <i class="fas fa-frog fa-fw"></i>
+                    </div>
+                </div>
+
+                <div class="forum__post__actions forum__post__actions--markdown" hidden>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--md-bold" title="Bold **<text>**" data-tag-open="**" data-tag-close="**">
+                        <i class="fas fa-bold fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--md-italic" title="Italic *<text>* or _<text>_" data-tag-open="*" data-tag-close="*">
+                        <i class="fas fa-italic fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--md-underline" title="Underline __<text>__" data-tag-open="__" data-tag-close="__">
+                        <i class="fas fa-underline fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--md-strike" title="Strikethrough ~~<text>~~" data-tag-open="~~" data-tag-close="~~">
+                        <i class="fas fa-strikethrough fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--md-link" title="Link [<text>](<url>)" data-tag-open="[](" data-tag-close=")">
+                        <i class="fas fa-link fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--md-image" title="Image ![<alt text>](<url>)" data-tag-open="![](" data-tag-close=")">
+                        <i class="fas fa-image fa-fw"></i>
+                    </div>
+                    <div class="forum__post__action forum__post__action--tag forum__post__action--md-code" title="Code `<code>` or ```<code>```" data-tag-open="```" data-tag-close="```">
+                        <i class="fas fa-code fa-fw"></i>
+                    </div>
+                </div>
+
                 <div class="forum__post__options">
                     <div class="forum__post__settings">
                         {{ input_select(

@@ -12,16 +12,29 @@ function forumPostingInit(): void
         postingParser: HTMLSelectElement = postingForm.querySelector('.js-forum-posting-parser'),
         postingPreview: HTMLDivElement = postingForm.querySelector('.js-forum-posting-preview'),
         postingMode: HTMLSpanElement = postingForm.querySelector('.js-forum-posting-mode'),
-        previewButton: HTMLButtonElement = document.createElement('button');
+        previewButton: HTMLButtonElement = document.createElement('button'),
+        bbcodeButtons = document.querySelector('.forum__post__actions--bbcode'),
+        markdownButtons = document.querySelector('.forum__post__actions--markdown'),
+        markupButtons = document.querySelectorAll('.forum__post__action--tag');
+
+    for(let i = 0; i < markupButtons.length; i++) {
+        let currentBtn = markupButtons[i];
+        currentBtn.addEventListener('click', (ev) =>
+            forumPostingInputMarkup(currentBtn.dataset.tagOpen, currentBtn.dataset.tagClose));
+    }
+
+    forumPostingSwitchButtons(parseInt(postingParser.value));
 
     let lastPostText: string = '',
         lastPostParser: Parser = null;
 
     postingParser.addEventListener('change', () => {
+        const postParser: Parser = parseInt(postingParser.value);
+
+        forumPostingSwitchButtons(postParser);
+
         if (postingPreview.hasAttribute('hidden'))
             return;
-
-        const postParser: Parser = parseInt(postingParser.value);
 
         // dunno if this is even possible, but ech
         if (postParser === lastPostParser)
@@ -137,4 +150,53 @@ function forumPostingPreview(
     xhr.open('POST', '/forum/posting.php');
     xhr.withCredentials = true;
     xhr.send(formData);
+}
+
+function forumPostingSwitchButtons(parser: Parser): void {
+    const bbcodeButtons = document.querySelector('.forum__post__actions--bbcode'),
+        markdownButtons = document.querySelector('.forum__post__actions--markdown');
+
+    switch(parser) {
+        default:
+        case Parser.PlainText:
+            bbcodeButtons.hidden = markdownButtons.hidden = true;
+            break;
+        case Parser.BBCode:
+            bbcodeButtons.hidden = false;
+            markdownButtons.hidden = true;
+            break;
+        case Parser.Markdown:
+            bbcodeButtons.hidden = true;
+            markdownButtons.hidden = false;
+            break;
+    }
+}
+
+function forumPostingInputMarkup(tagOpen: string, tagClose: string): void {
+    const editor = document.querySelector('.js-forum-posting-text');
+
+    if(document.selection) {
+        editor.focus();
+        let selected = document.selection.createRange();
+        selected.text = tagOpen + selected.text + tagClose;
+        editor.focus();
+    } else if(editor.selectionStart || editor.selectionStart === 0) {
+        let startPos = editor.selectionStart,
+            endPos = editor.selectionEnd,
+            scrollTop = editor.scrollTop;
+
+        editor.value = editor.value.substring(0, startPos)
+            + tagOpen
+            + editor.value.substring(startPos, endPos)
+            + tagClose
+            + editor.value.substring(endPos, editor.value.length);
+
+        editor.focus();
+        editor.selectionStart = startPos + tagOpen.length;
+        editor.selectionEnd = endPos + tagOpen.length;
+        editor.scrollTop + scrollTop;
+    } else {
+        editor.value += tagOpen + tagClose;
+        editor.focus();
+    }
 }
