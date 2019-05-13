@@ -330,8 +330,22 @@ function news_post_get(int $postId): array
     return db_fetch($getPost);
 }
 
+define('MSZ_NEWS_FEED_ATOM', 'atom');
+define('MSZ_NEWS_FEED_RSS', 'rss');
+define('MSZ_NEWS_SUPPORTED_FEEDS', [
+    MSZ_NEWS_FEED_ATOM, MSZ_NEWS_FEED_RSS,
+]);
+
+function news_feed_supported(string $type): string {
+    return in_array($type, MSZ_NEWS_SUPPORTED_FEEDS);
+}
+
 function news_feed(string $type, array $posts, array $info): string
 {
+    if(!news_feed_supported($type)) {
+        return '';
+    }
+
     $document = new DOMDocument('1.0', 'utf-8');
     $urlPrefix = url_prefix(false);
     $htmlUrl = $urlPrefix . $info['html-url'];

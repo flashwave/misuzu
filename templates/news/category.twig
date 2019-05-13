@@ -30,7 +30,7 @@
             {% endfor %}
 
             <div class="container" style="padding: 4px; display: {{ news_pagination.pages > 1 ? 'block' : 'none' }}">
-                {{ pagination(news_pagination, url('news-index'), null, {'c':category.category_id}, 'page') }}
+                {{ pagination(news_pagination, url('news-category'), null, {'c':category.category_id}) }}
             </div>
         </div>
 
