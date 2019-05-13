@@ -29,7 +29,7 @@ define('MSZ_URLS', [
     'changelog-date'                    => ['/changelog.php',           ['d' => '<date>']],
     'changelog-tag'                     => ['/changelog.php',           ['t' => '<tag>']],
 
-    'news-index'                        => ['/news.php',                ['page' => '<page>']],
+    'news-index'                        => ['/news',                    ['page' => '<page>']],
     'news-post'                         => ['/news/post.php',           ['p' => '<post>']],
     'news-post-comments'                => ['/news/post.php',           ['p' => '<post>'], 'comments'],
     'news-category'                     => ['/news/category.php',       ['c' => '<category>', 'p' => '<page>']],
