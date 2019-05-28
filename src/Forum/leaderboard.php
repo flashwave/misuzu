@@ -48,10 +48,11 @@ function forum_leaderboard_categories(): array
     return $categories;
 }
 
-function forum_leaderboard_listing(?int $year = null, ?int $month = null): array
+function forum_leaderboard_listing(?int $year = null, ?int $month = null, array $unrankedIds = []): array
 {
     $hasYear = forum_leaderboard_year_valid($year);
     $hasMonth = $hasYear && forum_leaderboard_month_valid($year, $month);
+    $unrankedIds = implode(',', $unrankedIds);
 
     $rawLeaderboard = db_fetch_all(db_query(sprintf(
         '
@@ -63,10 +64,12 @@ function forum_leaderboard_listing(?int $year = null, ?int $month = null): array
             ON fp.`user_id` = u.`user_id`
             WHERE fp.`post_deleted` IS NULL
             %s
+            %s
             GROUP BY u.`user_id`
             HAVING `posts` > 0
             ORDER BY `posts` DESC
         ',
+        $unrankedIds ? sprintf('AND fp.`forum_id` NOT IN (%s)', $unrankedIds) : '',
         !$hasYear ? '' : sprintf(
             'AND DATE(fp.`post_created`) BETWEEN \'%1$04d-%2$02d-01\' AND \'%1$04d-%3$02d-31\'',
             $year,
