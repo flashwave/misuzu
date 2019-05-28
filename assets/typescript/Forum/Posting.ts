@@ -18,7 +18,7 @@ function forumPostingInit(): void
         markupButtons = document.querySelectorAll('.forum__post__action--tag');
 
     for(let i = 0; i < markupButtons.length; i++) {
-        let currentBtn = markupButtons[i];
+        let currentBtn = markupButtons[i] as HTMLDivElement;
         currentBtn.addEventListener('click', (ev) =>
             forumPostingInputMarkup(currentBtn.dataset.tagOpen, currentBtn.dataset.tagClose));
     }
@@ -153,8 +153,8 @@ function forumPostingPreview(
 }
 
 function forumPostingSwitchButtons(parser: Parser): void {
-    const bbcodeButtons = document.querySelector('.forum__post__actions--bbcode'),
-        markdownButtons = document.querySelector('.forum__post__actions--markdown');
+    const bbcodeButtons = document.querySelector('.forum__post__actions--bbcode') as HTMLElement,
+        markdownButtons = document.querySelector('.forum__post__actions--markdown') as HTMLElement;
 
     switch(parser) {
         default:
@@ -172,12 +172,17 @@ function forumPostingSwitchButtons(parser: Parser): void {
     }
 }
 
-function forumPostingInputMarkup(tagOpen: string, tagClose: string): void {
-    const editor = document.querySelector('.js-forum-posting-text');
+declare interface document {
+    selection: any;
+}
 
-    if(document.selection) {
+function forumPostingInputMarkup(tagOpen: string, tagClose: string): void {
+    const editor: HTMLTextAreaElement = document.querySelector('.js-forum-posting-text'),
+        doc = document as any;
+
+    if(doc.selection) {
         editor.focus();
-        let selected = document.selection.createRange();
+        let selected = doc.selection.createRange();
         selected.text = tagOpen + selected.text + tagClose;
         editor.focus();
     } else if(editor.selectionStart || editor.selectionStart === 0) {

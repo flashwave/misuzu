@@ -65,7 +65,6 @@
             'title': 'Search',
             'url': url('search-index'),
             'icon': 'fas fa-search fa-fw',
-            'display': current_user.perms.general|default(0)|perms_check(constant('MSZ_PERM_GENERAL_TESTER'))
         },
         {
             'title': 'Return to Site',
