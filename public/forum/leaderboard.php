@@ -16,9 +16,10 @@ $leaderboardIdLength = strlen($leaderboardId);
 $leaderboardYear = $leaderboardIdLength === 4 || $leaderboardIdLength === 6 ? substr($leaderboardId, 0, 4) : null;
 $leaderboardMonth = $leaderboardIdLength === 6 ? substr($leaderboardId, 4, 2) : null;
 
-$unranked = !empty($_GET['allow_unranked']) ? [] : config_get_default([], 'ForumLeaderboard', 'unranked');
+$unrankedForums = !empty($_GET['allow_unranked']) ? [] : config_get_default([], 'ForumLeaderboard', 'unranked_forum');
+$unrankedTopics = !empty($_GET['allow_unranked']) ? [] : config_get_default([], 'ForumLeaderboard', 'unranked_topic');
 $leaderboards = forum_leaderboard_categories();
-$leaderboard = forum_leaderboard_listing($leaderboardYear, $leaderboardMonth, $unranked);
+$leaderboard = forum_leaderboard_listing($leaderboardYear, $leaderboardMonth, $unrankedForums, $unrankedTopics);
 
 $leaderboardName = 'All Time';
 

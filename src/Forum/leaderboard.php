@@ -48,11 +48,12 @@ function forum_leaderboard_categories(): array
     return $categories;
 }
 
-function forum_leaderboard_listing(?int $year = null, ?int $month = null, array $unrankedIds = []): array
+function forum_leaderboard_listing(?int $year = null, ?int $month = null, array $unrankedForums = [], array $unrankedTopics = []): array
 {
     $hasYear = forum_leaderboard_year_valid($year);
     $hasMonth = $hasYear && forum_leaderboard_month_valid($year, $month);
-    $unrankedIds = implode(',', $unrankedIds);
+    $unrankedForums = implode(',', $unrankedForums);
+    $unrankedTopics = implode(',', $unrankedTopics);
 
     $rawLeaderboard = db_fetch_all(db_query(sprintf(
         '
@@ -63,13 +64,13 @@ function forum_leaderboard_listing(?int $year = null, ?int $month = null, array 
             INNER JOIN `msz_forum_posts` AS fp
             ON fp.`user_id` = u.`user_id`
             WHERE fp.`post_deleted` IS NULL
-            %s
-            %s
+            %s %s %s
             GROUP BY u.`user_id`
             HAVING `posts` > 0
             ORDER BY `posts` DESC
         ',
-        $unrankedIds ? sprintf('AND fp.`forum_id` NOT IN (%s)', $unrankedIds) : '',
+        $unrankedForums ? sprintf('AND fp.`forum_id` NOT IN (%s)', $unrankedForums) : '',
+        $unrankedTopics ? sprintf('AND fp.`topic_id` NOT IN (%s)', $unrankedTopics) : '',
         !$hasYear ? '' : sprintf(
             'AND DATE(fp.`post_created`) BETWEEN \'%1$04d-%2$02d-01\' AND \'%1$04d-%3$02d-31\'',
             $year,
