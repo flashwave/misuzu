@@ -452,6 +452,10 @@ MIG;
                     user_bump_last_active($cookieData['user_id']);
                     user_session_bump_active(user_session_current('session_id'));
 
+                    if(user_session_current('session_expires_bump')) {
+                        setcookie('msz_auth', $_COOKIE['msz_auth'], strtotime('1 month'), '/', '', true, true);
+                    }
+
                     $userDisplayInfo['perms'] = perms_get_user($userDisplayInfo['user_id']);
                     $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_BAN);
                     $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_SILENCE);
