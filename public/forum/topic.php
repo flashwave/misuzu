@@ -160,13 +160,7 @@ if (in_array($moderationMode, $validModerationModes, true)) {
             }
 
             if (!$isXHR) {
-                if (!$submissionConfirmed) {
-                    header("Location: " . url(
-                        'forum-topic',
-                        ['topic' => $topic['topic_id']]
-                    ));
-                    break;
-                } elseif (!isset($_GET['confirm'])) {
+                if (!isset($_GET['confirm'])) {
                     echo tpl_render('forum.confirm', [
                         'title' => 'Confirm topic deletion',
                         'class' => 'far fa-trash-alt',
@@ -176,6 +170,12 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                             'm' => 'delete',
                         ],
                     ]);
+                    break;
+                } elseif (!$submissionConfirmed) {
+                    header("Location: " . url(
+                        'forum-topic',
+                        ['topic' => $topic['topic_id']]
+                    ));
                     break;
                 }
             }
@@ -212,12 +212,7 @@ if (in_array($moderationMode, $validModerationModes, true)) {
             }
 
             if (!$isXHR) {
-                if (!$submissionConfirmed) {
-                    header("Location: " . url('forum-topic', [
-                        'topic' => $topic['topic_id'],
-                    ]));
-                    break;
-                } elseif (!isset($_GET['confirm'])) {
+                if (!isset($_GET['confirm'])) {
                     echo tpl_render('forum.confirm', [
                         'title' => 'Confirm topic restore',
                         'class' => 'fas fa-magic',
@@ -227,6 +222,11 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                             'm' => 'restore',
                         ],
                     ]);
+                    break;
+                } elseif (!$submissionConfirmed) {
+                    header("Location: " . url('forum-topic', [
+                        'topic' => $topic['topic_id'],
+                    ]));
                     break;
                 }
             }
@@ -255,12 +255,7 @@ if (in_array($moderationMode, $validModerationModes, true)) {
             }
 
             if (!$isXHR) {
-                if (!$submissionConfirmed) {
-                    header('Location: ' . url('forum-topic', [
-                        'topic' => $topic['topic_id'],
-                    ]));
-                    break;
-                } elseif (!isset($_GET['confirm'])) {
+                if (!isset($_GET['confirm'])) {
                     echo tpl_render('forum.confirm', [
                         'title' => 'Confirm topic nuke',
                         'class' => 'fas fa-radiation',
@@ -270,6 +265,11 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                             'm' => 'nuke',
                         ],
                     ]);
+                    break;
+                } elseif (!$submissionConfirmed) {
+                    header('Location: ' . url('forum-topic', [
+                        'topic' => $topic['topic_id'],
+                    ]));
                     break;
                 }
             }
