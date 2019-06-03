@@ -1,7 +1,7 @@
 <?php
-define('MSZ_TOPIC_TITLE_LENGTH_MIN', 2);
+define('MSZ_TOPIC_TITLE_LENGTH_MIN', 3);
 define('MSZ_TOPIC_TITLE_LENGTH_MAX', 100);
-define('MSZ_POST_TEXT_LENGTH_MIN', 2);
+define('MSZ_POST_TEXT_LENGTH_MIN', 1);
 define('MSZ_POST_TEXT_LENGTH_MAX', 60000);
 
 function forum_validate_title(string $title): string
