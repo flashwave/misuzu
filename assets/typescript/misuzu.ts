@@ -98,6 +98,9 @@ window.addEventListener('load', () => {
             ctrlSubmit[i].addEventListener('keydown', ev => {
                 if (ev.code === 'Enter' /* i hate this fucking language so much */
                     && ev.ctrlKey && !ev.altKey && !ev.shiftKey && !ev.metaKey) {
+                    // for a hackjob
+                    forumPostingCloseOK = true;
+
                     ctrlSubmit[i].form.submit();
                     ev.preventDefault();
                 }

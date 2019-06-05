@@ -1,5 +1,7 @@
 /// <reference path="../Parser.ts" />
 
+let forumPostingCloseOK: boolean = false;
+
 function forumPostingInit(): void
 {
     const postingForm: HTMLDivElement = document.querySelector('.js-forum-posting');
@@ -18,7 +20,7 @@ function forumPostingInit(): void
         markupButtons = document.querySelectorAll('.forum__post__action--tag');
 
     window.addEventListener("beforeunload", (e) => {
-        if (postingText.value.length > 0) {
+        if (!forumPostingCloseOK && postingText.value.length > 0) {
             const message: string = 'Are you sure you want to close the tab?';
             e.returnValue = message;
             return message;
