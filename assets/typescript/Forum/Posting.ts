@@ -20,7 +20,7 @@ function forumPostingInit(): void
     window.addEventListener("beforeunload", (e) => {
         if (postingText.value.length > 0) {
             const message: string = 'Are you sure you want to close the tab?';
-            e.returnValue = 'Are you sure you want to close the tab?';
+            e.returnValue = message;
             return message;
         }
     });
