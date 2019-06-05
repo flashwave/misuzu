@@ -11,17 +11,6 @@ define('MSZ_USER_PROFILE_FIELD_SET_ERRORS', [
 
 define('MSZ_USER_PROFILE_FIELD_FORMAT', 'user_%s');
 define('MSZ_USER_PROFILE_FIELDS', [
-    'twitter' => [
-        'name' => 'Twitter',
-        'regex' => '#^(?:https?://(?:www\.)?twitter.com/(?:\#!\/)?)?@?([A-Za-z0-9_]{1,20})/?$#u',
-        'link' => 'https://twitter.com/%s',
-        'format' => '@%s',
-    ],
-    'osu' => [
-        'name' => 'osu!',
-        'regex' => '#^(?:https?://osu.ppy.sh/u(?:sers)?/)?([a-zA-Z0-9-\[\]_ ]{1,20})/?$#u',
-        'link' => 'https://osu.ppy.sh/users/%s',
-    ],
     'website' => [
         'name' => 'Website',
         'type' => 'url',
@@ -41,10 +30,11 @@ define('MSZ_USER_PROFILE_FIELDS', [
             'UC[a-zA-Z0-9-_]{1,22}' => 'Go to Channel',
         ],
     ],
-    'steam' => [
-        'name' => 'Steam',
-        'regex' => '#^(?:https?://(?:www.)?steamcommunity.com/(?:id|profiles)/)?([a-zA-Z0-9_-]{2,100})/?$#u',
-        'link' => 'https://steamcommunity.com/id/%s',
+    'twitter' => [
+        'name' => 'Twitter',
+        'regex' => '#^(?:https?://(?:www\.)?twitter.com/(?:\#!\/)?)?@?([A-Za-z0-9_]{1,20})/?$#u',
+        'link' => 'https://twitter.com/%s',
+        'format' => '@%s',
     ],
     'ninswitch' => [
         'name' => 'Nintendo Switch',
@@ -55,6 +45,16 @@ define('MSZ_USER_PROFILE_FIELDS', [
         'name' => 'Twitch.tv',
         'regex' => '#^(?:https?://(?:www.)?twitch.tv/)?([0-9A-Za-z_]{3,25})/?$#u',
         'link' => 'https://twitch.tv/%s',
+    ],
+    'steam' => [
+        'name' => 'Steam',
+        'regex' => '#^(?:https?://(?:www.)?steamcommunity.com/(?:id|profiles)/)?([a-zA-Z0-9_-]{2,100})/?$#u',
+        'link' => 'https://steamcommunity.com/id/%s',
+    ],
+    'osu' => [
+        'name' => 'osu!',
+        'regex' => '#^(?:https?://osu.ppy.sh/u(?:sers)?/)?([a-zA-Z0-9-\[\]_ ]{1,20})/?$#u',
+        'link' => 'https://osu.ppy.sh/users/%s',
     ],
     'lastfm' => [
         'name' => 'Last.fm',
