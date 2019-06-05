@@ -17,6 +17,14 @@ function forumPostingInit(): void
         markdownButtons = document.querySelector('.forum__post__actions--markdown'),
         markupButtons = document.querySelectorAll('.forum__post__action--tag');
 
+    window.addEventListener("beforeunload", (e) => {
+        if (postingText.value.length > 0) {
+            const message: string = 'Are you sure you want to close the tab?';
+            e.returnValue = 'Are you sure you want to close the tab?';
+            return message;
+        }
+    });
+
     for(let i = 0; i < markupButtons.length; i++) {
         let currentBtn = markupButtons[i] as HTMLDivElement;
         currentBtn.addEventListener('click', (ev) =>
