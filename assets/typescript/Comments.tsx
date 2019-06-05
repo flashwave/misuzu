@@ -187,146 +187,69 @@ function commentInputEventHandler(ev: KeyboardEvent): void {
 }
 
 function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElement {
-    const commentElement: HTMLDivElement = document.createElement('div');
-    commentElement.className = 'comment';
-    commentElement.id = 'comment-' + comment.comment_id;
+    const commentDate = new Date(comment.comment_created + 'Z'),
+        commentTime: HTMLElement = <time class="comment__date" title={commentDate.toLocaleString()} dateTime={commentDate.toISOString()}>{timeago.format(commentDate)}</time>;
+    let actions: HTMLElement[] = [];
 
-    // layer 2
-    const commentContainer: HTMLDivElement = commentElement.appendChild(document.createElement('div'));
-    commentContainer.className = 'comment__container';
+    if (checkUserPerm('comments', CommentPermission.Vote)) {
+        actions.push(<a class="comment__action comment__action--link comment__action--vote comment__action--like"
+            data-comment-id={comment.comment_id} data-comment-vote={CommentVoteType.Like}
+            href="javascript:void(0);" onClick={commentVoteEventHandler}>Like</a>);
+        actions.push(<a class="comment__action comment__action--link comment__action--vote comment__action--dislike"
+            data-comment-id={comment.comment_id} data-comment-vote={CommentVoteType.Dislike}
+            href="javascript:void(0);" onClick={commentVoteEventHandler}>Dislike</a>);
+    }
 
-    const commentReplies: HTMLDivElement = commentElement.appendChild(document.createElement('div'));
-    commentReplies.className = 'comment__replies comment__replies--indent-' + layer;
-    commentReplies.id = commentElement.id + '-replies';
-
-    // container
-    const commentAvatar: HTMLAnchorElement = commentContainer.appendChild(document.createElement('a'));
-    commentAvatar.className = 'avatar comment__avatar';
-    commentAvatar.href = urlFormat('user-profile', [{name:'user',value:comment.user_id}]);
-    commentAvatar.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [
-        { name: 'user', value: comment.user_id },
-        { name: 'res', value: layer < 1 ? 100 : 80 }
-    ]));
-
-    const commentContent: HTMLDivElement = commentContainer.appendChild(document.createElement('div'));
-    commentContent.className = 'comment__content';
-
-    // content
-    const commentInfo = commentContent.appendChild(document.createElement('div'));
-    commentInfo.className = 'comment__info';
-
-    const commentText = commentContent.appendChild(document.createElement('div'));
-    commentText.className = 'comment__text';
+    const commentText: HTMLDivElement = <div class="comment__text"></div>;
 
     if (comment.comment_html)
         commentText.innerHTML = comment.comment_html;
     else
         commentText.textContent = comment.comment_text;
 
-    const commentActions = commentContent.appendChild(document.createElement('div'));
-    commentActions.className = 'comment__actions';
+    const commentElement: HTMLDivElement = <div class="comment" id={"comment-" + comment.comment_id}>
+        <div class="comment__container">
+            <a class="avatar comment__avatar" href={urlFormat('user-profile', [{name:'user',value:comment.user_id}])}
+                style={"background-image: url('{0}')".replace('{0}', urlFormat('user-avatar', [
+                    { name: 'user', value: comment.user_id },
+                    { name: 'res', value: layer < 1 ? 100 : 80 }
+                ]))}></a>
+            <div class="comment__content">
+                <div class="comment__info">
+                    <a class="comment__user comment__user--link" href={urlFormat('user-profile', [{name:'user',value:comment.user_id}])}
+                        style={"--user-colour: " + colourGetCSS(comment.user_colour)}>{comment.username}</a>
+                    <a class="comment__link" href={"#comment-" + comment.comment_id}>{commentTime}</a>
+                </div>
+                {commentText}
+                <div class="comment__actions">
+                    {actions}
+                    <label class="comment__action comment__action--link" for={"comment-reply-toggle-" + comment.comment_id}>Reply</label>
+                </div>
+            </div>
+        </div>
+        <div class={"comment__replies comment__replies--indent-" + layer} id={"comment-" + comment.comment_id + "-replies"}>
+            <input type="checkbox" id={"comment-reply-toggle-" + comment.comment_id} class="comment__reply-toggle" />
+            <form id={"comment-reply-" + comment.comment_id} class="comment comment--input comment--reply" method="post"
+                action="javascript:void(0);" onSubmit={commentPostEventHandler}>
+                <input type="hidden" name="comment[category]" value={comment.category_id} />
+                <input type="hidden" name="csrf[comments]" value={getCSRFToken('comments')} />
+                <input type="hidden" name="comment[reply]" value={comment.comment_id} />
+                <div class="comment__container">
+                    <div class="avatar comment__avatar"
+                        style={"background-image: url('{0}')".replace('{0}', urlFormat('user-avatar', [{name:'user',value:comment.user_id},{name:'res',value:80}]))}></div>
+                    <div class="comment__content">
+                        <div class="comment__info"></div>
+                        <textarea class="comment__text input__textarea comment__text--input" name="comment[text]" placeholder="Share your extensive insights..." onKeyDown={commentInputEventHandler}></textarea>
+                        <div class="comment__actions">
+                            <button class="input__button comment__action comment__action--button comment__action--post">Reply</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>;
 
-    // info
-    const commentUser: HTMLAnchorElement = commentInfo.appendChild(document.createElement('a'));
-    commentUser.className = 'comment__user comment__user--link';
-    commentUser.textContent = comment.username;
-    commentUser.href = '/profile?u=' + comment.user_id;
-    commentUser.style.setProperty('--user-colour', colourGetCSS(comment.user_colour));
-
-    const commentLink: HTMLAnchorElement = commentInfo.appendChild(document.createElement('a'));
-    commentLink.className = 'comment__link';
-    commentLink.href = '#' + commentElement.id;
-
-    const commentTime: HTMLTimeElement = commentLink.appendChild(document.createElement('time')),
-        commentDate = new Date(comment.comment_created + 'Z');
-    commentTime.className = 'comment__date';
-    commentTime.title = commentDate.toLocaleString();
-    commentTime.dateTime = commentDate.toISOString();
-    commentTime.textContent = timeago.format(commentDate);
     timeago.render(commentTime);
-
-    // actions
-    if (checkUserPerm('comments', CommentPermission.Vote)) {
-        const commentLike: HTMLAnchorElement = commentActions.appendChild(document.createElement('a'));
-        commentLike.dataset['commentId'] = comment.comment_id.toString();
-        commentLike.dataset['commentVote'] = CommentVoteType.Like.toString();
-        commentLike.className = 'comment__action comment__action--link comment__action--vote comment__action--like';
-        commentLike.href = 'javascript:void(0);';
-        commentLike.textContent = 'Like';
-        commentLike.addEventListener('click', commentVoteEventHandler);
-
-        const commentDislike: HTMLAnchorElement = commentActions.appendChild(document.createElement('a'));
-        commentDislike.dataset['commentId'] = comment.comment_id.toString();
-        commentDislike.dataset['commentVote'] = CommentVoteType.Dislike.toString();
-        commentDislike.className = 'comment__action comment__action--link comment__action--vote comment__action--dislike';
-        commentDislike.href = 'javascript:void(0);';
-        commentDislike.textContent = 'Dislike';
-        commentDislike.addEventListener('click', commentVoteEventHandler);
-    }
-
-    // if we're executing this it's fairly obvious that we can reply,
-    // so no need to have a permission check on it here
-    const commentReply: HTMLLabelElement = commentActions.appendChild(document.createElement('label'));
-    commentReply.className = 'comment__action comment__action--link';
-    commentReply.htmlFor = 'comment-reply-toggle-' + comment.comment_id;
-    commentReply.textContent = 'Reply';
-
-    // reply section
-    const commentReplyState: HTMLInputElement = commentReplies.appendChild(document.createElement('input'));
-    commentReplyState.id = commentReply.htmlFor;
-    commentReplyState.type = 'checkbox';
-    commentReplyState.className = 'comment__reply-toggle';
-
-    const commentReplyInput: HTMLFormElement = commentReplies.appendChild(document.createElement('form'));
-    commentReplyInput.id = 'comment-reply-' + comment.comment_id;
-    commentReplyInput.className = 'comment comment--input comment--reply';
-    commentReplyInput.method = 'post';
-    commentReplyInput.action = 'javascript:void(0);';
-    commentReplyInput.addEventListener('submit', commentPostEventHandler);
-
-    // reply attributes
-    const replyCategory: HTMLInputElement = commentReplyInput.appendChild(document.createElement('input'));
-    replyCategory.name = 'comment[category]';
-    replyCategory.value = comment.category_id.toString();
-    replyCategory.type = 'hidden';
-
-    const replyCsrf: HTMLInputElement = commentReplyInput.appendChild(document.createElement('input'));
-    replyCsrf.name = 'csrf[comments]';
-    replyCsrf.value = getCSRFToken('comments');
-    replyCsrf.type = 'hidden';
-
-    const replyId: HTMLInputElement = commentReplyInput.appendChild(document.createElement('input'));
-    replyId.name = 'comment[reply]';
-    replyId.value = comment.comment_id.toString();
-    replyId.type = 'hidden';
-
-    const replyContainer: HTMLDivElement = commentReplyInput.appendChild(document.createElement('div'));
-    replyContainer.className = 'comment__container';
-
-    // reply container
-    const replyAvatar: HTMLDivElement = replyContainer.appendChild(document.createElement('div'));
-    replyAvatar.className = 'avatar comment__avatar';
-    replyAvatar.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [{name:'user',value:comment.user_id},{name:'res',value:80}]));
-
-    const replyContent: HTMLDivElement = replyContainer.appendChild(document.createElement('div'));
-    replyContent.className = 'comment__content';
-
-    // reply content
-    const replyInfo: HTMLDivElement = replyContent.appendChild(document.createElement('div'));
-    replyInfo.className = 'comment__info';
-
-    const replyText: HTMLTextAreaElement = replyContent.appendChild(document.createElement('textarea'));
-    replyText.className = 'comment__text input__textarea comment__text--input';
-    replyText.name = 'comment[text]';
-    replyText.placeholder = 'Share your extensive insights...';
-    replyText.addEventListener('keydown', commentInputEventHandler);
-
-    const replyActions: HTMLDivElement = replyContent.appendChild(document.createElement('div'));
-    replyActions.className = 'comment__actions';
-
-    const replyButton: HTMLButtonElement = replyActions.appendChild(document.createElement('button'));
-    replyButton.className = 'input__button comment__action comment__action--button comment__action--post';
-    replyButton.textContent = 'Reply';
 
     return commentElement;
 }

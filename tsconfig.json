@@ -2,6 +2,8 @@
     "compilerOptions": {
         "target": "es6",
         "module": "amd",
+        "jsx": "react",
+        "jsxFactory": "mszCreateElement",
         "removeComments": true,
         "preserveConstEnums": true,
         "out": "./public/js/misuzu.js",

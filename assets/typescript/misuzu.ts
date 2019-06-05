@@ -2,7 +2,7 @@
 /// <reference path="Colour.ts" />
 /// <reference path="Support.ts" />
 /// <reference path="Permissions.ts" />
-/// <reference path="Comments.ts" />
+/// <reference path="Comments.tsx" />
 /// <reference path="Common.ts" />
 /// <reference path="FormUtilities.ts" />
 /// <reference path="UserRelations.ts" />
@@ -14,6 +14,49 @@ declare const timeago: any;
 declare const hljs: any;
 
 let loginFormAvatarTimeout: number = 0;
+
+function mszCreateElement(type: string, properties: {} = {}, children: any[] = []): HTMLElement {
+    const element: HTMLElement = document.createElement(type);
+
+    if(!Array.isArray(children))
+        children = [children];
+
+    if(arguments.length > 3)
+        for(let i = 3; i < arguments.length; i++)
+            children.push(arguments[i]);
+
+    if(properties)
+        for(let prop in properties) {
+            switch(typeof properties[prop]) {
+                case 'function':
+                    element.addEventListener(
+                        prop.substring(0, 2) === 'on'
+                            ? prop.substring(2).toLowerCase()
+                            : prop,
+                        properties[prop]
+                    );
+                    break;
+                default:
+                    element.setAttribute(prop, properties[prop]);
+                    break;
+            }
+        }
+
+    if(children)
+        for(let child in children as []) {
+            switch(typeof children[child]) {
+                case 'string':
+                    element.appendChild(document.createTextNode(children[child]));
+                    break;
+                default:
+                    if(children[child] instanceof Element)
+                        element.appendChild(children[child]);
+                    break;
+            }
+        }
+
+    return element;
+}
 
 // Initialisation process.
 window.addEventListener('load', () => {
