@@ -7,9 +7,9 @@ $isEditing = !empty($_GET['edit']) && is_string($_GET['edit']) ? (bool)$_GET['ed
 
 $userId = user_find_for_profile($userId);
 
-if ($userId < 1) {
+if($userId < 1) {
     http_response_code(404);
-    echo tpl_render('user.notfound');
+    echo tpl_render('profile.index');
     return;
 }
 

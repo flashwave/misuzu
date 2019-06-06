@@ -3,8 +3,12 @@
 {% from 'user/macros.twig' import user_profile_warning %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox, input_file, input_file_raw, input_select %}
 
-{% set canonical_url = url('user-profile', {'user': profile.user_id}) %}
-{% set title = profile.username %}
+{% if profile is defined %}
+    {% set canonical_url = url('user-profile', {'user': profile.user_id}) %}
+    {% set title = profile.username %}
+{% else %}
+    {% set title = 'User not found!' %}
+{% endif %}
 
 {% block content %}
     {% if profile_is_editing %}
@@ -169,90 +173,92 @@
                     </div>
                 {% endif %}
 
-                <div class="profile__content__main">
-                    {% if (profile_is_editing and perms.edit_about) or profile.user_about_content|length > 0 %}
-                        <div class="container profile__container profile__about" id="about">
-                            {{ container_title('About ' ~ profile.username) }}
+                {% if profile is defined %}
+                    <div class="profile__content__main">
+                        {% if (profile_is_editing and perms.edit_about) or profile.user_about_content|length > 0 %}
+                            <div class="container profile__container profile__about" id="about">
+                                {{ container_title('About ' ~ profile.username) }}
 
-                            {% if profile_is_editing %}
-                                <div class="profile__signature__editor">
-                                    {{ input_select('about[parser]', constant('MSZ_PARSERS_NAMES'), profile.user_about_parser, '', '', false, 'profile__about__select') }}
-                                    <textarea name="about[text]" class="input__textarea profile__about__text" id="about-textarea">{{ profile.user_about_content|escape }}</textarea>
-                                </div>
-                            {% else %}
-                                <div class="profile__about__content{% if profile_is_editing %} profile__about__content--edit{% elseif profile.user_about_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
-                                    {{ profile.user_about_content|escape|parse_text(profile.user_about_parser)|raw }}
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-
-                    {% if (profile_is_editing and perms.edit_signature) or profile.user_signature_content|length > 0 %}
-                        <div class="container profile__container profile__signature" id="signature">
-                            {{ container_title('Signature') }}
-
-                            {% if profile_is_editing %}
-                                <div class="profile__signature__editor">
-                                    {{ input_select('signature[parser]', constant('MSZ_PARSERS_NAMES'), profile.user_signature_parser, '', '', false, 'profile__signature__select') }}
-                                    <textarea name="signature[text]" class="input__textarea profile__signature__text" id="signature-textarea">{{ profile.user_signature_content|escape }}</textarea>
-                                </div>
-                            {% else %}
-                                <div class="profile__signature__content{% if profile_is_editing %} profile__signature__content--edit{% elseif profile.user_signature_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
-                                {{ profile.user_signature_content|escape|parse_text(profile.user_signature_parser)|raw }}
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-
-                    {% if profile_warnings|length > 0 %}
-                        <div class="container profile__container profile__warning__container" id="account-standing">
-                            {{ container_title('Account Standing', false, profile_warnings_can_manage ? '/manage/users.php?v=warnings&u=' ~ profile.user_id : '') }}
-
-                            <div class="profile__warning">
-                                <div class="profile__warning__background"></div>
-
-                                {% if profile_warnings_can_manage %}
-                                    <div class="profile__warning__tools">
-                                        <div class="profile__warning__user">
-                                            <div class="profile__warning__user__ip">
-                                                User IP
-                                            </div>
-                                        </div>
-
-                                        <div class="profile__warning__user">
-                                            <div class="profile__warning__user__username">
-                                                Issuer
-                                            </div>
-                                            <div class="profile__warning__user__ip">
-                                                Issuer IP
-                                            </div>
-                                        </div>
+                                {% if profile_is_editing %}
+                                    <div class="profile__signature__editor">
+                                        {{ input_select('about[parser]', constant('MSZ_PARSERS_NAMES'), profile.user_about_parser, '', '', false, 'profile__about__select') }}
+                                        <textarea name="about[text]" class="input__textarea profile__about__text" id="about-textarea">{{ profile.user_about_content|escape }}</textarea>
+                                    </div>
+                                {% else %}
+                                    <div class="profile__about__content{% if profile_is_editing %} profile__about__content--edit{% elseif profile.user_about_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
+                                        {{ profile.user_about_content|escape|parse_text(profile.user_about_parser)|raw }}
                                     </div>
                                 {% endif %}
+                            </div>
+                        {% endif %}
 
-                                <div class="profile__warning__content">
-                                    <div class="profile__warning__type">
-                                        Type
+                        {% if (profile_is_editing and perms.edit_signature) or profile.user_signature_content|length > 0 %}
+                            <div class="container profile__container profile__signature" id="signature">
+                                {{ container_title('Signature') }}
+
+                                {% if profile_is_editing %}
+                                    <div class="profile__signature__editor">
+                                        {{ input_select('signature[parser]', constant('MSZ_PARSERS_NAMES'), profile.user_signature_parser, '', '', false, 'profile__signature__select') }}
+                                        <textarea name="signature[text]" class="input__textarea profile__signature__text" id="signature-textarea">{{ profile.user_signature_content|escape }}</textarea>
                                     </div>
-
-                                    <div class="profile__warning__created">
-                                        Created
+                                {% else %}
+                                    <div class="profile__signature__content{% if profile_is_editing %} profile__signature__content--edit{% elseif profile.user_signature_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
+                                    {{ profile.user_signature_content|escape|parse_text(profile.user_signature_parser)|raw }}
                                     </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
 
-                                    <div class="profile__warning__duration">
-                                        Expires
-                                    </div>
+                        {% if profile_warnings|length > 0 %}
+                            <div class="container profile__container profile__warning__container" id="account-standing">
+                                {{ container_title('Account Standing', false, profile_warnings_can_manage ? '/manage/users.php?v=warnings&u=' ~ profile.user_id : '') }}
 
-                                    <div class="profile__warning__note">
-                                        Note
+                                <div class="profile__warning">
+                                    <div class="profile__warning__background"></div>
+
+                                    {% if profile_warnings_can_manage %}
+                                        <div class="profile__warning__tools">
+                                            <div class="profile__warning__user">
+                                                <div class="profile__warning__user__ip">
+                                                    User IP
+                                                </div>
+                                            </div>
+
+                                            <div class="profile__warning__user">
+                                                <div class="profile__warning__user__username">
+                                                    Issuer
+                                                </div>
+                                                <div class="profile__warning__user__ip">
+                                                    Issuer IP
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="profile__warning__content">
+                                        <div class="profile__warning__type">
+                                            Type
+                                        </div>
+
+                                        <div class="profile__warning__created">
+                                            Created
+                                        </div>
+
+                                        <div class="profile__warning__duration">
+                                            Expires
+                                        </div>
+
+                                        <div class="profile__warning__note">
+                                            Note
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {% for warning in profile_warnings %}
-                                {{ user_profile_warning(warning, profile_warnings_view_private, profile_warnings_can_manage, profile_warnings_can_manage ? csrf_token('warning-delete[%d]'|format(warning.warning_id)) : '') }}
-                            {% endfor %}
-                        </div>
+                                {% for warning in profile_warnings %}
+                                    {{ user_profile_warning(warning, profile_warnings_view_private, profile_warnings_can_manage, profile_warnings_can_manage ? csrf_token('warning-delete[%d]'|format(warning.warning_id)) : '') }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>

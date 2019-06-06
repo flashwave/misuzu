@@ -28,25 +28,34 @@
         </div>
 
         <div class="profile__header__details__content">
-            <div class="profile__header__username" style="{{ profile.user_colour|html_colour }}">
-                {{ profile.username }}
-            </div>
+            {% if profile is defined %}
+                <div class="profile__header__username" style="{{ profile.user_colour|html_colour }}">
+                    {{ profile.username }}
+                </div>
 
-            {% if profile.user_title is not empty %}
+                {% if profile.user_title is not empty %}
+                    <div class="profile__header__title">
+                        {{ profile.user_title }}
+                    </div>
+                {% endif %}
+
+                <div class="profile__header__country">
+                    <div class="flag flag--{{ profile.user_country|lower }}"></div>
+                    <div class="profile__header__country__name">
+                        {{ profile.user_country|country_name }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="profile__header__username">
+                    User not found!
+                </div>
                 <div class="profile__header__title">
-                    {{ profile.user_title }}
+                    Check the link and try again.
                 </div>
             {% endif %}
-
-            <div class="profile__header__country">
-                <div class="flag flag--{{ profile.user_country|lower }}"></div>
-                <div class="profile__header__country__name">
-                    {{ profile.user_country|country_name }}
-                </div>
-            </div>
         </div>
 
-        {% if profile_relation_info|length > 0 and (profile_relation_info.subject_relation is not null or profile_relation_info.user_relation is not null) %}
+        {% if profile is defined and profile_relation_info|length > 0 and (profile_relation_info.subject_relation is not null or profile_relation_info.user_relation is not null) %}
             <div class="profile__header__details__relation" title="Since {{ profile_relation_info.relation_created|date('r') }}">
                 {% if profile_relation_info.subject_relation and profile_relation_info.user_relation %}
                     Mutual Friends
@@ -60,27 +69,29 @@
     </div>
 
     <div class="profile__header__options">
-        <div class="profile__header__actions">
-            {% if profile_mode is empty %}
-                {% if profile_is_editing %}
-                    <button class="input__button input__button--save profile__header__action">Save</button>
-                    <a href="{{ url('user-profile', {'user': profile.user_id}) }}" class="input__button input__button--destroy profile__header__action">Discard</a>
-                    <a href="{{ url('settings-index') }}" class="input__button profile__header__action">Settings</a>
-                {% elseif profile_can_edit %}
-                    <a href="{{ url('user-profile-edit', {'user': profile.user_id}) }}" class="input__button profile__header__action">Edit Profile</a>
-                {% endif %}
-
-                {% if current_user is defined and current_user.user_id != profile.user_id and not profile_is_editing %}
-                    {% if profile_relation_info.user_relation == constant('MSZ_USER_RELATION_FOLLOW') %}
-                        <a href="{{ url('user-relation-none', {'user': profile.user_id}) }}" class="input__button input__button--destroy profile__header__action js-user-relation-action" data-relation-user="{{ profile.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_NONE') }}">Unfollow</a>
-                    {% else %}
-                        <a href="{{ url('user-relation-follow', {'user': profile.user_id}) }}" class="input__button profile__header__action js-user-relation-action" data-relation-user="{{ profile.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_FOLLOW') }}">Follow</a>
+        {% if profile is defined %}
+            <div class="profile__header__actions">
+                {% if profile_mode is empty %}
+                    {% if profile_is_editing %}
+                        <button class="input__button input__button--save profile__header__action">Save</button>
+                        <a href="{{ url('user-profile', {'user': profile.user_id}) }}" class="input__button input__button--destroy profile__header__action">Discard</a>
+                        <a href="{{ url('settings-index') }}" class="input__button profile__header__action">Settings</a>
+                    {% elseif profile_can_edit %}
+                        <a href="{{ url('user-profile-edit', {'user': profile.user_id}) }}" class="input__button profile__header__action">Edit Profile</a>
                     {% endif %}
+
+                    {% if current_user is defined and current_user.user_id != profile.user_id and not profile_is_editing %}
+                        {% if profile_relation_info.user_relation == constant('MSZ_USER_RELATION_FOLLOW') %}
+                            <a href="{{ url('user-relation-none', {'user': profile.user_id}) }}" class="input__button input__button--destroy profile__header__action js-user-relation-action" data-relation-user="{{ profile.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_NONE') }}">Unfollow</a>
+                        {% else %}
+                            <a href="{{ url('user-relation-follow', {'user': profile.user_id}) }}" class="input__button profile__header__action js-user-relation-action" data-relation-user="{{ profile.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_FOLLOW') }}">Follow</a>
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url('user-profile', {'user': profile.user_id}) }}" class="input__button profile__header__action">Return</a>
                 {% endif %}
-            {% else %}
-                <a href="{{ url('user-profile', {'user': profile.user_id}) }}" class="input__button profile__header__action">Return</a>
-            {% endif %}
-        </div>
+            </div>
+        {% endif %}
 
         {% if stats is defined %}
             <div class="profile__header__stats">

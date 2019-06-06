@@ -1,48 +1,55 @@
 {% extends 'master.twig' %}
 
-{% set image = url('user-avatar', {'user': profile.user_id, 'res': 240}) %}
-{% set manage_link = '/manage/users.php?v=view&u=' ~ profile.user_id %}
-{% set stats = [
-    {
-        'title': 'Joined',
-        'is_date': true,
-        'value': profile.user_created,
-    },
-    {
-        'title': 'Last seen',
-        'is_date': true,
-        'value': profile.user_active,
-    },
-    {
-        'title': 'Following',
-        'value': profile.following_count,
-        'url': url('user-profile-following', {'user': profile.user_id}),
-        'active': profile_mode == 'following',
-    },
-    {
-        'title': 'Followers',
-        'value': profile.followers_count,
-        'url': url('user-profile-followers', {'user': profile.user_id}),
-        'active': profile_mode == 'followers',
-    },
-    {
-        'title': 'Topics',
-        'value': profile.forum_topic_count,
-        'url': url('user-profile-forum-topics', {'user': profile.user_id}),
-        'active': profile_mode == 'forum-topics',
-    },
-    {
-        'title': 'Posts',
-        'value': profile.forum_post_count,
-        'url': url('user-profile-forum-posts', {'user': profile.user_id}),
-        'active': profile_mode == 'forum-posts',
-    },
-    {
-        'title': 'Comments',
-        'value': profile.comments_count,
-    },
-    {
-        'title': 'Changes',
-        'value': profile.changelog_count,
-    },
-] %}
+{% if profile is defined %}
+    {% set image = url('user-avatar', {'user': profile.user_id, 'res': 240}) %}
+    {% set manage_link = '/manage/users.php?v=view&u=' ~ profile.user_id %}
+    {% set stats = [
+        {
+            'title': 'Joined',
+            'is_date': true,
+            'value': profile.user_created,
+        },
+        {
+            'title': 'Last seen',
+            'is_date': true,
+            'value': profile.user_active,
+        },
+        {
+            'title': 'Following',
+            'value': profile.following_count,
+            'url': url('user-profile-following', {'user': profile.user_id}),
+            'active': profile_mode == 'following',
+        },
+        {
+            'title': 'Followers',
+            'value': profile.followers_count,
+            'url': url('user-profile-followers', {'user': profile.user_id}),
+            'active': profile_mode == 'followers',
+        },
+        {
+            'title': 'Topics',
+            'value': profile.forum_topic_count,
+            'url': url('user-profile-forum-topics', {'user': profile.user_id}),
+            'active': profile_mode == 'forum-topics',
+        },
+        {
+            'title': 'Posts',
+            'value': profile.forum_post_count,
+            'url': url('user-profile-forum-posts', {'user': profile.user_id}),
+            'active': profile_mode == 'forum-posts',
+        },
+        {
+            'title': 'Comments',
+            'value': profile.comments_count,
+        },
+        {
+            'title': 'Changes',
+            'value': profile.changelog_count,
+        },
+    ] %}
+{% else %}
+    {% set image = url('user-avatar', {'user': 0, 'res': 240}) %}
+    {% set manage_link = '/manage/users.php?v=listing' %}
+    {% set profile_is_editing = false %}
+    {% set profile_notices = [] %}
+{% endif %}
