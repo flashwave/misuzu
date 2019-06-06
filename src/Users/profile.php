@@ -224,11 +224,13 @@ function user_profile_get(int $userId): array
                         SELECT COUNT(`topic_id`)
                         FROM `msz_forum_topics`
                         WHERE `user_id` = u.`user_id`
+                        AND `topic_deleted` IS NULL
                     ) AS `forum_topic_count`,
                     (
                         SELECT COUNT(`post_id`)
                         FROM `msz_forum_posts`
                         WHERE `user_id` = u.`user_id`
+                        AND `post_deleted` IS NULL
                     ) AS `forum_post_count`,
                     (
                         SELECT COUNT(`change_id`)
@@ -239,6 +241,7 @@ function user_profile_get(int $userId): array
                         SELECT COUNT(`comment_id`)
                         FROM `msz_comments_posts`
                         WHERE `user_id` = u.`user_id`
+                        AND `comment_deleted` IS NULL
                     ) AS `comments_count`,
                     (
                         SELECT COUNT(`user_id`)
