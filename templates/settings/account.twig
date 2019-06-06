@@ -1,0 +1,144 @@
+{% extends 'settings/master.twig' %}
+{% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_select %}
+
+{% set title = 'Settings / Account' %}
+
+{% block settings_content %}
+    <form action="{{ url('settings-account') }}" method="post" class="container settings__container">
+        {{ container_title('<i class="fas fa-user fa-fw"></i> Account') }}
+        {{ input_csrf('settings') }}
+
+        <div class="settings__description">
+            <p>Here you can change your e-mail address and/or your password, please make sure your e-mail is accurate and your password is strong in order to protect your account. For convenience your current e-mail address is displayed. You are required to verify yourself by entering your current password to change either value.</p>
+        </div>
+
+        <div class="settings__account">
+            <div class="settings__account__section">
+                <label class="settings__account__input">
+                    <div class="settings__account__title">
+                        New e-mail address
+                    </div>
+                    {{ input_text('email[new]', 'settings__account__input', '', 'email', current_email) }}
+                </label>
+
+                <label class="settings__account__input">
+                    <div class="settings__account__title">
+                        Confirm new e-mail address
+                    </div>
+                    {{ input_text('email[confirm]', 'settings__account__input', '', 'email') }}
+                </label>
+            </div>
+
+            <div class="settings__account__section">
+                <label class="settings__account__input">
+                    <div class="settings__account__title">
+                        New password
+                    </div>
+                    {{ input_text('password[new]', 'settings__account__input', '', 'password') }}
+                </label>
+
+                <label class="settings__account__input">
+                    <div class="settings__account__title">
+                        Confirm new password
+                    </div>
+                    {{ input_text('password[confirm]', 'settings__account__input', '', 'password') }}
+                </label>
+            </div>
+
+            <div class="settings__account__section settings__account__section--confirm">
+                <label class="settings__account__input">
+                    <div class="settings__account__title">
+                        Current password
+                    </div>
+                    {{ input_text('current_password', 'settings__account__input', '', 'password') }}
+                </label>
+
+                <div class="settings__account__buttons">
+                    <button class="input__button settings__account__button">Update</button>
+                    <button class="input__button settings__account__button" type="reset">Reset</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    {% if not is_restricted %}
+        <div class="container settings__container">
+            {{ container_title('<i class="fas fa-user-check fa-fw"></i> Roles') }}
+
+            <div class="settings__description">
+                <p>This is a listing of the user roles you're a part of, you can select which you want to leave or which one you want to boast as your main role which will change your username colour accordingly.</p>
+            </div>
+
+            <div class="settings__role__collection">
+                {% for role in user_roles %}
+                    {% set is_display_role = user_display_role == role.role_id %}
+
+                    <div class="settings__role" style="{{ role.role_colour|html_colour('--accent-colour') }}">
+                        <div class="settings__role__content">
+                            <div class="settings__role__name">
+                                {{ role.role_name }}
+                            </div>
+
+                            <div class="settings__role__description">
+                                {{ role.role_description }}
+                            </div>
+
+                            <form class="settings__role__options" method="post" action="{{ url('settings-account') }}">
+                                {{ input_csrf('settings') }}
+                                {{ input_hidden('role[id]', role.role_id) }}
+
+                                <button class="settings__role__option{% if is_display_role %} settings__role__option--disabled{% endif %}"
+                                    name="role[mode]" value="display" title="Set this as your display role"
+                                    {% if is_display_role %}disabled{% endif %}>
+                                    <i class="far {{ is_display_role ? 'fa-check-square' : 'fa-square' }}"></i>
+                                </button>
+
+                                <button class="settings__role__option{% if not role.role_can_leave %} settings__role__option--disabled{% endif %}"
+                                    name="role[mode]" value="leave" title="Leave this role"
+                                    onclick="return confirm('Are you sure you want to remove {{ role.role_name|replace({"'": "\'"}) }} from your account?')"
+                                    {% if not role.role_can_leave %}disabled{% endif %}>
+                                    <i class="fas fa-times-circle"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <form action="{{ url('settings-account') }}" method="post" class="container settings__container">
+        {{ container_title('<i class="fas fa-unlock-alt fa-fw"></i> Two Factor Authentication') }}
+        {{ input_csrf('settings') }}
+
+        <div class="settings__description">
+            <p>Secure your account by requiring a second step during log in in the form of a time based code. You can use applications like Authy, Google or Microsoft Authenticator or other compliant TOTP applications.</p>
+        </div>
+
+        <div class="settings__two-factor">
+            {% if settings_2fa_image is defined and settings_2fa_code is defined %}
+                <div class="settings__two-factor__code">
+                    <div class="settings__two-factor__code__text">
+                        {{ settings_2fa_code }}
+                    </div>
+                    <img src="{{ settings_2fa_image }}" alt="{{ settings_2fa_code }}" class="settings__two-factor__code__image">
+                </div>
+            {% endif %}
+
+            <div class="settings__two-factor__settings">
+                {% if settings_2fa_enabled %}
+                    <div class="settings__two-factor__settings__status">
+                        <i class="fas fa-lock fa-fw"></i> Two Factor Authentication is enabled!
+                    </div>
+                    <button class="input__button" name="tfa[enable]" value="0">Disable</button>
+                {% else %}
+                    <div class="settings__two-factor__settings__status">
+                        <i class="fas fa-lock-open fa-fw"></i> Two Factor Authentication is disabled.
+                    </div>
+                    <button class="input__button" name="tfa[enable]" value="1">Enable</button>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+{% endblock %}

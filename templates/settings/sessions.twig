@@ -1,0 +1,43 @@
+{% extends 'settings/master.twig' %}
+{% from 'macros.twig' import container_title, pagination %}
+{% from 'user/macros.twig' import user_session %}
+{% from '_layout/input.twig' import input_hidden, input_csrf %}
+
+{% set title = 'Settings / Sessions' %}
+
+{% block settings_content %}
+    <div class="container settings__container">
+        {{ container_title('<i class="fas fa-key fa-fw"></i> Sessions') }}
+
+        {% set spagination = pagination(session_pagination, url('settings-sessions')) %}
+
+        <div class="settings__description">
+            <p>These are the active logins to your account, clicking the Kill button will force a logout on that session. Your current login is highlighted with a different colour so you don't accidentally force yourself to logout.</p>
+        </div>
+
+        <div class="settings__sessions">
+            <form action="{{ url('settings-sessions') }}" method="post" class="settings__sessions__all">
+                {{ input_csrf('user_session') }}
+                {{ input_hidden('session', 'all') }}
+
+                <button class="input__button">
+                    <i class="fas fa-bomb"></i>&nbsp;Kill ALL active sessions
+                </button>
+            </form>
+
+            <div class="settings__sessions__pagination">
+                {{ spagination }}
+            </div>
+
+            <div class="settings__sessions__list">
+                {% for session in session_list %}
+                    {{ user_session(session, session.session_id == session_active_id) }}
+                {% endfor %}
+            </div>
+
+            <div class="settings__sessions__pagination">
+                {{ spagination }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

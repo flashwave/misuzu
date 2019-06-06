@@ -1,0 +1,57 @@
+{% extends 'settings/master.twig' %}
+{% from 'macros.twig' import container_title, pagination %}
+{% from 'user/macros.twig' import user_login_attempt, user_account_log %}
+
+{% set title = 'Settings / Logs' %}
+
+{% block settings_content %}
+    <div class="container settings__container" id="login-history">
+        {{ container_title('<i class="fas fa-user-lock fa-fw"></i> Login History') }}
+        {% set lhpagination = pagination(login_history_pagination, url('settings-logs'), null, {
+            'ap': account_log_pagination.page > 1 ? account_log_pagination.page : 0,
+        }, 'hp', 'login-history') %}
+
+        <div class="settings__description">
+            <p>These are all the login attempts to your account. If any attempt that you don't recognise is marked as successful your account may be compromised, ask a staff member for advice in this case.</p>
+        </div>
+
+        <div class="settings__login-attempts">
+            <div class="settings__login-attempts__pagination">
+                {{ lhpagination }}
+            </div>
+
+            {% for attempt in login_history_list %}
+                {{ user_login_attempt(attempt) }}
+            {% endfor %}
+
+            <div class="settings__login-attempts__pagination">
+                {{ lhpagination }}
+            </div>
+        </div>
+    </div>
+
+    <div class="container settings__container" id="account-log">
+        {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Account Log') }}
+        {% set alpagination = pagination(account_log_pagination, url('settings-logs'), null, {
+            'hp': login_history_pagination.page > 1 ? login_history_pagination.page : 0,
+        }, 'ap', 'account-log') %}
+
+        <div class="settings__description">
+            <p>This is a log of all "important" actions that have been done using your account for your review. If you notice anything strange, please alert the staff.</p>
+        </div>
+
+        <div class="settings__account-logs">
+            <div class="settings__account-logs__pagination">
+                {{ alpagination }}
+            </div>
+
+            {% for log in account_log_list %}
+                {{ user_account_log(log, account_log_strings) }}
+            {% endfor %}
+
+            <div class="settings__account-logs__pagination">
+                {{ alpagination }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

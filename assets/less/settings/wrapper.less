@@ -15,9 +15,7 @@
 
     &__menu {
         width: 280px;
-        position: sticky;
-        top: 2px;
-        margin: 0 2px 2px;
+        margin-right: 2px;
 
         @media (max-width: @site-mobile-width) {
             width: 100%;
@@ -37,6 +35,11 @@
 
         &:hover {
             background-color: var(--background-colour-translucent-9);
+        }
+
+        @media (max-width: @site-mobile-width) {
+            display: inline-block;
+            padding: 4px 10px;
         }
     }
 }

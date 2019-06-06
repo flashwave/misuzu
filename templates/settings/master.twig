@@ -1,0 +1,51 @@
+{% extends 'master.twig' %}
+{% from 'macros.twig' import container_title %}
+
+{% set menu = [
+    {
+        'icon': 'fas fa-user fa-fw',
+        'title': 'Account',
+        'url': url('settings-account'),
+    },
+    {
+        'icon': 'fas fa-key fa-fw',
+        'title': 'Sessions',
+        'url': url('settings-sessions'),
+    },
+    {
+        'icon': 'fas fa-file-alt fa-fw',
+        'title': 'Logs',
+        'url': url('settings-logs'),
+    },
+] %}
+
+{% block content %}
+    {% if errors is defined and errors|length > 0 %}
+        <div class="warning">
+            <div class="warning__content">
+                {% for error in errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="settings__wrapper">
+        <div class="settings__wrapper__sidebar">
+            <div class="container settings__container settings__wrapper__menu">
+                {{ container_title('<i class="fas fa-cogs fa-fw"></i> Settings') }}
+
+                {% for item in menu %}
+                    <a href="{{ item.url }}" class="settings__wrapper__link">
+                        <i class="{{ item.icon }}"></i> {{ item.title }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="settings__wrapper__content">
+            {% block settings_content %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}
