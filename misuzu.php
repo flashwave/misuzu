@@ -176,7 +176,7 @@ if (PHP_SAPI === 'cli') {
                         'run' => true,
                         'command' => "
                             DELETE FROM `msz_login_attempts`
-                            WHERE `attempt_created` < NOW() - INTERVAL 6 MONTH
+                            WHERE `attempt_created` < NOW() - INTERVAL 1 MONTH
                         ",
                     ],
                     [
@@ -185,7 +185,7 @@ if (PHP_SAPI === 'cli') {
                         'run' => true,
                         'command' => "
                             DELETE FROM `msz_audit_log`
-                            WHERE `log_created` < NOW() - INTERVAL 6 MONTH
+                            WHERE `log_created` < NOW() - INTERVAL 3 MONTH
                         ",
                     ],
                     [
