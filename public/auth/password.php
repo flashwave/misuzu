@@ -2,7 +2,7 @@
 require_once '../../misuzu.php';
 
 if (user_session_active()) {
-    header(sprintf('Location: %s', url('settings-mode', ['mode' => 'account'])));
+    header(sprintf('Location: %s', url('settings-account')));
     return;
 }
 

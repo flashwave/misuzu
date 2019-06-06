@@ -81,7 +81,12 @@ define('MSZ_URLS', [
     'user-relation-follow'              => ['/relations.php',           ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_FOLLOW]', 'c' => '{user_relation}']],
 
     'settings-index'                    => ['/settings.php'],
-    'settings-mode'                     => ['/settings.php',            [], '<mode>'],
+    'settings-account'                  => ['/settings.php',            [], 'account'],
+    'settings-roles'                    => ['/settings.php',            [], 'roles'],
+    'settings-tfa'                      => ['/settings.php',            [], 'tfa'],
+    'settings-sessions'                 => ['/settings.php',            [], 'sessions'],
+    'settings-login-attempts'           => ['/settings.php',            [], 'login-attempts'],
+    'settings-account-log'              => ['/settings.php',            [], 'account-log'],
 
     'comment-create'                    => ['/comments.php',            ['m' => 'create']],
     'comment-vote'                      => ['/comments.php',            ['c' => '<comment>', 'csrf' => '{comments}', 'm' => 'vote', 'v' => '<vote>']],
