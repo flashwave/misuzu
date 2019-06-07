@@ -5,7 +5,7 @@
 {% block manage_content %}
     <div class="container settings__container">
         {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Global Log') }}
-        {% set glp = pagination(global_logs_pagination, '/manage/index.php', null, {'v': 'logs'}) %}
+        {% set glp = pagination(global_logs_pagination, url('manage-general-logs'), null, {'v': 'logs'}) %}
 
         <div class="settings__account-logs">
             <div class="settings__account-logs__pagination">

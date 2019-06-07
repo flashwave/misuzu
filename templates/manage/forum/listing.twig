@@ -8,7 +8,7 @@
 
         <div class="container__content">
             {% for forum in forums %}
-                <a href="{{ url('manage-forum-category-view', {'forum': forum.forum_id}) }}" class="warning__link">{{ forum.forum_name }}</a><br>
+                <a href="{{ url('manage-forum-category', {'forum': forum.forum_id}) }}" class="warning__link">{{ forum.forum_name }}</a><br>
             {% endfor %}
         </div>
     </div>

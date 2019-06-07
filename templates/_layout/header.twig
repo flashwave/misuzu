@@ -74,7 +74,7 @@
         },
         {
             'title': 'Manage',
-            'url': manage_link|default('/manage/index.php'),
+            'url': manage_link|default(url('manage-index')),
             'icon': 'fas fa-door-closed fa-fw',
             'display': has_manage_access and manage_menu is not defined
         },

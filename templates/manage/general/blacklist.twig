@@ -21,13 +21,13 @@
         {% endif %}
 
         <div class="manage__blacklist">
-            <form action="" method="post" class="manage__blacklist__form">
+            <form action="{{ url('manage-general-blacklist') }}" method="post" class="manage__blacklist__form">
                 {{ input_csrf('ip_blacklist') }}
                 <textarea name="blacklist[add]" class="input__textarea manage__blacklist__textarea" placeholder="Enter CIDR (subnet/mask), each line will be processed. Addresses without a mask will just be blacklisted alone."></textarea>
                 <button class="input__button input__button--save manage__blacklist__button">Add</button>
             </form>
 
-            <form action="" method="post" class="manage__blacklist__form">
+            <form action="{{ url('manage-general-blacklist') }}" method="post" class="manage__blacklist__form">
                 {{ input_csrf('ip_blacklist') }}
                 {{ input_select('blacklist[remove][]', blacklist, null, 'ip_cidr', null, true, 'manage__blacklist__select', {
                     'multiple': true,
