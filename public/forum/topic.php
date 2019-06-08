@@ -172,10 +172,10 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                     ]);
                     break;
                 } elseif (!$submissionConfirmed) {
-                    header("Location: " . url(
+                    url_redirect(
                         'forum-topic',
                         ['topic' => $topic['topic_id']]
-                    ));
+                    );
                     break;
                 }
             }
@@ -200,9 +200,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                 break;
             }
 
-            header('Location: ' . url('forum-category', [
+            url_redirect('forum-category', [
                 'forum' => $topic['forum_id'],
-            ]));
+            ]);
             break;
 
         case 'restore':
@@ -224,9 +224,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                     ]);
                     break;
                 } elseif (!$submissionConfirmed) {
-                    header("Location: " . url('forum-topic', [
+                    url_redirect('forum-topic', [
                         'topic' => $topic['topic_id'],
-                    ]));
+                    ]);
                     break;
                 }
             }
@@ -242,9 +242,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
             http_response_code(204);
 
             if (!$isXHR) {
-                header('Location: ' . url('forum-category', [
+                url_redirect('forum-category', [
                     'forum' => $topic['forum_id'],
-                ]));
+                ]);
             }
             break;
 
@@ -267,9 +267,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                     ]);
                     break;
                 } elseif (!$submissionConfirmed) {
-                    header('Location: ' . url('forum-topic', [
+                    url_redirect('forum-topic', [
                         'topic' => $topic['topic_id'],
-                    ]));
+                    ]);
                     break;
                 }
             }
@@ -285,9 +285,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
             http_response_code(204);
 
             if (!$isXHR) {
-                header('Location: ' . url('forum-category', [
+                url_redirect('forum-category', [
                     'forum' => $topic['forum_id'],
-                ]));
+                ]);
             }
             break;
 
@@ -296,9 +296,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                 audit_log(MSZ_AUDIT_FORUM_TOPIC_BUMP, $topicUserId, [$topic['topic_id']]);
             }
 
-            header('Location: ' . url('forum-topic', [
+            url_redirect('forum-topic', [
                 'topic' => $topic['topic_id'],
-            ]));
+            ]);
             break;
 
         case 'lock':
@@ -306,9 +306,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                 audit_log(MSZ_AUDIT_FORUM_TOPIC_LOCK, $topicUserId, [$topic['topic_id']]);
             }
 
-            header('Location: ' . url('forum-topic', [
+            url_redirect('forum-topic', [
                 'topic' => $topic['topic_id'],
-            ]));
+            ]);
             break;
 
         case 'unlock':
@@ -316,9 +316,9 @@ if (in_array($moderationMode, $validModerationModes, true)) {
                 audit_log(MSZ_AUDIT_FORUM_TOPIC_UNLOCK, $topicUserId, [$topic['topic_id']]);
             }
 
-            header('Location: ' . url('forum-topic', [
+            url_redirect('forum-topic', [
                 'topic' => $topic['topic_id'],
-            ]));
+            ]);
             break;
     }
     return;

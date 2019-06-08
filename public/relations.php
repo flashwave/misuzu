@@ -57,7 +57,7 @@ if (($relationType === MSZ_USER_RELATION_NONE || $relationType === MSZ_USER_RELA
 }
 
 if (!$isXHR) {
-    header('Location: ' . $redirect);
+    redirect($redirect);
     return;
 }
 

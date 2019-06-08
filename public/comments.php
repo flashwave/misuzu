@@ -74,7 +74,7 @@ switch ($commentMode) {
         $commentPinned = comments_pin_status($commentInfo['comment_id'], $isPinning);
 
         if (!$isXHR) {
-            header('Location: ' . $redirect . '#comment-' . $commentInfo['comment_id']);
+            redirect($redirect . '#comment-' . $commentInfo['comment_id']);
             break;
         }
 
@@ -109,7 +109,7 @@ switch ($commentMode) {
         );
 
         if (!$isXHR) {
-            header('Location: ' . $redirect . '#comment-' . $commentInfo['comment_id']);
+            redirect($redirect . '#comment-' . $commentInfo['comment_id']);
             break;
         }
 
@@ -162,7 +162,7 @@ switch ($commentMode) {
         }
 
         if ($redirect) {
-            header('Location: ' . $redirect);
+            redirect($redirect);
             break;
         }
 
@@ -201,7 +201,7 @@ switch ($commentMode) {
         ]);
 
         if ($redirect) {
-            header('Location: ' . $redirect . '#comment-' . $commentInfo['comment_id']);
+            redirect($redirect . '#comment-' . $commentInfo['comment_id']);
             break;
         }
 
@@ -278,7 +278,7 @@ switch ($commentMode) {
         }
 
         if ($redirect) {
-            header('Location: ' . $redirect . '#comment-' . $commentId);
+            redirect($redirect . '#comment-' . $commentId);
             break;
         }
 

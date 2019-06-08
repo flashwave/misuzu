@@ -2,7 +2,7 @@
 require_once '../../misuzu.php';
 
 if (user_session_active()) {
-    header(sprintf('Location: %s', url('index')));
+    url_redirect('index');
     return;
 }
 
@@ -77,7 +77,7 @@ while (!$restricted && !empty($register)) {
     }
 
     user_role_add($createUser, MSZ_ROLE_MAIN);
-    header(sprintf('Location: %s', url('auth-login-welcome', ['username' => $register['username']])));
+    url_redirect('auth-login-welcome', ['username' => $register['username']]);
     return;
 }
 

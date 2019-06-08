@@ -119,10 +119,10 @@ switch ($postMode) {
 
         if (!$isXHR) {
             if ($postRequestVerified && !$submissionConfirmed) {
-                header("Location: " . url('forum-post', [
+                url_redirect('forum-post', [
                     'post' => $postInfo['post_id'],
                     'post_fragment' => 'p' . $postInfo['post_id'],
-                ]));
+                ]);
                 break;
             } elseif (!$postRequestVerified) {
                 echo tpl_render('forum.confirm', [
@@ -158,7 +158,7 @@ switch ($postMode) {
             break;
         }
 
-        header("Location: " . url('forum-topic', ['topic' => $postInfo['topic_id']]));
+        url_redirect('forum-topic', ['topic' => $postInfo['topic_id']]);
         break;
 
     case 'nuke':
@@ -169,10 +169,10 @@ switch ($postMode) {
 
         if (!$isXHR) {
             if ($postRequestVerified && !$submissionConfirmed) {
-                header("Location: " . url('forum-post', [
+                url_redirect('forum-post', [
                     'post' => $postInfo['post_id'],
                     'post_fragment' => 'p' . $postInfo['post_id'],
-                ]));
+                ]);
                 break;
             } elseif (!$postRequestVerified) {
                 echo tpl_render('forum.confirm', [
@@ -199,7 +199,7 @@ switch ($postMode) {
         http_response_code(204);
 
         if (!$isXHR) {
-            header("Location: " . url('forum-topic', ['topic' => $postInfo['topic_id']]));
+            url_redirect('forum-topic', ['topic' => $postInfo['topic_id']]);
         }
         break;
 
@@ -211,10 +211,10 @@ switch ($postMode) {
 
         if (!$isXHR) {
             if ($postRequestVerified && !$submissionConfirmed) {
-                header("Location: " . url('forum-post', [
+                url_redirect('forum-post', [
                     'post' => $postInfo['post_id'],
                     'post_fragment' => 'p' . $postInfo['post_id'],
-                ]));
+                ]);
                 break;
             } elseif (!$postRequestVerified) {
                 echo tpl_render('forum.confirm', [
@@ -241,7 +241,7 @@ switch ($postMode) {
         http_response_code(204);
 
         if (!$isXHR) {
-            header("Location: " . url('forum-topic', ['topic' => $postInfo['topic_id']]));
+            url_redirect('forum-topic', ['topic' => $postInfo['topic_id']]);
         }
         break;
 
@@ -271,8 +271,8 @@ switch ($postMode) {
             break;
         }
 
-        header('Location: ' . url('forum-topic', [
+        url_redirect('forum-topic', [
             'topic' => $postFind['topic_id'],
             'page' => floor($postFind['preceeding_post_count'] / MSZ_FORUM_POSTS_PER_PAGE) + 1,
-        ]));
+        ]);
 }

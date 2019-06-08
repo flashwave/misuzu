@@ -12,7 +12,7 @@ switch ($indexMode) {
             forum_mark_read($markEntireForum ? null : $forumId, user_session_current('user_id', 0));
         }
 
-        header('Location: ' . url($markEntireForum ? 'forum-index' : 'forum-category', ['forum' => $forumId]));
+        url_redirect($markEntireForum ? 'forum-index' : 'forum-category', ['forum' => $forumId]);
         break;
 
     default:

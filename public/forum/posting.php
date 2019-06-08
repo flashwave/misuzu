@@ -228,7 +228,7 @@ if (!empty($_POST)) {
                     'post' => $postId ?? 0,
                     'post_fragment' => 'p' . ($postId ?? 0),
                 ]);
-                header("Location: {$redirect}");
+                redirect($redirect);
                 return;
             }
         }

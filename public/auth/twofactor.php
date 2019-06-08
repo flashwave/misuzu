@@ -2,7 +2,7 @@
 require_once '../../misuzu.php';
 
 if (user_session_active()) {
-    header(sprintf('Location: %s', url('index')));
+    url_redirect('index');
     return;
 }
 
@@ -19,7 +19,7 @@ $tokenInfo = user_auth_tfa_token_info(
 // checking user_totp_key specifically because there's a fringe chance that
 //  there's a token present, but totp is actually disabled
 if (empty($tokenInfo['user_totp_key'])) {
-    header(sprintf('Location: %s', url('auth-login')));
+    url_redirect('auth-login');
     return;
 }
 
@@ -74,7 +74,7 @@ while (!empty($twofactor)) {
         $redirect = url('index');
     }
 
-    header("Location: {$redirect}");
+    redirect($redirect);
     return;
 }
 

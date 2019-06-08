@@ -48,4 +48,4 @@ if (!forum_has_priority_voting($topic['forum_type'])) {
 
 forum_topic_priority_increase($topicId, user_session_current('user_id', 0));
 
-header('Location: ' . url('forum-topic', ['topic' => $topicId]));
+url_redirect('forum-topic', ['topic' => $topicId]);

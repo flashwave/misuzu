@@ -34,7 +34,7 @@ if (empty($parsedUrl['scheme'])
 }
 
 if (!config_get_default(false, 'Proxy', 'enabled')) {
-    header('Location: ' . $proxyUrlDecoded);
+    redirect($proxyUrlDecoded);
     return;
 }
 

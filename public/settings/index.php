@@ -8,4 +8,4 @@ if (!user_session_active()) {
 
 // do something with this page
 
-header('Location: ' . url('settings-account'));
+url_redirect('settings-account');

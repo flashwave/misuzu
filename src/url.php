@@ -93,6 +93,7 @@ define('MSZ_URLS', [
     'comment-unpin'                     => ['/comments.php',                    ['c' => '<comment>', 'csrf' => '{comments}', 'm' => 'unpin']],
 
     'manage-index'                      => ['/manage'],
+
     'manage-general-overview'           => ['/manage/general/index.php'],
     'manage-general-logs'               => ['/manage/general/logs.php'],
     'manage-general-emoticons'          => ['/manage/general/emoticons.php'],
@@ -102,10 +103,10 @@ define('MSZ_URLS', [
     'manage-forum-categories'           => ['/manage/forum/index.php'],
     'manage-forum-category'             => ['/manage/forum/category.php',       ['f' => '<forum>']],
 
-    'manage-changelog-tag-create'       => ['/manage/changelog.php',            ['v' => 'tag']],
-    'manage-changelog-tag-edit'         => ['/manage/changelog.php',            ['v' => 'tag', 't' => '<tag>']],
-    'manage-changelog-change-create'    => ['/manage/changelog.php',            ['v' => 'change']],
-    'manage-changelog-change-edit'      => ['/manage/changelog.php',            ['v' => 'change', 'c' => '<change>']],
+    'manage-changelog-changes'          => ['/manage/changelog/index.php'],
+    'manage-changelog-change'           => ['/manage/changelog/change.php',     ['c' => '<change>']],
+    'manage-changelog-tags'             => ['/manage/changelog/tags.php'],
+    'manage-changelog-tag'              => ['/manage/changelog/tag.php',        ['t' => '<tag>']],
 
     'manage-news-category-create'       => ['/manage/news.php',                 ['v' => 'category']],
     'manage-news-category-edit'         => ['/manage/news.php',                 ['v' => 'category', 'c' => '<category>']],
@@ -163,6 +164,16 @@ function url(string $name, array $variables = []): string
     }
 
     return $url;
+}
+
+function redirect(string $url): void
+{
+    header(sprintf('Location: %s', $url));
+}
+
+function url_redirect(string $name, array $variables = []): void
+{
+    redirect(url($name, $variables));
 }
 
 function url_variable(string $value, array $variables): string

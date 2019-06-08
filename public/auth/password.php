@@ -2,7 +2,7 @@
 require_once '../../misuzu.php';
 
 if (user_session_active()) {
-    header(sprintf('Location: %s', url('settings-account')));
+    url_redirect('settings-account');
     return;
 }
 
@@ -14,7 +14,7 @@ $userId = !empty($reset['user']) ? (int)$reset['user'] : (
 $username = $userId > 0 ? user_username_from_id($userId) : '';
 
 if ($userId > 0 && empty($username)) {
-    header(sprintf('Location: %s', url('auth-forgot')));
+    url_redirect('auth-forgot');
     return;
 }
 
@@ -64,7 +64,7 @@ while ($canResetPassword) {
 
         user_recovery_token_invalidate($userId, $verificationCode);
 
-        header(sprintf('Location: %s', url('auth-login', ['redirect' => '/'])));
+        url_redirect('auth-login', ['redirect' => '/']);
         return;
     }
 
@@ -121,7 +121,7 @@ MSG;
             }
         }
 
-        header(sprintf('Location: %s', url('auth-reset', ['user' => $forgotUser['user_id']])));
+        url_redirect('auth-reset', ['user' => $forgotUser['user_id']]);
         return;
     }
 

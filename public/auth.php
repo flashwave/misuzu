@@ -11,19 +11,19 @@ switch ($mode) {
         break;
 
     case 'reset':
-        header('Location: ' . url('auth-reset'));
+        url_redirect('auth-reset');
         break;
 
     case 'forgot':
-        header('Location: ' . url('auth-forgot'));
+        url_redirect('auth-forgot');
         break;
 
     case 'login':
     default:
-        header('Location: ' . url('auth-login'));
+        url_redirect('auth-login');
         break;
 
     case 'register':
-        header('Location: ' . url('auth-register'));
+        url_redirect('auth-register');
         break;
 }

@@ -55,15 +55,15 @@ function manage_get_menu(int $userId): array
     }
 
     if(perms_check($perms[MSZ_PERMS_FORUM], 0)) {
-        $menu['Forum']['Settings'] = '/manage/forum.php?v=settings';
+        $menu['Forum']['Settings'] = url('manage-forum-settings');
     }
 
     if(perms_check($perms[MSZ_PERMS_CHANGELOG], MSZ_PERM_CHANGELOG_MANAGE_CHANGES)) {
-        $menu['Changelog']['Changes'] = '/manage/changelog.php?v=changes';
+        $menu['Changelog']['Changes'] = url('manage-changelog-changes');
     }
 
     if(perms_check($perms[MSZ_PERMS_CHANGELOG], MSZ_PERM_CHANGELOG_MANAGE_TAGS)) {
-        $menu['Changelog']['Tags'] = '/manage/changelog.php?v=tags';
+        $menu['Changelog']['Tags'] = url('manage-changelog-tags');
     }
 
     return $menu;

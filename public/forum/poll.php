@@ -93,4 +93,4 @@ foreach ($answers as $answerId) {
     forum_poll_vote_cast($currentUserId, $poll['poll_id'], (int)$answerId);
 }
 
-header('Location: ' . url('forum-topic', ['topic' => $topicInfo['topic_id']]));
+url_redirect('forum-topic', ['topic' => $topicInfo['topic_id']]);

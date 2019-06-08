@@ -2,52 +2,45 @@
 {% from 'macros.twig' import container_title %}
 {% from '_layout/input.twig' import input_csrf, input_text, input_select, input_checkbox %}
 
-{% if edit_change is not null %}
-    {% set site_link = url('changelog-change', {'change': edit_change.change_id}) %}
+{% if change is not null %}
+    {% set site_link = url('changelog-change', {'change': change.change_id}) %}
 {% endif %}
 
 {% block manage_content %}
     <div class="container">
-        <form action="?v=change{{ edit_change is not null ? '&c=' ~ edit_change.change_id : '' }}" method="post">
+        <form action="{{ url('manage-changelog-change', {'change': change.change_id|default(0)}) }}" method="post">
             {{ input_csrf('changelog_add') }}
 
-            {{ container_title(edit_change is not null ? 'Editing #' ~ edit_change.change_id : 'Adding a new change') }}
+            {{ container_title(change is not null ? 'Editing #' ~ change.change_id : 'Adding a new change') }}
 
             <div style="display: flex; margin: 2px 5px;">
-                {{ input_select('change[action]', changelog_actions, edit_change.change_action|default(0), 'action_name', 'action_id') }}
-                {{ input_text('change[log]', '', edit_change is not null ? edit_change.change_log : '', 'text', '', true, {'maxlength':255,'style':'flex-grow:1'}) }}
+                {{ input_select('change[action]', change_actions, change.change_action|default(0), 'action_name', 'action_id') }}
+                {{ input_text('change[log]', '', change is not null ? change.change_log : '', 'text', '', true, {'maxlength':255,'style':'flex-grow:1'}) }}
             </div>
 
             <label class="form__label">
                 <div class="form__label__text">Text</div>
                 <div class="form__label__input">
-                    <textarea class="input__textarea" name="change[text]" maxlength="65535">{{ edit_change is not null ? edit_change.change_text : '' }}</textarea>
-                </div>
-            </label>
-
-            <label class="form__label">
-                <div class="form__label__text">Action</div>
-                <div class="form__label__input">
-
+                    <textarea class="input__textarea" name="change[text]" maxlength="65535">{{ change is not null ? change.change_text : '' }}</textarea>
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Contributor Id</div>
                 <div class="form__label__input">
-                    {{ input_text('change[user]', '', edit_change.user_id|default(current_user.user_id), 'number', '', false, {'min':1}) }}
+                    {{ input_text('change[user]', '', change.user_id|default(current_user.user_id), 'number', '', false, {'min':1}) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Created</div>
                 <div class="form__label__input">
-                    {{ input_text('change[created]', '', (edit_change is not null ? edit_change.change_created : ''|date('Y-m-d H:i:s')), 'text', '', true) }}
+                    {{ input_text('change[created]', '', (change is not null ? change.change_created : ''|date('Y-m-d H:i:s')), 'text', '', true) }}
                 </div>
             </label>
 
             <div class="manage__tags">
-                {% for tag in edit_change_tags %}
+                {% for tag in change_tags %}
                     <label class="manage__tag">
                         <div class="manage__tag__background"></div>
                         <div class="manage__tag__content">

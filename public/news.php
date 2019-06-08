@@ -26,4 +26,4 @@ if ($categoryId > 0) {
     $location = url('news-category', ['category' => $categoryId, 'page' => pagination_param('page')]);
 }
 
-header("Location: {$location}");
+redirect($location);

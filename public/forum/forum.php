@@ -5,7 +5,7 @@ $forumId = !empty($_GET['f']) && is_string($_GET['f']) ? (int)$_GET['f'] : 0;
 $forumId = max($forumId, 0);
 
 if ($forumId === 0) {
-    header('Location: /forum/');
+    url_redirect('forum-index');
     exit;
 }
 
@@ -32,7 +32,7 @@ tpl_var('forum_perms', $perms);
 
 if ($forum['forum_type'] == MSZ_FORUM_TYPE_LINK) {
     forum_increment_clicks($forum['forum_id']);
-    header('Location: ' . $forum['forum_link']);
+    redirect($forum['forum_link']);
     return;
 }
 

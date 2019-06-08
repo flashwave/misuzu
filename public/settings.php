@@ -1,4 +1,4 @@
 <?php
 require_once '../misuzu.php';
 
-header('Location: ' . url('settings-index'));
+url_redirect('settings-index');

@@ -4,7 +4,7 @@
 
 {% set title = 'Changelog » Change #' ~ change.change_id %}
 {% set canonical_url = url('changelog-change', {'change': change.change_id}) %}
-{% set manage_link = '/manage/changelog.php?v=change&c=' ~ change.change_id %}
+{% set manage_link = url('manage-changelog-change', {'change': change.change_id}) %}
 {% set description = change.change_log %}
 
 {% if change.change_action == constant('MSZ_CHANGELOG_ACTION_ADD') %}

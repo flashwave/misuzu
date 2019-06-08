@@ -23,7 +23,7 @@
 {% endmacro %}
 
 {% macro changelog_entry(change, is_small, is_manage) %}
-    {% set change_url = url(is_manage ? 'manage-changelog-change-edit' : 'changelog-change', {'change': change.change_id}) %}
+    {% set change_url = url(is_manage ? 'manage-changelog-change' : 'changelog-change', {'change': change.change_id}) %}
     {% set has_text = change.change_has_text|default(false)
         or (change.change_text is defined and change.change_text|length > 0)
     %}
@@ -87,7 +87,7 @@
             {% if is_manage %}
                 <div class="changelog__entry__tags">
                     {% for tag in change.tags %}
-                        <a href="{{ url(is_manage ? 'manage-changelog-tag-edit' : 'changelog-tag', {'tag': tag.tag_id}) }}" class="changelog__entry__tag">
+                        <a href="{{ url(is_manage ? 'manage-changelog-tag' : 'changelog-tag', {'tag': tag.tag_id}) }}" class="changelog__entry__tag">
                             {{ tag.tag_name }}
                         </a>
                     {% endfor %}

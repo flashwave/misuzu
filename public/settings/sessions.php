@@ -37,7 +37,7 @@ if(!empty($_POST['session']) && csrf_verify('user_session', $_POST['csrf'] ?? ''
     }
 
     if($currentSessionKilled) {
-        header(sprintf('Location: %s', url('index')));
+        url_redirect('index');
         return;
     }
 }

@@ -485,7 +485,7 @@ MIG;
                     }
                 }
             } elseif (!$onLoginPage && !($onPasswordPage && config_get_default(false, 'Private', 'password_reset'))) {
-                header(sprintf('Location: %s', url('auth-login')));
+                url_redirect('auth-login');
                 exit;
             }
         }
