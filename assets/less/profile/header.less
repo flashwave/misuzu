@@ -34,8 +34,6 @@
     }
 
     &__avatar {
-        --avatar-checked-colour: fade(#000, 13%);
-
         display: flex;
 
         &__image {
@@ -58,43 +56,25 @@
         }
 
         &__check:checked ~ &__option {
-            background-color: var(--avatar-checked-colour);
+            color: #111;
+            background-color: var(--accent-colour);
+            border-color: var(--accent-colour);
         }
 
         &__options {
-            background-color: var(--accent-colour);
-            left: -2px;
             z-index: 10;
+            margin-left: 2px;
             display: flex;
+            justify-content: flex-end;
             flex-direction: column;
-            justify-content: space-evenly;
-            border-radius: 2px;
-            box-shadow: 0 1px 4px #111;
         }
 
         &__option {
-            height: 100%;
-            padding: 5px 10px 5px 12px;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: background-color .2s;
-
-            &:hover {
-                background-color: var(--avatar-checked-colour);
-            }
+            display: inline-block;
+            margin-top: 2px;
 
             &--delete {
-                --avatar-checked-colour: #c00;
-            }
-
-            &:first-child {
-                border-top-right-radius: 2px;
-            }
-
-            &:last-child {
-                border-bottom-right-radius: 2px;
+                --accent-colour: #c00;
             }
         }
     }
