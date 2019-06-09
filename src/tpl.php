@@ -47,7 +47,7 @@ function tpl_sanitise_path(string $path): string
         return $path;
     }
 
-    return str_replace('.', '/', $path) . MSZ_TPL_FILE_EXT;
+    return str_replace('.', DIRECTORY_SEPARATOR, $path) . MSZ_TPL_FILE_EXT;
 }
 
 function tpl_exists(string $path): bool

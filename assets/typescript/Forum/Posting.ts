@@ -157,7 +157,7 @@ function forumPostingPreview(
             callback(false, 'Failed to render preview.');
         }
     });
-    xhr.open('POST', '/forum/posting.php');
+    xhr.open('POST', urlFormat('forum-topic-new'));
     xhr.withCredentials = true;
     xhr.send(formData);
 }
