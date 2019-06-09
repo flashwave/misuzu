@@ -1,7 +1,7 @@
 {% extends 'manage/users/master.twig' %}
 {% from 'macros.twig' import pagination, container_title %}
 
-{% set roles_pagination = pagination(manage_roles_pagination, '/manage/users.php', null, {'v': 'roles'}) %}
+{% set roles_pagination = pagination(manage_roles_pagination, url('manage-roles')) %}
 
 {% block manage_content %}
     <div class="container manage__roles">
@@ -14,28 +14,26 @@
         {% endif %}
 
         <div class="manage__roles__collection">
-            {% if can_manage_roles %}
-                <div class="manage__role-item manage__role-item--create">
-                    <a href="{{ url('manage-role-create') }}" class="manage__role-item__background"></a>
-                    <div class="manage__role-item__container">
-                        <div class="manage__role-item__icon">
-                            <div class="manage__role-item__icon__background"></div>
-                            <div class="manage__role-item__icon__content">
-                                <i class="fas fa-plus-circle fa-fw"></i>
-                            </div>
+            <div class="manage__role-item manage__role-item--create">
+                <a href="{{ url('manage-role') }}" class="manage__role-item__background"></a>
+                <div class="manage__role-item__container">
+                    <div class="manage__role-item__icon">
+                        <div class="manage__role-item__icon__background"></div>
+                        <div class="manage__role-item__icon__content">
+                            <i class="fas fa-plus-circle fa-fw"></i>
                         </div>
-                        <div class="manage__role-item__info">
-                            <div class="manage__role-item__name">
-                                Create a new role
-                            </div>
+                    </div>
+                    <div class="manage__role-item__info">
+                        <div class="manage__role-item__name">
+                            Create a new role
                         </div>
                     </div>
                 </div>
-            {% endif %}
+            </div>
 
             {% for role in manage_roles %}
                 <div class="manage__role-item" style="{{ role.role_colour|html_colour('--accent-colour') }}">
-                    <a href="{{ url('manage-role-edit', {'role': role.role_id}) }}" class="manage__role-item__background"></a>
+                    <a href="{{ url('manage-role', {'role': role.role_id}) }}" class="manage__role-item__background"></a>
 
                     <div class="manage__role-item__container">
                         <div class="manage__role-item__icon">
@@ -62,7 +60,7 @@
                             </div>
                         </div>
                         <div class="manage__role-item__actions">
-                            <a href="{{ url('members-role', {'role': role.role_id}) }}" class="manage__role-item__action" title="Members">
+                            <a href="{{ url('user-list', {'role': role.role_id}) }}" class="manage__role-item__action" title="Members">
                                 <i class="fas fa-users fa-fw"></i>
                             </a>
                         </div>

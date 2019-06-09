@@ -12,7 +12,7 @@
     'page': users_pagination.page > 2 ? users_pagination.page : 0,
 }) %}
 {% set title = role.role_id == 1 ? 'Members' : 'Role » ' ~ role.role_name  %}
-{% set manage_link = '/manage/users.php?v=listing' %}
+{% set manage_link = url('manage-users') %}
 
 {% macro member_nav(roles, role_id, orders, order, directions, direction, users_pagination, url_role, url_sort, url_direction) %}
     {% from 'macros.twig' import pagination %}

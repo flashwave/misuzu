@@ -5,7 +5,7 @@
 {% set is_new = category|length < 1 %}
 
 {% block manage_content %}
-    <form method="post" action="" class="container">
+    <form method="post" action="{{ url('manage-news-category', {'category': category.category_id|default(0)}) }}" class="container">
         {{ container_title(is_new ? 'New Category' : 'Editing ' ~ category.category_name) }}
 
         {{ input_csrf('news_category') }}

@@ -26,7 +26,7 @@
 {% macro input_checkbox_raw(name, checked, class, value, radio, attributes, disabled) %}
 {% spaceless %}
     <input type="{{ radio ? 'radio' : 'checkbox' }}" class="{{ class|length > 0 ? class : 'input__checkbox__input' }}"
-        {% if name|length > 0 %}name="{{ name }}"{% endif %}
+        {% if name|length > 0 %}name="{{ name }}"{% else %}readonly onclick="return false"{% endif %}
         {% if checked %}checked{% endif %}
         {% if disabled %}disabled{% endif %}
         {% if value|length > 0 %}value="{{ value }}"{% endif %}
@@ -111,7 +111,8 @@
 {% spaceless %}
     <label class="input__colour{% if class %} {{ class }}{% endif %}">
         <div class="input__colour__overlay"></div>
-        <input type="color" name="{{ name }}" value="{{ value }}" class="input__colour__control">
+        <input type="color" {% if name|length > 0 %}name="{{ name }}"{% else %}readonly onclick="return false"{% endif %}
+        value="{{ value }}" class="input__colour__control">
     </label>
 {% endspaceless %}
 {% endmacro %}

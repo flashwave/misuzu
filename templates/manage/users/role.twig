@@ -86,12 +86,10 @@
             </label>
         </div>
 
-        {% if can_manage_perms %}
-            <div class="container">
-                {{ container_title('Permissions') }}
-                {{ permissions_table(permissions, true) }}
-            </div>
-        {% endif %}
+        <div class="container">
+            {{ container_title('Permissions') }}
+            {{ permissions_table(permissions, not can_manage_perms) }}
+        </div>
 
         <button class="input__button">{{ edit_role is defined ? 'Update role' : 'Create role' }}</button>
     </form>

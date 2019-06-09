@@ -4,7 +4,7 @@
 {% from '_layout/input.twig' import input_text, input_csrf, input_select, input_hidden %}
 
 {% block manage_content %}
-    <form class="container container--lazy" action="" method="post">
+    <form class="container container--lazy" action="{{ url('manage-users-warnings') }}" method="post">
         {{ container_title('<i class="fas fa-users fa-fw"></i> Filters') }}
         {{ input_text('lookup', null, warnings.username, 'text', 'Enter a username') }}
         <button class="input__button">Filter</button>
@@ -38,7 +38,7 @@
 
     <div class="container container--lazy">
         {{ container_title('<i class="fas fa-exclamation-circle fa-fw"></i> Warnings') }}
-        {% set warnpag = pagination(warnings.pagination, '/manage/users.php', null, {'v': 'warnings'}) %}
+        {% set warnpag = pagination(warnings.pagination, url('manage-users-warnings')) %}
 
         {{ warnpag }}
 

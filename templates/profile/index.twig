@@ -209,9 +209,9 @@
                             </div>
                         {% endif %}
 
-                        {% if profile_warnings|length > 0 %}
+                        {% if profile_warnings|length > 0 or profile_warnings_can_manage %}
                             <div class="container profile__container profile__warning__container" id="account-standing">
-                                {{ container_title('Account Standing', false, profile_warnings_can_manage ? '/manage/users.php?v=warnings&u=' ~ profile.user_id : '') }}
+                                {{ container_title('Account Standing', false, profile_warnings_can_manage ? url('manage-users-warnings', {'user': profile.user_id}) : '') }}
 
                                 <div class="profile__warning">
                                     <div class="profile__warning__background"></div>

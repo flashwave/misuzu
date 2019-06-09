@@ -14,7 +14,7 @@
     {% endfor %}
 {% endmacro %}
 
-{% macro permissions_table(permissions) %}
+{% macro permissions_table(permissions, readonly) %}
     {% from '_layout/input.twig' import input_checkbox %}
 
     <div class="permissions">
@@ -40,13 +40,13 @@
                         {{ perm.title }}
                     </div>
                     <div class="permissions__choice__wrapper">
-                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'yes', 'permissions__choice permissions__choice--radio permissions__choice--yes', 'yes', true) }}
+                        {{ input_checkbox(readonly ? '' : 'perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'yes', 'permissions__choice permissions__choice--radio permissions__choice--yes', 'yes', true) }}
                     </div>
                     <div class="permissions__choice__wrapper">
-                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'no', 'permissions__choice permissions__choice--radio permissions__choice--no', 'no', true) }}
+                        {{ input_checkbox(readonly ? '' : 'perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'no', 'permissions__choice permissions__choice--radio permissions__choice--no', 'no', true) }}
                     </div>
                     <div class="permissions__choice__wrapper">
-                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'never', 'permissions__choice permissions__choice--radio permissions__choice--never', 'never', true) }}
+                        {{ input_checkbox(readonly ? '' : 'perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'never', 'permissions__choice permissions__choice--radio permissions__choice--never', 'never', true) }}
                     </div>
                 </div>
             {% endfor %}

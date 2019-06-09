@@ -94,7 +94,7 @@ define('MSZ_URLS', [
 
     'manage-index'                      => ['/manage'],
 
-    'manage-general-overview'           => ['/manage/general/index.php'],
+    'manage-general-overview'           => ['/manage/general'],
     'manage-general-logs'               => ['/manage/general/logs.php'],
     'manage-general-emoticons'          => ['/manage/general/emoticons.php'],
     'manage-general-settings'           => ['/manage/general/settings.php'],
@@ -103,24 +103,25 @@ define('MSZ_URLS', [
     'manage-forum-categories'           => ['/manage/forum/index.php'],
     'manage-forum-category'             => ['/manage/forum/category.php',       ['f' => '<forum>']],
 
-    'manage-changelog-changes'          => ['/manage/changelog/index.php'],
+    'manage-changelog-changes'          => ['/manage/changelog'],
     'manage-changelog-change'           => ['/manage/changelog/change.php',     ['c' => '<change>']],
     'manage-changelog-tags'             => ['/manage/changelog/tags.php'],
     'manage-changelog-tag'              => ['/manage/changelog/tag.php',        ['t' => '<tag>']],
 
-    'manage-news-category-create'       => ['/manage/news.php',                 ['v' => 'category']],
-    'manage-news-category-edit'         => ['/manage/news.php',                 ['v' => 'category', 'c' => '<category>']],
-    'manage-news-post-create'           => ['/manage/news.php',                 ['v' => 'post']],
-    'manage-news-post-edit'             => ['/manage/news.php',                 ['v' => 'post', 'p' => '<post>']],
+    'manage-news-categories'            => ['/manage/news/categories.php'],
+    'manage-news-category'              => ['/manage/news/category.php',        ['c' => '<category>']],
+    'manage-news-posts'                 => ['/manage/news/posts.php'],
+    'manage-news-post'                  => ['/manage/news/post.php',            ['p' => '<post>']],
 
-    'manage-user-index'                 => ['/manage/users.php',                ['v' => 'listing']],
-    'manage-user-edit'                  => ['/manage/users.php',                ['v' => 'view', 'u' => '<user>']],
+    'manage-users'                      => ['/manage/users'],
+    'manage-user'                       => ['/manage/users/user.php',           ['u' => '<user>']],
+    'manage-users-reports'              => ['/manage/users/reports.php',        ['u' => '<user>']],
+    'manage-users-report'               => ['/manage/users/report.php',         ['r' => '<report>']],
+    'manage-users-warnings'             => ['/manage/users/warnings.php',       ['u' => '<user>']],
+    'manage-users-warning-delete'       => ['/manage/users/warnings.php',       ['w' => '<warning>', 'delete' => '1', 'csrf' => '{user_warnings}']],
 
-    'manage-role-index'                 => ['/manage/users.php',                ['v' => 'roles']],
-    'manage-role-create'                => ['/manage/users.php',                ['v' => 'role']],
-    'manage-role-edit'                  => ['/manage/users.php',                ['v' => 'role', 'r' => '<role>']],
-
-    'manage-warning-delete'             => ['/manage/users.php',                ['v' => 'warnings', 'u' => '<user>', 'w' => '<warning>', 'm' => 'delete', 'c' => '<token>']],
+    'manage-roles'                      => ['/manage/users/roles.php'],
+    'manage-role'                       => ['/manage/users/role.php',           ['r' => '<role>']],
 ]);
 
 function url(string $name, array $variables = []): string
@@ -168,7 +169,7 @@ function url(string $name, array $variables = []): string
 
 function redirect(string $url): void
 {
-    header(sprintf('Location: %s', $url));
+    header('Location: ' . $url);
 }
 
 function url_redirect(string $name, array $variables = []): void

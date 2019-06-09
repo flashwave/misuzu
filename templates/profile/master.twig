@@ -2,7 +2,7 @@
 
 {% if profile is defined %}
     {% set image = url('user-avatar', {'user': profile.user_id, 'res': 240}) %}
-    {% set manage_link = '/manage/users.php?v=view&u=' ~ profile.user_id %}
+    {% set manage_link = url('manage-user', {'user': profile.user_id}) %}
     {% set stats = [
         {
             'title': 'Joined',
@@ -49,7 +49,7 @@
     ] %}
 {% else %}
     {% set image = url('user-avatar', {'user': 0, 'res': 240}) %}
-    {% set manage_link = '/manage/users.php?v=listing' %}
+    {% set manage_link = url('manage-users') %}
     {% set profile_is_editing = false %}
     {% set profile_notices = [] %}
 {% endif %}

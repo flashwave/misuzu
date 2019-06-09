@@ -5,7 +5,7 @@
 {% set is_new = post|length < 1 %}
 
 {% block manage_content %}
-    <form method="post" action="" class="container">
+    <form method="post" action="{{ url('manage-news-post', {'post': post.post_id|default(0)}) }}" class="container">
         {{ container_title(is_new ? 'New Post' : 'Editing ' ~ post.post_title) }}
 
         {{ input_csrf('news_post') }}

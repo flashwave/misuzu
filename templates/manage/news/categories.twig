@@ -5,17 +5,17 @@
     <div class="container">
         {{ container_title('Categories') }}
 
-        <a href="{{ url('manage-news-category-create') }}" class="input__button">New Category</a>
+        <a href="{{ url('manage-news-category') }}" class="input__button">New Category</a>
 
         {% for cat in news_categories %}
             <p>
-                <a href="{{ url('manage-news-category-edit', {'category': cat.category_id}) }}" class="input__button">{{ cat.category_id }}</a>
+                <a href="{{ url('manage-news-category', {'category': cat.category_id}) }}" class="input__button">{{ cat.category_id }}</a>
                 {{ cat.category_name }},
                 {{ cat.category_is_hidden }},
                 {{ cat.category_created }}
             </p>
         {% endfor %}
 
-        {{ pagination(categories_pagination, '/manage/news.php', null, {'v': 'categories'}) }}
+        {{ pagination(categories_pagination, url('manage-news-categories')) }}
     </div>
 {% endblock %}

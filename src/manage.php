@@ -1,68 +1,65 @@
 <?php
 function manage_get_menu(int $userId): array
 {
-    $perms = perms_get_user($userId);
-
-    if(!perms_check($perms[MSZ_PERMS_GENERAL], MSZ_PERM_GENERAL_CAN_MANAGE)) {
+    if(!perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_CAN_MANAGE)) {
         return [];
     }
 
-    $menu = [];
-    $menu['General']['Overview'] = url('manage-general-overview');
+    $menu = [
+        'General' => [
+            'Overview' => url('manage-general-overview'),
+        ],
+    ];
 
-    if(perms_check($perms[MSZ_PERMS_GENERAL], MSZ_PERM_GENERAL_VIEW_LOGS)) {
+    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_VIEW_LOGS)) {
         $menu['General']['Logs'] = url('manage-general-logs');
     }
 
-    if(perms_check($perms[MSZ_PERMS_GENERAL], MSZ_PERM_GENERAL_MANAGE_EMOTICONS)) {
+    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_MANAGE_EMOTICONS)) {
         $menu['General']['Emoticons'] = url('manage-general-emoticons');
     }
 
-    if(perms_check($perms[MSZ_PERMS_GENERAL], MSZ_PERM_GENERAL_MANAGE_SETTINGS)) {
+    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_MANAGE_SETTINGS)) {
         $menu['General']['Settings'] = url('manage-general-settings');
     }
 
-    if(perms_check($perms[MSZ_PERMS_GENERAL], MSZ_PERM_GENERAL_MANAGE_BLACKLIST)) {
+    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_MANAGE_BLACKLIST)) {
         $menu['General']['IP Blacklist'] = url('manage-general-blacklist');
     }
 
-    if(perms_check($perms[MSZ_PERMS_USER], MSZ_PERM_USER_MANAGE_USERS | MSZ_PERM_USER_MANAGE_PERMS)) {
-        $menu['Users']['Listing'] = '/manage/users.php?v=listing';
+    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_USERS)) {
+        $menu['Users & Roles']['Users'] = url('manage-users');
     }
 
-    if(perms_check($perms[MSZ_PERMS_USER], MSZ_PERM_USER_MANAGE_ROLES | MSZ_PERM_USER_MANAGE_PERMS)) {
-        $menu['Users']['Roles'] = '/manage/users.php?v=roles';
+    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_ROLES)) {
+        $menu['Users & Roles']['Roles'] = url('manage-roles');
     }
 
-    if(perms_check($perms[MSZ_PERMS_USER], MSZ_PERM_USER_MANAGE_REPORTS)) {
-        $menu['Users']['Reports'] = '/manage/users.php?v=reports';
+    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_REPORTS)) {
+        $menu['Users & Roles']['Reports'] = url('manage-users-reports');
     }
 
-    if(perms_check($perms[MSZ_PERMS_USER], MSZ_PERM_USER_MANAGE_WARNINGS)) {
-        $menu['Users']['Warnings'] = '/manage/users.php?v=warnings';
+    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_WARNINGS)) {
+        $menu['Users & Roles']['Warnings'] = url('manage-users-warnings');
     }
 
-    if(perms_check($perms[MSZ_PERMS_NEWS], MSZ_PERM_NEWS_MANAGE_POSTS)) {
-        $menu['News']['Posts'] = '/manage/news.php?v=posts';
+    if(perms_check_user(MSZ_PERMS_NEWS, $userId, MSZ_PERM_NEWS_MANAGE_POSTS)) {
+        $menu['News']['Posts'] = url('manage-news-posts');
     }
 
-    if(perms_check($perms[MSZ_PERMS_NEWS], MSZ_PERM_NEWS_MANAGE_CATEGORIES)) {
-        $menu['News']['Categories'] = '/manage/news.php?v=categories';
+    if(perms_check_user(MSZ_PERMS_NEWS, $userId, MSZ_PERM_NEWS_MANAGE_CATEGORIES)) {
+        $menu['News']['Categories'] = url('manage-news-categories');
     }
 
-    if(perms_check($perms[MSZ_PERMS_FORUM], MSZ_PERM_FORUM_MANAGE_FORUMS)) {
+    if(perms_check_user(MSZ_PERMS_FORUM, $userId, MSZ_PERM_FORUM_MANAGE_FORUMS)) {
         $menu['Forum']['Categories'] = url('manage-forum-categories');
     }
 
-    if(perms_check($perms[MSZ_PERMS_FORUM], 0)) {
-        $menu['Forum']['Settings'] = url('manage-forum-settings');
-    }
-
-    if(perms_check($perms[MSZ_PERMS_CHANGELOG], MSZ_PERM_CHANGELOG_MANAGE_CHANGES)) {
+    if(perms_check_user(MSZ_PERMS_CHANGELOG, $userId, MSZ_PERM_CHANGELOG_MANAGE_CHANGES)) {
         $menu['Changelog']['Changes'] = url('manage-changelog-changes');
     }
 
-    if(perms_check($perms[MSZ_PERMS_CHANGELOG], MSZ_PERM_CHANGELOG_MANAGE_TAGS)) {
+    if(perms_check_user(MSZ_PERMS_CHANGELOG, $userId, MSZ_PERM_CHANGELOG_MANAGE_TAGS)) {
         $menu['Changelog']['Tags'] = url('manage-changelog-tags');
     }
 

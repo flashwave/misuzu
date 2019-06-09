@@ -3,7 +3,7 @@
 {% from 'manage/macros.twig' import permissions_table %}
 {% from '_layout/input.twig' import input_csrf, input_text, input_checkbox, input_file, input_select, input_colour %}
 
-{% set site_link = url('user-profile', {'user': manage_user.user_id}) %}
+{% set site_link = url('user-profile', {'user': manage_user.user_id|default(0)}) %}
 
 {% block manage_content %}
     <div class="manage__user"{% if manage_user is defined %} style="{{ manage_user.user_colour|html_colour('--accent-colour') }}"{% endif %}>
@@ -17,69 +17,68 @@
             </div>
         {% endif %}
 
-        {% if can_manage_users %}
-            <form method="post" action="" class="container manage__user__container">
-                {{ container_title('Editing ' ~ manage_user.username ~ ' (' ~ manage_user.user_id ~ ')') }}
-                {{ input_csrf('users_edit') }}
+        <form method="post" action="{{ url('manage-user', {'user': manage_user.user_id|default(0)}) }}" class="container manage__user__container">
+            {{ container_title('Editing ' ~ manage_user.username ~ ' (' ~ manage_user.user_id ~ ')') }}
+            {{ input_csrf('users_edit') }}
 
-                <div class="manage__user__details">
-                    <label class="form__label">
-                        <div class="form__label__text">Username</div>
-                        <div class="form__label__input">
-                            {{ input_text('user[username]', 'manage__user__input', manage_user.username, 'text', '', true, {'maxlength':16}) }}
-                        </div>
-                    </label>
+            <div class="manage__user__details">
+                <label class="form__label">
+                    <div class="form__label__text">Username</div>
+                    <div class="form__label__input">
+                        {{ input_text(can_edit_user ? 'user[username]' : '', 'manage__user__input', manage_user.username, 'text', '', true, {'maxlength':16}) }}
+                    </div>
+                </label>
 
-                    <label class="form__label">
-                        <div class="form__label__text">E-mail address</div>
-                        <div class="form__label__input">
-                            {{ input_text('user[email]', 'manage__user__input', manage_user.email, 'text', '', true, {'maxlength':255}) }}
-                        </div>
-                    </label>
+                <label class="form__label">
+                    <div class="form__label__text">E-mail address</div>
+                    <div class="form__label__input">
+                        {{ input_text(can_edit_user ? 'user[email]' : '', 'manage__user__input', manage_user.email, 'text', '', true, {'maxlength':255}) }}
+                    </div>
+                </label>
 
-                    <label class="form__label">
-                        <div class="form__label__text">Title</div>
-                        <div class="form__label__input">
-                            {{ input_text('user[title]', 'manage__user__input', manage_user.user_title, 'text', '', false, {'maxlength':64}) }}
-                        </div>
-                    </label>
+                <label class="form__label">
+                    <div class="form__label__text">Title</div>
+                    <div class="form__label__input">
+                        {{ input_text(can_edit_user ? 'user[title]' : '', 'manage__user__input', manage_user.user_title, 'text', '', false, {'maxlength':64}) }}
+                    </div>
+                </label>
 
-                    <label class="form__label">
-                        <div class="form__label__text">Joined</div>
-                        <div class="form__label__input">
-                            {{ input_text('', 'manage__user__input', manage_user.user_created) }}
-                        </div>
-                    </label>
+                <label class="form__label">
+                    <div class="form__label__text">Joined</div>
+                    <div class="form__label__input">
+                        {{ input_text('', 'manage__user__input', manage_user.user_created) }}
+                    </div>
+                </label>
 
-                    <label class="form__label">
-                        <div class="form__label__text">Last online</div>
-                        <div class="form__label__input">
-                            {{ input_text('', 'manage__user__input', manage_user.user_active) }}
-                        </div>
-                    </label>
+                <label class="form__label">
+                    <div class="form__label__text">Last online</div>
+                    <div class="form__label__input">
+                        {{ input_text('', 'manage__user__input', manage_user.user_active) }}
+                    </div>
+                </label>
 
-                    <label class="form__label">
-                        <div class="form__label__text">Register IP</div>
-                        <div class="form__label__input">
-                            {{ input_text('', 'manage__user__input', manage_user.register_ip_decoded) }}
-                        </div>
-                    </label>
+                <label class="form__label">
+                    <div class="form__label__text">Register IP</div>
+                    <div class="form__label__input">
+                        {{ input_text('', 'manage__user__input', manage_user.register_ip_decoded) }}
+                    </div>
+                </label>
 
-                    <label class="form__label">
-                        <div class="form__label__text">Last IP</div>
-                        <div class="form__label__input">
-                            {{ input_text('', 'manage__user__input', manage_user.last_ip_decoded) }}
-                        </div>
-                    </label>
+                <label class="form__label">
+                    <div class="form__label__text">Last IP</div>
+                    <div class="form__label__input">
+                        {{ input_text('', 'manage__user__input', manage_user.last_ip_decoded) }}
+                    </div>
+                </label>
 
-                    <label class="form__label">
-                        <div class="form__label__text">Country</div>
-                        <div class="form__label__input">
-                            {{ input_text('user[country]', 'manage__user__input', manage_user.user_country, 'text', 'XX', true, {'maxlength':2,'minlength':2}) }}
-                        </div>
-                    </label>
+                <label class="form__label">
+                    <div class="form__label__text">Country</div>
+                    <div class="form__label__input">
+                        {{ input_text(can_edit_user ? 'user[country]' : '', 'manage__user__input', manage_user.user_country, 'text', 'XX', true, {'maxlength':2,'minlength':2}) }}
+                    </div>
+                </label>
 
-
+                {% if can_edit_user %}
                     <label class="form__label">
                         <div class="form__label__text">New Password</div>
                         <div class="form__label__input">
@@ -93,56 +92,59 @@
                             {{ input_text('password[confirm]', 'manage__user__input', '', 'password') }}
                         </div>
                     </label>
-                </div>
+                {% endif %}
+            </div>
 
-                <div class="manage__user__details">
-                    <label class="form__label">
-                        <div class="form__label__text">Custom Colour</div>
-                        <div class="form__label__input">
-                            {{ input_checkbox('colour[enable]', '', manage_user.user_colour is not null and not manage_user.user_colour|colour_inherit) }}
-                        </div>
-                    </label>
-
-                    {{ input_colour('colour[hex]', '', manage_user.user_colour|default(0)|colour_hex) }}
-                </div>
-
-                {# TODO: if the hierarchy of the current user is too low to touch the role then opacity should be lowered and input disabled #}
-                <div class="manage__user__details">
-                    <div class="manage__tags manage__tags--fixed">
-                        {% for role in manage_roles %}
-                            <label class="manage__tag" style="{{ role.role_colour|html_colour('--accent-colour') }}">
-                                <div class="manage__tag__background"></div>
-                                <div class="manage__tag__content">
-                                    {{ input_checkbox('roles[]', '', role.has_role, 'manage__tag__checkbox', role.role_id) }}
-                                    <div class="manage__tag__title">
-                                        {{ role.role_name }}
-                                    </div>
-                                    {{ input_checkbox('user[display_role]', '', role.role_id == manage_user.display_role, 'manage__tag__checkbox', role.role_id, true) }}
-                                </div>
-                            </label>
-                        {% endfor %}
+            <div class="manage__user__details">
+                <label class="form__label">
+                    <div class="form__label__text">Custom Colour</div>
+                    <div class="form__label__input">
+                        {{ input_checkbox(can_edit_user ? 'colour[enable]' : '', '', manage_user.user_colour is not null and not manage_user.user_colour|colour_inherit) }}
                     </div>
+                </label>
+
+                {{ input_colour(can_edit_user ? 'colour[hex]' : '', '', manage_user.user_colour|default(0)|colour_hex) }}
+            </div>
+
+            {# TODO: if the hierarchy of the current user is too low to touch the role then opacity should be lowered and input disabled #}
+            <div class="manage__user__details">
+                <div class="manage__tags manage__tags--fixed">
+                    {% for role in manage_roles %}
+                        <label class="manage__tag" style="{{ role.role_colour|html_colour('--accent-colour') }}">
+                            <div class="manage__tag__background"></div>
+                            <div class="manage__tag__content">
+                                {{ input_checkbox(can_edit_user ? 'roles[]' : '', '', role.has_role, 'manage__tag__checkbox', role.role_id) }}
+                                <div class="manage__tag__title">
+                                    {{ role.role_name }}
+                                </div>
+                                {{ input_checkbox(can_edit_user ? 'user[display_role]' : '', '', role.role_id == manage_user.display_role, 'manage__tag__checkbox', role.role_id, true) }}
+                            </div>
+                        </label>
+                    {% endfor %}
                 </div>
+            </div>
+
+            {% if can_edit_user %}
+                <div class="manage__user__buttons">
+                    <button class="input__button manage__user__button">Save</button>
+                    <button class="input__button manage__user__button" type="reset">Reset</button>
+                </div>
+            {% endif %}
+        </form>
+
+        <form method="post" action="{{ url('manage-user', {'user': manage_user.user_id|default(0)}) }}" class="container manage__user__container">
+            {{ container_title('Permissions for ' ~ manage_user.username ~ ' (' ~ manage_user.user_id ~ ')') }}
+
+            {{ permissions_table(permissions, not can_edit_perms) }}
+
+            {% if can_edit_perms %}
+                {{ input_csrf('users_edit') }}
 
                 <div class="manage__user__buttons">
                     <button class="input__button manage__user__button">Save</button>
                     <button class="input__button manage__user__button" type="reset">Reset</button>
                 </div>
-            </form>
-
-            {% if can_manage_perms %}
-                <form method="post" action="" class="container manage__user__container">
-                    {{ container_title('Permissions for ' ~ manage_user.username ~ ' (' ~ manage_user.user_id ~ ')') }}
-                    {{ input_csrf('users_edit') }}
-
-                    {{ permissions_table(permissions, true) }}
-
-                    <div class="manage__user__buttons">
-                        <button class="input__button manage__user__button">Save</button>
-                        <button class="input__button manage__user__button" type="reset">Reset</button>
-                    </div>
-                </form>
             {% endif %}
-        {% endif %}
+        </form>
     </div>
 {% endblock %}

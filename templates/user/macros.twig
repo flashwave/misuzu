@@ -332,9 +332,9 @@
                         <div class="profile__warning__user">
                             {% if warning.username is defined %}
                                 <div class="avatar profile__warning__user__avatar" style="background-image:url('{{ url('user-avatar', {'user': warning.user_id, 'res': 40}) }}');"></div>
-                                <div class="profile__warning__user__username">
+                                <a class="profile__warning__user__username" href="{{ url('user-profile', {'user': warning.user_id}) }}">
                                     {{ warning.username }}
-                                </div>
+                                </a>
                             {% endif %}
 
                             {% if warning.user_ip is defined %}
@@ -347,9 +347,9 @@
 
                     <div class="profile__warning__user">
                         <div class="avatar profile__warning__user__avatar" style="background-image:url('{{ url('user-avatar', {'user': warning.issuer_id, 'res': 40}) }}');"></div>
-                        <div class="profile__warning__user__username">
+                        <a class="profile__warning__user__username" href="{{ url('user-profile', {'user': warning.user_id}) }}">
                             {{ warning.issuer_username }}
-                        </div>
+                        </a>
                         <div class="profile__warning__user__ip">
                             {{ warning.issuer_ip }}
                         </div>
@@ -358,7 +358,7 @@
 
                 {% if delete_csrf %}
                     <div class="profile__warning__options">
-                        <a href="/manage/users.php?v=warnings&amp;u={{ warning.user_id }}&amp;w={{ warning.warning_id }}&amp;m=delete&amp;c={{ delete_csrf }}" class="profile__warning__option"><i class="far fa-trash-alt"></i> Delete</a>
+                        <a href="{{ url('manage-users-warning-delete', {'warning': warning.warning_id}) }}" class="profile__warning__option"><i class="far fa-trash-alt"></i> Delete</a>
                     </div>
                 {% endif %}
             </div>

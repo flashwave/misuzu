@@ -69,7 +69,7 @@
 
             {% if change.user_id is defined %}
                 <a  class="changelog__entry__user"
-                    href="{{ url(is_manage ? 'manage-user-edit' : 'user-profile', {'user': change.user_id}) }}"
+                    href="{{ url(is_manage ? 'manage-user' : 'user-profile', {'user': change.user_id}) }}"
                     style="{{ change.user_colour|html_colour }}">
                     <div class="changelog__entry__user__text">
                         {{ change.username }}

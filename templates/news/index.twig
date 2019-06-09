@@ -6,7 +6,7 @@
 {% set canonical_url = url('news-index', {
     'page': news_pagination.page > 2 ? news_pagination.page : 0,
 }) %}
-{% set manage_link = '/manage/news.php?v=index' %}
+{% set manage_link = url('manage-news-categories') %}
 
 {% set feeds = [
     {

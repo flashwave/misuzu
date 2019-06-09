@@ -5,7 +5,7 @@
 
 {% set title = post.post_title ~ ' :: News' %}
 {% set canonical_url = url('news-post', {'post': post.post_id}) %}
-{% set manage_link = '/manage/news.php?v=post&p=' ~ post.post_id %}
+{% set manage_link = url('manage-news-post', {'post': post.post_id}) %}
 
 {% block content %}
     {{ news_post(post) }}

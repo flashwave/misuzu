@@ -5,12 +5,12 @@
     <div class="container">
         {{ container_title('News Posts') }}
 
-        <a href="{{ url('manage-news-post-create') }}" class="input__button">New Post</a>
+        <a href="{{ url('manage-news-post') }}" class="input__button">New Post</a>
 
         {% for post in news_posts %}
             <p>
-                <a href="{{ url('manage-news-post-edit', {'post': post.post_id}) }}" class="input__button">{{ post.post_id }}</a>
-                <a href="{{ url('manage-news-category-edit', {'category': post.category_id}) }}" class="input__button">Cat: {{ post.category_id }}</a>
+                <a href="{{ url('manage-news-post', {'post': post.post_id}) }}" class="input__button">{{ post.post_id }}</a>
+                <a href="{{ url('manage-news-category', {'category': post.category_id}) }}" class="input__button">Cat: {{ post.category_id }}</a>
                 {{ post.post_is_featured }},
                 {{ post.user_id }},
                 {{ post.post_title }},
@@ -22,6 +22,6 @@
             </p>
         {% endfor %}
 
-        {{ pagination(posts_pagination, '/manage/news.php', null, {'v': 'posts'}) }}
+        {{ pagination(posts_pagination, url('manage-news-posts')) }}
     </div>
 {% endblock %}
