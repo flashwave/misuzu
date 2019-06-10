@@ -17,13 +17,13 @@ if(!$isRestricted && $isVerifiedRequest && !empty($_POST['role'])) {
     $roleId = (int)($_POST['role']['id'] ?? 0);
 
     if($roleId > 0 && user_role_has($currentUserId, $roleId)) {
-        switch ($_POST['role']['mode'] ?? '') {
+        switch($_POST['role']['mode'] ?? '') {
             case 'display':
                 user_role_set_display($currentUserId, $roleId);
                 break;
 
             case 'leave':
-                if (user_role_can_leave($roleId)) {
+                if(user_role_can_leave($roleId)) {
                     user_role_remove($currentUserId, $roleId);
                 } else {
                     $errors[] = "You're not allow to leave this role, an administrator has to remove it for you.";
@@ -73,8 +73,8 @@ if($isVerifiedRequest && !empty($_POST['current_password'])) {
             } else {
                 $checkMail = user_validate_email($_POST['email']['new'], true);
 
-                if ($checkMail !== '') {
-                    switch ($checkMail) {
+                if($checkMail !== '') {
+                    switch($checkMail) {
                         case 'dns':
                             $errors[] = 'No valid MX record exists for this domain.';
                             break;

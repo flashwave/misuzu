@@ -11,8 +11,7 @@ define('MSZ_DATABASE_MYSQL_DEFAULTS', [
 // Output of PDOException::getCode() is string for god knows what reason
 define('MSZ_DATABASE_DUPLICATE_KEY', '23000');
 
-function db_settings(?array $databases = [], ?string $default = null): array
-{
+function db_settings(?array $databases = [], ?string $default = null): array {
     static $settings = [];
 
     if(!empty($databases)) {
@@ -23,14 +22,13 @@ function db_settings(?array $databases = [], ?string $default = null): array
     return $settings;
 }
 
-function db_connection(?string $name = null, bool $skipConnect = false, ?PDO $object = null): ?PDO
-{
+function db_connection(?string $name = null, bool $skipConnect = false, ?PDO $object = null): ?PDO {
     static $connections = [];
 
     $settings = db_settings();
     $name = $name ?? $settings['default'] ?? '';
 
-    if (!$skipConnect && empty($connections[$name])) {
+    if(!$skipConnect && empty($connections[$name])) {
         if(!empty($object)) {
             $connections[$name] = $object;
         } elseif(!empty($settings['databases'][$name])) {
@@ -41,51 +39,43 @@ function db_connection(?string $name = null, bool $skipConnect = false, ?PDO $ob
     return $connections[$name] ?? null;
 }
 
-function db_prepare(string $statement, ?string $connection = null, $options = []): PDOStatement
-{
+function db_prepare(string $statement, ?string $connection = null, $options = []): PDOStatement {
     static $stmts = [];
     $encodedOptions = serialize($options);
 
-    if (!empty($stmts[$connection][$statement][$encodedOptions])) {
+    if(!empty($stmts[$connection][$statement][$encodedOptions])) {
         return $stmts[$connection][$statement][$encodedOptions];
     }
 
     return $stmts[$connection][$statement][$encodedOptions] = db_prepare_direct($statement, $connection, $options);
 }
 
-function db_prepare_direct(string $statement, ?string $connection = null, $options = []): PDOStatement
-{
+function db_prepare_direct(string $statement, ?string $connection = null, $options = []): PDOStatement {
     return db_connection($connection)->prepare($statement, $options);
 }
 
-function db_query(string $statement, ?string $connection = null): PDOStatement
-{
+function db_query(string $statement, ?string $connection = null): PDOStatement {
     return db_connection($connection)->query($statement);
 }
 
-function db_exec(string $statement, ?string $connection = null)
-{
+function db_exec(string $statement, ?string $connection = null) {
     return db_connection($connection)->exec($statement);
 }
 
-function db_last_insert_id(?string $name = null, ?string $connection = null): string
-{
+function db_last_insert_id(?string $name = null, ?string $connection = null): string {
     return db_connection($connection)->lastInsertId($name);
 }
 
-function db_query_count(?string $connection = null): int
-{
+function db_query_count(?string $connection = null): int {
     return (int)db_query('SHOW SESSION STATUS LIKE "Questions"', $connection)->fetchColumn(1);
 }
 
-function db_fetch(PDOStatement $stmt, $default = [])
-{
+function db_fetch(PDOStatement $stmt, $default = []) {
     $out = $stmt->execute() ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
     return $out ? $out : $default;
 }
 
-function db_fetch_all(PDOStatement $stmt, $default = [])
-{
+function db_fetch_all(PDOStatement $stmt, $default = []) {
     $out = $stmt->execute() ? $stmt->fetchAll(PDO::FETCH_ASSOC) : false;
     return $out ? $out : $default;
 }
@@ -94,19 +84,18 @@ function db_fetch_all(PDOStatement $stmt, $default = [])
 define('MSZ_DATABASE_CONNECT_UNSUPPORTED', 2);
 define('MSZ_DATABASE_CONNECT_NO_DATABASE', 3);
 
-function db_connect(string $name, ?array $options = null)
-{
+function db_connect(string $name, ?array $options = null) {
     $existing = db_connection($name, true);
 
-    if (!empty($existing)) {
+    if(!empty($existing)) {
         return $existing;
     }
 
-    if ($options === null) {
+    if($options === null) {
         $options = db_settings()['databases'][$name] ?? [];
     }
 
-    if (!in_array($options['driver'], MSZ_DATABASE_SUPPORTED)) {
+    if(!in_array($options['driver'], MSZ_DATABASE_SUPPORTED)) {
         return MSZ_DATABASE_CONNECT_UNSUPPORTED;
     }
 
@@ -119,14 +108,14 @@ function db_connect(string $name, ?array $options = null)
         PDO::ATTR_EMULATE_PREPARES => false,
     ];
 
-    switch ($options['driver']) {
+    switch($options['driver']) {
         case 'sqlite':
-            if ($options['memory']) {
+            if($options['memory']) {
                 $dsn .= ':memory:';
             } else {
                 $databasePath = realpath($options['database'] ?? MSZ_ROOT . '/store/misuzu.db');
 
-                if ($databasePath === false) {
+                if($databasePath === false) {
                     return MSZ_DATABASE_CONNECT_NO_DATABASE;
                 }
             }

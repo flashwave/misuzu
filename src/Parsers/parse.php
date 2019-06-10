@@ -17,23 +17,20 @@ define('MSZ_PARSERS_NAMES', [
     MSZ_PARSER_MARKDOWN => 'Markdown',
 ]);
 
-function parser_is_valid(int $parser): bool
-{
+function parser_is_valid(int $parser): bool {
     return in_array($parser, MSZ_PARSERS, true);
 }
 
-function parser_name(int $parser): string
-{
+function parser_name(int $parser): string {
     return parser_is_valid($parser) ? MSZ_PARSERS_NAMES[$parser] : '';
 }
 
-function parse_text(string $text, int $parser): string
-{
-    if (!parser_is_valid($parser)) {
+function parse_text(string $text, int $parser): string {
+    if(!parser_is_valid($parser)) {
         return '';
     }
 
-    switch ($parser) {
+    switch($parser) {
         case MSZ_PARSER_MARKDOWN:
             return MarkdownParser::instance()->parseText($text);
 
@@ -45,13 +42,12 @@ function parse_text(string $text, int $parser): string
     }
 }
 
-function parse_line(string $line, int $parser): string
-{
-    if (!parser_is_valid($parser)) {
+function parse_line(string $line, int $parser): string {
+    if(!parser_is_valid($parser)) {
         return '';
     }
 
-    switch ($parser) {
+    switch($parser) {
         case MSZ_PARSER_MARKDOWN:
             return MarkdownParser::instance()->parseLine($line);
 

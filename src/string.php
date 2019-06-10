@@ -1,45 +1,39 @@
 <?php
-function starts_with(string $string, string $text, bool $multibyte = true): bool
-{
+function starts_with(string $string, string $text, bool $multibyte = true): bool {
     $strlen = $multibyte ? 'mb_strlen' : 'strlen';
     $substr = $multibyte ? 'mb_substr' : 'substr';
     return $substr($string, 0, $strlen($text)) === $text;
 }
 
-function ends_with(string $string, string $text, bool $multibyte = true): bool
-{
+function ends_with(string $string, string $text, bool $multibyte = true): bool {
     $strlen = $multibyte ? 'mb_strlen' : 'strlen';
     $substr = $multibyte ? 'mb_substr' : 'substr';
     return $substr($string, 0 - $strlen($text)) === $text;
 }
 
-function first_paragraph(string $text, string $delimiter = "\n"): string
-{
+function first_paragraph(string $text, string $delimiter = "\n"): string {
     $index = mb_strpos($text, $delimiter);
     return $index === false ? $text : mb_substr($text, 0, $index);
 }
 
-function camel_to_snake(string $camel): string
-{
+function camel_to_snake(string $camel): string {
     return trim(mb_strtolower(preg_replace('#([A-Z][a-z]+)#', '$1_', $camel)), '_');
 }
 
-function snake_to_camel(string $snake): string
-{
+function snake_to_camel(string $snake): string {
     return str_replace('_', '', ucwords($snake, '_'));
 }
 
-function unique_chars(string $input, bool $multibyte = true): int
-{
+function unique_chars(string $input, bool $multibyte = true): int {
     $chars = [];
     $strlen = $multibyte ? 'mb_strlen' : 'strlen';
     $substr = $multibyte ? 'mb_substr' : 'substr';
     $length = $strlen($input);
 
-    for ($i = 0; $i < $length; $i++) {
+    for($i = 0; $i < $length; $i++) {
         $current = $substr($input, $i, 1);
 
-        if (!in_array($current, $chars, true)) {
+        if(!in_array($current, $chars, true)) {
             $chars[] = $current;
         }
     }
@@ -48,24 +42,20 @@ function unique_chars(string $input, bool $multibyte = true): int
 }
 
 // https://secure.php.net/manual/en/function.base64-encode.php#103849
-function base64url_encode(string $data): string
-{
+function base64url_encode(string $data): string {
     return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
 }
 
-function base64url_decode(string $data): string
-{
+function base64url_decode(string $data): string {
     return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
 }
 
-function byte_symbol(int $bytes, bool $decimal = false, array $symbols = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']): string
-{
-    if ($bytes < 1) {
+function byte_symbol(int $bytes, bool $decimal = false, array $symbols = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']): string {
+    if($bytes < 1) {
         return '0 B';
     }
 
     $divider = $decimal ? 1000 : 1024;
-
     $exp = floor(log($bytes) / log($divider));
     $bytes = $bytes / pow($divider, floor($exp));
     $symbol = $symbols[$exp];

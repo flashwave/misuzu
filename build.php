@@ -58,30 +58,26 @@ define('TWIG_DIRECTORY', sys_get_temp_dir() . '/msz-tpl-cache-' . md5(__DIR__));
  * FUNCTIONS
  */
 
-function build_log(string $text = ''): void
-{
+function build_log(string $text = ''): void {
     echo strlen($text) > 0 ? date('<H:i:s> ') . $text . PHP_EOL : PHP_EOL;
 }
 
-function create_dir(string $dir): void
-{
-    if (!file_exists($dir) || !is_dir($dir)) {
+function create_dir(string $dir): void {
+    if(!file_exists($dir) || !is_dir($dir)) {
         mkdir($dir);
         build_log("Created '{$dir}'!");
     }
 }
 
-function glob_dir(string $dir, string $pattern, int $flags = 0): array
-{
+function glob_dir(string $dir, string $pattern, int $flags = 0): array {
     return glob($dir . '/' . $pattern, $flags);
 }
 
-function purge_dir(string $dir, string $pattern): void
-{
+function purge_dir(string $dir, string $pattern): void {
     $files = glob_dir($dir, $pattern);
 
-    foreach ($files as $file) {
-        if (is_dir($file)) {
+    foreach($files as $file) {
+        if(is_dir($file)) {
             build_log("'{$file}' is a directory, entering...");
             purge_dir($file, $pattern);
             rmdir($file);
@@ -92,24 +88,23 @@ function purge_dir(string $dir, string $pattern): void
     }
 }
 
-function recursive_copy(string $source, string $dest): bool
-{
-    if (is_link($source)) {
+function recursive_copy(string $source, string $dest): bool {
+    if(is_link($source)) {
         return symlink(readlink($source), $dest);
     }
 
-    if (is_file($source)) {
+    if(is_file($source)) {
         return copy($source, $dest);
     }
 
-    if (!is_dir($dest)) {
+    if(!is_dir($dest)) {
         mkdir($dest);
     }
 
     $dir = dir($source);
 
-    while (($entry = $dir->read()) !== false) {
-        if ($entry === '.' || $entry === '..') {
+    while(($entry = $dir->read()) !== false) {
+        if($entry === '.' || $entry === '..') {
             continue;
         }
 
@@ -129,22 +124,22 @@ chdir(__DIR__);
 
 build_log('Cleanup');
 
-if ($doCss) {
+if($doCss) {
     create_dir(CSS_DIR);
     purge_dir(CSS_DIR, '*.css');
 }
 
-if ($doJs) {
+if($doJs) {
     create_dir(JS_DIR);
     purge_dir(JS_DIR, '*.js');
     purge_dir(TS_DIR, '*.d.ts');
 }
 
-if ($doCss) {
+if($doCss) {
     build_log();
     build_log('Compiling LESS');
 
-    if (!is_file(LESS_DIR . LESS_ENTRY_POINT)) {
+    if(!is_file(LESS_DIR . LESS_ENTRY_POINT)) {
         build_log('==> ERR: Entry point for this style does not exist (' . basename(LESS_ENTRY_POINT) . ')');
     } else {
         system(sprintf(LESS_CMD, escapeshellarg(LESS_DIR . LESS_ENTRY_POINT), LESS_DEST));
@@ -171,8 +166,8 @@ define('IMPORT_SEQ', [
     ],
 ]);
 
-foreach (IMPORT_SEQ as $sequence) {
-    if (!$sequence['do']) {
+foreach(IMPORT_SEQ as $sequence) {
+    if(!$sequence['do']) {
         continue;
     }
 
@@ -180,19 +175,19 @@ foreach (IMPORT_SEQ as $sequence) {
 
     $contents = '';
 
-    foreach ($sequence['files'] as $file) {
+    foreach($sequence['files'] as $file) {
         $realpath = realpath(NODE_MODULES_DIR . '/' . $file);
 
         build_log("==> '{$file}'");
 
-        if (!file_exists($realpath)) {
+        if(!file_exists($realpath)) {
             build_log('===> File does not exist.');
             continue;
         }
 
         $contents .= file_get_contents($realpath);
 
-        if ($sequence['insert-semicolon']) {
+        if($sequence['insert-semicolon']) {
             $contents .= ';';
         }
     }
@@ -200,7 +195,7 @@ foreach (IMPORT_SEQ as $sequence) {
     file_put_contents($sequence['destination'], $contents);
 }
 
-if ($doJs) {
+if($doJs) {
     build_log();
     build_log('Compiling TypeScript');
     build_log(shell_exec('tsc --extendedDiagnostics -p tsconfig.json'));
@@ -209,7 +204,7 @@ if ($doJs) {
 build_log();
 build_log('Copying data...');
 
-foreach (NODE_COPY_DIRECTORY as $source => $dest) {
+foreach(NODE_COPY_DIRECTORY as $source => $dest) {
     build_log("=> " . basename($dest));
     $source = realpath(NODE_MODULES_DIR . DIRECTORY_SEPARATOR . $source);
     $dest = PUBLIC_DIR . DIRECTORY_SEPARATOR . $dest;
@@ -218,7 +213,7 @@ foreach (NODE_COPY_DIRECTORY as $source => $dest) {
 }
 
 // no need to do this in debug mode, auto reload is enabled and cache is disabled
-if ($doAll && !file_exists(__DIR__ . '/.debug')) {
+if($doAll && !file_exists(__DIR__ . '/.debug')) {
     // Clear Twig cache
     build_log();
     build_log('Deleting template cache');

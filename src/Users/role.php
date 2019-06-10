@@ -1,8 +1,7 @@
 <?php
 define('MSZ_ROLE_MAIN', 1);
 
-function user_role_add(int $userId, int $roleId): bool
-{
+function user_role_add(int $userId, int $roleId): bool {
     $addRole = db_prepare('
         INSERT INTO `msz_user_roles`
             (`user_id`, `role_id`)
@@ -14,8 +13,7 @@ function user_role_add(int $userId, int $roleId): bool
     return $addRole->execute();
 }
 
-function user_role_remove(int $userId, int $roleId): bool
-{
+function user_role_remove(int $userId, int $roleId): bool {
     $removeRole = db_prepare('
         DELETE FROM `msz_user_roles`
         WHERE `user_id` = :user_id
@@ -26,8 +24,7 @@ function user_role_remove(int $userId, int $roleId): bool
     return $removeRole->execute();
 }
 
-function user_role_can_leave(int $roleId): bool
-{
+function user_role_can_leave(int $roleId): bool {
     $canLeaveRole = db_prepare('
         SELECT `role_can_leave` != 0
         FROM `msz_roles`
@@ -37,8 +34,7 @@ function user_role_can_leave(int $roleId): bool
     return $canLeaveRole->execute() ? (bool)$canLeaveRole->fetchColumn() : false;
 }
 
-function user_role_has(int $userId, int $roleId): bool
-{
+function user_role_has(int $userId, int $roleId): bool {
     $hasRole = db_prepare('
         SELECT COUNT(`role_id`) > 0
         FROM `msz_user_roles`
@@ -50,9 +46,8 @@ function user_role_has(int $userId, int $roleId): bool
     return $hasRole->execute() ? (bool)$hasRole->fetchColumn() : false;
 }
 
-function user_role_set_display(int $userId, int $roleId): bool
-{
-    if (!user_role_has($userId, $roleId)) {
+function user_role_set_display(int $userId, int $roleId): bool {
+    if(!user_role_has($userId, $roleId)) {
         return false;
     }
 
@@ -67,9 +62,8 @@ function user_role_set_display(int $userId, int $roleId): bool
     return $setDisplay->execute();
 }
 
-function user_role_get_display(int $userId): int
-{
-    if ($userId < 1) {
+function user_role_get_display(int $userId): int {
+    if($userId < 1) {
         return MSZ_ROLE_MAIN;
     }
 
@@ -82,8 +76,7 @@ function user_role_get_display(int $userId): int
     return $fetchRole->execute() ? (int)$fetchRole->fetchColumn() : MSZ_ROLE_MAIN;
 }
 
-function user_role_all_user(int $userId): array
-{
+function user_role_all_user(int $userId): array {
     $getUserRoles = db_prepare('
         SELECT
             r.`role_id`, r.`role_name`, r.`role_description`,
@@ -98,8 +91,7 @@ function user_role_all_user(int $userId): array
     return db_fetch_all($getUserRoles);
 }
 
-function user_role_all(bool $withHidden = false)
-{
+function user_role_all(bool $withHidden = false) {
     return db_query(sprintf(
         '
             SELECT
@@ -118,8 +110,7 @@ function user_role_all(bool $withHidden = false)
     ))->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function user_role_get(int $roleId): array
-{
+function user_role_get(int $roleId): array {
     $getRole = db_prepare('
         SELECT
             r.`role_id`, r.`role_name`, r.`role_description`,
@@ -136,8 +127,7 @@ function user_role_get(int $roleId): array
     return db_fetch($getRole);
 }
 
-function user_role_check_authority(int $userId, int $roleId): bool
-{
+function user_role_check_authority(int $userId, int $roleId): bool {
     $checkHierarchy = db_prepare('
         SELECT (
             SELECT MAX(r.`role_hierarchy`)

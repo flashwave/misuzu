@@ -11,8 +11,7 @@ define('MSZ_MAIL_METHODS', [
 define('MSZ_MAIL_DEFAULT_SENDER_NAME', 'Misuzu System');
 define('MSZ_MAIL_DEFAULT_SENDER_ADDRESS', 'sys@msz.lh');
 
-function mail_settings($param = null)
-{
+function mail_settings($param = null) {
     static $settings = [];
 
     if(!empty($param)) {
@@ -26,8 +25,7 @@ function mail_settings($param = null)
     return $settings;
 }
 
-function mail_init_if_prepared(): bool
-{
+function mail_init_if_prepared(): bool {
     return !empty(mail_instance()) || mail_init(mail_settings());
 }
 
@@ -41,28 +39,27 @@ function mail_instance($newObject = null) {
     return $object;
 }
 
-function mail_init(array $options = []): bool
-{
-    if (!empty(mail_instance())) {
+function mail_init(array $options = []): bool {
+    if(!empty(mail_instance())) {
         return true;
     }
 
     mail_settings($options);
     $method = $options['method'] ?? '';
 
-    if (array_key_exists($method, MSZ_MAIL_METHODS)) {
+    if(array_key_exists($method, MSZ_MAIL_METHODS)) {
         $method = MSZ_MAIL_METHODS[$method];
     }
 
-    if (!in_array($method, MSZ_MAIL_METHODS)) {
+    if(!in_array($method, MSZ_MAIL_METHODS)) {
         return false;
     }
 
     $transport = new $method;
 
-    switch ($method) {
+    switch($method) {
         case MSZ_MAIL_SENDMAIL:
-            if (!empty($options['command'])) {
+            if(!empty($options['command'])) {
                 $transport->setCommand($options['command']);
             }
             break;
@@ -71,15 +68,15 @@ function mail_init(array $options = []): bool
             $transport->setHost($options['host'] ?? '');
             $transport->setPort(intval($options['port'] ?? 25));
 
-            if (!empty($options['encryption'])) {
+            if(!empty($options['encryption'])) {
                 $transport->setEncryption($options['encryption']);
             }
 
-            if (!empty($options['username'])) {
+            if(!empty($options['username'])) {
                 $transport->setUsername($options['username']);
             }
 
-            if (!empty($options['password'])) {
+            if(!empty($options['password'])) {
                 $transport->setPassword($options['password']);
             }
             break;
@@ -89,17 +86,15 @@ function mail_init(array $options = []): bool
     return true;
 }
 
-function mail_default_sender(): array
-{
+function mail_default_sender(): array {
     return [
         mail_settings('sender_email') ?? MSZ_MAIL_DEFAULT_SENDER_ADDRESS =>
         mail_settings('sender_name') ?? MSZ_MAIL_DEFAULT_SENDER_NAME
     ];
 }
 
-function mail_send(Swift_Message $mail): int
-{
-    if (!mail_init_if_prepared()) {
+function mail_send(Swift_Message $mail): int {
+    if(!mail_init_if_prepared()) {
         return 0;
     }
 

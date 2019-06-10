@@ -9,7 +9,7 @@ if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_P
 $tagId = (int)($_GET['t'] ?? 0);
 
 if(!empty($_POST['tag']) && is_array($_POST['tag']) && csrf_verify_request()) {
-    if ($tagId > 0) {
+    if($tagId > 0) {
         $updateTag = db_prepare('
             UPDATE `msz_changelog_tags`
             SET `tag_name` = :name,
@@ -32,7 +32,7 @@ if(!empty($_POST['tag']) && is_array($_POST['tag']) && csrf_verify_request()) {
     $updateTag->bindValue('archived', empty($_POST['tag']['archived']) ? null : date('Y-m-d H:i:s'));
     $updateTag->execute();
 
-    if ($tagId < 1) {
+    if($tagId < 1) {
         $tagId = db_last_insert_id();
         audit_log(MSZ_AUDIT_CHANGELOG_TAG_EDIT, user_session_current('user_id', 0), [$tagId]);
         url_redirect('manage-changelog-tag', ['tag' => $tagId]);
@@ -42,7 +42,7 @@ if(!empty($_POST['tag']) && is_array($_POST['tag']) && csrf_verify_request()) {
     }
 }
 
-if ($tagId > 0) {
+if($tagId > 0) {
     $getTag = db_prepare('
         SELECT `tag_id`, `tag_name`, `tag_description`, `tag_archived`, `tag_created`
         FROM `msz_changelog_tags`
@@ -51,7 +51,7 @@ if ($tagId > 0) {
     $getTag->bindValue('tag_id', $tagId);
     $tag = db_fetch($getTag);
 
-    if ($tag) {
+    if($tag) {
         tpl_var('edit_tag', $tag);
     } else {
         url_redirect('manage-changelog-tags');

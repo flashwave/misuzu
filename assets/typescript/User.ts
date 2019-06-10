@@ -10,25 +10,22 @@ interface CurrentUserInfo {
 
 let userInfo: CurrentUserInfo;
 
-function getRawCurrentUserInfo(): CurrentUserInfo
-{
+function getRawCurrentUserInfo(): CurrentUserInfo {
     const userInfoElement: HTMLDivElement = document.getElementById('js-user-info') as HTMLDivElement;
 
-    if (!userInfoElement)
+    if(!userInfoElement)
         return null;
 
     return JSON.parse(userInfoElement.textContent) as CurrentUserInfo;
 }
 
-function refreshCurrentUserInfo(): void
-{
+function refreshCurrentUserInfo(): void {
     userInfo = getRawCurrentUserInfo();
 }
 
-function getCurrentUser(attribute: string = null)
-{
-    if (attribute) {
-        if (!userInfo) {
+function getCurrentUser(attribute: string = null) {
+    if(attribute) {
+        if(!userInfo) {
             return '';
         }
 
@@ -38,8 +35,7 @@ function getCurrentUser(attribute: string = null)
     return userInfo || null;
 }
 
-function userInit(): void
-{
+function userInit(): void {
     refreshCurrentUserInfo();
     console.log(`You are ${getCurrentUser('username')} with user id ${getCurrentUser('user_id')} and colour ${colourGetCSS(getCurrentUser('user_colour'))}.`);
 }

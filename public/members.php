@@ -59,16 +59,16 @@ $orderFields = [
     ],
 ];
 
-if (empty($orderBy)) {
+if(empty($orderBy)) {
     $orderBy = $defaultOrder;
-} elseif (!array_key_exists($orderBy, $orderFields)) {
+} elseif(!array_key_exists($orderBy, $orderFields)) {
     echo render_error(400);
     return;
 }
 
-if (empty($orderDir)) {
+if(empty($orderDir)) {
     $orderDir = $orderFields[$orderBy]['default-dir'];
-} elseif (!array_key_exists($orderDir, $orderDirs)) {
+} elseif(!array_key_exists($orderDir, $orderDirs)) {
     echo render_error(400);
     return;
 }
@@ -80,7 +80,7 @@ $canManageUsers = perms_check_user(
 
 $role = user_role_get($roleId);
 
-if (empty($role)) {
+if(empty($role)) {
     echo render_error(404);
     return;
 }
@@ -88,7 +88,7 @@ if (empty($role)) {
 $usersPagination = pagination_create($role['role_user_count'], 15);
 $usersOffset = pagination_offset($usersPagination, pagination_param());
 
-if (!pagination_is_valid_offset($usersOffset)) {
+if(!pagination_is_valid_offset($usersOffset)) {
     echo render_error(404);
     return;
 }

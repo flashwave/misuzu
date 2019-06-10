@@ -27,23 +27,19 @@ define('MSZ_WARN_TYPE_NAMES', [
     MSZ_WARN_BAN => 'Ban',
 ]);
 
-function user_warning_type_is_valid(int $type): bool
-{
+function user_warning_type_is_valid(int $type): bool {
     return in_array($type, MSZ_WARN_TYPES, true);
 }
 
-function user_warning_type_get_name(int $type): string
-{
+function user_warning_type_get_name(int $type): string {
     return user_warning_type_is_valid($type) ? MSZ_WARN_TYPE_NAMES[$type] : '';
 }
 
-function user_warning_get_types(): array
-{
+function user_warning_get_types(): array {
     return MSZ_WARN_TYPE_NAMES;
 }
 
-function user_warning_has_duration(int $type): bool
-{
+function user_warning_has_duration(int $type): bool {
     return in_array($type, MSZ_WARN_TYPES_HAS_DURATION, true);
 }
 
@@ -62,16 +58,16 @@ function user_warning_add(
     string $privateNote,
     ?int $duration = null
 ): int {
-    if (!user_warning_type_is_valid($type)) {
+    if(!user_warning_type_is_valid($type)) {
         return MSZ_E_WARNING_ADD_TYPE;
     }
 
-    if ($userId < 1) {
+    if($userId < 1) {
         return MSZ_E_WARNING_ADD_USER;
     }
 
-    if (user_warning_has_duration($type)) {
-        if ($duration <= time()) {
+    if(user_warning_has_duration($type)) {
+        if($duration <= time()) {
             return MSZ_E_WARNING_ADD_DURATION;
         }
     } else {
@@ -93,16 +89,15 @@ function user_warning_add(
     $addWarning->bindValue('note_private', $privateNote);
     $addWarning->bindValue('duration', $duration < 1 ? null : date('Y-m-d H:i:s', $duration));
 
-    if (!$addWarning->execute()) {
+    if(!$addWarning->execute()) {
         return MSZ_E_WARNING_ADD_DB;
     }
 
     return (int)db_last_insert_id();
 }
 
-function user_warning_count(int $userId): int
-{
-    if ($userId < 1) {
+function user_warning_count(int $userId): int {
+    if($userId < 1) {
         return 0;
     }
 
@@ -115,9 +110,8 @@ function user_warning_count(int $userId): int
     return (int)($countWarnings->execute() ? $countWarnings->fetchColumn() : 0);
 }
 
-function user_warning_remove(int $warningId): bool
-{
-    if ($warningId < 1) {
+function user_warning_remove(int $warningId): bool {
+    if($warningId < 1) {
         return false;
     }
 
@@ -154,30 +148,28 @@ function user_warning_fetch(
     ));
     $fetchWarnings->bindValue('user_id', $userId);
 
-    if ($days !== null) {
+    if($days !== null) {
         $fetchWarnings->bindValue('days', $days);
     }
 
     return db_fetch_all($fetchWarnings);
 }
 
-function user_warning_global_count(?int $userId = null): int
-{
+function user_warning_global_count(?int $userId = null): int {
     $countWarnings = db_prepare(sprintf('
         SELECT COUNT(`warning_id`)
         FROM `msz_user_warnings`
         %s
     ', $userId > 0 ? 'WHERE `user_id` = :user_id' : ''));
 
-    if ($userId > 0) {
+    if($userId > 0) {
         $countWarnings->bindValue('user_id', $userId);
     }
 
     return (int)($countWarnings->execute() ? $countWarnings->fetchColumn() : 0);
 }
 
-function user_warning_global_fetch(int $offset = 0, int $take = 50, ?int $userId = null): array
-{
+function user_warning_global_fetch(int $offset = 0, int $take = 50, ?int $userId = null): array {
     $fetchWarnings = db_prepare(sprintf(
         '
             SELECT
@@ -199,15 +191,14 @@ function user_warning_global_fetch(int $offset = 0, int $take = 50, ?int $userId
     $fetchWarnings->bindValue('offset', $offset);
     $fetchWarnings->bindValue('take', $take);
 
-    if ($userId > 0) {
+    if($userId > 0) {
         $fetchWarnings->bindValue('user_id', $userId);
     }
 
     return db_fetch_all($fetchWarnings);
 }
 
-function user_warning_check_ip(string $address): bool
-{
+function user_warning_check_ip(string $address): bool {
     $checkAddress = db_prepare(sprintf(
         '
             SELECT COUNT(`warning_id`) > 0
@@ -223,9 +214,8 @@ function user_warning_check_ip(string $address): bool
     return (bool)($checkAddress->execute() ? $checkAddress->fetchColumn() : false);
 }
 
-function user_warning_check_expiration(int $userId, int $type): int
-{
-    if ($userId < 1 || !user_warning_has_duration($type)) {
+function user_warning_check_expiration(int $userId, int $type): int {
+    if($userId < 1 || !user_warning_has_duration($type)) {
         return 0;
     }
 
@@ -253,9 +243,8 @@ function user_warning_check_expiration(int $userId, int $type): int
     return $memo[$memoId] = (empty($expiration) ? 0 : strtotime($expiration));
 }
 
-function user_warning_check_restriction(int $userId): bool
-{
-    if ($userId < 1) {
+function user_warning_check_restriction(int $userId): bool {
+    if($userId < 1) {
         return false;
     }
 

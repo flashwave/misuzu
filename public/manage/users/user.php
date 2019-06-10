@@ -131,7 +131,7 @@ if(csrf_verify_request() && $canEdit) {
 
         if(strlen($setUserInfo['user_title']) < 1) {
             $setUserInfo['user_title'] = null;
-        } elseif (strlen($setUserInfo['user_title']) > 64) {
+        } elseif(strlen($setUserInfo['user_title']) > 64) {
             $notices[] = 'User title was invalid.';
         }
     }

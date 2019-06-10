@@ -14,30 +14,30 @@ $canViewImages = !$userExists
         && perms_check_user(MSZ_PERMS_USER, user_session_current('user_id', 0), MSZ_PERM_USER_MANAGE_USERS)
     );
 
-switch ($userAssetsMode) {
+switch($userAssetsMode) {
     case 'avatar':
-        if (!$canViewImages) {
+        if(!$canViewImages) {
             $filename = config_get_default(MSZ_ROOT . '/public/images/banned-avatar.png', 'Avatar', 'banned_path');
             break;
         }
 
         $filename = config_get_default(MSZ_ROOT . '/public/images/no-avatar.png', 'Avatar', 'default_path');
 
-        if (!$userExists) {
+        if(!$userExists) {
             break;
         }
 
         $dimensions = MSZ_USER_AVATAR_RESOLUTION_DEFAULT;
 
         // todo: find closest dimensions
-        if (isset($_GET['r']) && is_string($_GET['r']) && ctype_digit($_GET['r'])) {
+        if(isset($_GET['r']) && is_string($_GET['r']) && ctype_digit($_GET['r'])) {
             $dimensions = user_avatar_resolution_closest((int)$_GET['r']);
         }
 
         $avatarFilename = sprintf('%d.msz', $userId);
         $avatarOriginal = sprintf('%s/avatars/original/%s', MSZ_STORAGE, $avatarFilename);
 
-        if ($dimensions === MSZ_USER_AVATAR_RESOLUTION_ORIGINAL) {
+        if($dimensions === MSZ_USER_AVATAR_RESOLUTION_ORIGINAL) {
             $filename = $avatarOriginal;
             break;
         }
@@ -45,10 +45,10 @@ switch ($userAssetsMode) {
         $avatarStorage = sprintf('%1$s/avatars/%2$dx%2$d', MSZ_STORAGE, $dimensions);
         $avatarCropped = sprintf('%s/%s', $avatarStorage, $avatarFilename);
 
-        if (is_file($avatarCropped)) {
+        if(is_file($avatarCropped)) {
             $filename = $avatarCropped;
         } else {
-            if (is_file($avatarOriginal)) {
+            if(is_file($avatarOriginal)) {
                 try {
                     mkdirs($avatarStorage, true);
 
@@ -59,7 +59,7 @@ switch ($userAssetsMode) {
                     $avatarOriginalWidth = $avatarImage->getImageWidth();
                     $avatarOriginalHeight = $avatarImage->getImageHeight();
 
-                    if ($avatarOriginalWidth > $avatarOriginalHeight) {
+                    if($avatarOriginalWidth > $avatarOriginalHeight) {
                         $avatarWidth = $avatarOriginalWidth * $dimensions / $avatarOriginalHeight;
                         $avatarHeight = $dimensions;
                     } else {
@@ -88,18 +88,16 @@ switch ($userAssetsMode) {
                             0,
                             0
                         );
-                    } while ($avatarImage->nextImage());
+                    } while($avatarImage->nextImage());
 
                     $avatarImage->deconstructImages()->writeImages($filename = $avatarCropped, true);
-                } catch (Exception $ex) {
-                    // report error
-                }
+                } catch(Exception $ex) {}
             }
         }
         break;
 
     case 'background':
-        if (!$canViewImages && !$userExists) {
+        if(!$canViewImages && !$userExists) {
             break;
         }
 
@@ -109,7 +107,7 @@ switch ($userAssetsMode) {
         break;
 }
 
-if (empty($filename) || !is_file($filename)) {
+if(empty($filename) || !is_file($filename)) {
     http_response_code(404);
     return;
 }
@@ -117,7 +115,7 @@ if (empty($filename) || !is_file($filename)) {
 $fileContents = file_get_contents($filename);
 $entityTag = sprintf('W/"{%s}"', hash('sha256', $fileContents));
 
-if (!empty($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $entityTag) {
+if(!empty($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $entityTag) {
     http_response_code(304);
     return;
 }

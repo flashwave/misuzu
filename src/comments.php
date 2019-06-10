@@ -25,13 +25,11 @@ define('MSZ_COMMENTS_MARKUP_USERNAME', '#\B(?:@{1}(' . MSZ_USERNAME_REGEX . '))#
 // gets parsed on fetch
 define('MSZ_COMMENTS_MARKUP_USER_ID', '#\B(?:@{2}([0-9]+))#u');
 
-function comments_vote_type_valid(int $voteType): bool
-{
+function comments_vote_type_valid(int $voteType): bool {
     return in_array($voteType, MSZ_COMMENTS_VOTE_TYPES, true);
 }
 
-function comments_parse_for_store(string $text): string
-{
+function comments_parse_for_store(string $text): string {
     return preg_replace_callback(MSZ_COMMENTS_MARKUP_USERNAME, function ($matches) {
         return ($userId = user_id_from_username($matches[1])) < 1
             ? $matches[0]
@@ -39,15 +37,14 @@ function comments_parse_for_store(string $text): string
     }, $text);
 }
 
-function comments_parse_for_display(string $text): string
-{
+function comments_parse_for_display(string $text): string {
     $text = preg_replace_callback(
         '/(^|[\n ])([\w]*?)([\w]*?:\/\/[\w]+[^ \,\"\n\r\t<]*)/is',
         function ($matches) {
             $matches[0] = trim($matches[0]);
             $url = parse_url($matches[0]);
 
-            if (empty($url['scheme']) || !in_array(mb_strtolower($url['scheme']), ['http', 'https'], true)) {
+            if(empty($url['scheme']) || !in_array(mb_strtolower($url['scheme']), ['http', 'https'], true)) {
                 return $matches[0];
             }
 
@@ -69,7 +66,7 @@ function comments_parse_for_display(string $text): string
         $getInfo->bindValue('user_id', $matches[1]);
         $info = db_fetch($getInfo);
 
-        if (empty($info)) {
+        if(empty($info)) {
             return $matches[0];
         }
 
@@ -87,8 +84,7 @@ function comments_parse_for_display(string $text): string
 // usually this is not how you're suppose to handle permission checking,
 // but in the context of comments this is fine since the same shit is used
 // for every comment section.
-function comments_get_perms(int $userId): array
-{
+function comments_get_perms(int $userId): array {
     return perms_check_user_bulk(MSZ_PERMS_COMMENTS, $userId, [
         'can_comment' => MSZ_PERM_COMMENTS_CREATE,
         'can_delete' => MSZ_PERM_COMMENTS_DELETE_OWN | MSZ_PERM_COMMENTS_DELETE_ANY,
@@ -99,9 +95,8 @@ function comments_get_perms(int $userId): array
     ]);
 }
 
-function comments_pin_status(int $comment, bool $mode): ?string
-{
-    if ($comment < 1) {
+function comments_pin_status(int $comment, bool $mode): ?string {
+    if($comment < 1) {
         return false;
     }
 
@@ -119,9 +114,8 @@ function comments_pin_status(int $comment, bool $mode): ?string
     return $setPinStatus->execute() ? $status : null;
 }
 
-function comments_vote_add(int $comment, int $user, int $vote = MSZ_COMMENTS_VOTE_INDIFFERENT): bool
-{
-    if (!comments_vote_type_valid($vote)) {
+function comments_vote_add(int $comment, int $user, int $vote = MSZ_COMMENTS_VOTE_INDIFFERENT): bool {
+    if(!comments_vote_type_valid($vote)) {
         return false;
     }
 
@@ -137,8 +131,7 @@ function comments_vote_add(int $comment, int $user, int $vote = MSZ_COMMENTS_VOT
     return $setVote->execute();
 }
 
-function comments_votes_get(int $commentId): array
-{
+function comments_votes_get(int $commentId): array {
     $getVotes = db_prepare(sprintf(
         '
             SELECT :id as `id`,
@@ -162,8 +155,7 @@ function comments_votes_get(int $commentId): array
     return db_fetch($getVotes);
 }
 
-function comments_category_create(string $name): array
-{
+function comments_category_create(string $name): array {
     $create = db_prepare('
         INSERT INTO `msz_comments_categories`
             (`category_name`)
@@ -176,8 +168,7 @@ function comments_category_create(string $name): array
         : [];
 }
 
-function comments_category_lock(int $category, bool $lock): void
-{
+function comments_category_lock(int $category, bool $lock): void {
     $setLock = db_prepare('
         UPDATE `msz_comments_categories`
         SET `category_locked` = IF(:lock, NOW(), NULL)
@@ -205,12 +196,11 @@ define('MSZ_COMMENTS_CATEGORY_INFO_NAME', sprintf(
     'LOWER(:category)'
 ));
 
-function comments_category_info($category, bool $createIfNone = false): array
-{
-    if (is_int($category)) {
+function comments_category_info($category, bool $createIfNone = false): array {
+    if(is_int($category)) {
         $getCategory = db_prepare(MSZ_COMMENTS_CATEGORY_INFO_ID);
         $createIfNone = false;
-    } elseif (is_string($category)) {
+    } elseif(is_string($category)) {
         $getCategory = db_prepare(MSZ_COMMENTS_CATEGORY_INFO_NAME);
     } else {
         return [];
@@ -266,8 +256,7 @@ define('MSZ_COMMENTS_CATEGORY_QUERY', sprintf(
 ));
 
 // The $parent param should never be used outside of this function itself and should always remain the last of the list.
-function comments_category_get(int $category, int $user, ?int $parent = null): array
-{
+function comments_category_get(int $category, int $user, ?int $parent = null): array {
     $isParent = $parent === null;
     $getComments = db_prepare(sprintf(
         MSZ_COMMENTS_CATEGORY_QUERY,
@@ -275,7 +264,7 @@ function comments_category_get(int $category, int $user, ?int $parent = null): a
         $isParent ? 'DESC' : 'ASC'
     ));
 
-    if (!$isParent) {
+    if(!$isParent) {
         $getComments->bindValue('parent', $parent);
     }
 
@@ -284,7 +273,7 @@ function comments_category_get(int $category, int $user, ?int $parent = null): a
     $comments = db_fetch_all($getComments);
 
     $commentsCount = count($comments);
-    for ($i = 0; $i < $commentsCount; $i++) {
+    for($i = 0; $i < $commentsCount; $i++) {
         $comments[$i]['comment_html'] = nl2br(comments_parse_for_display(htmlentities($comments[$i]['comment_text'])));
         $comments[$i]['comment_replies'] = comments_category_get($category, $user, $comments[$i]['comment_id']);
     }
@@ -300,7 +289,7 @@ function comments_post_create(
     ?int $reply = null,
     bool $parse = true
 ): int {
-    if ($parse) {
+    if($parse) {
         $text = comments_parse_for_store($text);
     }
 
@@ -318,8 +307,7 @@ function comments_post_create(
     return $create->execute() ? db_last_insert_id() : 0;
 }
 
-function comments_post_delete(int $commentId, bool $delete = true): bool
-{
+function comments_post_delete(int $commentId, bool $delete = true): bool {
     $deleteComment = db_prepare('
         UPDATE `msz_comments_posts`
         SET `comment_deleted` = IF(:del, NOW(), NULL)
@@ -330,8 +318,7 @@ function comments_post_delete(int $commentId, bool $delete = true): bool
     return $deleteComment->execute();
 }
 
-function comments_post_get(int $commentId, bool $parse = true): array
-{
+function comments_post_get(int $commentId, bool $parse = true): array {
     $fetch = db_prepare('
         SELECT
             p.`comment_id`, p.`category_id`, p.`comment_text`,
@@ -349,15 +336,14 @@ function comments_post_get(int $commentId, bool $parse = true): array
     $fetch->bindValue('id', $commentId);
     $comment = db_fetch($fetch);
 
-    if ($comment && $parse) {
+    if($comment && $parse) {
         $comment['comment_html'] = nl2br(comments_parse_for_display(htmlentities($comment['comment_text'])));
     }
 
     return $comment;
 }
 
-function comments_post_exists(int $commentId): bool
-{
+function comments_post_exists(int $commentId): bool {
     $fetch = db_prepare('
         SELECT COUNT(`comment_id`) > 0
         FROM `msz_comments_posts`
@@ -367,8 +353,7 @@ function comments_post_exists(int $commentId): bool
     return $fetch->execute() ? (bool)$fetch->fetchColumn() : false;
 }
 
-function comments_post_replies(int $commentId): array
-{
+function comments_post_replies(int $commentId): array {
     $getComments = db_prepare('
         SELECT
             p.`comment_id`, p.`category_id`, p.`comment_text`,

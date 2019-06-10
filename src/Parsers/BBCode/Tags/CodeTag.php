@@ -3,10 +3,8 @@ namespace Misuzu\Parsers\BBCode\Tags;
 
 use Misuzu\Parsers\BBCode\BBCodeTag;
 
-final class CodeTag extends BBCodeTag
-{
-    public function parseText(string $text): string
-    {
+final class CodeTag extends BBCodeTag {
+    public function parseText(string $text): string {
         return preg_replace_callback(
             '/\[code(?:\=([a-z]+))?\](.+?)\[\/code\]/s',
             function ($matches) {

@@ -2,11 +2,10 @@
 
 let forumPostingCloseOK: boolean = false;
 
-function forumPostingInit(): void
-{
+function forumPostingInit(): void {
     const postingForm: HTMLDivElement = document.querySelector('.js-forum-posting');
 
-    if (!postingForm)
+    if(!postingForm)
         return;
 
     const postingButtons: HTMLDivElement = postingForm.querySelector('.js-forum-posting-buttons'),
@@ -20,7 +19,7 @@ function forumPostingInit(): void
         markupButtons = document.querySelectorAll('.forum__post__action--tag');
 
     window.addEventListener("beforeunload", (e) => {
-        if (!forumPostingCloseOK && postingText.value.length > 0) {
+        if(!forumPostingCloseOK && postingText.value.length > 0) {
             const message: string = 'Are you sure you want to close the tab?';
             e.returnValue = message;
             return message;
@@ -43,11 +42,11 @@ function forumPostingInit(): void
 
         forumPostingSwitchButtons(postParser);
 
-        if (postingPreview.hasAttribute('hidden'))
+        if(postingPreview.hasAttribute('hidden'))
             return;
 
         // dunno if this is even possible, but ech
-        if (postParser === lastPostParser)
+        if(postParser === lastPostParser)
             return;
 
         postingParser.setAttribute('disabled', 'disabled');
@@ -55,12 +54,12 @@ function forumPostingInit(): void
         previewButton.classList.add('input__button--busy');
 
         forumPostingPreview(postParser, lastPostText, (success, text) => {
-            if (!success) {
+            if(!success) {
                 messageBox(text);
                 return;
             }
 
-            if (postParser === Parser.Markdown) {
+            if(postParser === Parser.Markdown) {
                 postingPreview.classList.add('markdown');
             } else {
                 postingPreview.classList.remove('markdown');
@@ -79,7 +78,7 @@ function forumPostingInit(): void
     previewButton.type = 'button';
     previewButton.value = 'preview';
     previewButton.addEventListener('click', () => {
-        if (previewButton.value === 'back') {
+        if(previewButton.value === 'back') {
             postingPreview.setAttribute('hidden', 'hidden');
             postingText.removeAttribute('hidden');
             previewButton.value = 'preview';
@@ -90,7 +89,7 @@ function forumPostingInit(): void
             const postText: string = postingText.value,
                 postParser: Parser = parseInt(postingParser.value);
 
-            if (lastPostText === postText && lastPostParser === postParser) {
+            if(lastPostText === postText && lastPostParser === postParser) {
                 postingPreview.removeAttribute('hidden');
                 postingText.setAttribute('hidden', 'hidden');
                 previewButton.value = 'back';
@@ -105,12 +104,12 @@ function forumPostingInit(): void
             previewButton.classList.add('input__button--busy');
 
             forumPostingPreview(postParser, postText, (success, text) => {
-                if (!success) {
+                if(!success) {
                     messageBox(text);
                     return;
                 }
 
-                if (postParser === Parser.Markdown) {
+                if(postParser === Parser.Markdown) {
                     postingPreview.classList.add('markdown');
                 } else {
                     postingPreview.classList.remove('markdown');
@@ -148,10 +147,10 @@ function forumPostingPreview(
     formData.append('post[parser]', parser.toString());
 
     xhr.addEventListener('readystatechange', () => {
-        if (xhr.readyState !== XMLHttpRequest.DONE)
+        if(xhr.readyState !== XMLHttpRequest.DONE)
             return;
 
-        if (xhr.status === 200) {
+        if(xhr.status === 200) {
             callback(true, xhr.response);
         } else {
             callback(false, 'Failed to render preview.');

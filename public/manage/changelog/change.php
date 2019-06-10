@@ -73,7 +73,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify_request()) {
         ');
         $addTag->bindValue('change_id', $changeId);
 
-        foreach ($setTags as $role) {
+        foreach($setTags as $role) {
             $addTag->bindValue('tag_id', $role);
             $addTag->execute();
         }

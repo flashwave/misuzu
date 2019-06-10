@@ -6,7 +6,7 @@ define('MSZ_ROOT', __DIR__);
 define('MSZ_DEBUG', is_file(MSZ_ROOT . '/.debug'));
 define('MSZ_PHP_MIN_VER', '7.3.0');
 
-if (version_compare(PHP_VERSION, MSZ_PHP_MIN_VER, '<')) {
+if(version_compare(PHP_VERSION, MSZ_PHP_MIN_VER, '<')) {
     die('Misuzu requires <i>at least</i> PHP <b>' . MSZ_PHP_MIN_VER . '</b> to run.');
 }
 
@@ -80,7 +80,7 @@ require_once 'src/Users/warning.php';
 config_load(MSZ_ROOT . '/config/config.ini');
 mail_settings(config_get_default([], 'Mail'));
 
-if (!empty($errorReporter)) {
+if(!empty($errorReporter)) {
     $errorReporter->setReportInfo(
         config_get('Exceptions', 'report_url'),
         config_get('Exceptions', 'hash_key')
@@ -95,9 +95,9 @@ db_settings([
 define('MSZ_STORAGE', config_get_default(MSZ_ROOT . '/store', 'Storage', 'path'));
 mkdirs(MSZ_STORAGE, true);
 
-if (PHP_SAPI === 'cli') {
-    if (realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
-        switch ($argv[1] ?? null) {
+if(PHP_SAPI === 'cli') {
+    if(realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
+        switch($argv[1] ?? null) {
             case 'cron':
                 $runLowFreq = (bool)(!empty($argv[2]) && $argv[2] == 'low');
 
@@ -227,11 +227,11 @@ if (PHP_SAPI === 'cli') {
                     ],
                 ];
 
-                foreach ($cronTasks as $cronTask) {
-                    if ($cronTask['run']) {
+                foreach($cronTasks as $cronTask) {
+                    if($cronTask['run']) {
                         echo $cronTask['name'] . PHP_EOL;
 
-                        switch ($cronTask['type']) {
+                        switch($cronTask['type']) {
                             case 'sql':
                                 db_exec($cronTask['command']);
                                 break;
@@ -251,21 +251,21 @@ if (PHP_SAPI === 'cli') {
                 $doRollback = !empty($argv[2]) && $argv[2] === 'rollback';
                 $targetDb = isset($argv[$doRollback ? 3 : 2]) ? $argv[$doRollback ? 3 : 2] : null;
 
-                if ($targetDb !== null && !array_key_exists($targetDb, $migrationTargets)) {
+                if($targetDb !== null && !array_key_exists($targetDb, $migrationTargets)) {
                     echo 'Invalid target database connection.' . PHP_EOL;
                     break;
                 }
 
                 touch(MSZ_ROOT . '/.migrating');
 
-                foreach ($migrationTargets as $db => $path) {
+                foreach($migrationTargets as $db => $path) {
                     echo "Creating migration manager for '{$db}'..." . PHP_EOL;
                     $migrationManager = new DatabaseMigrationManager(db_connection($db), $path);
                     $migrationManager->setLogger(function ($log) {
                         echo $log . PHP_EOL;
                     });
 
-                    if ($doRollback) {
+                    if($doRollback) {
                         echo "Rolling back last migrations for '{$db}'..." . PHP_EOL;
                         $migrationManager->rollback();
                     } else {
@@ -276,12 +276,12 @@ if (PHP_SAPI === 'cli') {
                     $errors = $migrationManager->getErrors();
                     $errorCount = count($errors);
 
-                    if ($errorCount < 1) {
+                    if($errorCount < 1) {
                         echo 'Completed with no errors!' . PHP_EOL;
                     } else {
                         echo PHP_EOL . "There were {$errorCount} errors during the migrations..." . PHP_EOL;
 
-                        foreach ($errors as $error) {
+                        foreach($errors as $error) {
                             echo $error . PHP_EOL;
                         }
                     }
@@ -291,12 +291,12 @@ if (PHP_SAPI === 'cli') {
                 break;
 
             case 'new-mig':
-                if (empty($argv[2])) {
+                if(empty($argv[2])) {
                     echo 'Specify a migration name.' . PHP_EOL;
                     return;
                 }
 
-                if (!preg_match('#^([a-z_]+)$#', $argv[2])) {
+                if(!preg_match('#^([a-z_]+)$#', $argv[2])) {
                     echo 'Migration name may only contain alpha and _ characters.' . PHP_EOL;
                     return;
                 }
@@ -335,7 +335,7 @@ MIG;
                 $apiKey = config_get('Twitter', 'api_key');
                 $apiSecret = config_get('Twitter', 'api_secret');
 
-                if (empty($apiKey) || empty($apiSecret)) {
+                if(empty($apiKey) || empty($apiSecret)) {
                     echo 'No Twitter api keys set in config.' . PHP_EOL;
                     break;
                 }
@@ -345,7 +345,7 @@ MIG;
 
                 $authPage = twitter_auth_create();
 
-                if (empty($authPage)) {
+                if(empty($authPage)) {
                     echo 'Request to begin authentication failed.' . PHP_EOL;
                     break;
                 }
@@ -355,7 +355,7 @@ MIG;
                 $pin = readline('Pin: ');
                 $authComplete = twitter_auth_complete($pin);
 
-                if (empty($authComplete)) {
+                if(empty($authComplete)) {
                     echo 'Invalid pin code.' . PHP_EOL;
                     break;
                 }
@@ -371,27 +371,27 @@ MIG;
         }
     }
 } else {
-    if (!mb_check_encoding()) {
+    if(!mb_check_encoding()) {
         http_response_code(415);
         echo 'Invalid request encoding.';
         exit;
     }
 
-    if (!MSZ_DEBUG) {
+    if(!MSZ_DEBUG) {
         ob_start('ob_gzhandler');
     }
 
     // we're running this again because ob_clean breaks gzip otherwise
     ob_start();
 
-    if (!is_readable(MSZ_STORAGE) || !is_writable(MSZ_STORAGE)) {
+    if(!is_readable(MSZ_STORAGE) || !is_writable(MSZ_STORAGE)) {
         echo 'Cannot access storage directory.';
         exit;
     }
 
     geoip_init(config_get_default('', 'GeoIP', 'database_path'));
 
-    if (!MSZ_DEBUG) {
+    if(!MSZ_DEBUG) {
         $twigCache = sys_get_temp_dir() . '/msz-tpl-cache-' . md5(MSZ_ROOT);
         mkdirs($twigCache, true);
     }
@@ -411,14 +411,14 @@ MIG;
 
     tpl_add_path(MSZ_ROOT . '/templates');
 
-    if (file_exists(MSZ_ROOT . '/.migrating')) {
+    if(file_exists(MSZ_ROOT . '/.migrating')) {
         http_response_code(503);
         echo tpl_render('home.migration');
         exit;
     }
 
     // Remove this block at the start of April, 2 months is plenty for this to propagate
-    if (!empty($_COOKIE['msz_uid']) && !empty($_COOKIE['msz_sid'])
+    if(!empty($_COOKIE['msz_uid']) && !empty($_COOKIE['msz_sid'])
         && ctype_digit($_COOKIE['msz_uid']) && ctype_xdigit($_COOKIE['msz_sid'])
         && strlen($_COOKIE['msz_sid']) === 64) {
         $_COOKIE['msz_auth'] = base64url_encode(user_session_cookie_pack($_COOKIE['msz_uid'], $_COOKIE['msz_sid']));
@@ -427,10 +427,10 @@ MIG;
         setcookie('msz_sid', '', -3600, '/', '', true, true);
     }
 
-    if (!empty($_COOKIE['msz_auth']) && is_string($_COOKIE['msz_auth'])) {
+    if(!empty($_COOKIE['msz_auth']) && is_string($_COOKIE['msz_auth'])) {
         $cookieData = user_session_cookie_unpack(base64url_decode($_COOKIE['msz_auth']));
 
-        if (!empty($cookieData) && user_session_start($cookieData['user_id'], $cookieData['session_token'])) {
+        if(!empty($cookieData) && user_session_start($cookieData['user_id'], $cookieData['session_token'])) {
             $getUserDisplayInfo = db_prepare('
                 SELECT
                     u.`user_id`, u.`username`, u.`user_background_settings`, u.`user_deleted`,
@@ -443,8 +443,8 @@ MIG;
             $getUserDisplayInfo->bindValue('user_id', $cookieData['user_id']);
             $userDisplayInfo = db_fetch($getUserDisplayInfo);
 
-            if ($userDisplayInfo) {
-                if (!is_null($userDisplayInfo['user_deleted'])) {
+            if($userDisplayInfo) {
+                if(!is_null($userDisplayInfo['user_deleted'])) {
                     setcookie('msz_auth', '', -9001, '/', '', true, true);
                     user_session_stop(true);
                     $userDisplayInfo = [];
@@ -469,29 +469,29 @@ MIG;
         empty($userDisplayInfo) ? ip_remote_address() : $cookieData['session_token']
     );
 
-    if (config_get_default(false, 'Private', 'enabled')) {
+    if(config_get_default(false, 'Private', 'enabled')) {
         $onLoginPage = $_SERVER['PHP_SELF'] === url('auth-login');
         $onPasswordPage = parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH) === url('auth-forgot');
         $misuzuBypassLockdown = !empty($misuzuBypassLockdown) || $onLoginPage;
 
-        if (!$misuzuBypassLockdown) {
-            if (user_session_active()) {
+        if(!$misuzuBypassLockdown) {
+            if(user_session_active()) {
                 $privatePermission = (int)config_get_default(0, 'Private', 'permission');
 
-                if ($privatePermission > 0) {
-                    if (!perms_check_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'], $privatePermission)) {
+                if($privatePermission > 0) {
+                    if(!perms_check_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'], $privatePermission)) {
                         unset($userDisplayInfo);
                         user_session_stop(); // au revoir
                     }
                 }
-            } elseif (!$onLoginPage && !($onPasswordPage && config_get_default(false, 'Private', 'password_reset'))) {
+            } elseif(!$onLoginPage && !($onPasswordPage && config_get_default(false, 'Private', 'password_reset'))) {
                 url_redirect('auth-login');
                 exit;
             }
         }
     }
 
-    if (!empty($userDisplayInfo)) {
+    if(!empty($userDisplayInfo)) {
         tpl_var('current_user', $userDisplayInfo);
     }
 
@@ -501,8 +501,8 @@ MIG;
         && perms_check_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'], MSZ_PERM_GENERAL_CAN_MANAGE);
     tpl_var('has_manage_access', $hasManageAccess);
 
-    if ($inManageMode) {
-        if (!$hasManageAccess) {
+    if($inManageMode) {
+        if(!$hasManageAccess) {
             echo render_error(403);
             exit;
         }

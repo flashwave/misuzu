@@ -3,7 +3,7 @@ require_once '../misuzu.php';
 
 $searchQuery = !empty($_GET['q']) && is_string($_GET['q']) ? $_GET['q'] : '';
 
-if (!empty($searchQuery)) {
+if(!empty($searchQuery)) {
     $forumTopics = forum_topic_listing_search($searchQuery, user_session_current('user_id', 0));
     $forumPosts = forum_post_search($searchQuery);
     $newsPosts = news_posts_search($searchQuery);

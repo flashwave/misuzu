@@ -77,72 +77,65 @@ define('MSZ_USER_PROFILE_FIELDS', [
     ],
 ]);
 
-function user_profile_field_is_valid(string $name): bool
-{
+function user_profile_field_is_valid(string $name): bool {
     return array_key_exists($name, MSZ_USER_PROFILE_FIELDS);
 }
 
-function user_profile_field_get_display_name(string $name): string
-{
+function user_profile_field_get_display_name(string $name): string {
     return MSZ_USER_PROFILE_FIELDS[$name]['name'] ?? '';
 }
 
-function user_profile_field_get_database_name(string $name): string
-{
+function user_profile_field_get_database_name(string $name): string {
     return sprintf(MSZ_USER_PROFILE_FIELD_FORMAT, $name);
 }
 
-function user_profile_fields_get(): array
-{
+function user_profile_fields_get(): array {
     return MSZ_USER_PROFILE_FIELDS;
 }
 
-function user_profile_field_get_regex(string $name): string
-{
+function user_profile_field_get_regex(string $name): string {
     return MSZ_USER_PROFILE_FIELDS[$name]['regex'] ?? '';
 }
 
 // === NULL if field is invalid
-function user_profile_field_filter(string $name, string $value): ?string
-{
-    if (!user_profile_field_is_valid($name)) {
+function user_profile_field_filter(string $name, string $value): ?string {
+    if(!user_profile_field_is_valid($name)) {
         return null;
     }
 
     $regex = user_profile_field_get_regex($name);
 
-    if (empty($regex) || empty($value)) {
+    if(empty($regex) || empty($value)) {
         return $value;
     }
 
     $checkRegex = preg_match($regex, $value, $matches);
 
-    if (!$checkRegex || empty($matches[1])) {
+    if(!$checkRegex || empty($matches[1])) {
         return null;
     }
 
     return $matches[1];
 }
 
-function user_profile_fields_set(int $userId, array $fields): array
-{
-    if (count($fields) < 1) {
+function user_profile_fields_set(int $userId, array $fields): array {
+    if(count($fields) < 1) {
         return [];
     }
 
     $errors = [];
     $values = [];
 
-    foreach ($fields as $name => $value) {
+    foreach($fields as $name => $value) {
         // should these just be ignored?
-        if (!user_profile_field_is_valid($name)) {
+        if(!user_profile_field_is_valid($name)) {
             $errors[$name] = MSZ_USER_PROFILE_INVALID_FIELD;
             continue;
         }
 
         $value = user_profile_field_filter($name, $value);
 
-        if ($value === null) {
+        if($value === null) {
             $errors[$name] = MSZ_USER_PROFILE_FILTER_FAILED;
             continue;
         }
@@ -150,7 +143,7 @@ function user_profile_fields_set(int $userId, array $fields): array
         $values[user_profile_field_get_database_name($name)] = $value;
     }
 
-    if (count($values) > 0) {
+    if(count($values) > 0) {
         $updateFields = db_prepare('
             UPDATE `msz_users`
             SET ' . pdo_prepare_array_update($values, true) . '
@@ -158,7 +151,7 @@ function user_profile_fields_set(int $userId, array $fields): array
         ');
         $values['user_id'] = $userId;
 
-        if (!$updateFields->execute($values)) {
+        if(!$updateFields->execute($values)) {
             $errors[MSZ_USER_PROFILE_SET_ERROR] = MSZ_USER_PROFILE_UPDATE_FAILED;
         }
     }
@@ -166,14 +159,13 @@ function user_profile_fields_set(int $userId, array $fields): array
     return $errors;
 }
 
-function user_profile_fields_display(array $user, bool $hideEmpty = true): array
-{
+function user_profile_fields_display(array $user, bool $hideEmpty = true): array {
     $output = [];
 
-    foreach (MSZ_USER_PROFILE_FIELDS as $name => $field) {
+    foreach(MSZ_USER_PROFILE_FIELDS as $name => $field) {
         $dbn = user_profile_field_get_database_name($name);
 
-        if ($hideEmpty && (!array_key_exists($dbn, $user) || empty($user[$dbn]))) {
+        if($hideEmpty && (!array_key_exists($dbn, $user) || empty($user[$dbn]))) {
             continue;
         }
 
@@ -181,13 +173,13 @@ function user_profile_fields_display(array $user, bool $hideEmpty = true): array
         $output[$name] = $field;
         $output[$name]['value'] = htmlentities($value);
 
-        foreach (['link', 'format'] as $multipath) {
-            if (empty($output[$name][$multipath]) || !is_array($output[$name][$multipath])) {
+        foreach(['link', 'format'] as $multipath) {
+            if(empty($output[$name][$multipath]) || !is_array($output[$name][$multipath])) {
                 continue;
             }
 
-            foreach (array_reverse($output[$name][$multipath], true) as $regex => $string) {
-                if ($regex === '_' || !preg_match("#{$regex}#", $value)) {
+            foreach(array_reverse($output[$name][$multipath], true) as $regex => $string) {
+                if($regex === '_' || !preg_match("#{$regex}#", $value)) {
                     continue;
                 }
 
@@ -195,7 +187,7 @@ function user_profile_fields_display(array $user, bool $hideEmpty = true): array
                 break;
             }
 
-            if (is_array($output[$name][$multipath])) {
+            if(is_array($output[$name][$multipath])) {
                 $output[$name][$multipath] = $output[$name][$multipath]['_'];
             }
         }
@@ -204,8 +196,7 @@ function user_profile_fields_display(array $user, bool $hideEmpty = true): array
     return $output;
 }
 
-function user_profile_get(int $userId): array
-{
+function user_profile_get(int $userId): array {
     $getProfile = db_prepare(
         sprintf(
             '

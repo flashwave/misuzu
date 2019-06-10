@@ -48,11 +48,11 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && csrf_verify_request()) 
     if(!empty($_POST['role']['colour']['inherit'])) {
         colour_set_inherit($roleColour);
     } else {
-        foreach (['red', 'green', 'blue'] as $key) {
+        foreach(['red', 'green', 'blue'] as $key) {
             $value = (int)($_POST['role']['colour'][$key] ?? -1);
             $func = 'colour_set_' . ucfirst($key);
 
-            if ($value < 0 || $value > 0xFF) {
+            if($value < 0 || $value > 0xFF) {
                 echo 'invalid colour value';
                 return;
             }
@@ -67,9 +67,9 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && csrf_verify_request()) 
     if($roleDescription !== null) {
         $rdLength = strlen($roleDescription);
 
-        if ($rdLength < 1) {
+        if($rdLength < 1) {
             $roleDescription = null;
-        } elseif ($rdLength > 1000) {
+        } elseif($rdLength > 1000) {
             echo 'description is too long';
             return;
         }
@@ -78,9 +78,9 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && csrf_verify_request()) 
     if($roleTitle !== null) {
         $rtLength = strlen($roleTitle);
 
-        if ($rtLength < 1) {
+        if($rtLength < 1) {
             $roleTitle = null;
-        } elseif ($rtLength > 64) {
+        } elseif($rtLength > 64) {
             echo 'title is too long';
             return;
         }
@@ -138,7 +138,7 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && csrf_verify_request()) 
             ');
             $setPermissions->bindValue('role_id', $roleId);
 
-            foreach ($perms as $key => $value) {
+            foreach($perms as $key => $value) {
                 $setPermissions->bindValue($key, $value);
             }
 

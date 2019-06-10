@@ -1,6 +1,5 @@
 <?php
-function config_store(?array $append = null): array
-{
+function config_store(?array $append = null): array {
     static $store = [];
 
     if(!is_null($append)) {
@@ -10,8 +9,7 @@ function config_store(?array $append = null): array
     return $store;
 }
 
-function config_load(string $path, bool $isText = false): void
-{
+function config_load(string $path, bool $isText = false): void {
     $config = $isText
         ? parse_ini_string($path, true, INI_SCANNER_TYPED)
         : parse_ini_file($path, true, INI_SCANNER_TYPED);
@@ -19,12 +17,11 @@ function config_load(string $path, bool $isText = false): void
     config_store($config);
 }
 
-function config_get(string ...$key)
-{
+function config_get(string ...$key) {
     $value = config_store();
 
-    for ($i = 0; $i < count($key); $i++) {
-        if (empty($value[$key[$i]])) {
+    for($i = 0; $i < count($key); $i++) {
+        if(empty($value[$key[$i]])) {
             return null;
         }
 
@@ -34,7 +31,6 @@ function config_get(string ...$key)
     return $value;
 }
 
-function config_get_default($default, string ...$key)
-{
+function config_get_default($default, string ...$key) {
     return config_get(...$key) ?? $default;
 }

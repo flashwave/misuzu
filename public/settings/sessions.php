@@ -18,7 +18,7 @@ if(!empty($_POST['session']) && csrf_verify_request()) {
             $sessionId = intval($sessionId);
             $session = user_session_find($sessionId);
 
-            if (!$session || (int)$session['user_id'] !== $currentUserId) {
+            if(!$session || (int)$session['user_id'] !== $currentUserId) {
                 $errors[] = "Session #{$sessionId} does not exist.";
                 continue;
             } elseif((int)$session['session_id'] === $sessionActive) {

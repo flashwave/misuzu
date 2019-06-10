@@ -4,15 +4,15 @@ require_once '../../misuzu.php';
 $postId = !empty($_GET['p']) && is_string($_GET['p']) ? (int)$_GET['p'] : 0;
 $post = news_post_get($postId);
 
-if (!$post) {
+if(!$post) {
     echo render_error(404);
     return;
 }
 
-if ($post['comment_section_id'] === null) {
+if($post['comment_section_id'] === null) {
     $commentsInfo = comments_category_create("news-{$post['post_id']}");
 
-    if ($commentsInfo) {
+    if($commentsInfo) {
         $post['comment_section_id'] = $commentsInfo['category_id'];
         news_post_comments_set(
             $post['post_id'],

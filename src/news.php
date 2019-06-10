@@ -11,7 +11,7 @@ function news_post_create(
     ?int $scheduled = null,
     ?int $postId = null
 ): int {
-    if ($postId < 1) {
+    if($postId < 1) {
         $post = db_prepare('
             INSERT INTO `msz_news_posts`
                 (`category_id`, `user_id`, `post_is_featured`, `post_title`, `post_text`, `post_scheduled`)
@@ -42,9 +42,8 @@ function news_post_create(
     return $post->execute() ? ($postId < 1 ? (int)db_last_insert_id() : $postId) : 0;
 }
 
-function news_category_create(string $name, string $description, bool $isHidden, ?int $categoryId = null): int
-{
-    if ($categoryId < 1) {
+function news_category_create(string $name, string $description, bool $isHidden, ?int $categoryId = null): int {
+    if($categoryId < 1) {
         $category = db_prepare('
             INSERT INTO `msz_news_categories`
                 (`category_name`, `category_description`, `category_is_hidden`)
@@ -80,7 +79,7 @@ function news_categories_get(
 ): array {
     $getAll = $offset < 0 || $take < 1;
 
-    if ($includePostCount) {
+    if($includePostCount) {
         $query = sprintf(
             '
                 SELECT
@@ -121,7 +120,7 @@ function news_categories_get(
 
     $getCats = db_prepare($query);
 
-    if (!$getAll) {
+    if(!$getAll) {
         $getCats->bindValue('offset', $offset);
         $getCats->bindValue('take', $take);
     }
@@ -129,8 +128,7 @@ function news_categories_get(
     return db_fetch_all($getCats);
 }
 
-function news_categories_count(bool $includeHidden = false): int
-{
+function news_categories_count(bool $includeHidden = false): int {
     $countCats = db_prepare(sprintf('
         SELECT COUNT(`category_id`)
         FROM `msz_news_categories`
@@ -147,7 +145,7 @@ function news_category_get(
     bool $exposeScheduled = false,
     bool $excludeDeleted = true
 ): array {
-    if ($includePostCount) {
+    if($includePostCount) {
         $query = sprintf(
             '
                 SELECT
@@ -202,7 +200,7 @@ function news_posts_count(
         $excludeDeleted ? 'AND `post_deleted` IS NULL' : ''
     ));
 
-    if ($hasCategory) {
+    if($hasCategory) {
         $countPosts->bindValue('category', $category);
     }
 
@@ -218,7 +216,7 @@ function news_posts_get(
     bool $excludeDeleted = true
 ): array {
     $getAll = $offset < 0 || $take < 1;
-    $hasCategory= $category !== null;
+    $hasCategory = $category !== null;
 
     $getPosts = db_prepare(sprintf(
         '
@@ -252,11 +250,11 @@ function news_posts_get(
         $hasCategory ? 'p.`category_id` = :category' : '1'
     ));
 
-    if ($hasCategory) {
+    if($hasCategory) {
         $getPosts->bindValue('category', $category);
     }
 
-    if (!$getAll) {
+    if(!$getAll) {
         $getPosts->bindValue('take', $take);
         $getPosts->bindValue('offset', $offset);
     }
@@ -296,8 +294,7 @@ function news_posts_search(string $query): array {
     return db_fetch_all($searchPosts);
 }
 
-function news_post_comments_set(int $postId, int $sectionId): void
-{
+function news_post_comments_set(int $postId, int $sectionId): void {
     db_prepare('
         UPDATE `msz_news_posts`
         SET `comment_section_id` = :comment_section_id
@@ -308,8 +305,7 @@ function news_post_comments_set(int $postId, int $sectionId): void
     ]);
 }
 
-function news_post_get(int $postId): array
-{
+function news_post_get(int $postId): array {
     $getPost = db_prepare('
         SELECT
             p.`post_id`, p.`post_title`, p.`post_text`, p.`post_is_featured`, p.`post_scheduled`,
@@ -340,8 +336,7 @@ function news_feed_supported(string $type): string {
     return in_array($type, MSZ_NEWS_SUPPORTED_FEEDS);
 }
 
-function news_feed(string $type, array $posts, array $info): string
-{
+function news_feed(string $type, array $posts, array $info): string {
     if(!news_feed_supported($type)) {
         return '';
     }
@@ -351,7 +346,7 @@ function news_feed(string $type, array $posts, array $info): string
     $htmlUrl = $urlPrefix . $info['html-url'];
     $feedUrl = $urlPrefix . $info['feed-url'];
 
-    if ($type === 'rss') {
+    if($type === 'rss') {
         $dateFormat = 'r';
         $rss = $document->appendChild($document->createElement('rss'));
         $rss->setAttribute('version', '2.0');
@@ -381,7 +376,7 @@ function news_feed(string $type, array $posts, array $info): string
     $link->setAttribute('rel', 'self');
     $link->setAttribute('href', $feedUrl);
 
-    foreach ($posts as $post) {
+    foreach($posts as $post) {
         $entry = $feed->appendChild($document->createElement($type === 'rss' ? 'item' : 'entry'));
         $entry->appendChild($document->createElement('title', $post['post_title']));
         $entry->appendChild($document->createElement(
@@ -398,7 +393,7 @@ function news_feed(string $type, array $posts, array $info): string
             first_paragraph($post['post_text'])
         ));
 
-        if ($type === 'rss') {
+        if($type === 'rss') {
             $entry->appendChild($document->createElement(
                 'comments',
                 $urlPrefix . url('news-post-comments', ['post' => $post['post_id']])

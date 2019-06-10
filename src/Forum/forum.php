@@ -82,28 +82,23 @@ define('MSZ_FORUM_ROOT_DATA', [ // should be compatible with the data fetched in
     'forum_permissions' => MSZ_FORUM_PERM_SET_READ,
 ]);
 
-function forum_is_valid_type(int $type): bool
-{
+function forum_is_valid_type(int $type): bool {
     return in_array($type, MSZ_FORUM_TYPES, true);
 }
 
-function forum_may_have_children(int $forumType): bool
-{
+function forum_may_have_children(int $forumType): bool {
     return in_array($forumType, MSZ_FORUM_MAY_HAVE_CHILDREN);
 }
 
-function forum_may_have_topics(int $forumType): bool
-{
+function forum_may_have_topics(int $forumType): bool {
     return in_array($forumType, MSZ_FORUM_MAY_HAVE_TOPICS);
 }
 
-function forum_has_priority_voting(int $forumType): bool
-{
+function forum_has_priority_voting(int $forumType): bool {
     return in_array($forumType, MSZ_FORUM_HAS_PRIORITY_VOTING);
 }
 
-function forum_get(int $forumId, bool $showDeleted = false): array
-{
+function forum_get(int $forumId, bool $showDeleted = false): array {
     $getForum = db_prepare(sprintf(
         '
             SELECT
@@ -124,8 +119,7 @@ function forum_get(int $forumId, bool $showDeleted = false): array
     return db_fetch($getForum);
 }
 
-function forum_get_root_categories(int $userId): array
-{
+function forum_get_root_categories(int $userId): array {
     $getCategories = db_prepare(sprintf(
         '
             SELECT
@@ -158,10 +152,10 @@ function forum_get_root_categories(int $userId): array
     ));
     $categories[0]['forum_children'] = (int)($getRootForumCount->execute() ? $getRootForumCount->fetchColumn() : 0);
 
-    foreach ($categories as $key => $category) {
+    foreach($categories as $key => $category) {
         $categories[$key]['forum_permissions'] = $perms = forum_perms_get_user($category['forum_id'], $userId)[MSZ_FORUM_PERMS_GENERAL];
 
-        if (!perms_check($perms, MSZ_FORUM_PERM_SET_READ)) {
+        if(!perms_check($perms, MSZ_FORUM_PERM_SET_READ)) {
             unset($categories[$key]);
             continue;
         }
@@ -210,8 +204,7 @@ function forum_get_breadcrumbs(
     return array_reverse($breadcrumbs + $indexLink);
 }
 
-function forum_get_colour(int $forumId): int
-{
+function forum_get_colour(int $forumId): int {
     $getColours = db_prepare('
         SELECT `forum_id`, `forum_parent`, `forum_colour`
         FROM `msz_forum_categories`
@@ -236,8 +229,7 @@ function forum_get_colour(int $forumId): int
     return colour_none();
 }
 
-function forum_increment_clicks(int $forumId): void
-{
+function forum_increment_clicks(int $forumId): void {
     $incrementLinkClicks = db_prepare(sprintf('
         UPDATE `msz_forum_categories`
         SET `forum_link_clicks` = `forum_link_clicks` + 1
@@ -249,15 +241,14 @@ function forum_increment_clicks(int $forumId): void
     $incrementLinkClicks->execute();
 }
 
-function forum_get_parent_id(int $forumId): int
-{
-    if ($forumId < 1) {
+function forum_get_parent_id(int $forumId): int {
+    if($forumId < 1) {
         return 0;
     }
 
     static $memoized = [];
 
-    if (array_key_exists($forumId, $memoized)) {
+    if(array_key_exists($forumId, $memoized)) {
         return $memoized[$forumId];
     }
 
@@ -271,15 +262,14 @@ function forum_get_parent_id(int $forumId): int
     return (int)($getParent->execute() ? $getParent->fetchColumn() : 0);
 }
 
-function forum_get_child_ids(int $forumId): array
-{
-    if ($forumId < 1) {
+function forum_get_child_ids(int $forumId): array {
+    if($forumId < 1) {
         return [];
     }
 
     static $memoized = [];
 
-    if (array_key_exists($forumId, $memoized)) {
+    if(array_key_exists($forumId, $memoized)) {
         return $memoized[$forumId];
     }
 
@@ -294,27 +284,26 @@ function forum_get_child_ids(int $forumId): array
     return $memoized[$forumId] = array_column($children, 'forum_id');
 }
 
-function forum_topics_unread(int $forumId, int $userId): int
-{
-    if ($userId < 1 || $forumId < 1) {
+function forum_topics_unread(int $forumId, int $userId): int {
+    if($userId < 1 || $forumId < 1) {
         return false;
     }
 
     static $memoized = [];
     $memoId = "{$forumId}-{$userId}";
 
-    if (array_key_exists($memoId, $memoized)) {
+    if(array_key_exists($memoId, $memoized)) {
         return $memoized[$memoId];
     }
 
     $memoized[$memoId] = 0;
     $children = forum_get_child_ids($forumId);
 
-    foreach ($children as $child) {
+    foreach($children as $child) {
         $memoized[$memoId] += forum_topics_unread($child, $userId);
     }
 
-    if (forum_perms_check_user(MSZ_FORUM_PERMS_GENERAL, $forumId, $userId, MSZ_FORUM_PERM_SET_READ)) {
+    if(forum_perms_check_user(MSZ_FORUM_PERMS_GENERAL, $forumId, $userId, MSZ_FORUM_PERM_SET_READ)) {
         $countUnread = db_prepare('
             SELECT COUNT(ti.`topic_id`)
             FROM `msz_forum_topics` AS ti
@@ -336,20 +325,19 @@ function forum_topics_unread(int $forumId, int $userId): int
     return $memoized[$memoId];
 }
 
-function forum_latest_post(int $forumId, int $userId): array
-{
-    if ($forumId < 1) {
+function forum_latest_post(int $forumId, int $userId): array {
+    if($forumId < 1) {
         return [];
     }
 
     static $memoized = [];
     $memoId = "{$forumId}-{$userId}";
 
-    if (array_key_exists($memoId, $memoized)) {
+    if(array_key_exists($memoId, $memoized)) {
         return $memoized[$memoId];
     }
 
-    if (!forum_perms_check_user(MSZ_FORUM_PERMS_GENERAL, $forumId, $userId, MSZ_FORUM_PERM_SET_READ)) {
+    if(!forum_perms_check_user(MSZ_FORUM_PERMS_GENERAL, $forumId, $userId, MSZ_FORUM_PERM_SET_READ)) {
         return $memoized[$memoId] = [];
     }
 
@@ -381,7 +369,7 @@ function forum_latest_post(int $forumId, int $userId): array
     foreach($children as $child) {
         $lastPost = forum_latest_post($child, $userId);
 
-        if (($currentLast['post_created_unix'] ?? 0) < ($lastPost['post_created_unix'] ?? 0)) {
+        if(($currentLast['post_created_unix'] ?? 0) < ($lastPost['post_created_unix'] ?? 0)) {
             $currentLast = $lastPost;
         }
     }
@@ -389,8 +377,7 @@ function forum_latest_post(int $forumId, int $userId): array
     return $memoized[$memoId] = $currentLast;
 }
 
-function forum_get_children(int $parentId, int $userId): array
-{
+function forum_get_children(int $parentId, int $userId): array {
     $getListing = db_prepare(sprintf(
         '
             SELECT
@@ -417,10 +404,10 @@ function forum_get_children(int $parentId, int $userId): array
 
     $listing = db_fetch_all($getListing);
 
-    foreach ($listing as $key => $forum) {
+    foreach($listing as $key => $forum) {
         $listing[$key]['forum_permissions'] = $perms = forum_perms_get_user($forum['forum_id'], $userId)[MSZ_FORUM_PERMS_GENERAL];
 
-        if (!perms_check($perms, MSZ_FORUM_PERM_SET_READ)) {
+        if(!perms_check($perms, MSZ_FORUM_PERM_SET_READ)) {
             unset($listing[$key]);
             continue;
         }
@@ -435,8 +422,7 @@ function forum_get_children(int $parentId, int $userId): array
     return $listing;
 }
 
-function forum_timeout(int $forumId, int $userId): int
-{
+function forum_timeout(int $forumId, int $userId): int {
     $checkTimeout = db_prepare('
         SELECT TIMESTAMPDIFF(SECOND, COALESCE(MAX(`post_created`), NOW() - INTERVAL 1 YEAR), NOW())
         FROM `msz_forum_posts`
@@ -450,9 +436,8 @@ function forum_timeout(int $forumId, int $userId): int
 }
 
 // $forumId == null marks all forums as read
-function forum_mark_read(?int $forumId, int $userId): void
-{
-    if (($forumId !== null && $forumId < 1) || $userId < 1) {
+function forum_mark_read(?int $forumId, int $userId): void {
+    if(($forumId !== null && $forumId < 1) || $userId < 1) {
         return;
     }
 
@@ -476,15 +461,14 @@ function forum_mark_read(?int $forumId, int $userId): void
     ));
     $doMark->bindValue('user', $userId);
 
-    if (!$entireForum) {
+    if(!$entireForum) {
         $doMark->bindValue('forum', $forumId);
     }
 
     $doMark->execute();
 }
 
-function forum_posting_info(int $userId): array
-{
+function forum_posting_info(int $userId): array {
     $getPostingInfo = db_prepare('
         SELECT
             u.`user_country`, u.`user_created`,
@@ -509,8 +493,7 @@ function forum_posting_info(int $userId): array
     return db_fetch($getPostingInfo);
 }
 
-function forum_count_increase(int $forumId, bool $topic = false): void
-{
+function forum_count_increase(int $forumId, bool $topic = false): void {
     $increaseCount = db_prepare(sprintf(
         '
             UPDATE `msz_forum_categories`
@@ -524,13 +507,12 @@ function forum_count_increase(int $forumId, bool $topic = false): void
     $increaseCount->execute();
 }
 
-function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = true): array
-{
+function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = true): array {
     static $getChildren = null;
     static $getCounts = null;
     static $setCounts = null;
 
-    if (is_null($getChildren)) {
+    if(is_null($getChildren)) {
         $getChildren = db_prepare('
             SELECT `forum_id`, `forum_parent`
             FROM `msz_forum_categories`
@@ -538,7 +520,7 @@ function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = tru
         ');
     }
 
-    if (is_null($getCounts)) {
+    if(is_null($getCounts)) {
         $getCounts = db_prepare('
             SELECT :forum as `target_forum_id`,
             (
@@ -556,7 +538,7 @@ function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = tru
         ');
     }
 
-    if ($save && is_null($setCounts)) {
+    if($save && is_null($setCounts)) {
         $setCounts = db_prepare('
             UPDATE `msz_forum_categories`
             SET `forum_count_topics` = :topics,
@@ -571,7 +553,7 @@ function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = tru
     $topics = 0;
     $posts = 0;
 
-    foreach ($children as $child) {
+    foreach($children as $child) {
         $childCount = forum_count_synchronise($child['forum_id'], $save);
         $topics += $childCount['topics'];
         $posts += $childCount['posts'];
@@ -582,7 +564,7 @@ function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = tru
     $topics += $counts['count_topics'];
     $posts += $counts['count_posts'];
 
-    if ($forumId > 0 && $save) {
+    if($forumId > 0 && $save) {
         $setCounts->bindValue('forum_id', $forumId);
         $setCounts->bindValue('topics', $topics);
         $setCounts->bindValue('posts', $posts);

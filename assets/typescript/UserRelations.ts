@@ -12,12 +12,11 @@ interface UserRelationInfo {
     message: string;
 }
 
-function userRelationsInit(): void
-{
+function userRelationsInit(): void {
     const relationButtons: HTMLCollectionOf<HTMLElement> = document.getElementsByClassName('js-user-relation-action') as HTMLCollectionOf<HTMLElement>;
 
-    for (let i = 0; i < relationButtons.length; i++) {
-        switch (relationButtons[i].tagName.toLowerCase()) {
+    for(let i = 0; i < relationButtons.length; i++) {
+        switch(relationButtons[i].tagName.toLowerCase()) {
             case 'a':
                 const anchor: HTMLAnchorElement = relationButtons[i] as HTMLAnchorElement;
                 anchor.removeAttribute('href');
@@ -41,14 +40,14 @@ function userRelationSetEventHandler(ev: Event): void {
         iconRemove: string = 'fas fa-user-minus',
         iconBusy: string = 'fas fa-spinner fa-pulse';
 
-    if (isButton) {
-        if (target.classList.contains(buttonBusy))
+    if(isButton) {
+        if(target.classList.contains(buttonBusy))
             return;
 
         target.classList.add(buttonBusy);
     }
 
-    if (icon) {
+    if(icon) {
         icon.className = iconBusy;
     }
 
@@ -58,16 +57,16 @@ function userRelationSetEventHandler(ev: Event): void {
         info => {
             target.classList.remove(buttonBusy);
 
-            switch (info.relation_type) {
+            switch(info.relation_type) {
                 case UserRelationType.None:
-                    if (isButton) {
-                        if (target.classList.contains('input__button--destroy'))
+                    if(isButton) {
+                        if(target.classList.contains('input__button--destroy'))
                             target.classList.remove('input__button--destroy');
 
                         target.textContent = 'Follow';
                     }
 
-                    if (icon) {
+                    if(icon) {
                         icon.className = iconAdd;
                         target.title = 'Follow';
                     }
@@ -76,14 +75,14 @@ function userRelationSetEventHandler(ev: Event): void {
                     break;
 
                 case UserRelationType.Follow:
-                    if (isButton) {
-                        if (!target.classList.contains('input__button--destroy'))
+                    if(isButton) {
+                        if(!target.classList.contains('input__button--destroy'))
                             target.classList.add('input__button--destroy');
 
                         target.textContent = 'Unfollow';
                     }
 
-                    if (icon) {
+                    if(icon) {
                         icon.className = iconRemove;
                         target.title = 'Unfollow';
                     }
@@ -108,7 +107,7 @@ function userRelationSet(
     const xhr: XMLHttpRequest = new XMLHttpRequest;
 
     xhr.addEventListener('readystatechange', () => {
-        if (xhr.readyState !== 4)
+        if(xhr.readyState !== 4)
             return;
 
         updateCSRF(xhr.getResponseHeader('X-Misuzu-CSRF'));
@@ -116,9 +115,9 @@ function userRelationSet(
         let json: UserRelationInfo = JSON.parse(xhr.responseText) as UserRelationInfo,
             message = json.error || json.message;
 
-        if (message && onFail)
+        if(message && onFail)
             onFail(message);
-        else if (!message && onSuccess)
+        else if(!message && onSuccess)
             onSuccess(json);
     });
     xhr.open('GET', urlFormat('user-relation-create', [{name: 'user', value: userId}, {name: 'type', value: relationType.toString()}]));

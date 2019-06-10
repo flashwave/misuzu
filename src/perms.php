@@ -14,11 +14,10 @@ define('MSZ_PERM_MODES', [
 define('MSZ_PERMS_ALLOW', 'allow');
 define('MSZ_PERMS_DENY', 'deny');
 
-function perms_get_keys(array $modes = MSZ_PERM_MODES): array
-{
+function perms_get_keys(array $modes = MSZ_PERM_MODES): array {
     $perms = [];
 
-    foreach ($modes as $mode) {
+    foreach($modes as $mode) {
         $perms[] = perms_get_key($mode, MSZ_PERMS_ALLOW);
         $perms[] = perms_get_key($mode, MSZ_PERMS_DENY);
     }
@@ -26,22 +25,19 @@ function perms_get_keys(array $modes = MSZ_PERM_MODES): array
     return $perms;
 }
 
-function perms_create(array $modes = MSZ_PERM_MODES): array
-{
+function perms_create(array $modes = MSZ_PERM_MODES): array {
     return array_fill_keys(perms_get_keys($modes), 0);
 }
 
-function perms_get_key(string $prefix, string $suffix): string
-{
+function perms_get_key(string $prefix, string $suffix): string {
     return $prefix . '_perms_' . $suffix;
 }
 
-function perms_get_select(array $modes = MSZ_PERM_MODES, string $allow = MSZ_PERMS_ALLOW, string $deny = MSZ_PERMS_DENY): string
-{
+function perms_get_select(array $modes = MSZ_PERM_MODES, string $allow = MSZ_PERMS_ALLOW, string $deny = MSZ_PERMS_DENY): string {
     $select = '';
 
-    if (empty($select)) {
-        foreach ($modes as $mode) {
+    if(empty($select)) {
+        foreach($modes as $mode) {
             $select .= sprintf(
                 '(BIT_OR(`%1$s_perms_%2$s`) &~ BIT_OR(`%1$s_perms_%3$s`)) AS `%1$s`,',
                 $mode, $allow, $deny
@@ -54,20 +50,18 @@ function perms_get_select(array $modes = MSZ_PERM_MODES, string $allow = MSZ_PER
     return $select;
 }
 
-function perms_get_blank(array $modes = MSZ_PERM_MODES): array
-{
+function perms_get_blank(array $modes = MSZ_PERM_MODES): array {
     return array_fill_keys($modes, 0);
 }
 
-function perms_get_user(int $user): array
-{
-    if ($user < 1) {
+function perms_get_user(int $user): array {
+    if($user < 1) {
         return perms_get_blank();
     }
 
     static $memo = [];
 
-    if (array_key_exists($user, $memo)) {
+    if(array_key_exists($user, $memo)) {
         return $memo[$user];
     }
 
@@ -93,9 +87,8 @@ function perms_get_user(int $user): array
     return $memo[$user] = db_fetch($getPerms);
 }
 
-function perms_delete_user(int $user): bool
-{
-    if ($user < 1) {
+function perms_delete_user(int $user): bool {
+    if($user < 1) {
         return false;
     }
 
@@ -108,15 +101,14 @@ function perms_delete_user(int $user): bool
     return $deletePermissions->execute();
 }
 
-function perms_get_role(int $role): array
-{
-    if ($role < 1) {
+function perms_get_role(int $role): array {
+    if($role < 1) {
         return perms_get_blank();
     }
 
     static $memo = [];
 
-    if (array_key_exists($role, $memo)) {
+    if(array_key_exists($role, $memo)) {
         return $memo[$role];
     }
 
@@ -134,9 +126,8 @@ function perms_get_role(int $role): array
     return $memo[$role] = db_fetch($getPerms);
 }
 
-function perms_get_user_raw(int $user): array
-{
-    if ($user < 1) {
+function perms_get_user_raw(int $user): array {
+    if($user < 1) {
         return perms_create();
     }
 
@@ -149,23 +140,22 @@ function perms_get_user_raw(int $user): array
     $getPerms->bindValue('user_id', $user);
     $perms = db_fetch($getPerms);
 
-    if (empty($perms)) {
+    if(empty($perms)) {
         return perms_create();
     }
 
     return $perms;
 }
 
-function perms_set_user_raw(int $user, array $perms): bool
-{
-    if ($user < 1) {
+function perms_set_user_raw(int $user, array $perms): bool {
+    if($user < 1) {
         return false;
     }
 
     $realPerms = perms_create();
     $permKeys = array_keys($realPerms);
 
-    foreach ($permKeys as $perm) {
+    foreach($permKeys as $perm) {
         $realPerms[$perm] = (int)($perms[$perm] ?? 0);
     }
 
@@ -181,16 +171,15 @@ function perms_set_user_raw(int $user, array $perms): bool
     ));
     $setPermissions->bindValue('user_id', $user);
 
-    foreach ($realPerms as $key => $value) {
+    foreach($realPerms as $key => $value) {
         $setPermissions->bindValue($key, $value);
     }
 
     return $setPermissions->execute();
 }
 
-function perms_get_role_raw(int $role): array
-{
-    if ($role < 1) {
+function perms_get_role_raw(int $role): array {
+    if($role < 1) {
         return perms_create();
     }
 
@@ -203,35 +192,31 @@ function perms_get_role_raw(int $role): array
     $getPerms->bindValue('role_id', $role);
     $perms = db_fetch($getPerms);
 
-    if (empty($perms)) {
+    if(empty($perms)) {
         return perms_create();
     }
 
     return $perms;
 }
 
-function perms_check(?int $perms, ?int $perm, bool $strict = false): bool
-{
+function perms_check(?int $perms, ?int $perm, bool $strict = false): bool {
     $and = ($perms ?? 0) & ($perm ?? 0);
     return $strict ? $and === $perm : $and > 0;
 }
 
-function perms_check_user(string $prefix, ?int $userId, int $perm, bool $strict = false): bool
-{
+function perms_check_user(string $prefix, ?int $userId, int $perm, bool $strict = false): bool {
     return $userId > 0 && perms_check(perms_get_user($userId)[$prefix] ?? 0, $perm, $strict);
 }
 
-function perms_check_bulk(int $perms, array $set, bool $strict = false): array
-{
-    foreach ($set as $key => $perm) {
+function perms_check_bulk(int $perms, array $set, bool $strict = false): array {
+    foreach($set as $key => $perm) {
         $set[$key] = perms_check($perms, $perm, $strict);
     }
 
     return $set;
 }
 
-function perms_check_user_bulk(string $prefix, ?int $userId, array $set, bool $strict = false): array
-{
+function perms_check_user_bulk(string $prefix, ?int $userId, array $set, bool $strict = false): array {
     $perms = perms_get_user($userId)[$prefix] ?? 0;
     return perms_check_bulk($perms, $set, $strict);
 }

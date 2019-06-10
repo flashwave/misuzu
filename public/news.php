@@ -4,7 +4,7 @@ require_once '../misuzu.php';
 http_response_code(301);
 $location = url('news-index');
 
-if (!empty($_GET['n']) && is_string($_GET['n'])) {
+if(!empty($_GET['n']) && is_string($_GET['n'])) {
     $location = url('news-post', [
         'post' => (int)$_GET['n'],
     ]);
@@ -18,11 +18,11 @@ if(!empty($feedMode) && news_feed_supported($feedMode)) {
     $location = empty($categoryId) ? url("news-feed-{$feedMode}") : url("news-category-feed-{$feedMode}", ['category' => $categoryId]);
 }
 
-if ($postId > 0) {
+if($postId > 0) {
     $location = url('news-post', ['post' => $postId]);
 }
 
-if ($categoryId > 0) {
+if($categoryId > 0) {
     $location = url('news-category', ['category' => $categoryId, 'page' => pagination_param('page')]);
 }
 

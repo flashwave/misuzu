@@ -3,14 +3,12 @@ define('MSZ_FORUM_LEADERBOARD_START_YEAR', 2018);
 define('MSZ_FORUM_LEADERBOARD_START_MONTH', 12);
 define('MSZ_FORUM_LEADERBOARD_CATEGORY_ALL', 0);
 
-function forum_leaderboard_year_valid(?int $year): bool
-{
+function forum_leaderboard_year_valid(?int $year): bool {
     return !is_null($year) && $year >= MSZ_FORUM_LEADERBOARD_START_YEAR && $year <= date('Y');
 }
 
-function forum_leaderboard_month_valid(?int $year, ?int $month): bool
-{
-    if (is_null($month) || !forum_leaderboard_year_valid($year) || $month < 1 || $month > 12) {
+function forum_leaderboard_month_valid(?int $year, ?int $month): bool {
+    if(is_null($month) || !forum_leaderboard_year_valid($year) || $month < 1 || $month > 12) {
         return false;
     }
 
@@ -21,8 +19,7 @@ function forum_leaderboard_month_valid(?int $year, ?int $month): bool
     return $combo >= $start && $combo <= $current;
 }
 
-function forum_leaderboard_categories(): array
-{
+function forum_leaderboard_categories(): array {
     $categories = [
         MSZ_FORUM_LEADERBOARD_CATEGORY_ALL => 'All Time',
     ];
@@ -30,26 +27,30 @@ function forum_leaderboard_categories(): array
     $currentYear = date('Y');
     $currentMonth = date('m');
 
-    for ($i = MSZ_FORUM_LEADERBOARD_START_YEAR; $i <= $currentYear; $i++) {
+    for($i = $currentYear; $i >= MSZ_FORUM_LEADERBOARD_START_YEAR; $i--) {
         $categories[$i] = sprintf('Leaderboard %d', $i);
     }
 
-    for ($i = MSZ_FORUM_LEADERBOARD_START_YEAR, $j = MSZ_FORUM_LEADERBOARD_START_MONTH;;) {
+    for($i = $currentYear, $j = $currentMonth;;) {
         $categories[sprintf('%d%02d', $i, $j)] = sprintf('Leaderboard %d-%02d', $i, $j);
 
-        if ($j >= 12) {
-            $i++; $j = 1;
-        } else $j++;
+        if($j <= 1) {
+            $i--; $j = 12;
+        } else $j--;
 
-        if ($i >= $currentYear && $j > $currentMonth)
+        if($i <= MSZ_FORUM_LEADERBOARD_START_YEAR && $j < MSZ_FORUM_LEADERBOARD_START_MONTH)
             break;
     }
 
     return $categories;
 }
 
-function forum_leaderboard_listing(?int $year = null, ?int $month = null, array $unrankedForums = [], array $unrankedTopics = []): array
-{
+function forum_leaderboard_listing(
+    ?int $year = null,
+    ?int $month = null,
+    array $unrankedForums = [],
+    array $unrankedTopics = []
+): array {
     $hasYear = forum_leaderboard_year_valid($year);
     $hasMonth = $hasYear && forum_leaderboard_month_valid($year, $month);
     $unrankedForums = implode(',', $unrankedForums);
@@ -83,8 +84,8 @@ function forum_leaderboard_listing(?int $year = null, ?int $month = null, array 
     $ranking = 0;
     $lastPosts = null;
 
-    foreach ($rawLeaderboard as $entry) {
-        if (is_null($lastPosts) || $lastPosts > $entry['posts']) {
+    foreach($rawLeaderboard as $entry) {
+        if(is_null($lastPosts) || $lastPosts > $entry['posts']) {
             $ranking++;
             $lastPosts = $entry['posts'];
         }

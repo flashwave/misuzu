@@ -1,7 +1,7 @@
 <?php
 require_once '../../misuzu.php';
 
-if (!perms_check_user(MSZ_PERMS_FORUM, user_session_current('user_id'), MSZ_PERM_FORUM_VIEW_LEADERBOARD)) {
+if(!perms_check_user(MSZ_PERMS_FORUM, user_session_current('user_id'), MSZ_PERM_FORUM_VIEW_LEADERBOARD)) {
     echo render_error(403);
     return;
 }

@@ -8,10 +8,10 @@ $changelogTags = !empty($_GET['t']) && is_string($_GET['t']) ? (string)$_GET['t'
 
 tpl_var('comments_perms', $commentPerms = comments_get_perms(user_session_current('user_id', 0)));
 
-if ($changelogChange > 0) {
+if($changelogChange > 0) {
     $change = changelog_change_get($changelogChange);
 
-    if (!$change) {
+    if(!$change) {
         echo render_error(404);
         return;
     }
@@ -28,10 +28,10 @@ if ($changelogChange > 0) {
     return;
 }
 
-if (!empty($changelogDate)) {
+if(!empty($changelogDate)) {
     $dateParts = explode('-', $changelogDate, 3);
 
-    if (count($dateParts) !== 3
+    if(count($dateParts) !== 3
         || !array_test($dateParts, 'ctype_digit')
         || !checkdate($dateParts[1], $dateParts[2], $dateParts[0])) {
         echo render_error(404);
@@ -46,11 +46,11 @@ $changes = $changesCount === -1 || pagination_is_valid_offset($changesOffset)
     ? changelog_get_changes($changelogDate, $changelogUser, $changesOffset, $changesPagination['range'])
     : [];
 
-if (!$changes) {
+if(!$changes) {
     http_response_code(404);
 }
 
-if (!empty($changelogDate) && count($changes) > 0) {
+if(!empty($changelogDate) && count($changes) > 0) {
     tpl_vars([
         'comments_category' => $commentsCategory = comments_category_info("changelog-date-{$changelogDate}", true),
         'comments' => comments_category_get($commentsCategory['category_id'], user_session_current('user_id', 0)),

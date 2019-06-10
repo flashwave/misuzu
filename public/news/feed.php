@@ -13,7 +13,7 @@ $categoryId = !empty($_GET['c']) && is_string($_GET['c']) ? (int)$_GET['c'] : 0;
 if(!empty($categoryId)) {
     $category = news_category_get($categoryId);
 
-    if (empty($category)) {
+    if(empty($category)) {
         echo render_error(404);
         return;
     }
@@ -21,7 +21,7 @@ if(!empty($categoryId)) {
 
 $posts = news_posts_get(0, 10, $category['category_id'] ?? null, empty($category));
 
-if (!$posts) {
+if(!$posts) {
     echo render_error(404);
     return;
 }

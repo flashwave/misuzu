@@ -1,19 +1,18 @@
-function extractFormData(form: HTMLFormElement, resetSource: boolean = false): FormData
-{
+function extractFormData(form: HTMLFormElement, resetSource: boolean = false): FormData {
     const formData: FormData = new FormData;
 
-    for (let i = 0; i < form.length; i++) {
+    for(let i = 0; i < form.length; i++) {
         let input: HTMLInputElement = form[i] as HTMLInputElement,
             type = input.type.toLowerCase(),
             isCheckbox = type === 'checkbox';
 
-        if (isCheckbox && !input.checked)
+        if(isCheckbox && !input.checked)
             continue;
 
         formData.append(input.name, input.value || '');
     }
 
-    if (resetSource)
+    if(resetSource)
         resetForm(form);
 
     return formData;
@@ -24,12 +23,11 @@ interface FormHiddenDefault {
     Value: string;
 }
 
-function resetForm(form: HTMLFormElement, defaults: FormHiddenDefault[] = []): void
-{
-    for (let i = 0; i < form.length; i++) {
+function resetForm(form: HTMLFormElement, defaults: FormHiddenDefault[] = []): void {
+    for(let i = 0; i < form.length; i++) {
         let input: HTMLInputElement = form[i] as HTMLInputElement;
 
-        switch (input.type.toLowerCase()) {
+        switch(input.type.toLowerCase()) {
             case 'checkbox':
                 input.checked = false;
                 break;
@@ -37,7 +35,7 @@ function resetForm(form: HTMLFormElement, defaults: FormHiddenDefault[] = []): v
             case 'hidden':
                 let hiddenDefault: FormHiddenDefault = defaults.find(fhd => fhd.Name.toLowerCase() === input.name.toLowerCase());
 
-                if (hiddenDefault)
+                if(hiddenDefault)
                     input.value = hiddenDefault.Value;
                 break;
 
@@ -57,9 +55,8 @@ function getCSRFToken(): string {
     return CSRFToken;
 }
 
-function updateCSRF(token: string): void
-{
-    if (token === null) {
+function updateCSRF(token: string): void {
+    if(token === null) {
         return;
     }
 
@@ -67,7 +64,7 @@ function updateCSRF(token: string): void
 
     const elements: NodeListOf<HTMLInputElement> = document.getElementsByName('csrf') as NodeListOf<HTMLInputElement>;
 
-    for (let i = 0; i < elements.length; i++) {
+    for(let i = 0; i < elements.length; i++) {
         elements[i].value = token;
     }
 }

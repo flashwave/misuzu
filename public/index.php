@@ -4,10 +4,10 @@ require_once '../misuzu.php';
 $showActivityFeed = false; /*user_session_active()
     && MSZ_DEBUG /*perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), MSZ_PERM_GENERAL_TESTER)*/;
 
-if ($showActivityFeed) {
+if($showActivityFeed) {
     // load activity shit garbage here
 } else {
-    if (config_get_default(false, 'Site', 'embed_linked_data')) {
+    if(config_get_default(false, 'Site', 'embed_linked_data')) {
         tpl_var('linked_data', [
             'name' => config_get('Site', 'name'),
             'url' => config_get('Site', 'url'),

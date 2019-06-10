@@ -8,10 +8,10 @@ $submissionConfirmed = !empty($_GET['confirm']) && is_string($_GET['confirm']) &
 
 $topicUserId = user_session_current('user_id', 0);
 
-if ($topicId < 1 && $postId > 0) {
+if($topicId < 1 && $postId > 0) {
     $postInfo = forum_post_find($postId, $topicUserId);
 
-    if (!empty($postInfo['topic_id'])) {
+    if(!empty($postInfo['topic_id'])) {
         $topicId = (int)$postInfo['topic_id'];
     }
 }
@@ -21,29 +21,29 @@ $perms = $topic
     ? forum_perms_get_user($topic['forum_id'], $topicUserId)[MSZ_FORUM_PERMS_GENERAL]
     : 0;
 
-if (user_warning_check_restriction($topicUserId)) {
+if(user_warning_check_restriction($topicUserId)) {
     $perms &= ~MSZ_FORUM_PERM_SET_WRITE;
 }
 
 $topicIsDeleted = !empty($topic['topic_deleted']);
 $canDeleteAny = perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST);
 
-if (!$topic || ($topicIsDeleted && !$canDeleteAny)) {
+if(!$topic || ($topicIsDeleted && !$canDeleteAny)) {
     echo render_error(404);
     return;
 }
 
-if (!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
+if(!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     echo render_error(403);
     return;
 }
 
-if (!empty($topic['poll_id'])) {
+if(!empty($topic['poll_id'])) {
     $pollOptions = forum_poll_get_options($topic['poll_id']);
     $pollUserAnswers = forum_poll_get_user_answers($topic['poll_id'], $topicUserId);
 }
 
-if (forum_has_priority_voting($topic['forum_type'])) {
+if(forum_has_priority_voting($topic['forum_type'])) {
     $topicPriority = forum_topic_priority($topic['topic_id']);
 }
 
@@ -101,13 +101,13 @@ if(in_array($moderationMode, $validModerationModes, true)) {
         return;
     }
 
-    switch ($moderationMode) {
+    switch($moderationMode) {
         case 'delete':
             $canDeleteCode = forum_topic_can_delete($topic, $topicUserId);
             $canDeleteMsg = '';
             $responseCode = 200;
 
-            switch ($canDeleteCode) {
+            switch($canDeleteCode) {
                 case MSZ_E_FORUM_TOPIC_DELETE_USER:
                     $responseCode = 401;
                     $canDeleteMsg = 'You must be logged in to delete topics.';
@@ -143,8 +143,8 @@ if(in_array($moderationMode, $validModerationModes, true)) {
                     $canDeleteMsg = sprintf('Unknown error \'%d\'', $canDelete);
             }
 
-            if ($canDeleteCode !== MSZ_E_FORUM_TOPIC_DELETE_OK) {
-                if ($isXHR) {
+            if($canDeleteCode !== MSZ_E_FORUM_TOPIC_DELETE_OK) {
+                if($isXHR) {
                     http_response_code($responseCode);
                     echo json_encode([
                         'success' => false,
@@ -159,8 +159,8 @@ if(in_array($moderationMode, $validModerationModes, true)) {
                 break;
             }
 
-            if (!$isXHR) {
-                if (!isset($_GET['confirm'])) {
+            if(!$isXHR) {
+                if(!isset($_GET['confirm'])) {
                     echo tpl_render('forum.confirm', [
                         'title' => 'Confirm topic deletion',
                         'class' => 'far fa-trash-alt',
@@ -171,7 +171,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
                         ],
                     ]);
                     break;
-                } elseif (!$submissionConfirmed) {
+                } elseif(!$submissionConfirmed) {
                     url_redirect(
                         'forum-topic',
                         ['topic' => $topic['topic_id']]
@@ -182,11 +182,11 @@ if(in_array($moderationMode, $validModerationModes, true)) {
 
             $deleteTopic = forum_topic_delete($topic['topic_id']);
 
-            if ($deleteTopic) {
+            if($deleteTopic) {
                 audit_log(MSZ_AUDIT_FORUM_TOPIC_DELETE, $topicUserId, [$topic['topic_id']]);
             }
 
-            if ($isXHR) {
+            if($isXHR) {
                 echo json_encode([
                     'success' => $deleteTopic,
                     'topic_id' => $topic['topic_id'],
@@ -195,7 +195,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
                 break;
             }
 
-            if (!$deleteTopic) {
+            if(!$deleteTopic) {
                 echo render_error(500);
                 break;
             }
@@ -206,13 +206,13 @@ if(in_array($moderationMode, $validModerationModes, true)) {
             break;
 
         case 'restore':
-            if (!$canNukeOrRestore) {
+            if(!$canNukeOrRestore) {
                 echo render_error(403);
                 break;
             }
 
-            if (!$isXHR) {
-                if (!isset($_GET['confirm'])) {
+            if(!$isXHR) {
+                if(!isset($_GET['confirm'])) {
                     echo tpl_render('forum.confirm', [
                         'title' => 'Confirm topic restore',
                         'class' => 'fas fa-magic',
@@ -223,7 +223,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
                         ],
                     ]);
                     break;
-                } elseif (!$submissionConfirmed) {
+                } elseif(!$submissionConfirmed) {
                     url_redirect('forum-topic', [
                         'topic' => $topic['topic_id'],
                     ]);
@@ -233,7 +233,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
 
             $restoreTopic = forum_topic_restore($topic['topic_id']);
 
-            if (!$restoreTopic) {
+            if(!$restoreTopic) {
                 echo render_error(500);
                 break;
             }
@@ -241,7 +241,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
             audit_log(MSZ_AUDIT_FORUM_TOPIC_RESTORE, $topicUserId, [$topic['topic_id']]);
             http_response_code(204);
 
-            if (!$isXHR) {
+            if(!$isXHR) {
                 url_redirect('forum-category', [
                     'forum' => $topic['forum_id'],
                 ]);
@@ -249,13 +249,13 @@ if(in_array($moderationMode, $validModerationModes, true)) {
             break;
 
         case 'nuke':
-            if (!$canNukeOrRestore) {
+            if(!$canNukeOrRestore) {
                 echo render_error(403);
                 break;
             }
 
-            if (!$isXHR) {
-                if (!isset($_GET['confirm'])) {
+            if(!$isXHR) {
+                if(!isset($_GET['confirm'])) {
                     echo tpl_render('forum.confirm', [
                         'title' => 'Confirm topic nuke',
                         'class' => 'fas fa-radiation',
@@ -266,7 +266,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
                         ],
                     ]);
                     break;
-                } elseif (!$submissionConfirmed) {
+                } elseif(!$submissionConfirmed) {
                     url_redirect('forum-topic', [
                         'topic' => $topic['topic_id'],
                     ]);
@@ -276,7 +276,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
 
             $nukeTopic = forum_topic_nuke($topic['topic_id']);
 
-            if (!$nukeTopic) {
+            if(!$nukeTopic) {
                 echo render_error(500);
                 break;
             }
@@ -284,7 +284,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
             audit_log(MSZ_AUDIT_FORUM_TOPIC_NUKE, $topicUserId, [$topic['topic_id']]);
             http_response_code(204);
 
-            if (!$isXHR) {
+            if(!$isXHR) {
                 url_redirect('forum-category', [
                     'forum' => $topic['forum_id'],
                 ]);
@@ -292,7 +292,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
             break;
 
         case 'bump':
-            if ($canBumpTopic && forum_topic_bump($topic['topic_id'])) {
+            if($canBumpTopic && forum_topic_bump($topic['topic_id'])) {
                 audit_log(MSZ_AUDIT_FORUM_TOPIC_BUMP, $topicUserId, [$topic['topic_id']]);
             }
 
@@ -302,7 +302,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
             break;
 
         case 'lock':
-            if ($canLockTopic && !$topicIsLocked && forum_topic_lock($topic['topic_id'])) {
+            if($canLockTopic && !$topicIsLocked && forum_topic_lock($topic['topic_id'])) {
                 audit_log(MSZ_AUDIT_FORUM_TOPIC_LOCK, $topicUserId, [$topic['topic_id']]);
             }
 
@@ -312,7 +312,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
             break;
 
         case 'unlock':
-            if ($canLockTopic && $topicIsLocked && forum_topic_unlock($topic['topic_id'])) {
+            if($canLockTopic && $topicIsLocked && forum_topic_unlock($topic['topic_id'])) {
                 audit_log(MSZ_AUDIT_FORUM_TOPIC_UNLOCK, $topicUserId, [$topic['topic_id']]);
             }
 
@@ -326,16 +326,16 @@ if(in_array($moderationMode, $validModerationModes, true)) {
 
 $topicPosts = $topic['topic_count_posts'];
 
-if ($canDeleteAny) {
+if($canDeleteAny) {
     $topicPosts += $topic['topic_count_posts_deleted'];
 }
 
 $topicPagination = pagination_create($topicPosts, MSZ_FORUM_POSTS_PER_PAGE);
 
-if (isset($postInfo['preceeding_post_count'])) {
+if(isset($postInfo['preceeding_post_count'])) {
     $preceedingPosts = $postInfo['preceeding_post_count'];
 
-    if ($canDeleteAny) {
+    if($canDeleteAny) {
         $preceedingPosts += $postInfo['preceeding_post_deleted_count'];
     }
 
@@ -344,7 +344,7 @@ if (isset($postInfo['preceeding_post_count'])) {
 
 $postsOffset = pagination_offset($topicPagination, $postsPage ?? pagination_param('page'));
 
-if (!pagination_is_valid_offset($postsOffset)) {
+if(!pagination_is_valid_offset($postsOffset)) {
     echo render_error(404);
     return;
 }
@@ -358,7 +358,7 @@ $posts = forum_post_listing(
     perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST)
 );
 
-if (!$posts) {
+if(!$posts) {
     echo render_error(404);
     return;
 }

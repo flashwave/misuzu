@@ -1,7 +1,7 @@
 <?php
 require_once '../../misuzu.php';
 
-if (user_session_active()) {
+if(user_session_active()) {
     url_redirect('index');
     return;
 }
@@ -13,18 +13,18 @@ $remainingAttempts = user_login_attempts_remaining($ipAddress);
 $restricted = ip_blacklist_check(ip_remote_address()) ? 'blacklist'
     : (user_warning_check_ip(ip_remote_address()) ? 'ban' : '');
 
-while (!$restricted && !empty($register)) {
-    if (!csrf_verify_request()) {
+while(!$restricted && !empty($register)) {
+    if(!csrf_verify_request()) {
         $notices[] = 'Was unable to verify the request, please try again!';
         break;
     }
 
-    if ($remainingAttempts < 1) {
+    if($remainingAttempts < 1) {
         $notices[] = "There are too many failed login attempts from your IP address, you may not create an account right now.";
         break;
     }
 
-    if (empty($register['username']) || empty($register['password']) || empty($register['email']) || empty($register['question'])
+    if(empty($register['username']) || empty($register['password']) || empty($register['email']) || empty($register['question'])
         || !is_string($register['username']) || !is_string($register['password']) || !is_string($register['email']) || !is_string($register['question'])) {
         $notices[] = "You haven't filled in all fields.";
         break;
@@ -35,32 +35,32 @@ while (!$restricted && !empty($register)) {
         '19', '21', 'nineteen', 'nine-teen', 'nine teen', 'twentyone', 'twenty-one', 'twenty one',
     ];
 
-    if (!in_array($checkSpamBot, $spamBotValid)) {
+    if(!in_array($checkSpamBot, $spamBotValid)) {
         $notices[] = 'Human only cool club, robots begone.';
         break;
     }
 
     $usernameValidation = user_validate_username($register['username'], true);
-    if ($usernameValidation !== '') {
+    if($usernameValidation !== '') {
         $notices[] = MSZ_USER_USERNAME_VALIDATION_STRINGS[$usernameValidation];
     }
 
     $emailValidation = user_validate_email($register['email'], true);
-    if ($emailValidation !== '') {
+    if($emailValidation !== '') {
         $notices[] = $emailValidation === 'in-use'
             ? 'This e-mail address has already been used!'
             : 'The e-mail address you entered is invalid!';
     }
 
-    if ($register['password_confirm'] !== $register['password']) {
+    if($register['password_confirm'] !== $register['password']) {
         $notices[] = 'The given passwords don\'t match.';
     }
 
-    if (user_validate_password($register['password']) !== '') {
+    if(user_validate_password($register['password']) !== '') {
         $notices[] = 'Your password is too weak!';
     }
 
-    if (!empty($notices)) {
+    if(!empty($notices)) {
         break;
     }
 
@@ -71,7 +71,7 @@ while (!$restricted && !empty($register)) {
         $ipAddress
     );
 
-    if ($createUser < 1) {
+    if($createUser < 1) {
         $notices[] = 'Something went wrong while creating your account, please alert an administrator or a developer about this!';
         break;
     }

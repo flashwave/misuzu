@@ -124,33 +124,32 @@ define('MSZ_URLS', [
     'manage-role'                       => ['/manage/users/role.php',           ['r' => '<role>']],
 ]);
 
-function url(string $name, array $variables = []): string
-{
-    if (!array_key_exists($name, MSZ_URLS)) {
+function url(string $name, array $variables = []): string {
+    if(!array_key_exists($name, MSZ_URLS)) {
         return '';
     }
 
     $info = MSZ_URLS[$name];
 
-    if (!is_string($info[0] ?? null)) {
+    if(!is_string($info[0] ?? null)) {
         return '';
     }
 
     $splitUrl = explode('/', $info[0]);
 
-    for ($i = 0; $i < count($splitUrl); $i++) {
+    for($i = 0; $i < count($splitUrl); $i++) {
         $splitUrl[$i] = url_variable($splitUrl[$i], $variables);
     }
 
     $url = implode('/', $splitUrl);
 
-    if (!empty($info[1]) && is_array($info[1])) {
+    if(!empty($info[1]) && is_array($info[1])) {
         $url .= '?';
 
-        foreach ($info[1] as $key => $value) {
+        foreach($info[1] as $key => $value) {
             $value = url_variable($value, $variables);
 
-            if (empty($value) || ($key === 'page' && $value < 2)) {
+            if(empty($value) || ($key === 'page' && $value < 2)) {
                 continue;
             }
 
@@ -160,45 +159,41 @@ function url(string $name, array $variables = []): string
         $url = trim($url, '?&');
     }
 
-    if (!empty($info[2]) && is_string($info[2])) {
+    if(!empty($info[2]) && is_string($info[2])) {
         $url .= rtrim(sprintf('#%s', url_variable($info[2], $variables)), '#');
     }
 
     return $url;
 }
 
-function redirect(string $url): void
-{
+function redirect(string $url): void {
     header('Location: ' . $url);
 }
 
-function url_redirect(string $name, array $variables = []): void
-{
+function url_redirect(string $name, array $variables = []): void {
     redirect(url($name, $variables));
 }
 
-function url_variable(string $value, array $variables): string
-{
-    if (starts_with($value, '<') && ends_with($value, '>')) {
+function url_variable(string $value, array $variables): string {
+    if(starts_with($value, '<') && ends_with($value, '>')) {
         return $variables[trim($value, '<>')] ?? '';
     }
 
-    if (starts_with($value, '[') && ends_with($value, ']')) {
+    if(starts_with($value, '[') && ends_with($value, ']')) {
         return constant(trim($value, '[]'));
     }
 
-    if (starts_with($value, '{') && ends_with($value, '}') && csrf_is_ready()) {
+    if(starts_with($value, '{') && ends_with($value, '}') && csrf_is_ready()) {
         return csrf_token();
     }
 
     return $value;
 }
 
-function url_list(): array
-{
+function url_list(): array {
     $collection = [];
 
-    foreach (MSZ_URLS as $name => $urlInfo) {
+    foreach(MSZ_URLS as $name => $urlInfo) {
         $item = [
             'name' => $name,
             'path' => $urlInfo[0],
@@ -206,8 +201,8 @@ function url_list(): array
             'fragment' => $urlInfo[2] ?? '',
         ];
 
-        if (!empty($urlInfo[1]) && is_array($urlInfo[1])) {
-            foreach ($urlInfo[1] as $name => $value) {
+        if(!empty($urlInfo[1]) && is_array($urlInfo[1])) {
+            foreach($urlInfo[1] as $name => $value) {
                 $item['query'][] = [
                     'name' => $name,
                     'value' => $value,
@@ -221,13 +216,12 @@ function url_list(): array
     return $collection;
 }
 
-function url_construct(string $url, array $query = [], ?string $fragment = null): string
-{
-    if (count($query)) {
+function url_construct(string $url, array $query = [], ?string $fragment = null): string {
+    if(count($query)) {
         $url .= mb_strpos($url, '?') !== false ? '&' : '?';
 
-        foreach ($query as $key => $value) {
-            if ($value) {
+        foreach($query as $key => $value) {
+            if($value) {
                 $url .= rawurlencode($key) . '=' . rawurlencode($value) . '&';
             }
         }
@@ -235,16 +229,15 @@ function url_construct(string $url, array $query = [], ?string $fragment = null)
         $url = mb_substr($url, 0, -1);
     }
 
-    if (!empty($fragment)) {
+    if(!empty($fragment)) {
         $url .= "#{$fragment}";
     }
 
     return $url;
 }
 
-function url_proxy_media(?string $url): ?string
-{
-    if (empty($url) || !config_get_default(false, 'Proxy', 'enabled') || is_local_url($url)) {
+function url_proxy_media(?string $url): ?string {
+    if(empty($url) || !config_get_default(false, 'Proxy', 'enabled') || is_local_url($url)) {
         return $url;
     }
 
@@ -255,20 +248,18 @@ function url_proxy_media(?string $url): ?string
     return url('media-proxy', compact('hash', 'url'));
 }
 
-function url_prefix(bool $trailingSlash = true): string
-{
+function url_prefix(bool $trailingSlash = true): string {
     return 'http' . (empty($_SERVER['HTTPS']) ? '' : 's') . '://' . $_SERVER['HTTP_HOST'] . ($trailingSlash ? '/' : '');
 }
 
-function is_local_url(string $url): bool
-{
+function is_local_url(string $url): bool {
     $length = mb_strlen($url);
 
-    if ($length < 1) {
+    if($length < 1) {
         return false;
     }
 
-    if ($url[0] === '/' && ($length > 1 ? $url[1] !== '/' : true)) {
+    if($url[0] === '/' && ($length > 1 ? $url[1] !== '/' : true)) {
         return true;
     }
 

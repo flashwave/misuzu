@@ -13,7 +13,7 @@ function colourNone(): number {
 }
 
 function colourSetInherit(colour: number, enabled: boolean): number {
-    if (enabled) {
+    if(enabled) {
         colour |= MSZ_COLOUR_INHERIT;
     } else {
         colour &= ~MSZ_COLOUR_INHERIT;
@@ -70,7 +70,7 @@ function colourGetHex(colour: number): string {
 }
 
 function colourGetCSS(colour: number): string {
-    if (colourGetInherit(colour)) {
+    if(colourGetInherit(colour)) {
         return 'inherit';
     }
 
@@ -83,7 +83,7 @@ function colourGetCSSContrast(
     light: string = 'light',
     inheritIsDark: boolean = true
 ): string {
-    if (colourGetInherit(colour)) {
+    if(colourGetInherit(colour)) {
         return inheritIsDark ? dark : light;
     }
 
@@ -101,14 +101,14 @@ function colourFromRGB(red: number, green: number, blue: number): number {
 }
 
 function colourFromHex(hex: string): number {
-    if (hex.startsWith('#'))
+    if(hex.startsWith('#'))
         hex = hex.substr(1);
 
     const length: number = hex.length;
 
-    if (length === 3) {
+    if(length === 3) {
         hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-    } else if (length !== 6) {
+    } else if(length !== 6) {
         return 0;
     }
 

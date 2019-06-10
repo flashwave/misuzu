@@ -9,18 +9,16 @@ define('MSZ_USER_RELATION_TYPES', [
 
 define('MSZ_USER_RELATION_FOLLOW_PER_PAGE', 15);
 
-function user_relation_is_valid_type(int $type): bool
-{
+function user_relation_is_valid_type(int $type): bool {
     return in_array($type, MSZ_USER_RELATION_TYPES, true);
 }
 
-function user_relation_set(int $userId, int $subjectId, int $type = MSZ_USER_RELATION_FOLLOW): bool
-{
-    if ($type === MSZ_USER_RELATION_NONE) {
+function user_relation_set(int $userId, int $subjectId, int $type = MSZ_USER_RELATION_FOLLOW): bool {
+    if($type === MSZ_USER_RELATION_NONE) {
         return user_relation_remove($userId, $subjectId);
     }
 
-    if ($userId < 1 || $subjectId < 1 || !user_relation_is_valid_type($type)) {
+    if($userId < 1 || $subjectId < 1 || !user_relation_is_valid_type($type)) {
         return false;
     }
 
@@ -38,9 +36,8 @@ function user_relation_set(int $userId, int $subjectId, int $type = MSZ_USER_REL
     return $addRelation->execute();
 }
 
-function user_relation_remove(int $userId, int $subjectId): bool
-{
-    if ($userId < 1 || $subjectId < 1) {
+function user_relation_remove(int $userId, int $subjectId): bool {
+    if($userId < 1 || $subjectId < 1) {
         return false;
     }
 
@@ -55,8 +52,7 @@ function user_relation_remove(int $userId, int $subjectId): bool
     return $removeRelation->execute();
 }
 
-function user_relation_info(int $userId, int $subjectId): array
-{
+function user_relation_info(int $userId, int $subjectId): array {
     $getRelationInfo = db_prepare('
         SELECT
             :user_id as `user_id_arg`, :subject_id as `subject_id_arg`,
@@ -84,16 +80,15 @@ function user_relation_info(int $userId, int $subjectId): array
     return db_fetch($getRelationInfo);
 }
 
-function user_relation_count(int $userId, int $type, bool $from): int
-{
-    if ($userId < 1 || $type <= MSZ_USER_RELATION_NONE || !user_relation_is_valid_type($type)) {
+function user_relation_count(int $userId, int $type, bool $from): int {
+    if($userId < 1 || $type <= MSZ_USER_RELATION_NONE || !user_relation_is_valid_type($type)) {
         return 0;
     }
 
     static $getCount = [];
     $fetchCount = $getCount[$from] ?? null;
 
-    if (empty($fetchCount)) {
+    if(empty($fetchCount)) {
         $getCount[$from] = $fetchCount = db_prepare(sprintf(
             '
                 SELECT COUNT(`%1$s`)
@@ -112,19 +107,23 @@ function user_relation_count(int $userId, int $type, bool $from): int
     return (int)($fetchCount->execute() ? $fetchCount->fetchColumn() : 0);
 }
 
-function user_relation_count_to(int $userId, int $type): int
-{
+function user_relation_count_to(int $userId, int $type): int {
     return user_relation_count($userId, $type, false);
 }
 
-function user_relation_count_from(int $userId, int $type): int
-{
+function user_relation_count_from(int $userId, int $type): int {
     return user_relation_count($userId, $type, true);
 }
 
-function user_relation_users(int $userId, int $type, bool $from, int $take = 0, int $offset = 0, int $requestingUserId = 0): array
-{
-    if ($userId < 1 || $type <= MSZ_USER_RELATION_NONE || !user_relation_is_valid_type($type)) {
+function user_relation_users(
+    int $userId,
+    int $type,
+    bool $from,
+    int $take = 0,
+    int $offset = 0,
+    int $requestingUserId = 0
+): array {
+    if($userId < 1 || $type <= MSZ_USER_RELATION_NONE || !user_relation_is_valid_type($type)) {
         return [];
     }
 
@@ -134,7 +133,7 @@ function user_relation_users(int $userId, int $type, bool $from, int $take = 0, 
     static $prepared = [];
     $fetchUsers = $prepared[$key] ?? null;
 
-    if (empty($fetchUsers)) {
+    if(empty($fetchUsers)) {
         $prepared[$key] = $fetchUsers = db_prepare(sprintf(
             '
                 SELECT
@@ -199,7 +198,7 @@ function user_relation_users(int $userId, int $type, bool $from, int $take = 0, 
     $fetchUsers->bindValue('current_user_id', $requestingUserId);
     $fetchUsers->bindValue('type', $type);
 
-    if (!$fetchAll) {
+    if(!$fetchAll) {
         $fetchUsers->bindValue('take', $take);
         $fetchUsers->bindValue('offset', $offset);
     }
@@ -207,12 +206,22 @@ function user_relation_users(int $userId, int $type, bool $from, int $take = 0, 
     return db_fetch_all($fetchUsers);
 }
 
-function user_relation_users_to(int $userId, int $type, int $take = 0, int $offset = 0, int $requestingUserId = 0): array
-{
+function user_relation_users_to(
+    int $userId,
+    int $type,
+    int $take = 0,
+    int $offset = 0,
+    int $requestingUserId = 0
+): array {
     return user_relation_users($userId, $type, false, $take, $offset, $requestingUserId);
 }
 
-function user_relation_users_from(int $userId, int $type, int $take = 0, int $offset = 0, int $requestingUserId = 0): array
-{
+function user_relation_users_from(
+    int $userId,
+    int $type,
+    int $take = 0,
+    int $offset = 0,
+    int $requestingUserId = 0
+): array {
     return user_relation_users($userId, $type, true, $take, $offset, $requestingUserId);
 }

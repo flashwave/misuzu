@@ -1,8 +1,7 @@
 <?php
 define('MSZ_USER_RECOVERY_TOKEN_LENGTH', 6); // * 2
 
-function user_recovery_token_sent(int $userId, string $ipAddress): bool
-{
+function user_recovery_token_sent(int $userId, string $ipAddress): bool {
     $tokenSent = db_prepare('
         SELECT COUNT(`verification_code`) > 0
         FROM `msz_users_password_resets`
@@ -18,8 +17,7 @@ function user_recovery_token_sent(int $userId, string $ipAddress): bool
     return $tokenSent->execute() ? (bool)$tokenSent->fetchColumn() : false;
 }
 
-function user_recovery_token_validate(int $userId, string $token): bool
-{
+function user_recovery_token_validate(int $userId, string $token): bool {
     $validateToken = db_prepare('
         SELECT COUNT(`user_id`) > 0
         FROM `msz_users_password_resets`
@@ -35,13 +33,11 @@ function user_recovery_token_validate(int $userId, string $token): bool
     return $validateToken->execute() ? (bool)$validateToken->fetchColumn() : false;
 }
 
-function user_recovery_token_generate(): string
-{
+function user_recovery_token_generate(): string {
     return bin2hex(random_bytes(MSZ_USER_RECOVERY_TOKEN_LENGTH));
 }
 
-function user_recovery_token_create(int $userId, string $ipAddress): string
-{
+function user_recovery_token_create(int $userId, string $ipAddress): string {
     $code = user_recovery_token_generate();
 
     $insertResetKey = db_prepare('
@@ -57,8 +53,7 @@ function user_recovery_token_create(int $userId, string $ipAddress): string
     return $insertResetKey->execute() ? $code : '';
 }
 
-function user_recovery_token_invalidate(int $userId, string $token): void
-{
+function user_recovery_token_invalidate(int $userId, string $token): void {
     $invalidateCode = db_prepare('
         UPDATE `msz_users_password_resets`
         SET `verification_code` = NULL

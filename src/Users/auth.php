@@ -1,14 +1,12 @@
 <?php
 define('MSZ_AUTH_TFA_TOKENS_SIZE', 16); // * 2
 
-function user_auth_tfa_token_generate(): string
-{
+function user_auth_tfa_token_generate(): string {
     return bin2hex(random_bytes(MSZ_AUTH_TFA_TOKENS_SIZE));
 }
 
-function user_auth_tfa_token_create(int $userId): string
-{
-    if ($userId < 1) {
+function user_auth_tfa_token_create(int $userId): string {
+    if($userId < 1) {
         return '';
     }
 
@@ -23,15 +21,14 @@ function user_auth_tfa_token_create(int $userId): string
     $createToken->bindValue('user_id', $userId);
     $createToken->bindValue('token', $token);
 
-    if (!$createToken->execute()) {
+    if(!$createToken->execute()) {
         return '';
     }
 
     return $token;
 }
 
-function user_auth_tfa_token_invalidate(string $token): void
-{
+function user_auth_tfa_token_invalidate(string $token): void {
     $deleteToken = db_prepare('
         DELETE FROM `msz_auth_tfa`
         WHERE `tfa_token` = :token
@@ -40,8 +37,7 @@ function user_auth_tfa_token_invalidate(string $token): void
     $deleteToken->execute();
 }
 
-function user_auth_tfa_token_info(string $token): array
-{
+function user_auth_tfa_token_info(string $token): array {
     $getTokenInfo = db_prepare('
         SELECT
             at.`user_id`, at.`tfa_token`, at.`tfa_created`, u.`user_totp_key`

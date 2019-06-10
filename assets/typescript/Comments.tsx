@@ -45,7 +45,7 @@ function commentDeleteEventHandler(ev: Event): void {
         info => {
             let elem = document.getElementById('comment-' + info.id);
 
-            if (elem)
+            if(elem)
                 elem.parentNode.removeChild(elem);
         },
         message => messageBox(message)
@@ -54,8 +54,8 @@ function commentDeleteEventHandler(ev: Event): void {
 
 function commentDelete(commentId: number, onSuccess: (info: CommentDeletionInfo) => void = null, onFail: (message: string) => void = null): void
 {
-    if (!checkUserPerm('comments', CommentPermission.Delete)) {
-        if (onFail)
+    if(!checkUserPerm('comments', CommentPermission.Delete)) {
+        if(onFail)
             onFail("You aren't allowed to delete comments.");
         return;
     }
@@ -63,7 +63,7 @@ function commentDelete(commentId: number, onSuccess: (info: CommentDeletionInfo)
     const xhr: XMLHttpRequest = new XMLHttpRequest;
 
     xhr.addEventListener('readystatechange', () => {
-        if (xhr.readyState !== 4)
+        if(xhr.readyState !== 4)
             return;
 
         updateCSRF(xhr.getResponseHeader('X-Misuzu-CSRF'));
@@ -71,9 +71,9 @@ function commentDelete(commentId: number, onSuccess: (info: CommentDeletionInfo)
         let json: CommentDeletionInfo = JSON.parse(xhr.responseText) as CommentDeletionInfo,
             message = json.error || json.message;
 
-        if (message && onFail)
+        if(message && onFail)
             onFail(message);
-        else if (!message && onSuccess)
+        else if(!message && onSuccess)
             onSuccess(json);
     });
     xhr.open('GET', urlFormat('comments-delete', [{name:'comment',value:commentId}]));
@@ -85,7 +85,7 @@ function commentPostEventHandler(ev: Event): void
 {
     const form: HTMLFormElement = ev.target as HTMLFormElement;
 
-    if (form.dataset.disabled)
+    if(form.dataset.disabled)
         return;
     form.dataset.disabled = '1';
     form.style.opacity = '0.5';
@@ -99,8 +99,8 @@ function commentPostEventHandler(ev: Event): void
 
 function commentPost(formData: FormData, onSuccess: (comment: CommentPostInfo) => void = null, onFail: (message: string) => void = null): void
 {
-    if (!checkUserPerm('comments', CommentPermission.Create)) {
-        if (onFail)
+    if(!checkUserPerm('comments', CommentPermission.Create)) {
+        if(onFail)
             onFail("You aren't allowed to post comments.");
         return;
     }
@@ -108,7 +108,7 @@ function commentPost(formData: FormData, onSuccess: (comment: CommentPostInfo) =
     const xhr = new XMLHttpRequest();
 
     xhr.addEventListener('readystatechange', () => {
-        if (xhr.readyState !== 4)
+        if(xhr.readyState !== 4)
             return;
 
         updateCSRF(xhr.getResponseHeader('X-Misuzu-CSRF'));
@@ -116,9 +116,9 @@ function commentPost(formData: FormData, onSuccess: (comment: CommentPostInfo) =
         const json: CommentPostInfo = JSON.parse(xhr.responseText) as CommentPostInfo,
             message: string = json.error || json.message;
 
-        if (message && onFail)
+        if(message && onFail)
             onFail(message);
-        else if (!message && onSuccess)
+        else if(!message && onSuccess)
             onSuccess(json);
     });
 
@@ -128,7 +128,7 @@ function commentPost(formData: FormData, onSuccess: (comment: CommentPostInfo) =
 }
 
 function commentPostSuccess(form: HTMLFormElement, comment: CommentPostInfo): void {
-    if (form.classList.contains('comment--reply'))
+    if(form.classList.contains('comment--reply'))
         (form.parentNode.parentNode.querySelector('label.comment__action') as HTMLLabelElement).click();
 
     commentInsert(comment, form);
@@ -145,7 +145,7 @@ function commentPostFail(form: HTMLFormElement, message: string): void {
 function commentsInit(): void {
     const commentDeletes: HTMLCollectionOf<HTMLAnchorElement> = document.getElementsByClassName('comment__action--delete') as HTMLCollectionOf<HTMLAnchorElement>;
 
-    for (let i = 0; i < commentDeletes.length; i++) {
+    for(let i = 0; i < commentDeletes.length; i++) {
         commentDeletes[i].addEventListener('click', commentDeleteEventHandler);
         commentDeletes[i].dataset.href = commentDeletes[i].href;
         commentDeletes[i].href = 'javascript:void(0);';
@@ -153,7 +153,7 @@ function commentsInit(): void {
 
     const commentInputs: HTMLCollectionOf<HTMLTextAreaElement> = document.getElementsByClassName('comment__text--input') as HTMLCollectionOf<HTMLTextAreaElement>;
 
-    for (let i = 0; i < commentInputs.length; i++) {
+    for(let i = 0; i < commentInputs.length; i++) {
         commentInputs[i].form.action = 'javascript:void(0);';
         commentInputs[i].form.addEventListener('submit', commentPostEventHandler);
         commentInputs[i].addEventListener('keydown', commentInputEventHandler);
@@ -161,7 +161,7 @@ function commentsInit(): void {
 
     const voteButtons: HTMLCollectionOf<HTMLAnchorElement> = document.getElementsByClassName('comment__action--vote') as HTMLCollectionOf<HTMLAnchorElement>;
 
-    for (let i = 0; i < voteButtons.length; i++)
+    for(let i = 0; i < voteButtons.length; i++)
     {
         voteButtons[i].href = 'javascript:void(0);';
         voteButtons[i].addEventListener('click', commentVoteEventHandler);
@@ -169,14 +169,14 @@ function commentsInit(): void {
 
     const pinButtons: HTMLCollectionOf<HTMLAnchorElement> = document.getElementsByClassName('comment__action--pin') as HTMLCollectionOf<HTMLAnchorElement>;
 
-    for (let i = 0; i < pinButtons.length; i++) {
+    for(let i = 0; i < pinButtons.length; i++) {
         pinButtons[i].href = 'javascript:void(0);';
         pinButtons[i].addEventListener('click', commentPinEventHandler);
     }
 }
 
 function commentInputEventHandler(ev: KeyboardEvent): void {
-    if (ev.code === 'Enter' && ev.ctrlKey && !ev.altKey && !ev.shiftKey && !ev.metaKey) {
+    if(ev.code === 'Enter' && ev.ctrlKey && !ev.altKey && !ev.shiftKey && !ev.metaKey) {
         const form: HTMLFormElement = (ev.target as HTMLTextAreaElement).form;
         commentPost(
             extractFormData(form, true),
@@ -191,7 +191,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
         commentTime: HTMLElement = <time class="comment__date" title={commentDate.toLocaleString()} dateTime={commentDate.toISOString()}>{timeago.format(commentDate)}</time>;
     let actions: HTMLElement[] = [];
 
-    if (checkUserPerm('comments', CommentPermission.Vote)) {
+    if(checkUserPerm('comments', CommentPermission.Vote)) {
         actions.push(<a class="comment__action comment__action--link comment__action--vote comment__action--like"
             data-comment-id={comment.comment_id} data-comment-vote={CommentVoteType.Like}
             href="javascript:void(0);" onClick={commentVoteEventHandler}>Like</a>);
@@ -202,7 +202,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
 
     const commentText: HTMLDivElement = <div class="comment__text"></div>;
 
-    if (comment.comment_html)
+    if(comment.comment_html)
         commentText.innerHTML = comment.comment_html;
     else
         commentText.textContent = comment.comment_text;
@@ -265,14 +265,14 @@ function commentInsert(comment: CommentPostInfo, form: HTMLFormElement): void
             : 1,
         commentElement: HTMLElement = commentConstruct(comment, repliesIndent);
 
-    if (isReply)
+    if(isReply)
         parent.appendChild(commentElement);
     else
         parent.insertBefore(commentElement, parent.firstElementChild);
 
     const placeholder: HTMLElement = document.getElementById('_no_comments_notice_' + comment.category_id);
 
-    if (placeholder)
+    if(placeholder)
         placeholder.parentNode.removeChild(placeholder);
 }
 
@@ -285,15 +285,15 @@ function commentVoteEventHandler(ev: Event): void {
         dislikeButton: HTMLAnchorElement = document.querySelector(`.comment__action--dislike[data-comment-id="${commentId}"]`),
         classVoted: string = 'comment__action--voted';
 
-    for (let i = 0; i < buttons.length; i++) {
+    for(let i = 0; i < buttons.length; i++) {
         let button: HTMLAnchorElement = buttons[i];
 
         button.textContent = button === target ? '...' : '';
         button.classList.remove(classVoted);
 
-        if (button === likeButton) {
+        if(button === likeButton) {
             button.dataset.commentVote = (voteType === CommentVoteType.Like ? CommentVoteType.Indifferent : CommentVoteType.Like).toString();
-        } else if (button === dislikeButton) {
+        } else if(button === dislikeButton) {
             button.dataset.commentVote = (voteType === CommentVoteType.Dislike ? CommentVoteType.Indifferent : CommentVoteType.Dislike).toString();
         }
     }
@@ -302,7 +302,7 @@ function commentVoteEventHandler(ev: Event): void {
         commentId,
         voteType,
         info => {
-            switch (voteType) {
+            switch(voteType) {
                 case CommentVoteType.Like:
                     likeButton.classList.add(classVoted);
                     break;
@@ -329,15 +329,15 @@ function commentVote(
     onSuccess: (voteInfo: CommentVotesInfo) => void = null,
     onFail: (message: string) => void = null
 ): void {
-    if (!checkUserPerm('comments', CommentPermission.Vote)) {
-        if (onFail)
+    if(!checkUserPerm('comments', CommentPermission.Vote)) {
+        if(onFail)
             onFail("You aren't allowed to vote on comments.");
         return;
     }
 
     const xhr: XMLHttpRequest = new XMLHttpRequest;
     xhr.onreadystatechange = () => {
-        if (xhr.readyState !== 4)
+        if(xhr.readyState !== 4)
             return;
 
         updateCSRF(xhr.getResponseHeader('X-Misuzu-CSRF'));
@@ -345,9 +345,9 @@ function commentVote(
         const json: CommentVotesInfo = JSON.parse(xhr.responseText),
             message: string = json.error || json.message;
 
-        if (message && onFail)
+        if(message && onFail)
             onFail(message);
-        else if (!message && onSuccess)
+        else if(!message && onSuccess)
             onSuccess(json);
     };
     xhr.open('GET', urlFormat('comment-vote', [{name: 'comment', value: commentId}, {name: 'vote', value: vote}]));
@@ -366,7 +366,7 @@ function commentPinEventHandler(ev: Event): void {
         commentId,
         !isPinned,
         info => {
-            if (info.comment_pinned === null) {
+            if(info.comment_pinned === null) {
                 target.textContent = 'Pin';
                 target.dataset.commentPinned = '0';
                 const pinElement: HTMLDivElement = document.querySelector(`#comment-${info.comment_id} .comment__pin`);
@@ -404,8 +404,8 @@ function commentPin(
     onSuccess: (commentInfo: CommentPostInfo) => void = null,
     onFail: (message: string) => void = null
 ): void {
-    if (!checkUserPerm('comments', CommentPermission.Pin)) {
-        if (onFail)
+    if(!checkUserPerm('comments', CommentPermission.Pin)) {
+        if(onFail)
             onFail("You aren't allowed to pin comments.");
         return;
     }
@@ -413,7 +413,7 @@ function commentPin(
     const mode: string = pin ? 'pin' : 'unpin';
     const xhr: XMLHttpRequest = new XMLHttpRequest;
     xhr.onreadystatechange = () => {
-        if (xhr.readyState !== 4)
+        if(xhr.readyState !== 4)
             return;
 
         updateCSRF(xhr.getResponseHeader('X-Misuzu-CSRF'));
@@ -421,9 +421,9 @@ function commentPin(
         const json: CommentPostInfo = JSON.parse(xhr.responseText),
             message: string = json.error || json.message;
 
-        if (message && onFail)
+        if(message && onFail)
             onFail(message);
-        else if (!message && onSuccess)
+        else if(!message && onSuccess)
             onSuccess(json);
     };
     xhr.open('GET', urlFormat(`comment-${mode}`, [{name: 'comment', value: commentId}]));

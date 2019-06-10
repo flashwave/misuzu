@@ -29,9 +29,8 @@ function user_session_create(
     return $createSession->execute() ? $sessionKey : '';
 }
 
-function user_session_find($sessionId, bool $byKey = false): array
-{
-    if (!$byKey && $sessionId < 1) {
+function user_session_find($sessionId, bool $byKey = false): array {
+    if(!$byKey && $sessionId < 1) {
         return [];
     }
 
@@ -49,8 +48,7 @@ function user_session_find($sessionId, bool $byKey = false): array
     return db_fetch($findSession);
 }
 
-function user_session_delete(int $sessionId): void
-{
+function user_session_delete(int $sessionId): void {
     $deleteSession = db_prepare('
         DELETE FROM `msz_sessions`
         WHERE `session_id` = :session_id
@@ -59,13 +57,11 @@ function user_session_delete(int $sessionId): void
     $deleteSession->execute();
 }
 
-function user_session_generate_key(): string
-{
+function user_session_generate_key(): string {
     return bin2hex(random_bytes(MSZ_SESSION_KEY_SIZE / 2));
 }
 
-function user_session_purge_all(int $userId): void
-{
+function user_session_purge_all(int $userId): void {
     db_prepare('
         DELETE FROM `msz_sessions`
         WHERE `user_id` = :user_id
@@ -74,23 +70,21 @@ function user_session_purge_all(int $userId): void
     ]);
 }
 
-function user_session_count($userId = 0): int
-{
+function user_session_count($userId = 0): int {
     $getCount = db_prepare(sprintf('
         SELECT COUNT(`session_id`)
         FROM `msz_sessions`
         %s
     ', $userId < 1 ? '' : 'WHERE `user_id` = :user_id'));
 
-    if ($userId >= 1) {
+    if($userId >= 1) {
         $getCount->bindValue('user_id', $userId);
     }
 
     return $getCount->execute() ? (int)$getCount->fetchColumn() : 0;
 }
 
-function user_session_list(int $offset, int $take, int $userId = 0): array
-{
+function user_session_list(int $offset, int $take, int $userId = 0): array {
     $offset = max(0, $offset);
     $take = max(1, $take);
 
@@ -106,7 +100,7 @@ function user_session_list(int $offset, int $take, int $userId = 0): array
         LIMIT :offset, :take
     ', $userId < 1 ? '1' : '`user_id` = :user_id'));
 
-    if ($userId > 0) {
+    if($userId > 0) {
         $getSessions->bindValue('user_id', $userId);
     }
 
@@ -116,9 +110,8 @@ function user_session_list(int $offset, int $take, int $userId = 0): array
     return db_fetch_all($getSessions);
 }
 
-function user_session_bump_active(int $sessionId, string $ipAddress = null): void
-{
-    if ($sessionId < 1) {
+function user_session_bump_active(int $sessionId, string $ipAddress = null): void {
+    if($sessionId < 1) {
         return;
     }
 
@@ -136,8 +129,7 @@ function user_session_bump_active(int $sessionId, string $ipAddress = null): voi
 
 // the functions below this line are imperative
 
-function user_session_data(?array $newData = null): array
-{
+function user_session_data(?array $newData = null): array {
     static $data = [];
 
     if(!is_null($newData)) {
@@ -147,16 +139,14 @@ function user_session_data(?array $newData = null): array
     return $data;
 }
 
-function user_session_start(int $userId, string $sessionKey): bool
-{
+function user_session_start(int $userId, string $sessionKey): bool {
     $session = user_session_find($sessionKey, true);
 
-    if (!$session
-        || $session['user_id'] !== $userId) {
+    if(!$session || $session['user_id'] !== $userId) {
         return false;
     }
 
-    if (time() >= strtotime($session['session_expires'])) {
+    if(time() >= strtotime($session['session_expires'])) {
         user_session_delete($session['session_id']);
         return false;
     }
@@ -165,30 +155,27 @@ function user_session_start(int $userId, string $sessionKey): bool
     return true;
 }
 
-function user_session_stop(bool $delete = false): void
-{
-    if (empty(user_session_data())) {
+function user_session_stop(bool $delete = false): void {
+    if(empty(user_session_data())) {
         return;
     }
 
-    if ($delete) {
+    if($delete) {
         user_session_delete(user_session_data()['session_id']);
     }
 
     user_session_data([]);
 }
 
-function user_session_current(?string $variable = null, $default = null)
-{
-    if (empty($variable)) {
+function user_session_current(?string $variable = null, $default = null) {
+    if(empty($variable)) {
         return user_session_data() ?? [];
     }
 
     return user_session_data()[$variable] ?? $default;
 }
 
-function user_session_active(): bool
-{
+function user_session_active(): bool {
     return !empty(user_session_data())
         && time() < strtotime(user_session_data()['session_expires']);
 }
@@ -198,21 +185,19 @@ define('MSZ_SESSION_COOKIE_VERSION', 1);
 // it'll pad older tokens out for backwards compatibility
 define('MSZ_SESSION_COOKIE_SIZE', 37);
 
-function user_session_cookie_pack(int $userId, string $sessionToken): ?string
-{
-    if (strlen($sessionToken) !== MSZ_SESSION_KEY_SIZE) {
+function user_session_cookie_pack(int $userId, string $sessionToken): ?string {
+    if(strlen($sessionToken) !== MSZ_SESSION_KEY_SIZE) {
         return null;
     }
 
     return pack('CNH64', MSZ_SESSION_COOKIE_VERSION, $userId, $sessionToken);
 }
 
-function user_session_cookie_unpack(string $packed): array
-{
+function user_session_cookie_unpack(string $packed): array {
     $packed = str_pad($packed, MSZ_SESSION_COOKIE_SIZE, "\x00");
     $unpacked = unpack('Cversion/Nuser/H64token', $packed);
 
-    if ($unpacked['version'] < 1 || $unpacked['version'] > MSZ_SESSION_COOKIE_VERSION) {
+    if($unpacked['version'] < 1 || $unpacked['version'] > MSZ_SESSION_COOKIE_VERSION) {
         return [];
     }
 

@@ -10,33 +10,33 @@ $submissionConfirmed = !empty($_GET['confirm']) && is_string($_GET['confirm']) &
 $redirect = !empty($_SERVER['HTTP_REFERER']) && empty($_SERVER['HTTP_X_MISUZU_XHR']) ? $_SERVER['HTTP_REFERER'] : '';
 $isXHR = !$redirect;
 
-if ($isXHR) {
+if($isXHR) {
     header('Content-Type: application/json; charset=utf-8');
-} elseif (!is_local_url($redirect)) {
+} elseif(!is_local_url($redirect)) {
     echo render_info('Possible request forgery detected.', 403);
     return;
 }
 
 $postRequestVerified = csrf_verify_request();
 
-if (!empty($postMode) && !user_session_active()) {
+if(!empty($postMode) && !user_session_active()) {
     echo render_info_or_json($isXHR, 'You must be logged in to manage posts.', 401);
     return;
 }
 
 $currentUserId = (int)user_session_current('user_id', 0);
 
-if (user_warning_check_expiration($currentUserId, MSZ_WARN_BAN) > 0) {
+if(user_warning_check_expiration($currentUserId, MSZ_WARN_BAN) > 0) {
     echo render_info_or_json($isXHR, 'You have been banned, check your profile for more information.', 403);
     return;
 }
-if (user_warning_check_expiration($currentUserId, MSZ_WARN_SILENCE) > 0) {
+if(user_warning_check_expiration($currentUserId, MSZ_WARN_SILENCE) > 0) {
     echo render_info_or_json($isXHR, 'You have been silenced, check your profile for more information.', 403);
     return;
 }
 
-if ($isXHR) {
-    if (!$postRequestVerified) {
+if($isXHR) {
+    if(!$postRequestVerified) {
         http_response_code(403);
         echo json_encode([
             'success' => false,
@@ -53,13 +53,13 @@ $perms = empty($postInfo)
     ? 0
     : forum_perms_get_user($postInfo['forum_id'], $currentUserId)[MSZ_FORUM_PERMS_GENERAL];
 
-switch ($postMode) {
+switch($postMode) {
     case 'delete':
         $canDelete = forum_post_can_delete($postInfo, $currentUserId);
         $canDeleteMsg = '';
         $responseCode = 200;
 
-        switch ($canDelete) {
+        switch($canDelete) {
             case MSZ_E_FORUM_POST_DELETE_USER: // i don't think this is ever reached but we may as well have it
                 $responseCode = 401;
                 $canDeleteMsg = 'You must be logged in to delete posts.';
@@ -95,8 +95,8 @@ switch ($postMode) {
                 $canDeleteMsg = sprintf('Unknown error \'%d\'', $canDelete);
         }
 
-        if ($canDelete !== MSZ_E_FORUM_POST_DELETE_OK) {
-            if ($isXHR) {
+        if($canDelete !== MSZ_E_FORUM_POST_DELETE_OK) {
+            if($isXHR) {
                 http_response_code($responseCode);
                 echo json_encode([
                     'success' => false,
@@ -111,14 +111,14 @@ switch ($postMode) {
             break;
         }
 
-        if (!$isXHR) {
-            if ($postRequestVerified && !$submissionConfirmed) {
+        if(!$isXHR) {
+            if($postRequestVerified && !$submissionConfirmed) {
                 url_redirect('forum-post', [
                     'post' => $postInfo['post_id'],
                     'post_fragment' => 'p' . $postInfo['post_id'],
                 ]);
                 break;
-            } elseif (!$postRequestVerified) {
+            } elseif(!$postRequestVerified) {
                 echo tpl_render('forum.confirm', [
                     'title' => 'Confirm post deletion',
                     'class' => 'far fa-trash-alt',
@@ -134,11 +134,11 @@ switch ($postMode) {
 
         $deletePost = forum_post_delete($postInfo['post_id']);
 
-        if ($deletePost) {
+        if($deletePost) {
             audit_log(MSZ_AUDIT_FORUM_POST_DELETE, $currentUserId, [$postInfo['post_id']]);
         }
 
-        if ($isXHR) {
+        if($isXHR) {
             echo json_encode([
                 'success' => $deletePost,
                 'post_id' => $postInfo['post_id'],
@@ -147,7 +147,7 @@ switch ($postMode) {
             break;
         }
 
-        if (!$deletePost) {
+        if(!$deletePost) {
             echo render_error(500);
             break;
         }
@@ -156,19 +156,19 @@ switch ($postMode) {
         break;
 
     case 'nuke':
-        if (!perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST)) {
+        if(!perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST)) {
             echo render_error(403);
             break;
         }
 
-        if (!$isXHR) {
-            if ($postRequestVerified && !$submissionConfirmed) {
+        if(!$isXHR) {
+            if($postRequestVerified && !$submissionConfirmed) {
                 url_redirect('forum-post', [
                     'post' => $postInfo['post_id'],
                     'post_fragment' => 'p' . $postInfo['post_id'],
                 ]);
                 break;
-            } elseif (!$postRequestVerified) {
+            } elseif(!$postRequestVerified) {
                 echo tpl_render('forum.confirm', [
                     'title' => 'Confirm post nuke',
                     'class' => 'fas fa-radiation',
@@ -184,7 +184,7 @@ switch ($postMode) {
 
         $nukePost = forum_post_nuke($postInfo['post_id']);
 
-        if (!$nukePost) {
+        if(!$nukePost) {
             echo render_error(500);
             break;
         }
@@ -192,25 +192,25 @@ switch ($postMode) {
         audit_log(MSZ_AUDIT_FORUM_POST_NUKE, $currentUserId, [$postInfo['post_id']]);
         http_response_code(204);
 
-        if (!$isXHR) {
+        if(!$isXHR) {
             url_redirect('forum-topic', ['topic' => $postInfo['topic_id']]);
         }
         break;
 
     case 'restore':
-        if (!perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST)) {
+        if(!perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST)) {
             echo render_error(403);
             break;
         }
 
-        if (!$isXHR) {
-            if ($postRequestVerified && !$submissionConfirmed) {
+        if(!$isXHR) {
+            if($postRequestVerified && !$submissionConfirmed) {
                 url_redirect('forum-post', [
                     'post' => $postInfo['post_id'],
                     'post_fragment' => 'p' . $postInfo['post_id'],
                 ]);
                 break;
-            } elseif (!$postRequestVerified) {
+            } elseif(!$postRequestVerified) {
                 echo tpl_render('forum.confirm', [
                     'title' => 'Confirm post restore',
                     'class' => 'fas fa-magic',
@@ -226,7 +226,7 @@ switch ($postMode) {
 
         $restorePost = forum_post_restore($postInfo['post_id']);
 
-        if (!$restorePost) {
+        if(!$restorePost) {
             echo render_error(500);
             break;
         }
@@ -234,7 +234,7 @@ switch ($postMode) {
         audit_log(MSZ_AUDIT_FORUM_POST_RESTORE, $currentUserId, [$postInfo['post_id']]);
         http_response_code(204);
 
-        if (!$isXHR) {
+        if(!$isXHR) {
             url_redirect('forum-topic', ['topic' => $postInfo['topic_id']]);
         }
         break;
@@ -242,25 +242,25 @@ switch ($postMode) {
     default: // function as an alt for topic.php?p= by default
         $canDeleteAny = perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST);
 
-        if (!empty($postInfo['post_deleted']) && !$canDeleteAny) {
+        if(!empty($postInfo['post_deleted']) && !$canDeleteAny) {
             echo render_error(404);
             break;
         }
 
         $postFind = forum_post_find($postInfo['post_id'], user_session_current('user_id', 0));
 
-        if (empty($postFind)) {
+        if(empty($postFind)) {
             echo render_error(404);
             break;
         }
 
-        if ($canDeleteAny) {
+        if($canDeleteAny) {
             $postInfo['preceeding_post_count'] += $postInfo['preceeding_post_deleted_count'];
         }
 
         unset($postInfo['preceeding_post_deleted_count']);
 
-        if ($isXHR) {
+        if($isXHR) {
             echo json_encode($postFind);
             break;
         }

@@ -37,8 +37,7 @@ define('MSZ_ZALGO_DIR_UP', 0x01);
 define('MSZ_ZALGO_DIR_MID', 0x02);
 define('MSZ_ZALGO_DIR_DOWN', 0x04);
 
-function zalgo_strip(string $text): string
-{
+function zalgo_strip(string $text): string {
     $text = str_replace(MSZ_ZALGO_CHARS_UP, '', $text);
     $text = str_replace(MSZ_ZALGO_CHARS_DOWN, '', $text);
     $text = str_replace(MSZ_ZALGO_CHARS_MIDDLE, '', $text);
@@ -46,23 +45,20 @@ function zalgo_strip(string $text): string
     return $text;
 }
 
-function zalgo_is_char(string $char): bool
-{
+function zalgo_is_char(string $char): bool {
     return in_array($char, MSZ_ZALGO_CHARS_UP)
         || in_array($char, MSZ_ZALGO_CHARS_DOWN)
         || in_array($char, MSZ_ZALGO_CHARS_MIDDLE);
 }
 
-function zalgo_get_char(array $array): string
-{
+function zalgo_get_char(array $array): string {
     return $array[array_rand($array)];
 }
 
-function zalgo_get_string(array $array, int $length): string
-{
+function zalgo_get_string(array $array, int $length): string {
     $string = '';
 
-    for ($i = 0; $i < $length; $i++) {
+    for($i = 0; $i < $length; $i++) {
         $string .= zalgo_get_char($array);
     }
 
@@ -76,7 +72,7 @@ function zalgo_run(
 ): string {
     $text_length = mb_strlen($text);
 
-    if (!$text_length || !$mode || !$direction) {
+    if(!$text_length || !$mode || !$direction) {
         return $text;
     }
 
@@ -86,16 +82,16 @@ function zalgo_run(
 
     $str = '';
 
-    for ($i = 0; $i < $text_length; $i++) {
+    for($i = 0; $i < $text_length; $i++) {
         $char = $text[$i];
 
-        if (zalgo_is_char($char)) {
+        if(zalgo_is_char($char)) {
             continue;
         }
 
         $str .= $char;
 
-        switch ($mode) {
+        switch($mode) {
             case MSZ_ZALGO_MODE_MINI:
                 $num_up     = mt_rand(0, 8);
                 $num_mid    = mt_rand(0, 2);
@@ -115,15 +111,15 @@ function zalgo_run(
                 break;
         }
 
-        if ($going_up) {
+        if($going_up) {
             $str .= zalgo_get_string(MSZ_ZALGO_CHARS_UP, $num_up);
         }
 
-        if ($going_mid) {
+        if($going_mid) {
             $str .= zalgo_get_string(MSZ_ZALGO_CHARS_MIDDLE, $num_mid);
         }
 
-        if ($going_down) {
+        if($going_down) {
             $str .= zalgo_get_string(MSZ_ZALGO_CHARS_DOWN, $num_down);
         }
     }

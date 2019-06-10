@@ -4,24 +4,20 @@ namespace Misuzu;
 use Whoops\Exception\Formatter;
 use Whoops\Handler\Handler;
 
-final class WhoopsReporter extends Handler
-{
+final class WhoopsReporter extends Handler {
     private $reportUrl;
     private $reportSign;
 
-    public function __construct(?string $reportUrl = null, ?string $reportSign = null)
-    {
+    public function __construct(?string $reportUrl = null, ?string $reportSign = null) {
         $this->setReportInfo($reportUrl, $reportSign);
     }
 
-    public function setReportInfo(?string $reportUrl = null, ?string $reportSign = null): void
-    {
+    public function setReportInfo(?string $reportUrl = null, ?string $reportSign = null): void {
         $this->reportUrl = $reportUrl;
         $this->reportSign = $reportSign;
     }
 
-    public function handle()
-    {
+    public function handle() {
         echo $this->html(
             $this->report()
             ? 'Information about this error has been sent to the devs.'
@@ -31,13 +27,11 @@ final class WhoopsReporter extends Handler
         return Handler::QUIT;
     }
 
-    public function contentType(): string
-    {
+    public function contentType(): string {
         return 'text/html';
     }
 
-    public function html(string $text): string
-    {
+    public function html(string $text): string {
         return <<<HTML
 <!doctype html>
 <html>
@@ -64,9 +58,8 @@ final class WhoopsReporter extends Handler
 HTML;
     }
 
-    private function report(): bool
-    {
-        if (!mb_strlen($this->reportUrl) || !($curl = curl_init($this->reportUrl))) {
+    private function report(): bool {
+        if(!mb_strlen($this->reportUrl) || !($curl = curl_init($this->reportUrl))) {
             return false;
         }
 
@@ -89,7 +82,7 @@ HTML;
             'Content-Type: application/json;charset=utf-8',
         ];
 
-        if (mb_strlen($this->reportSign)) {
+        if(mb_strlen($this->reportSign)) {
             $headers[] = 'X-Misuzu-Signature: sha256=' . hash_hmac('sha256', $json, $this->reportSign);
         }
 
@@ -100,7 +93,7 @@ HTML;
             CURLOPT_RETURNTRANSFER => false,
         ]);
 
-        if (!$setOpts) {
+        if(!$setOpts) {
             return false;
         }
 

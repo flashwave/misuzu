@@ -1,7 +1,7 @@
 <?php
 require_once '../../misuzu.php';
 
-if (user_session_active()) {
+if(user_session_active()) {
     url_redirect('index');
     return;
 }
@@ -18,13 +18,13 @@ $tokenInfo = user_auth_tfa_token_info(
 
 // checking user_totp_key specifically because there's a fringe chance that
 //  there's a token present, but totp is actually disabled
-if (empty($tokenInfo['user_totp_key'])) {
+if(empty($tokenInfo['user_totp_key'])) {
     url_redirect('auth-login');
     return;
 }
 
-while (!empty($twofactor)) {
-    if (!csrf_verify_request()) {
+while(!empty($twofactor)) {
+    if(!csrf_verify_request()) {
         $notices[] = 'Was unable to verify the request, please try again!';
         break;
     }
@@ -32,12 +32,12 @@ while (!empty($twofactor)) {
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     $redirect = !empty($twofactor['redirect']) && is_string($twofactor['redirect']) ? $twofactor['redirect'] : '';
 
-    if (empty($twofactor['code']) || !is_string($twofactor['code'])) {
+    if(empty($twofactor['code']) || !is_string($twofactor['code'])) {
         $notices[] = 'Code field was empty.';
         break;
     }
 
-    if ($remainingAttempts < 1) {
+    if($remainingAttempts < 1) {
         $notices[] = 'There are too many failed login attempts from your IP address, please try again later.';
         break;
     }
@@ -45,7 +45,7 @@ while (!empty($twofactor)) {
     $currentCode = totp_generate($tokenInfo['user_totp_key']);
     $previousCode = totp_generate($tokenInfo['user_totp_key'], time() - 30);
 
-    if ($currentCode !== $twofactor['code'] && $previousCode !== $twofactor['code']) {
+    if($currentCode !== $twofactor['code'] && $previousCode !== $twofactor['code']) {
         $notices[] = sprintf(
             "Invalid two factor code, %d attempt%s remaining",
             $remainingAttempts - 1,
@@ -58,7 +58,7 @@ while (!empty($twofactor)) {
     user_login_attempt_record(true, $tokenInfo['user_id'], $ipAddress, $userAgent);
     $sessionKey = user_session_create($tokenInfo['user_id'], $ipAddress, $userAgent);
 
-    if (empty($sessionKey)) {
+    if(empty($sessionKey)) {
         $notices[] = "Something broke while creating a session for you, please tell an administrator or developer about this!";
         break;
     }
@@ -70,7 +70,7 @@ while (!empty($twofactor)) {
     $cookieValue = base64url_encode(user_session_cookie_pack($tokenInfo['user_id'], $sessionKey));
     setcookie('msz_auth', $cookieValue, $cookieLife, '/', '', true, true);
 
-    if (!is_local_url($redirect)) {
+    if(!is_local_url($redirect)) {
         $redirect = url('index');
     }
 

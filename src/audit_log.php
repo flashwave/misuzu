@@ -64,8 +64,7 @@ define('MSZ_AUDIT_LOG_STRINGS', [
     MSZ_AUDIT_FORUM_TOPIC_UNLOCK            => 'Unlocked forum topic #%d.',
 ]);
 
-function audit_log_define(string $name): void
-{
+function audit_log_define(string $name): void {
     define("MSZ_AUDIT_{$name}", $name);
 }
 
@@ -77,8 +76,8 @@ function audit_log(
 ): void {
     $ipAddress = $ipAddress ?? ip_remote_address();
 
-    for ($i = 0; $i < count($params); $i++) {
-        if (preg_match('#^(-?[0-9]+)$#', $params[$i])) {
+    for($i = 0; $i < count($params); $i++) {
+        if(preg_match('#^(-?[0-9]+)$#', $params[$i])) {
             $params[$i] = (int)$params[$i];
         }
     }
@@ -97,23 +96,21 @@ function audit_log(
     $addLog->execute();
 }
 
-function audit_log_count($userId = 0): int
-{
+function audit_log_count($userId = 0): int {
     $getCount = db_prepare(sprintf('
         SELECT COUNT(`log_id`)
         FROM `msz_audit_log`
         %s
     ', $userId < 1 ? '' : 'WHERE `user_id` = :user_id'));
 
-    if ($userId >= 1) {
+    if($userId >= 1) {
         $getCount->bindValue('user_id', $userId);
     }
 
     return $getCount->execute() ? (int)$getCount->fetchColumn() : 0;
 }
 
-function audit_log_list(int $offset, int $take, int $userId = 0): array
-{
+function audit_log_list(int $offset, int $take, int $userId = 0): array {
     $offset = max(0, $offset);
     $take = max(1, $take);
     $isGlobal = $userId < 1;
@@ -137,7 +134,7 @@ function audit_log_list(int $offset, int $take, int $userId = 0): array
             : ''
     ));
 
-    if (!$isGlobal) {
+    if(!$isGlobal) {
         $getLogs->bindValue('user_id', $userId);
     }
 

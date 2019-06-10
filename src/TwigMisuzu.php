@@ -5,10 +5,8 @@ use Twig_Extension;
 use Twig_Filter;
 use Twig_Function;
 
-final class TwigMisuzu extends Twig_Extension
-{
-    public function getFilters()
-    {
+final class TwigMisuzu extends Twig_Extension {
+    public function getFilters() {
         return [
             new Twig_Filter('html_colour', 'html_colour'),
             new Twig_Filter('country_name', 'get_country_name'),
@@ -31,8 +29,7 @@ final class TwigMisuzu extends Twig_Extension
         ];
     }
 
-    public function getFunctions()
-    {
+    public function getFunctions() {
         return [
             new Twig_Function('get_browser', 'get_browser'),
             new Twig_Function('git_commit_hash', 'git_commit_hash'),
@@ -55,11 +52,10 @@ final class TwigMisuzu extends Twig_Extension
         ];
     }
 
-    public static function assetUrl(string $path): string
-    {
+    public static function assetUrl(string $path): string {
         $realPath = realpath(MSZ_ROOT . '/public/' . $path);
 
-        if ($realPath === false || !file_exists($realPath)) {
+        if($realPath === false || !file_exists($realPath)) {
             return $path;
         }
 

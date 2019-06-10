@@ -1,6 +1,5 @@
 <?php
-function manage_get_menu(int $userId): array
-{
+function manage_get_menu(int $userId): array {
     if(!perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_CAN_MANAGE)) {
         return [];
     }
@@ -70,8 +69,7 @@ define('MSZ_MANAGE_PERM_YES', 'yes');
 define('MSZ_MANAGE_PERM_NO', 'no');
 define('MSZ_MANAGE_PERM_NEVER', 'never');
 
-function manage_perms_value(int $perm, int $allow, int $deny): string
-{
+function manage_perms_value(int $perm, int $allow, int $deny): string {
     if(perms_check($deny, $perm)) {
         return MSZ_MANAGE_PERM_NEVER;
     }
@@ -83,8 +81,7 @@ function manage_perms_value(int $perm, int $allow, int $deny): string
     return MSZ_MANAGE_PERM_NO;
 }
 
-function manage_perms_apply(array $list, array $post, ?array $raw = null): ?array
-{
+function manage_perms_apply(array $list, array $post, ?array $raw = null): ?array {
     $perms = $raw !== null ? $raw : perms_create();
 
     foreach($list as $section) {
@@ -134,8 +131,7 @@ function manage_perms_apply(array $list, array $post, ?array $raw = null): ?arra
     return $perms;
 }
 
-function manage_perms_calculate(array $rawPerms, array $perms): array
-{
+function manage_perms_calculate(array $rawPerms, array $perms): array {
     for($i = 0; $i < count($perms); $i++) {
         $section = $perms[$i]['section'];
         $allowKey = perms_get_key($section, MSZ_PERMS_ALLOW);
@@ -150,8 +146,7 @@ function manage_perms_calculate(array $rawPerms, array $perms): array
     return $perms;
 }
 
-function manage_perms_list(array $rawPerms): array
-{
+function manage_perms_list(array $rawPerms): array {
     return manage_perms_calculate($rawPerms, [
         [
             'section' => MSZ_PERMS_GENERAL,
@@ -337,8 +332,7 @@ function manage_perms_list(array $rawPerms): array
     ]);
 }
 
-function manage_forum_perms_list(array $rawPerms): array
-{
+function manage_forum_perms_list(array $rawPerms): array {
     return manage_perms_calculate($rawPerms, [
         [
             'section' => MSZ_FORUM_PERMS_GENERAL,

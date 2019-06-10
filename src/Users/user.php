@@ -56,8 +56,7 @@ function user_create(
     return $createUser->execute() ? (int)db_last_insert_id() : 0;
 }
 
-function user_find_for_login(string $usernameOrMail): array
-{
+function user_find_for_login(string $usernameOrMail): array {
     $getUser = db_prepare('
         SELECT `user_id`, `password`, `user_totp_key` IS NOT NULL AS `totp_enabled`, `user_deleted`
         FROM `msz_users`
@@ -69,8 +68,7 @@ function user_find_for_login(string $usernameOrMail): array
     return db_fetch($getUser);
 }
 
-function user_find_for_reset(string $email): array
-{
+function user_find_for_reset(string $email): array {
     $getUser = db_prepare('
         SELECT `user_id`, `username`, `email`
         FROM `msz_users`
@@ -81,8 +79,7 @@ function user_find_for_reset(string $email): array
     return db_fetch($getUser);
 }
 
-function user_find_for_profile(string $idOrUsername): int
-{
+function user_find_for_profile(string $idOrUsername): int {
     $getUserId = db_prepare('
         SELECT
             :user_id as `input_id`,
@@ -98,18 +95,15 @@ function user_find_for_profile(string $idOrUsername): int
     return (int)($getUserId->execute() ? $getUserId->fetchColumn(1) : 0);
 }
 
-function user_password_hash(string $password): string
-{
+function user_password_hash(string $password): string {
     return password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO);
 }
 
-function user_password_needs_rehash(string $hash): bool
-{
+function user_password_needs_rehash(string $hash): bool {
     return password_needs_rehash($hash, MSZ_USERS_PASSWORD_HASH_ALGO);
 }
 
-function user_password_set(int $userId, string $password): bool
-{
+function user_password_set(int $userId, string $password): bool {
     $updatePassword = db_prepare('
         UPDATE `msz_users`
         SET `password` = :password
@@ -120,9 +114,8 @@ function user_password_set(int $userId, string $password): bool
     return $updatePassword->execute();
 }
 
-function user_totp_info(int $userId): array
-{
-    if ($userId < 1) {
+function user_totp_info(int $userId): array {
+    if($userId < 1) {
         return [];
     }
 
@@ -138,9 +131,8 @@ function user_totp_info(int $userId): array
     return db_fetch($getTwoFactorInfo);
 }
 
-function user_totp_update(int $userId, ?string $key): void
-{
-    if ($userId < 1) {
+function user_totp_update(int $userId, ?string $key): void {
+    if($userId < 1) {
         return;
     }
 
@@ -156,9 +148,8 @@ function user_totp_update(int $userId, ?string $key): void
     $updateTotpKey->execute();
 }
 
-function user_email_get(int $userId): string
-{
-    if ($userId < 1) {
+function user_email_get(int $userId): string {
+    if($userId < 1) {
         return '';
     }
 
@@ -171,8 +162,7 @@ function user_email_get(int $userId): string
     return $fetchMail->execute() ? (string)$fetchMail->fetchColumn() : '';
 }
 
-function user_email_set(int $userId, string $email): bool
-{
+function user_email_set(int $userId, string $email): bool {
     $updateMail = db_prepare('
         UPDATE `msz_users`
         SET `email` = LOWER(:email)
@@ -183,9 +173,8 @@ function user_email_set(int $userId, string $email): bool
     return $updateMail->execute();
 }
 
-function user_password_verify_db(int $userId, string $password): bool
-{
-    if ($userId < 1) {
+function user_password_verify_db(int $userId, string $password): bool {
+    if($userId < 1) {
         return false;
     }
 
@@ -201,15 +190,14 @@ function user_password_verify_db(int $userId, string $password): bool
 }
 
 // function of the century, only use this if it doesn't make sense to grab data otherwise
-function user_exists(int $userId): bool
-{
-    if ($userId < 1) {
+function user_exists(int $userId): bool {
+    if($userId < 1) {
         return false;
     }
 
     static $exists = [];
 
-    if (isset($exists[$userId])) {
+    if(isset($exists[$userId])) {
         return $exists[$userId];
     }
 
@@ -224,22 +212,19 @@ function user_exists(int $userId): bool
     return $exists[$userId] = (bool)($check->execute() ? $check->fetchColumn() : false);
 }
 
-function user_id_from_username(string $username): int
-{
+function user_id_from_username(string $username): int {
     $getId = db_prepare('SELECT `user_id` FROM `msz_users` WHERE LOWER(`username`) = LOWER(:username)');
     $getId->bindValue('username', $username);
     return $getId->execute() ? (int)$getId->fetchColumn() : 0;
 }
 
-function user_username_from_id(int $userId): string
-{
+function user_username_from_id(int $userId): string {
     $getName = db_prepare('SELECT `username` FROM `msz_users` WHERE `user_id` = :user_id');
     $getName->bindValue('user_id', $userId);
     return $getName->execute() ? $getName->fetchColumn() : '';
 }
 
-function user_bump_last_active(int $userId, string $ipAddress = null): void
-{
+function user_bump_last_active(int $userId, string $ipAddress = null): void {
     $bumpUserLast = db_prepare('
         UPDATE `msz_users`
         SET `user_active` = NOW(),
@@ -251,8 +236,7 @@ function user_bump_last_active(int $userId, string $ipAddress = null): void
     $bumpUserLast->execute();
 }
 
-function user_get_last_ip(int $userId): string
-{
+function user_get_last_ip(int $userId): string {
     $getAddress = db_prepare('
         SELECT INET6_NTOA(`last_ip`)
         FROM `msz_users`
@@ -262,11 +246,10 @@ function user_get_last_ip(int $userId): string
     return $getAddress->execute() ? $getAddress->fetchColumn() : '';
 }
 
-function user_check_super(int $userId): bool
-{
+function user_check_super(int $userId): bool {
     static $superUsers = [];
 
-    if (!isset($superUsers[$userId])) {
+    if(!isset($superUsers[$userId])) {
         $checkSuperUser = db_prepare("
             SELECT `user_super`
             FROM `msz_users`
@@ -279,9 +262,8 @@ function user_check_super(int $userId): bool
     return $superUsers[$userId];
 }
 
-function user_check_authority(int $userId, int $subjectId, bool $canManageSelf = true): bool
-{
-    if ($canManageSelf && $userId === $subjectId) {
+function user_check_authority(int $userId, int $subjectId, bool $canManageSelf = true): bool {
+    if($canManageSelf && $userId === $subjectId) {
         return true;
     }
 
@@ -305,8 +287,7 @@ function user_check_authority(int $userId, int $subjectId, bool $canManageSelf =
     return (bool)($checkHierarchy->execute() ? $checkHierarchy->fetchColumn() : false);
 }
 
-function user_get_hierarchy(int $userId): int
-{
+function user_get_hierarchy(int $userId): int {
     $getHierarchy = db_prepare('
         SELECT MAX(r.`role_hierarchy`)
         FROM `msz_roles` AS r
@@ -324,25 +305,24 @@ define('MSZ_E_USER_BIRTHDATE_DATE', 2);
 define('MSZ_E_USER_BIRTHDATE_FAIL', 3);
 define('MSZ_E_USER_BIRTHDATE_YEAR', 4);
 
-function user_set_birthdate(int $userId, int $day, int $month, int $year, int $yearRange = 100): int
-{
-    if ($userId < 1) {
+function user_set_birthdate(int $userId, int $day, int $month, int $year, int $yearRange = 100): int {
+    if($userId < 1) {
         return MSZ_E_USER_BIRTHDATE_USER;
     }
 
     $unset = $day === 0 && $month === 0;
 
-    if ($year === 0) {
+    if($year === 0) {
         $checkYear = date('Y');
     } else {
-        if ($year < date('Y') - $yearRange || $year > date('Y')) {
+        if($year < date('Y') - $yearRange || $year > date('Y')) {
             return MSZ_E_USER_BIRTHDATE_YEAR;
         }
 
         $checkYear = $year;
     }
 
-    if (!$unset && !checkdate($month, $day, $checkYear)) {
+    if(!$unset && !checkdate($month, $day, $checkYear)) {
         return MSZ_E_USER_BIRTHDATE_DATE;
     }
 
@@ -360,9 +340,8 @@ function user_set_birthdate(int $userId, int $day, int $month, int $year, int $y
         : MSZ_E_USER_BIRTHDATE_FAIL;
 }
 
-function user_get_birthdays(int $day = 0, int $month = 0)
-{
-    if ($day < 1 || $month < 1) {
+function user_get_birthdays(int $day = 0, int $month = 0) {
+    if($day < 1 || $month < 1) {
         $date = date('%-m-d');
     } else {
         $date = "%-{$month}-{$day}";
@@ -387,19 +366,18 @@ define('MSZ_E_USER_ABOUT_INVALID_PARSER', 2);
 define('MSZ_E_USER_ABOUT_TOO_LONG', 3);
 define('MSZ_E_USER_ABOUT_UPDATE_FAILED', 4);
 
-function user_set_about_page(int $userId, string $content, int $parser = MSZ_PARSER_PLAIN): int
-{
-    if ($userId < 1) {
+function user_set_about_page(int $userId, string $content, int $parser = MSZ_PARSER_PLAIN): int {
+    if($userId < 1) {
         return MSZ_E_USER_ABOUT_INVALID_USER;
     }
 
-    if (!parser_is_valid($parser)) {
+    if(!parser_is_valid($parser)) {
         return MSZ_E_USER_ABOUT_INVALID_PARSER;
     }
 
     $length = strlen($content);
 
-    if ($length > MSZ_USER_ABOUT_MAX_LENGTH) {
+    if($length > MSZ_USER_ABOUT_MAX_LENGTH) {
         return MSZ_E_USER_ABOUT_TOO_LONG;
     }
 
@@ -426,19 +404,18 @@ define('MSZ_E_USER_SIGNATURE_INVALID_PARSER', 2);
 define('MSZ_E_USER_SIGNATURE_TOO_LONG', 3);
 define('MSZ_E_USER_SIGNATURE_UPDATE_FAILED', 4);
 
-function user_set_signature(int $userId, string $content, int $parser = MSZ_PARSER_PLAIN): int
-{
-    if ($userId < 1) {
+function user_set_signature(int $userId, string $content, int $parser = MSZ_PARSER_PLAIN): int {
+    if($userId < 1) {
         return MSZ_E_USER_SIGNATURE_INVALID_USER;
     }
 
-    if (!parser_is_valid($parser)) {
+    if(!parser_is_valid($parser)) {
         return MSZ_E_USER_SIGNATURE_INVALID_PARSER;
     }
 
     $length = strlen($content);
 
-    if ($length > MSZ_USER_SIGNATURE_MAX_LENGTH) {
+    if($length > MSZ_USER_SIGNATURE_MAX_LENGTH) {
         return MSZ_E_USER_SIGNATURE_TOO_LONG;
     }
 

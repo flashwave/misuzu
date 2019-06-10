@@ -1,7 +1,7 @@
 <?php
 require_once '../../misuzu.php';
 
-if (!user_session_active()) {
+if(!user_session_active()) {
     echo render_error(401);
     return;
 }

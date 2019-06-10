@@ -5,8 +5,7 @@ use Exception;
 use PDO;
 use PDOException;
 
-final class DatabaseMigrationManager
-{
+final class DatabaseMigrationManager {
     private $targetConnection;
     private $migrationStorage;
 
@@ -16,40 +15,34 @@ final class DatabaseMigrationManager
 
     private $logFunction;
 
-    public function __construct(PDO $conn, string $path)
-    {
+    public function __construct(PDO $conn, string $path) {
         $this->targetConnection = $conn;
         $this->migrationStorage = realpath($path);
     }
 
-    private function addError(Exception $exception): void
-    {
+    private function addError(Exception $exception): void {
         $this->errors[] = $exception;
         $this->writeLog($exception->getMessage());
     }
 
-    public function setLogger(callable $logger): void
-    {
+    public function setLogger(callable $logger): void {
         $this->logFunction = $logger;
     }
 
-    private function writeLog(string $log): void
-    {
-        if (!is_callable($this->logFunction)) {
+    private function writeLog(string $log): void {
+        if(!is_callable($this->logFunction)) {
             return;
         }
 
         call_user_func($this->logFunction, $log);
     }
 
-    public function getErrors(): array
-    {
+    public function getErrors(): array {
         return $this->errors;
     }
 
-    private function getMigrationScripts(): array
-    {
-        if (!file_exists($this->migrationStorage) || !is_dir($this->migrationStorage)) {
+    private function getMigrationScripts(): array {
+        if(!file_exists($this->migrationStorage) || !is_dir($this->migrationStorage)) {
             $this->addError(new Exception('Migrations script directory does not exist.'));
             return [];
         }
@@ -58,8 +51,7 @@ final class DatabaseMigrationManager
         return $files;
     }
 
-    private function createMigrationRepository(): bool
-    {
+    private function createMigrationRepository(): bool {
         try {
             $this->targetConnection->exec('
                 CREATE TABLE IF NOT EXISTS `msz_migrations` (
@@ -70,7 +62,7 @@ final class DatabaseMigrationManager
                     UNIQUE INDEX (`migration_id`)
                 )
             ');
-        } catch (PDOException $ex) {
+        } catch(PDOException $ex) {
             $this->addError($ex);
             return false;
         }
@@ -78,18 +70,17 @@ final class DatabaseMigrationManager
         return true;
     }
 
-    public function migrate(): bool
-    {
+    public function migrate(): bool {
         $this->writeLog('Running migrations...');
 
-        if (!$this->createMigrationRepository()) {
+        if(!$this->createMigrationRepository()) {
             return false;
         }
 
         $migrationScripts = $this->getMigrationScripts();
 
-        if (count($migrationScripts) < 1) {
-            if (count($this->errors) > 0) {
+        if(count($migrationScripts) < 1) {
+            if(count($this->errors) > 0) {
                 return false;
             }
 
@@ -105,18 +96,18 @@ final class DatabaseMigrationManager
             ");
             $fetchStatus->bindValue('basepath', $this->migrationStorage);
             $migrationStatus = $fetchStatus->execute() ? $fetchStatus->fetchAll() : [];
-        } catch (PDOException $ex) {
+        } catch(PDOException $ex) {
             $this->addError($ex);
             return false;
         }
 
-        if (count($migrationStatus) < 1 && count($this->errors) > 0) {
+        if(count($migrationStatus) < 1 && count($this->errors) > 0) {
             return false;
         }
 
         $remainingMigrations = array_diff($migrationScripts, array_column($migrationStatus, 'migration_path'));
 
-        if (count($remainingMigrations) < 1) {
+        if(count($remainingMigrations) < 1) {
             $this->writeLog('Nothing to migrate!');
             return true;
         }
@@ -134,18 +125,18 @@ final class DatabaseMigrationManager
         ');
         $recordMigration->bindValue('batch', $batchNumber);
 
-        foreach ($remainingMigrations as $migration) {
+        foreach($remainingMigrations as $migration) {
             $filename = pathinfo($migration, PATHINFO_FILENAME);
             $filenameSplit = explode('_', $filename);
             $recordMigration->bindValue('name', $filename);
             $migrationName = '';
 
-            if (count($filenameSplit) < 5) {
+            if(count($filenameSplit) < 5) {
                 $this->addError(new Exception("Invalid migration name: '{$filename}'"));
                 return false;
             }
 
-            for ($i = 4; $i < count($filenameSplit); $i++) {
+            for($i = 4; $i < count($filenameSplit); $i++) {
                 $migrationName .= ucfirst(mb_strtolower($filenameSplit[$i]));
             }
 
@@ -166,7 +157,7 @@ final class DatabaseMigrationManager
     {
         $this->writeLog('Rolling back last migration batch...');
 
-        if (!$this->createMigrationRepository()) {
+        if(!$this->createMigrationRepository()) {
             return false;
         }
 
@@ -181,13 +172,13 @@ final class DatabaseMigrationManager
             ");
             $fetchStatus->bindValue('basepath', $this->migrationStorage);
             $migrations = $fetchStatus->execute() ? $fetchStatus->fetchAll() : [];
-        } catch (PDOException $ex) {
+        } catch(PDOException $ex) {
             $this->addError($ex);
             return false;
         }
 
-        if (count($migrations) < 1) {
-            if (count($this->errors) > 0) {
+        if(count($migrations) < 1) {
+            if(count($this->errors) > 0) {
                 return false;
             }
 
@@ -197,7 +188,7 @@ final class DatabaseMigrationManager
 
         $migrationScripts = $this->getMigrationScripts();
 
-        if (count($migrationScripts) < count($migrations)) {
+        if(count($migrationScripts) < count($migrations)) {
             $this->addError(new Exception('There are missing migration scripts!'));
             return false;
         }
@@ -207,8 +198,8 @@ final class DatabaseMigrationManager
             WHERE `migration_id` = :id
         ');
 
-        foreach ($migrations as $migration) {
-            if (!file_exists($migration['migration_path'])) {
+        foreach($migrations as $migration) {
+            if(!file_exists($migration['migration_path'])) {
                 $this->addError(new Exception("Migration '{$migration['migration_name']}' does not exist."));
                 return false;
             }
@@ -216,7 +207,7 @@ final class DatabaseMigrationManager
             $nameSplit = explode('_', $migration['migration_name']);
             $migrationName = '';
 
-            for ($i = 4; $i < count($nameSplit); $i++) {
+            for($i = 4; $i < count($nameSplit); $i++) {
                 $migrationName .= ucfirst(mb_strtolower($nameSplit[$i]));
             }
 

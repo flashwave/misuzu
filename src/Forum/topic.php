@@ -16,14 +16,17 @@ define('MSZ_TOPIC_TYPE_ORDER', [ // in which order to display topics, only add t
     MSZ_TOPIC_TYPE_STICKY,
 ]);
 
-function forum_topic_is_valid_type(int $type): bool
-{
+function forum_topic_is_valid_type(int $type): bool {
     return in_array($type, MSZ_TOPIC_TYPES, true);
 }
 
-function forum_topic_create(int $forumId, int $userId, string $title, int $type = MSZ_TOPIC_TYPE_DISCUSSION): int
-{
-    if (empty($title) || !forum_topic_is_valid_type($type)) {
+function forum_topic_create(
+    int $forumId,
+    int $userId,
+    string $title,
+    int $type = MSZ_TOPIC_TYPE_DISCUSSION
+): int {
+    if(empty($title) || !forum_topic_is_valid_type($type)) {
         return 0;
     }
 
@@ -41,18 +44,17 @@ function forum_topic_create(int $forumId, int $userId, string $title, int $type 
     return $createTopic->execute() ? (int)db_last_insert_id() : 0;
 }
 
-function forum_topic_update(int $topicId, ?string $title, ?int $type = null): bool
-{
-    if ($topicId < 1) {
+function forum_topic_update(int $topicId, ?string $title, ?int $type = null): bool {
+    if($topicId < 1) {
         return false;
     }
 
     // make sure it's null and not some other kinda empty
-    if (empty($title)) {
+    if(empty($title)) {
         $title = null;
     }
 
-    if ($type !== null && !forum_topic_is_valid_type($type)) {
+    if($type !== null && !forum_topic_is_valid_type($type)) {
         return false;
     }
 
@@ -69,8 +71,7 @@ function forum_topic_update(int $topicId, ?string $title, ?int $type = null): bo
     return $updateTopic->execute();
 }
 
-function forum_topic_get(int $topicId, bool $allowDeleted = false): array
-{
+function forum_topic_get(int $topicId, bool $allowDeleted = false): array {
     $getTopic = db_prepare(sprintf(
         '
             SELECT
@@ -116,8 +117,7 @@ function forum_topic_get(int $topicId, bool $allowDeleted = false): array
     return db_fetch($getTopic);
 }
 
-function forum_topic_bump(int $topicId): bool
-{
+function forum_topic_bump(int $topicId): bool {
     $bumpTopic = db_prepare('
         UPDATE `msz_forum_topics`
         SET `topic_bumped` = NOW()
@@ -128,9 +128,8 @@ function forum_topic_bump(int $topicId): bool
     return $bumpTopic->execute();
 }
 
-function forum_topic_views_increment(int $topicId): void
-{
-    if ($topicId < 1) {
+function forum_topic_views_increment(int $topicId): void {
+    if($topicId < 1) {
         return;
     }
 
@@ -143,9 +142,8 @@ function forum_topic_views_increment(int $topicId): void
     $bumpViews->execute();
 }
 
-function forum_topic_mark_read(int $userId, int $topicId, int $forumId): void
-{
-    if ($userId < 1) {
+function forum_topic_mark_read(int $userId, int $topicId, int $forumId): void {
+    if($userId < 1) {
         return;
     }
 
@@ -163,11 +161,11 @@ function forum_topic_mark_read(int $userId, int $topicId, int $forumId): void
         $markAsRead->bindValue('topic_id', $topicId);
         $markAsRead->bindValue('forum_id', $forumId);
 
-        if ($markAsRead->execute()) {
+        if($markAsRead->execute()) {
             forum_topic_views_increment($topicId);
         }
-    } catch (PDOException $ex) {
-        if ($ex->getCode() !== MSZ_DATABASE_DUPLICATE_KEY) {
+    } catch(PDOException $ex) {
+        if($ex->getCode() !== MSZ_DATABASE_DUPLICATE_KEY) {
             throw $ex;
         }
 
@@ -281,7 +279,7 @@ function forum_topic_listing(
     $getTopics->bindValue('forum_id', $forumId);
     $getTopics->bindValue('user_id', $userId);
 
-    if ($hasPagination) {
+    if($hasPagination) {
         $getTopics->bindValue('offset', $offset);
         $getTopics->bindValue('take', $take);
     }
@@ -289,8 +287,7 @@ function forum_topic_listing(
     return db_fetch_all($getTopics);
 }
 
-function forum_topic_count_user(int $authorId, int $userId, bool $showDeleted = false): int
-{
+function forum_topic_count_user(int $authorId, int $userId, bool $showDeleted = false): int {
     $getTopics = db_prepare(sprintf(
         '
             SELECT COUNT(`topic_id`)
@@ -307,8 +304,13 @@ function forum_topic_count_user(int $authorId, int $userId, bool $showDeleted = 
 }
 
 // Remove unneccesary stuff from the sql stmt
-function forum_topic_listing_user(int $authorId, int $userId, int $offset = 0, int $take = 0, bool $showDeleted = false): array
-{
+function forum_topic_listing_user(
+    int $authorId,
+    int $userId,
+    int $offset = 0,
+    int $take = 0,
+    bool $showDeleted = false
+): array {
     $hasPagination = $offset >= 0 && $take > 0;
     $getTopics = db_prepare(sprintf(
         '
@@ -392,7 +394,7 @@ function forum_topic_listing_user(int $authorId, int $userId, int $offset = 0, i
     $getTopics->bindValue('author_id', $authorId);
     $getTopics->bindValue('user_id', $userId);
 
-    if ($hasPagination) {
+    if($hasPagination) {
         $getTopics->bindValue('offset', $offset);
         $getTopics->bindValue('take', $take);
     }
@@ -400,8 +402,7 @@ function forum_topic_listing_user(int $authorId, int $userId, int $offset = 0, i
     return db_fetch_all($getTopics);
 }
 
-function forum_topic_listing_search(string $query, int $userId): array
-{
+function forum_topic_listing_search(string $query, int $userId): array {
     $getTopics = db_prepare(sprintf(
         '
             SELECT
@@ -483,9 +484,8 @@ function forum_topic_listing_search(string $query, int $userId): array
     return db_fetch_all($getTopics);
 }
 
-function forum_topic_lock(int $topicId): bool
-{
-    if ($topicId < 1) {
+function forum_topic_lock(int $topicId): bool {
+    if($topicId < 1) {
         return false;
     }
 
@@ -500,9 +500,8 @@ function forum_topic_lock(int $topicId): bool
     return $markLocked->execute();
 }
 
-function forum_topic_unlock(int $topicId): bool
-{
-    if ($topicId < 1) {
+function forum_topic_unlock(int $topicId): bool {
+    if($topicId < 1) {
         return false;
     }
 
@@ -534,19 +533,18 @@ define('MSZ_FORUM_TOPIC_DELETE_POST_LIMIT', 1);
 
 // set $userId to null for system request, make sure this is NEVER EVER null on user request
 // $topicId can also be a the return value of forum_topic_get if you already grabbed it once before
-function forum_topic_can_delete($topicId, ?int $userId = null): int
-{
-    if ($userId !== null && $userId < 1) {
+function forum_topic_can_delete($topicId, ?int $userId = null): int {
+    if($userId !== null && $userId < 1) {
         return MSZ_E_FORUM_TOPIC_DELETE_USER;
     }
 
-    if (is_array($topicId)) {
+    if(is_array($topicId)) {
         $topic = $topicId;
     } else {
         $topic = forum_topic_get((int)$topicId, true);
     }
 
-    if (empty($topic)) {
+    if(empty($topic)) {
         return MSZ_E_FORUM_TOPIC_DELETE_TOPIC;
     }
 
@@ -556,34 +554,34 @@ function forum_topic_can_delete($topicId, ?int $userId = null): int
     $canViewPost    = $isSystemReq ? true   : perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM);
     $postIsDeleted  = !empty($topic['topic_deleted']);
 
-    if (!$canViewPost) {
+    if(!$canViewPost) {
         return MSZ_E_FORUM_TOPIC_DELETE_TOPIC;
     }
 
-    if ($postIsDeleted) {
+    if($postIsDeleted) {
         return $canDeleteAny ? MSZ_E_FORUM_TOPIC_DELETE_DELETED : MSZ_E_FORUM_TOPIC_DELETE_TOPIC;
     }
 
-    if ($isSystemReq) {
+    if($isSystemReq) {
         return MSZ_E_FORUM_TOPIC_DELETE_OK;
     }
 
-    if (!$canDeleteAny) {
-        if (!perms_check($perms, MSZ_FORUM_PERM_DELETE_POST)) {
+    if(!$canDeleteAny) {
+        if(!perms_check($perms, MSZ_FORUM_PERM_DELETE_POST)) {
             return MSZ_E_FORUM_TOPIC_DELETE_PERM;
         }
 
-        if ($topic['author_user_id'] !== $userId) {
+        if($topic['author_user_id'] !== $userId) {
             return MSZ_E_FORUM_TOPIC_DELETE_OWNER;
         }
 
-        if (strtotime($topic['topic_created']) <= time() - MSZ_FORUM_TOPIC_DELETE_TIME_LIMIT) {
+        if(strtotime($topic['topic_created']) <= time() - MSZ_FORUM_TOPIC_DELETE_TIME_LIMIT) {
             return MSZ_E_FORUM_TOPIC_DELETE_OLD;
         }
 
         $totalReplies = $topic['topic_count_posts'] + $topic['topic_count_posts_deleted'];
 
-        if ($totalReplies > MSZ_E_FORUM_TOPIC_DELETE_POSTS) {
+        if($totalReplies > MSZ_E_FORUM_TOPIC_DELETE_POSTS) {
             return MSZ_E_FORUM_TOPIC_DELETE_POSTS;
         }
     }
@@ -591,9 +589,8 @@ function forum_topic_can_delete($topicId, ?int $userId = null): int
     return MSZ_E_FORUM_TOPIC_DELETE_OK;
 }
 
-function forum_topic_delete(int $topicId): bool
-{
-    if ($topicId < 1) {
+function forum_topic_delete(int $topicId): bool {
+    if($topicId < 1) {
         return false;
     }
 
@@ -605,7 +602,7 @@ function forum_topic_delete(int $topicId): bool
     ');
     $markTopicDeleted->bindValue('topic', $topicId);
 
-    if (!$markTopicDeleted->execute()) {
+    if(!$markTopicDeleted->execute()) {
         return false;
     }
 
@@ -624,9 +621,8 @@ function forum_topic_delete(int $topicId): bool
     return $markPostsDeleted->execute();
 }
 
-function forum_topic_restore(int $topicId): bool
-{
-    if ($topicId < 1) {
+function forum_topic_restore(int $topicId): bool {
+    if($topicId < 1) {
         return false;
     }
 
@@ -642,7 +638,7 @@ function forum_topic_restore(int $topicId): bool
     ');
     $markPostsRestored->bindValue('topic', $topicId);
 
-    if (!$markPostsRestored->execute()) {
+    if(!$markPostsRestored->execute()) {
         return false;
     }
 
@@ -657,9 +653,8 @@ function forum_topic_restore(int $topicId): bool
     return $markTopicRestored->execute();
 }
 
-function forum_topic_nuke(int $topicId): bool
-{
-    if ($topicId < 1) {
+function forum_topic_nuke(int $topicId): bool {
+    if($topicId < 1) {
         return false;
     }
 
@@ -671,8 +666,7 @@ function forum_topic_nuke(int $topicId): bool
     return $nukeTopic->execute();
 }
 
-function forum_topic_priority(int $topic): array
-{
+function forum_topic_priority(int $topic): array {
     if($topic < 1) {
         return [];
     }
@@ -694,8 +688,7 @@ function forum_topic_priority(int $topic): array
     return db_fetch_all($getPriority);
 }
 
-function forum_topic_priority_increase(int $topic, int $user, int $bump = 1): void
-{
+function forum_topic_priority_increase(int $topic, int $user, int $bump = 1): void {
     if($topic < 1 || $user < 1 || $bump === 0) {
         return;
     }

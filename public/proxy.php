@@ -16,7 +16,7 @@ $splitPath = explode('/', $_SERVER['PATH_INFO'] ?? '', 3);
 $proxyHash = $splitPath[1] ?? '';
 $proxyUrl = $splitPath[2] ?? '';
 
-if (empty($proxyHash) || empty($proxyUrl)) {
+if(empty($proxyHash) || empty($proxyUrl)) {
     http_response_code(400);
     echo '400.1';
     return;
@@ -25,7 +25,7 @@ if (empty($proxyHash) || empty($proxyUrl)) {
 $proxyUrlDecoded = base64url_decode($proxyUrl);
 $parsedUrl = parse_url($proxyUrlDecoded);
 
-if (empty($parsedUrl['scheme'])
+if(empty($parsedUrl['scheme'])
     || empty($parsedUrl['host'])
     || !in_array($parsedUrl['scheme'], $acceptedProtocols, true)) {
     http_response_code(400);
@@ -33,7 +33,7 @@ if (empty($parsedUrl['scheme'])
     return;
 }
 
-if (!config_get_default(false, 'Proxy', 'enabled')) {
+if(!config_get_default(false, 'Proxy', 'enabled')) {
     redirect($proxyUrlDecoded);
     return;
 }
@@ -41,7 +41,7 @@ if (!config_get_default(false, 'Proxy', 'enabled')) {
 $proxySecret = config_get_default('insecure', 'Proxy', 'secret_key');
 $expectedHash = hash_hmac('sha256', $proxyUrl, $proxySecret);
 
-if (!hash_equals($expectedHash, $proxyHash)) {
+if(!hash_equals($expectedHash, $proxyHash)) {
     http_response_code(400);
     echo '400.3';
     return;
@@ -65,7 +65,7 @@ curl_close($curl);
 
 $entityTag = 'W/"' . hash('sha256', $curlBody) . '"';
 
-if (!empty($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $entityTag) {
+if(!empty($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $entityTag) {
     http_response_code(304);
     return;
 }
@@ -74,7 +74,7 @@ $finfo = finfo_open(FILEINFO_MIME_TYPE);
 $fileMime = strtolower(finfo_buffer($finfo, $curlBody));
 finfo_close($finfo);
 
-if (!in_array($fileMime, $acceptedMimeTypes, true)) {
+if(!in_array($fileMime, $acceptedMimeTypes, true)) {
     http_response_code(404);
     echo '404.1';
     return;

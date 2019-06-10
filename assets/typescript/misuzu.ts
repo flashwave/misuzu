@@ -72,14 +72,14 @@ window.addEventListener('load', () => {
 
     const changelogChangeAction: HTMLDivElement = document.querySelector('.changelog__change__action') as HTMLDivElement;
 
-    if (changelogChangeAction && !Support.sidewaysText) {
+    if(changelogChangeAction && !Support.sidewaysText) {
         changelogChangeAction.title = "This is supposed to be sideways, but your browser doesn't support that.";
     }
 
     const loginForms: HTMLCollectionOf<HTMLFormElement> = document.getElementsByClassName('js-login-form') as HTMLCollectionOf<HTMLFormElement>;
 
-    if (loginForms.length > 0) {
-        for (let i = 0; i < loginForms.length; i++) {
+    if(loginForms.length > 0) {
+        for(let i = 0; i < loginForms.length; i++) {
             const loginForm: HTMLFormElement = loginForms[i],
                 loginAvatar: HTMLElement = loginForm.getElementsByClassName('js-login-avatar')[0] as HTMLElement,
                 loginUsername: HTMLInputElement = loginForm.getElementsByClassName('js-login-username')[0] as HTMLInputElement;
@@ -93,10 +93,10 @@ window.addEventListener('load', () => {
 
     const ctrlSubmit: HTMLCollectionOf<HTMLInputElement> = document.getElementsByClassName('js-ctrl-enter-submit') as HTMLCollectionOf<HTMLInputElement>;
 
-    if (ctrlSubmit.length > 0) {
-        for (let i = 0; i < ctrlSubmit.length; i++) {
+    if(ctrlSubmit.length > 0) {
+        for(let i = 0; i < ctrlSubmit.length; i++) {
             ctrlSubmit[i].addEventListener('keydown', ev => {
-                if (ev.code === 'Enter' /* i hate this fucking language so much */
+                if(ev.code === 'Enter' /* i hate this fucking language so much */
                     && ev.ctrlKey && !ev.altKey && !ev.shiftKey && !ev.metaKey) {
                     // for a hackjob
                     forumPostingCloseOK = true;
@@ -114,8 +114,8 @@ window.addEventListener('load', () => {
 });
 
 function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTMLInputElement, force: boolean = false): void {
-    if (!force) {
-        if (loginFormAvatarTimeout)
+    if(!force) {
+        if(loginFormAvatarTimeout)
             return;
 
         loginFormAvatarTimeout = setTimeout(() => {
@@ -128,7 +128,7 @@ function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTML
 
     const xhr: XMLHttpRequest = new XMLHttpRequest;
     xhr.addEventListener('readystatechange', () => {
-        if (xhr.readyState !== 4)
+        if(xhr.readyState !== 4)
             return;
 
         avatarElement.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [
@@ -146,7 +146,7 @@ interface MessageBoxButton {
 }
 
 function messageBox(text: string, title: string = null, buttons: MessageBoxButton[] = []): boolean {
-    if (document.querySelector('.messagebox')) {
+    if(document.querySelector('.messagebox')) {
         return false;
     }
 
@@ -174,13 +174,13 @@ function messageBox(text: string, title: string = null, buttons: MessageBoxButto
 
     let firstButton = null;
 
-    if (buttons.length < 1) {
+    if(buttons.length < 1) {
         firstButton = buttonsContainer.appendChild(document.createElement('button'));
         firstButton.className = 'input__button';
         firstButton.textContent = 'OK';
         firstButton.addEventListener('click', () => element.remove());
     } else {
-        for (let i = 0; i < buttons.length; i++) {
+        for(let i = 0; i < buttons.length; i++) {
             let button = buttonsContainer.appendChild(document.createElement('button'));
             button.className = 'input__button';
             button.textContent = buttons[i].text;
@@ -189,7 +189,7 @@ function messageBox(text: string, title: string = null, buttons: MessageBoxButto
                 buttons[i].callback();
             });
 
-            if (firstButton === null)
+            if(firstButton === null)
                 firstButton = button;
         }
     }

@@ -9,24 +9,22 @@ function twitter_init(
 ): void {
     Codebird::setConsumerKey($apiKey, $apiSecretKey);
 
-    if (!is_null($token) && !is_null($tokenSecret)) {
+    if(!is_null($token) && !is_null($tokenSecret)) {
         twitter_token_set($token, $tokenSecret);
     }
 }
 
-function twitter_token_set(string $token, string $tokenSecret): void
-{
+function twitter_token_set(string $token, string $tokenSecret): void {
     Codebird::getInstance()->setToken($token, $tokenSecret);
 }
 
-function twitter_auth_create(): ?string
-{
+function twitter_auth_create(): ?string {
     $codebird = Codebird::getInstance();
     $reply = $codebird->oauth_requestToken([
         'oauth_callback' => 'oob',
     ]);
 
-    if (!$reply) {
+    if(!$reply) {
         return null;
     }
 
@@ -35,13 +33,12 @@ function twitter_auth_create(): ?string
     return $codebird->oauth_authorize();
 }
 
-function twitter_auth_complete(string $pin): array
-{
+function twitter_auth_complete(string $pin): array {
     $reply = Codebird::getInstance()->oauth_accessToken([
         'oauth_verifier' => $pin,
     ]);
 
-    if (!$reply) {
+    if(!$reply) {
         return [];
     }
 
@@ -53,8 +50,7 @@ function twitter_auth_complete(string $pin): array
     ];
 }
 
-function twitter_tweet_post(string $text): void
-{
+function twitter_tweet_post(string $text): void {
     Codebird::getInstance()->statuses_update([
         'status' => $text,
     ]);

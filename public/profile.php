@@ -33,8 +33,8 @@ $canEdit = !$isBanned
         )
     );
 
-if ($isEditing) {
-    if (!$canEdit) {
+if($isEditing) {
+    if(!$canEdit) {
         echo render_error(403);
         return;
     }
@@ -57,18 +57,18 @@ if ($isEditing) {
         'background_attachments' => MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES,
     ]);
 
-    if (!empty($_POST) && is_array($_POST)) {
-        if (!csrf_verify_request()) {
+    if(!empty($_POST) && is_array($_POST)) {
+        if(!csrf_verify_request()) {
             $notices[] = MSZ_TMP_USER_ERROR_STRINGS['csrf'];
         } else {
-            if (!empty($_POST['profile']) && is_array($_POST['profile'])) {
-                if (!$perms['edit_profile']) {
+            if(!empty($_POST['profile']) && is_array($_POST['profile'])) {
+                if(!$perms['edit_profile']) {
                     $notices[] = MSZ_TMP_USER_ERROR_STRINGS['profile']['not-allowed'];
                 } else {
                     $setUserFieldErrors = user_profile_fields_set($userId, $_POST['profile']);
 
-                    if (count($setUserFieldErrors) > 0) {
-                        foreach ($setUserFieldErrors as $name => $error) {
+                    if(count($setUserFieldErrors) > 0) {
+                        foreach($setUserFieldErrors as $name => $error) {
                             $notices[] = sprintf(
                                 MSZ_TMP_USER_ERROR_STRINGS['profile'][$error] ?? MSZ_TMP_USER_ERROR_STRINGS['profile']['_'],
                                 $name,
@@ -79,8 +79,8 @@ if ($isEditing) {
                 }
             }
 
-            if (!empty($_POST['about']) && is_array($_POST['about'])) {
-                if (!$perms['edit_about']) {
+            if(!empty($_POST['about']) && is_array($_POST['about'])) {
+                if(!$perms['edit_about']) {
                     $notices[] = MSZ_TMP_USER_ERROR_STRINGS['about']['not-allowed'];
                 } else {
                     $setAboutError = user_set_about_page(
@@ -89,7 +89,7 @@ if ($isEditing) {
                         (int)($_POST['about']['parser'] ?? MSZ_PARSER_PLAIN)
                     );
 
-                    if ($setAboutError !== MSZ_E_USER_ABOUT_OK) {
+                    if($setAboutError !== MSZ_E_USER_ABOUT_OK) {
                         $notices[] = sprintf(
                             MSZ_TMP_USER_ERROR_STRINGS['about'][$setAboutError] ?? MSZ_TMP_USER_ERROR_STRINGS['about']['_'],
                             MSZ_USER_ABOUT_MAX_LENGTH
@@ -98,8 +98,8 @@ if ($isEditing) {
                 }
             }
 
-            if (!empty($_POST['signature']) && is_array($_POST['signature'])) {
-                if (!$perms['edit_signature']) {
+            if(!empty($_POST['signature']) && is_array($_POST['signature'])) {
+                if(!$perms['edit_signature']) {
                     $notices[] = MSZ_TMP_USER_ERROR_STRINGS['signature']['not-allowed'];
                 } else {
                     $setSignatureError = user_set_signature(
@@ -108,7 +108,7 @@ if ($isEditing) {
                         (int)($_POST['signature']['parser'] ?? MSZ_PARSER_PLAIN)
                     );
 
-                    if ($setSignatureError !== MSZ_E_USER_SIGNATURE_OK) {
+                    if($setSignatureError !== MSZ_E_USER_SIGNATURE_OK) {
                         $notices[] = sprintf(
                             MSZ_TMP_USER_ERROR_STRINGS['signature'][$setSignatureError] ?? MSZ_TMP_USER_ERROR_STRINGS['signature']['_'],
                             MSZ_USER_SIGNATURE_MAX_LENGTH
@@ -117,8 +117,8 @@ if ($isEditing) {
                 }
             }
 
-            if (!empty($_POST['birthdate']) && is_array($_POST['birthdate'])) {
-                if (!$perms['edit_birthdate']) {
+            if(!empty($_POST['birthdate']) && is_array($_POST['birthdate'])) {
+                if(!$perms['edit_birthdate']) {
                     $notices[] = "You aren't allow to change your birthdate.";
                 } else {
                     $setBirthdate = user_set_birthdate(
@@ -128,7 +128,7 @@ if ($isEditing) {
                         (int)($_POST['birthdate']['year'] ?? 0)
                     );
 
-                    switch ($setBirthdate) {
+                    switch($setBirthdate) {
                         case MSZ_E_USER_BIRTHDATE_USER:
                             $notices[] = 'Invalid user specified while setting birthdate?';
                             break;
@@ -149,16 +149,16 @@ if ($isEditing) {
                 }
             }
 
-            if (!empty($_FILES['avatar'])) {
-                if (!empty($_POST['avatar']['delete'])) {
+            if(!empty($_FILES['avatar'])) {
+                if(!empty($_POST['avatar']['delete'])) {
                     user_avatar_delete($userId);
                 } else {
-                    if (!$perms['edit_avatar']) {
+                    if(!$perms['edit_avatar']) {
                         $notices[] = MSZ_TMP_USER_ERROR_STRINGS['avatar']['not-allowed'];
-                    } elseif (!empty($_FILES['avatar'])
+                    } elseif(!empty($_FILES['avatar'])
                         && is_array($_FILES['avatar'])
                         && !empty($_FILES['avatar']['name']['file'])) {
-                        if ($_FILES['avatar']['error']['file'] !== UPLOAD_ERR_OK) {
+                        if($_FILES['avatar']['error']['file'] !== UPLOAD_ERR_OK) {
                             $notices[] = sprintf(
                                 MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload'][$_FILES['avatar']['error']['file']]
                                 ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload']['_'],
@@ -174,7 +174,7 @@ if ($isEditing) {
                                 $avatarProps
                             );
 
-                            if ($setAvatar !== MSZ_USER_AVATAR_NO_ERRORS) {
+                            if($setAvatar !== MSZ_USER_AVATAR_NO_ERRORS) {
                                 $notices[] = sprintf(
                                     MSZ_TMP_USER_ERROR_STRINGS['avatar']['set'][$setAvatar]
                                     ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['set']['_'],
@@ -189,17 +189,17 @@ if ($isEditing) {
                 }
             }
 
-            if (!empty($_FILES['background'])) {
-                if ((int)($_POST['background']['attach'] ?? -1) === 0) {
+            if(!empty($_FILES['background'])) {
+                if((int)($_POST['background']['attach'] ?? -1) === 0) {
                     user_background_delete($userId);
                     user_background_set_settings($userId, MSZ_USER_BACKGROUND_ATTACHMENT_NONE);
                 } else {
-                    if (!$perms['edit_background']) {
+                    if(!$perms['edit_background']) {
                         $notices[] = MSZ_TMP_USER_ERROR_STRINGS['background']['not-allowed'];
-                    } elseif (!empty($_FILES['background'])
+                    } elseif(!empty($_FILES['background'])
                         && is_array($_FILES['background'])) {
-                        if (!empty($_FILES['background']['name']['file'])) {
-                            if ($_FILES['background']['error']['file'] !== UPLOAD_ERR_OK) {
+                        if(!empty($_FILES['background']['name']['file'])) {
+                            if($_FILES['background']['error']['file'] !== UPLOAD_ERR_OK) {
                                 $notices[] = sprintf(
                                     MSZ_TMP_USER_ERROR_STRINGS['background']['upload'][$_FILES['background']['error']['file']]
                                     ?? MSZ_TMP_USER_ERROR_STRINGS['background']['upload']['_'],
@@ -215,7 +215,7 @@ if ($isEditing) {
                                     $backgroundProps
                                 );
 
-                                if ($setBackground !== MSZ_USER_BACKGROUND_NO_ERRORS) {
+                                if($setBackground !== MSZ_USER_BACKGROUND_NO_ERRORS) {
                                     $notices[] = sprintf(
                                         MSZ_TMP_USER_ERROR_STRINGS['background']['set'][$setBackground]
                                         ?? MSZ_TMP_USER_ERROR_STRINGS['background']['set']['_'],
@@ -232,11 +232,11 @@ if ($isEditing) {
                             ? (int)($_POST['background']['attach'])
                             : MSZ_USER_BACKGROUND_ATTACHMENTS[0];
 
-                        if (!empty($_POST['background']['attr']['blend'])) {
+                        if(!empty($_POST['background']['attr']['blend'])) {
                             $backgroundSettings |= MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND;
                         }
 
-                        if (!empty($_POST['background']['attr']['slide'])) {
+                        if(!empty($_POST['background']['attr']['slide'])) {
                             $backgroundSettings |= MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE;
                         }
 
@@ -247,7 +247,7 @@ if ($isEditing) {
         }
 
         // Unset $isEditing and hope the user doesn't refresh their profile!
-        if (empty($notices)) {
+        if(empty($notices)) {
             $isEditing = false;
         }
     }
@@ -260,10 +260,10 @@ $relationInfo = user_session_active()
 
 $backgroundPath = sprintf('%s/backgrounds/original/%d.msz', MSZ_STORAGE, $profile['user_id']);
 
-if (is_file($backgroundPath)) {
+if(is_file($backgroundPath)) {
     $backgroundInfo = getimagesize($backgroundPath);
 
-    if ($backgroundInfo) {
+    if($backgroundInfo) {
         tpl_var('site_background', [
             'url' => url('user-background', ['user' => $profile['user_id']]),
             'width' => $backgroundInfo[0],
@@ -273,7 +273,7 @@ if (is_file($backgroundPath)) {
     }
 }
 
-switch ($profileMode) {
+switch($profileMode) {
     default:
         echo render_error(404);
         return;
@@ -284,7 +284,7 @@ switch ($profileMode) {
         $followingPagination = pagination_create($followingCount, MSZ_USER_RELATION_FOLLOW_PER_PAGE);
         $followingOffset = pagination_offset($followingPagination, pagination_param());
 
-        if (!pagination_is_valid_offset($followingOffset)) {
+        if(!pagination_is_valid_offset($followingOffset)) {
             echo render_error(404);
             return;
         }
@@ -305,7 +305,7 @@ switch ($profileMode) {
         $followerPagination = pagination_create($followerCount, MSZ_USER_RELATION_FOLLOW_PER_PAGE);
         $followerOffset = pagination_offset($followerPagination, pagination_param());
 
-        if (!pagination_is_valid_offset($followerOffset)) {
+        if(!pagination_is_valid_offset($followerOffset)) {
             echo render_error(404);
             return;
         }
@@ -326,7 +326,7 @@ switch ($profileMode) {
         $topicsPagination = pagination_create($topicsCount, 20);
         $topicsOffset = pagination_offset($topicsPagination, pagination_param());
 
-        if (!pagination_is_valid_offset($topicsOffset)) {
+        if(!pagination_is_valid_offset($topicsOffset)) {
             echo render_error(404);
             return;
         }
@@ -347,7 +347,7 @@ switch ($profileMode) {
         $postsPagination = pagination_create($postsCount, 20);
         $postsOffset = pagination_offset($postsPagination, pagination_param());
 
-        if (!pagination_is_valid_offset($postsOffset)) {
+        if(!pagination_is_valid_offset($postsOffset)) {
             echo render_error(404);
             return;
         }
@@ -387,7 +387,7 @@ switch ($profileMode) {
         break;
 }
 
-if (!empty($template)) {
+if(!empty($template)) {
     echo tpl_render($template, [
         'profile' => $profile,
         'profile_mode' => $profileMode,

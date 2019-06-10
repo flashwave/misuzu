@@ -15,8 +15,8 @@ if(!empty($_POST)) {
         csrf_http_header();
 
         if(!empty($_POST['blacklist']['remove']) && is_array($_POST['blacklist']['remove'])) {
-            foreach ($_POST['blacklist']['remove'] as $cidr) {
-                if (!ip_blacklist_remove($cidr)) {
+            foreach($_POST['blacklist']['remove'] as $cidr) {
+                if(!ip_blacklist_remove($cidr)) {
                     $notices[] = sprintf('Failed to remove "%s" from the blacklist.', $cidr);
                 }
             }

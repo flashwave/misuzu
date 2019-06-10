@@ -5,7 +5,7 @@ require_once '../misuzu.php';
 
 $mode = !empty($_GET['m']) && is_string($_GET['m']) ? $_GET['m'] : '';
 
-switch ($mode) {
+switch($mode) {
     case 'logout':
         echo tpl_render('auth.logout');
         break;

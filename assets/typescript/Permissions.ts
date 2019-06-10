@@ -27,7 +27,7 @@ function checkPerm(perms: number, perm: number): boolean {
 function checkUserPerm(set: string, perm: number): boolean {
     const perms: number = (getCurrentUser('perms')[set] || 0) as number;
 
-    if (!perms) {
+    if(!perms) {
         return false;
     }
 

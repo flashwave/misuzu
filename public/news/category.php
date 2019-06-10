@@ -4,7 +4,7 @@ require_once '../../misuzu.php';
 $categoryId = !empty($_GET['c']) && is_string($_GET['c']) ? (int)$_GET['c'] : 0;
 $category = news_category_get($categoryId, true);
 
-if (empty($category)) {
+if(empty($category)) {
     echo render_error(404);
     return;
 }
@@ -12,7 +12,7 @@ if (empty($category)) {
 $categoryPagination = pagination_create($category['posts_count'], 5);
 $postsOffset = pagination_offset($categoryPagination, pagination_param());
 
-if (!pagination_is_valid_offset($postsOffset)) {
+if(!pagination_is_valid_offset($postsOffset)) {
     echo render_error(404);
     return;
 }

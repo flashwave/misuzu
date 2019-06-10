@@ -35,7 +35,7 @@ function forum_post_update(
     bool $displaySignature = true,
     bool $bumpUpdate = true
 ): bool {
-    if ($postId < 1) {
+    if($postId < 1) {
         return false;
     }
 
@@ -58,8 +58,7 @@ function forum_post_update(
     return $updatePost->execute();
 }
 
-function forum_post_find(int $postId, int $userId): array
-{
+function forum_post_find(int $postId, int $userId): array {
     $getPostInfo = db_prepare(sprintf(
         '
             SELECT
@@ -87,8 +86,7 @@ function forum_post_find(int $postId, int $userId): array
     return db_fetch($getPostInfo);
 }
 
-function forum_post_get(int $postId, bool $allowDeleted = false): array
-{
+function forum_post_get(int $postId, bool $allowDeleted = false): array {
     $getPost = db_prepare(sprintf(
         '
             SELECT
@@ -131,8 +129,7 @@ function forum_post_get(int $postId, bool $allowDeleted = false): array
     return db_fetch($getPost);
 }
 
-function forum_post_search(string $query): array
-{
+function forum_post_search(string $query): array {
     $searchPosts = db_prepare('
         SELECT
             p.`post_id`, p.`post_text`, p.`post_created`, p.`post_parse`, p.`post_display_signature`,
@@ -175,8 +172,7 @@ function forum_post_search(string $query): array
     return db_fetch_all($searchPosts);
 }
 
-function forum_post_count_user(int $userId, bool $showDeleted = false): int
-{
+function forum_post_count_user(int $userId, bool $showDeleted = false): int {
     $getPosts = db_prepare(sprintf(
         '
             SELECT COUNT(p.`post_id`)
@@ -191,8 +187,13 @@ function forum_post_count_user(int $userId, bool $showDeleted = false): int
     return (int)($getPosts->execute() ? $getPosts->fetchColumn() : 0);
 }
 
-function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $showDeleted = false, bool $selectAuthor = false): array
-{
+function forum_post_listing(
+    int $topicId,
+    int $offset = 0,
+    int $take = 0,
+    bool $showDeleted = false,
+    bool $selectAuthor = false
+): array {
     $hasPagination = $offset >= 0 && $take > 0;
     $getPosts = db_prepare(sprintf(
         '
@@ -239,7 +240,7 @@ function forum_post_listing(int $topicId, int $offset = 0, int $take = 0, bool $
     ));
     $getPosts->bindValue('topic_id', $topicId);
 
-    if ($hasPagination) {
+    if($hasPagination) {
         $getPosts->bindValue('offset', $offset);
         $getPosts->bindValue('take', $take);
     }
@@ -261,19 +262,18 @@ define('MSZ_FORUM_POST_DELETE_LIMIT', 60 * 60 * 24 * 7);
 
 // set $userId to null for system request, make sure this is NEVER EVER null on user request
 // $postId can also be a the return value of forum_post_get if you already grabbed it once before
-function forum_post_can_delete($postId, ?int $userId = null): int
-{
-    if ($userId !== null && $userId < 1) {
+function forum_post_can_delete($postId, ?int $userId = null): int {
+    if($userId !== null && $userId < 1) {
         return MSZ_E_FORUM_POST_DELETE_USER;
     }
 
-    if (is_array($postId)) {
+    if(is_array($postId)) {
         $post = $postId;
     } else {
         $post = forum_post_get((int)$postId, true);
     }
 
-    if (empty($post)) {
+    if(empty($post)) {
         return MSZ_E_FORUM_POST_DELETE_POST;
     }
 
@@ -283,32 +283,32 @@ function forum_post_can_delete($postId, ?int $userId = null): int
     $canViewPost    = $isSystemReq ? true   : perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM);
     $postIsDeleted  = !empty($post['post_deleted']);
 
-    if (!$canViewPost) {
+    if(!$canViewPost) {
         return MSZ_E_FORUM_POST_DELETE_POST;
     }
 
-    if ($post['is_opening_post']) {
+    if($post['is_opening_post']) {
         return MSZ_E_FORUM_POST_DELETE_OP;
     }
 
-    if ($postIsDeleted) {
+    if($postIsDeleted) {
         return $canDeleteAny ? MSZ_E_FORUM_POST_DELETE_DELETED : MSZ_E_FORUM_POST_DELETE_POST;
     }
 
-    if ($isSystemReq) {
+    if($isSystemReq) {
         return MSZ_E_FORUM_POST_DELETE_OK;
     }
 
-    if (!$canDeleteAny) {
-        if (!perms_check($perms, MSZ_FORUM_PERM_DELETE_POST)) {
+    if(!$canDeleteAny) {
+        if(!perms_check($perms, MSZ_FORUM_PERM_DELETE_POST)) {
             return MSZ_E_FORUM_POST_DELETE_PERM;
         }
 
-        if ($post['poster_id'] !== $userId) {
+        if($post['poster_id'] !== $userId) {
             return MSZ_E_FORUM_POST_DELETE_OWNER;
         }
 
-        if (strtotime($post['post_created']) <= time() - MSZ_FORUM_POST_DELETE_LIMIT) {
+        if(strtotime($post['post_created']) <= time() - MSZ_FORUM_POST_DELETE_LIMIT) {
             return MSZ_E_FORUM_POST_DELETE_OLD;
         }
     }
@@ -316,9 +316,8 @@ function forum_post_can_delete($postId, ?int $userId = null): int
     return MSZ_E_FORUM_POST_DELETE_OK;
 }
 
-function forum_post_delete(int $postId): bool
-{
-    if ($postId < 1) {
+function forum_post_delete(int $postId): bool {
+    if($postId < 1) {
         return false;
     }
 
@@ -332,9 +331,8 @@ function forum_post_delete(int $postId): bool
     return $markDeleted->execute();
 }
 
-function forum_post_restore(int $postId): bool
-{
-    if ($postId < 1) {
+function forum_post_restore(int $postId): bool {
+    if($postId < 1) {
         return false;
     }
 
@@ -348,9 +346,8 @@ function forum_post_restore(int $postId): bool
     return $markDeleted->execute();
 }
 
-function forum_post_nuke(int $postId): bool
-{
-    if ($postId < 1) {
+function forum_post_nuke(int $postId): bool {
+    if($postId < 1) {
         return false;
     }
 

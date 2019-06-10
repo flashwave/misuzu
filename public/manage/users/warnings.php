@@ -37,13 +37,13 @@ if(!empty($_POST['warning']) && is_array($_POST['warning'])) {
                 $customDuration = $_POST['warning']['duration_custom'] ?? '';
 
                 if(!empty($customDuration)) {
-                    switch ($duration) {
+                    switch($duration) {
                         case -1: // YYYY-MM-DD
                             $splitDate = array_apply(explode('-', $customDuration, 3), function ($a) {
                                 return (int)$a;
                             });
 
-                            if (checkdate($splitDate[1], $splitDate[2], $splitDate[0])) {
+                            if(checkdate($splitDate[1], $splitDate[2], $splitDate[0])) {
                                 $warningDuration = mktime(0, 0, 0, $splitDate[1], $splitDate[2], $splitDate[0]);
                             }
                             break;
@@ -84,7 +84,7 @@ if(!empty($_POST['warning']) && is_array($_POST['warning'])) {
         }
 
         if(!empty($warningId) && $warningId < 0) {
-            switch ($warningId) {
+            switch($warningId) {
                 case MSZ_E_WARNING_ADD_DB:
                     $notices[] = 'Failed to record the warning in the database.';
                     break;

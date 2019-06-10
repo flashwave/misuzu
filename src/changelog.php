@@ -18,19 +18,16 @@ define('MSZ_CHANGELOG_ACTIONS', [
     MSZ_CHANGELOG_ACTION_REVERT => 'revert',
 ]);
 
-function changelog_action_name(int $action): string
-{
+function changelog_action_name(int $action): string {
     return changelog_action_is_valid($action) ? MSZ_CHANGELOG_ACTIONS[$action] : '';
 }
 
-function changelog_action_is_valid(int $action): bool
-{
+function changelog_action_is_valid(int $action): bool {
     return array_key_exists($action, MSZ_CHANGELOG_ACTIONS);
 }
 
-function changelog_entry_create(int $userId, int $action, string $log, string $text = null): int
-{
-    if (!changelog_action_is_valid($action)) {
+function changelog_entry_create(int $userId, int $action, string $log, string $text = null): int {
+    if(!changelog_action_is_valid($action)) {
         return -1;
     }
 
@@ -67,8 +64,7 @@ define('MSZ_CHANGELOG_GET_QUERY', '
     %s
 ');
 
-function changelog_get_changes(string $date, int $user, int $offset, int $take): array
-{
+function changelog_get_changes(string $date, int $user, int $offset, int $take): array {
     $hasDate = mb_strlen($date) > 0;
     $hasUser = $user > 0;
 
@@ -81,14 +77,14 @@ function changelog_get_changes(string $date, int $user, int $offset, int $take):
 
     $prep = db_prepare($query);
 
-    if (!$hasDate) {
+    if(!$hasDate) {
         $prep->bindValue('offset', $offset);
         $prep->bindValue('take', $take);
     } else {
         $prep->bindValue('date', $date);
     }
 
-    if ($hasUser) {
+    if($hasUser) {
         $prep->bindValue('user', $user);
     }
 
@@ -102,8 +98,7 @@ define('MSZ_CHANGELOG_COUNT_QUERY', '
     AND %s
 ');
 
-function changelog_count_changes(string $date, int $user): int
-{
+function changelog_count_changes(string $date, int $user): int {
     $hasDate = mb_strlen($date) > 0;
     $hasUser = $user > 0;
 
@@ -115,19 +110,18 @@ function changelog_count_changes(string $date, int $user): int
 
     $prep = db_prepare($query);
 
-    if ($hasDate) {
+    if($hasDate) {
         $prep->bindValue('date', $date);
     }
 
-    if ($hasUser) {
+    if($hasUser) {
         $prep->bindValue('user', $user);
     }
 
     return $prep->execute() ? (int)$prep->fetchColumn() : 0;
 }
 
-function changelog_change_get(int $changeId): array
-{
+function changelog_change_get(int $changeId): array {
     $getChange = db_prepare('
         SELECT
             c.`change_id`, c.`change_created`, c.`change_log`, c.`change_text`, c.`change_action`,
@@ -146,8 +140,7 @@ function changelog_change_get(int $changeId): array
     return db_fetch($getChange);
 }
 
-function changelog_change_tags_get(int $changeId): array
-{
+function changelog_change_tags_get(int $changeId): array {
     $getTags = db_prepare('
         SELECT
             t.`tag_id`, t.`tag_name`, t.`tag_description`

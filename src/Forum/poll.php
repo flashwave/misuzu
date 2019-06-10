@@ -1,7 +1,6 @@
 <?php
-function forum_poll_get(int $poll): array
-{
-    if ($poll < 1) {
+function forum_poll_get(int $poll): array {
+    if($poll < 1) {
         return [];
     }
 
@@ -20,9 +19,8 @@ function forum_poll_get(int $poll): array
     return db_fetch($getPoll);
 }
 
-function forum_poll_create(int $maxVotes = 1): int
-{
-    if ($maxVotes < 1) {
+function forum_poll_create(int $maxVotes = 1): int {
+    if($maxVotes < 1) {
         return -1;
     }
 
@@ -36,8 +34,7 @@ function forum_poll_create(int $maxVotes = 1): int
     return (int)($createPoll->execute() ? db_last_insert_id() : -1);
 }
 
-function forum_poll_get_options(int $poll): array
-{
+function forum_poll_get_options(int $poll): array {
     if($poll < 1) {
         return [];
     }
@@ -63,9 +60,8 @@ function forum_poll_get_options(int $poll): array
     return $polls[$poll] = db_fetch_all($getOptions);
 }
 
-function forum_poll_get_user_answers(int $poll, int $user): array
-{
-    if ($poll < 1 || $user < 1) {
+function forum_poll_get_user_answers(int $poll, int $user): array {
+    if($poll < 1 || $user < 1) {
         return [];
     }
 
@@ -80,9 +76,8 @@ function forum_poll_get_user_answers(int $poll, int $user): array
     return array_column(db_fetch_all($getAnswers), 'option_id');
 }
 
-function forum_poll_reset_answers(int $poll): void
-{
-    if ($poll < 1) {
+function forum_poll_reset_answers(int $poll): void {
+    if($poll < 1) {
         return;
     }
 
@@ -94,9 +89,8 @@ function forum_poll_reset_answers(int $poll): void
     $resetAnswers->execute();
 }
 
-function forum_poll_option_add(int $poll, string $text): int
-{
-    if ($poll < 1 || empty($text) || strlen($text) > 0xFF) {
+function forum_poll_option_add(int $poll, string $text): int {
+    if($poll < 1 || empty($text) || strlen($text) > 0xFF) {
         return -1;
     }
 
@@ -111,9 +105,8 @@ function forum_poll_option_add(int $poll, string $text): int
     return (int)($createPoll->execute() ? db_last_insert_id() : -1);
 }
 
-function forum_poll_option_remove(int $option): void
-{
-    if ($option < 1) {
+function forum_poll_option_remove(int $option): void {
+    if($option < 1) {
         return;
     }
 
@@ -125,9 +118,8 @@ function forum_poll_option_remove(int $option): void
     $removeOption->execute();
 }
 
-function forum_poll_vote_remove(int $user, int $poll): void
-{
-    if ($user < 1 || $poll < 1) {
+function forum_poll_vote_remove(int $user, int $poll): void {
+    if($user < 1 || $poll < 1) {
         return;
     }
 
@@ -141,9 +133,8 @@ function forum_poll_vote_remove(int $user, int $poll): void
     $purgeVote->execute();
 }
 
-function forum_poll_vote_cast(int $user, int $poll, int $option): void
-{
-    if ($user < 1 || $poll < 1 || $option < 1) {
+function forum_poll_vote_cast(int $user, int $poll, int $option): void {
+    if($user < 1 || $poll < 1 || $option < 1) {
         return;
     }
 
@@ -159,9 +150,8 @@ function forum_poll_vote_cast(int $user, int $poll, int $option): void
     $castVote->execute();
 }
 
-function forum_poll_validate_option(int $poll, int $option): bool
-{
-    if ($poll < 1 || $option < 1) {
+function forum_poll_validate_option(int $poll, int $option): bool {
+    if($poll < 1 || $option < 1) {
         return false;
     }
 
@@ -177,9 +167,8 @@ function forum_poll_validate_option(int $poll, int $option): bool
     return (bool)($checkVote->execute() ? $checkVote->fetchColumn() : false);
 }
 
-function forum_poll_has_voted(int $user, int $poll): bool
-{
-    if ($user < 1 || $poll < 1) {
+function forum_poll_has_voted(int $user, int $poll): bool {
+    if($user < 1 || $poll < 1) {
         return false;
     }
 
@@ -195,9 +184,8 @@ function forum_poll_has_voted(int $user, int $poll): bool
     return (bool)($getAnswers->execute() ? $getAnswers->fetchColumn() : false);
 }
 
-function forum_poll_get_topic(int $poll): array
-{
-    if ($poll < 1) {
+function forum_poll_get_topic(int $poll): array {
+    if($poll < 1) {
         return [];
     }
 

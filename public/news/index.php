@@ -6,7 +6,7 @@ $categories = news_categories_get(0, 0, true);
 $newsPagination = pagination_create(news_posts_count(null, true), 5);
 $postsOffset = pagination_offset($newsPagination, pagination_param('page'));
 
-if (!pagination_is_valid_offset($postsOffset)) {
+if(!pagination_is_valid_offset($postsOffset)) {
     echo render_error(404);
     return;
 }
@@ -18,7 +18,7 @@ $posts = news_posts_get(
     true
 );
 
-if (!$posts) {
+if(!$posts) {
     echo render_error(404);
     return;
 }
