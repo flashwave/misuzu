@@ -40,13 +40,13 @@
                         {{ perm.title }}
                     </div>
                     <div class="permissions__choice__wrapper">
-                        {{ input_checkbox(readonly ? '' : 'perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'yes', 'permissions__choice permissions__choice--radio permissions__choice--yes', 'yes', true) }}
+                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'yes', 'permissions__choice permissions__choice--radio permissions__choice--yes', 'yes', true, null, readonly) }}
                     </div>
                     <div class="permissions__choice__wrapper">
-                        {{ input_checkbox(readonly ? '' : 'perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'no', 'permissions__choice permissions__choice--radio permissions__choice--no', 'no', true) }}
+                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'no', 'permissions__choice permissions__choice--radio permissions__choice--no', 'no', true, null, readonly) }}
                     </div>
                     <div class="permissions__choice__wrapper">
-                        {{ input_checkbox(readonly ? '' : 'perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'never', 'permissions__choice permissions__choice--radio permissions__choice--never', 'never', true) }}
+                        {{ input_checkbox('perms[' ~ perms.section ~ '][' ~ perm.section ~ '][value]', '', perm.value == 'never', 'permissions__choice permissions__choice--radio permissions__choice--never', 'never', true, null, readonly) }}
                     </div>
                 </div>
             {% endfor %}

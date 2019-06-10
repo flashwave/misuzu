@@ -99,7 +99,7 @@
                 <label class="form__label">
                     <div class="form__label__text">Custom Colour</div>
                     <div class="form__label__input">
-                        {{ input_checkbox(can_edit_user ? 'colour[enable]' : '', '', manage_user.user_colour is not null and not manage_user.user_colour|colour_inherit) }}
+                        {{ input_checkbox('colour[enable]', '', manage_user.user_colour is not null and not manage_user.user_colour|colour_inherit, '', '', false, null, not can_edit_user) }}
                     </div>
                 </label>
 
@@ -113,11 +113,11 @@
                         <label class="manage__tag" style="{{ role.role_colour|html_colour('--accent-colour') }}">
                             <div class="manage__tag__background"></div>
                             <div class="manage__tag__content">
-                                {{ input_checkbox(can_edit_user ? 'roles[]' : '', '', role.has_role, 'manage__tag__checkbox', role.role_id) }}
+                                {{ input_checkbox('roles[]', '', role.has_role, 'manage__tag__checkbox', role.role_id, false, null, not can_edit_user) }}
                                 <div class="manage__tag__title">
                                     {{ role.role_name }}
                                 </div>
-                                {{ input_checkbox(can_edit_user ? 'user[display_role]' : '', '', role.role_id == manage_user.display_role, 'manage__tag__checkbox', role.role_id, true) }}
+                                {{ input_checkbox('user[display_role]', '', role.role_id == manage_user.display_role, 'manage__tag__checkbox', role.role_id, true, null, not can_edit_user) }}
                             </div>
                         </label>
                     {% endfor %}

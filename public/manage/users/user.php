@@ -18,10 +18,7 @@ if($userId < 1) {
 $isSuperUser = user_check_super($currentUserId);
 $canEdit = $isSuperUser || user_check_authority($currentUserId, $userId);
 $canEditPerms = $canEdit && perms_check_user(MSZ_PERMS_USER, $currentUserId, MSZ_PERM_USER_MANAGE_PERMS);
-
-if($canEditPerms) {
-    $permissions = manage_perms_list(perms_get_user_raw($userId));
-}
+$permissions = manage_perms_list(perms_get_user_raw($userId));
 
 if(csrf_verify('users_edit', $_POST['csrf'] ?? '') && $canEdit) {
     if(!empty($_POST['roles']) && is_array($_POST['roles']) && array_test($_POST['roles'], 'ctype_digit')) {
@@ -188,7 +185,7 @@ if(csrf_verify('users_edit', $_POST['csrf'] ?? '') && $canEdit) {
         }
     }
 
-    if(!empty($permissions) && !empty($_POST['perms']) && is_array($_POST['perms'])) {
+    if($canEditPerms && !empty($_POST['perms']) && is_array($_POST['perms'])) {
         $perms = manage_perms_apply($permissions, $_POST['perms']);
 
         if($perms !== null) {
