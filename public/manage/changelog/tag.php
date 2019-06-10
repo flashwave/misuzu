@@ -8,7 +8,7 @@ if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_P
 
 $tagId = (int)($_GET['t'] ?? 0);
 
-if(!empty($_POST['tag']) && is_array($_POST['tag']) && csrf_verify('changelog_tag', $_POST['csrf'] ?? '')) {
+if(!empty($_POST['tag']) && is_array($_POST['tag']) && csrf_verify_request()) {
     if ($tagId > 0) {
         $updateTag = db_prepare('
             UPDATE `msz_changelog_tags`

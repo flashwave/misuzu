@@ -18,7 +18,7 @@
     'page': topic_pagination.page > 1 ? topic_pagination.page : 0,
 }) %}
 
-{% set forum_post_csrf = csrf_token('forum_post') %}
+{% set forum_post_csrf = csrf_token() %}
 {% set topic_tools = forum_topic_tools(topic_info, topic_pagination, can_reply) %}
 {% set topic_notice = forum_topic_locked(topic_info.topic_locked, topic_info.topic_archived) %}
 {% set topic_actions = [

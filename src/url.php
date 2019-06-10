@@ -20,7 +20,7 @@ define('MSZ_URLS', [
     'auth-register'                     => ['/auth/register.php'],
     'auth-forgot'                       => ['/auth/password.php'],
     'auth-reset'                        => ['/auth/password.php',               ['user' => '<user>']],
-    'auth-logout'                       => ['/auth/logout.php',                 ['token' => '{logout}']],
+    'auth-logout'                       => ['/auth/logout.php',                 ['csrf' => '{csrf}']],
     'auth-resolve-user'                 => ['/auth/login.php',                  ['resolve_user' => '<username>']],
     'auth-two-factor'                   => ['/auth/twofactor.php',              ['token' => '<token>']],
 
@@ -40,19 +40,19 @@ define('MSZ_URLS', [
 
     'forum-index'                       => ['/forum'],
     'forum-leaderboard'                 => ['/forum/leaderboard.php',           ['id' => '<id>', 'mode' => '<mode>']],
-    'forum-mark-global'                 => ['/forum/index.php',                 ['m' => 'mark', 'c' => '{forum_mark}']],
-    'forum-mark-single'                 => ['/forum/index.php',                 ['m' => 'mark', 'c' => '{forum_mark}', 'f' => '<forum>']],
+    'forum-mark-global'                 => ['/forum/index.php',                 ['m' => 'mark', 'csrf' => '{csrf}']],
+    'forum-mark-single'                 => ['/forum/index.php',                 ['m' => 'mark', 'csrf' => '{csrf}', 'f' => '<forum>']],
     'forum-topic-new'                   => ['/forum/posting.php',               ['f' => '<forum>']],
     'forum-reply-new'                   => ['/forum/posting.php',               ['t' => '<topic>']],
     'forum-category'                    => ['/forum/forum.php',                 ['f' => '<forum>', 'p' => '<page>']],
     'forum-topic'                       => ['/forum/topic.php',                 ['t' => '<topic>', 'page' => '<page>']],
     'forum-topic-create'                => ['/forum/posting.php',               ['f' => '<forum>']],
-    'forum-topic-bump'                  => ['/forum/topic.php',                 ['t' => '<topic>', 'm' => 'bump', 'csrf[forum_post]' => '{forum_post}']],
-    'forum-topic-lock'                  => ['/forum/topic.php',                 ['t' => '<topic>', 'm' => 'lock', 'csrf[forum_post]' => '{forum_post}']],
-    'forum-topic-unlock'                => ['/forum/topic.php',                 ['t' => '<topic>', 'm' => 'unlock', 'csrf[forum_post]' => '{forum_post}']],
-    'forum-topic-delete'                => ['/forum/topic.php',                 ['t' => '<topic>', 'm' => 'delete', 'csrf[forum_post]' => '{forum_post}']],
-    'forum-topic-restore'               => ['/forum/topic.php',                 ['t' => '<topic>', 'm' => 'restore', 'csrf[forum_post]' => '{forum_post}']],
-    'forum-topic-nuke'                  => ['/forum/topic.php',                 ['t' => '<topic>', 'm' => 'nuke', 'csrf[forum_post]' => '{forum_post}']],
+    'forum-topic-bump'                  => ['/forum/topic.php',                 ['t' => '<topic>', 'm' => 'bump', 'csrf' => '{csrf}']],
+    'forum-topic-lock'                  => ['/forum/topic.php',                 ['t' => '<topic>', 'm' => 'lock', 'csrf' => '{csrf}']],
+    'forum-topic-unlock'                => ['/forum/topic.php',                 ['t' => '<topic>', 'm' => 'unlock', 'csrf' => '{csrf}']],
+    'forum-topic-delete'                => ['/forum/topic.php',                 ['t' => '<topic>', 'm' => 'delete', 'csrf' => '{csrf}']],
+    'forum-topic-restore'               => ['/forum/topic.php',                 ['t' => '<topic>', 'm' => 'restore', 'csrf' => '{csrf}']],
+    'forum-topic-nuke'                  => ['/forum/topic.php',                 ['t' => '<topic>', 'm' => 'nuke', 'csrf' => '{csrf}']],
     'forum-topic-priority'              => ['/forum/topic-priority.php',        ['t' => '<topic>', 'b' => '<bump>']],
     'forum-post'                        => ['/forum/topic.php',                 ['p' => '<post>'], '<post_fragment>'],
     'forum-post-create'                 => ['/forum/posting.php',               ['t' => '<topic>']],
@@ -76,9 +76,9 @@ define('MSZ_URLS', [
     'user-avatar'                       => ['/user-assets.php',                 ['u' => '<user>', 'm' => 'avatar', 'r' => '<res>']],
     'user-background'                   => ['/user-assets.php',                 ['u' => '<user>', 'm' => 'background']],
 
-    'user-relation-create'              => ['/relations.php',                   ['u' => '<user>', 'm' => '<type>', 'c' => '{user_relation}']],
-    'user-relation-none'                => ['/relations.php',                   ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_NONE]', 'c' => '{user_relation}']],
-    'user-relation-follow'              => ['/relations.php',                   ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_FOLLOW]', 'c' => '{user_relation}']],
+    'user-relation-create'              => ['/relations.php',                   ['u' => '<user>', 'm' => '<type>', 'csrf' => '{csrf}']],
+    'user-relation-none'                => ['/relations.php',                   ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_NONE]', 'csrf' => '{csrf}']],
+    'user-relation-follow'              => ['/relations.php',                   ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_FOLLOW]', 'csrf' => '{csrf}']],
 
     'settings-index'                    => ['/settings'],
     'settings-account'                  => ['/settings/account.php'],
@@ -86,11 +86,11 @@ define('MSZ_URLS', [
     'settings-logs'                     => ['/settings/logs.php'],
 
     'comment-create'                    => ['/comments.php',                    ['m' => 'create']],
-    'comment-vote'                      => ['/comments.php',                    ['c' => '<comment>', 'csrf' => '{comments}', 'm' => 'vote', 'v' => '<vote>']],
-    'comment-delete'                    => ['/comments.php',                    ['c' => '<comment>', 'csrf' => '{comments}', 'm' => 'delete']],
-    'comment-restore'                   => ['/comments.php',                    ['c' => '<comment>', 'csrf' => '{comments}', 'm' => 'restore']],
-    'comment-pin'                       => ['/comments.php',                    ['c' => '<comment>', 'csrf' => '{comments}', 'm' => 'pin']],
-    'comment-unpin'                     => ['/comments.php',                    ['c' => '<comment>', 'csrf' => '{comments}', 'm' => 'unpin']],
+    'comment-vote'                      => ['/comments.php',                    ['c' => '<comment>', 'csrf' => '{csrf}', 'm' => 'vote', 'v' => '<vote>']],
+    'comment-delete'                    => ['/comments.php',                    ['c' => '<comment>', 'csrf' => '{csrf}', 'm' => 'delete']],
+    'comment-restore'                   => ['/comments.php',                    ['c' => '<comment>', 'csrf' => '{csrf}', 'm' => 'restore']],
+    'comment-pin'                       => ['/comments.php',                    ['c' => '<comment>', 'csrf' => '{csrf}', 'm' => 'pin']],
+    'comment-unpin'                     => ['/comments.php',                    ['c' => '<comment>', 'csrf' => '{csrf}', 'm' => 'unpin']],
 
     'manage-index'                      => ['/manage'],
 
@@ -118,7 +118,7 @@ define('MSZ_URLS', [
     'manage-users-reports'              => ['/manage/users/reports.php',        ['u' => '<user>']],
     'manage-users-report'               => ['/manage/users/report.php',         ['r' => '<report>']],
     'manage-users-warnings'             => ['/manage/users/warnings.php',       ['u' => '<user>']],
-    'manage-users-warning-delete'       => ['/manage/users/warnings.php',       ['w' => '<warning>', 'delete' => '1', 'csrf' => '{user_warnings}']],
+    'manage-users-warning-delete'       => ['/manage/users/warnings.php',       ['w' => '<warning>', 'delete' => '1', 'csrf' => '{csrf}']],
 
     'manage-roles'                      => ['/manage/users/roles.php'],
     'manage-role'                       => ['/manage/users/role.php',           ['r' => '<role>']],
@@ -188,7 +188,7 @@ function url_variable(string $value, array $variables): string
     }
 
     if (starts_with($value, '{') && ends_with($value, '}') && csrf_is_ready()) {
-        return csrf_token(trim($value, '{}'));
+        return csrf_token();
     }
 
     return $value;

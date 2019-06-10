@@ -10,7 +10,7 @@ $errors = [];
 $currentUserId = user_session_current('user_id');
 $sessionActive = user_session_current('session_id');
 
-if(!empty($_POST['session']) && csrf_verify('user_session', $_POST['csrf'] ?? '')) {
+if(!empty($_POST['session']) && csrf_verify_request()) {
     $currentSessionKilled = false;
 
     if(is_array($_POST['session'])) {

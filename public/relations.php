@@ -13,12 +13,12 @@ if ($isXHR) {
     return;
 }
 
-if (!csrf_verify('user_relation', $_SERVER['HTTP_X_MISUZU_CSRF'] ?? ($_GET['c'] ?? ''))) {
+if (!csrf_verify_request()) {
     echo render_info_or_json($isXHR, "Couldn't verify this request, please refresh the page and try again.", 403);
     return;
 }
 
-header(csrf_http_header('user_relation'));
+csrf_http_header();
 
 if (!user_session_active()) {
     echo render_info_or_json($isXHR, 'You must be logged in to manage relations.', 401);

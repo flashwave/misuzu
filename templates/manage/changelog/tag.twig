@@ -5,7 +5,7 @@
 {% block manage_content %}
     <div class="container">
         <form action="{{ url('manage-changelog-tag', {'tag': edit_tag.tag_id|default(0)}) }}" method="post">
-            {{ input_csrf('changelog_tag') }}
+            {{ input_csrf() }}
 
             {{ container_title(edit_tag is defined ? 'Editing ' ~ edit_tag.tag_name ~ ' (' ~ edit_tag.tag_id ~ ')' : 'Adding a new tag') }}
 

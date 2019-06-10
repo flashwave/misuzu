@@ -4,9 +4,9 @@
 {% endspaceless %}
 {% endmacro %}
 
-{% macro input_csrf(realm, name) %}{# so we don't have to specify |raw every time #}
+{% macro input_csrf() %}{# so we don't have to specify |raw every time #}
 {% spaceless %}
-    {{ csrf_input(realm, name|default('csrf'))|raw }}
+    {{ csrf_input()|raw }}
 {% endspaceless %}
 {% endmacro %}
 

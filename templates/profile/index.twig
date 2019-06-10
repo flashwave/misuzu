@@ -255,7 +255,7 @@
                                 </div>
 
                                 {% for warning in profile_warnings %}
-                                    {{ user_profile_warning(warning, profile_warnings_view_private, profile_warnings_can_manage, profile_warnings_can_manage ? csrf_token('warning-delete[%d]'|format(warning.warning_id)) : '') }}
+                                    {{ user_profile_warning(warning, profile_warnings_view_private, profile_warnings_can_manage, profile_warnings_can_manage ? csrf_token() : '') }}
                                 {% endfor %}
                             </div>
                         {% endif %}

@@ -7,7 +7,7 @@
 {% block settings_content %}
     <form action="{{ url('settings-account') }}" method="post" class="container settings__container">
         {{ container_title('<i class="fas fa-user fa-fw"></i> Account') }}
-        {{ input_csrf('settings') }}
+        {{ input_csrf() }}
 
         <div class="settings__description">
             <p>Here you can change your e-mail address and/or your password, please make sure your e-mail is accurate and your password is strong in order to protect your account. For convenience your current e-mail address is displayed. You are required to verify yourself by entering your current password to change either value.</p>
@@ -85,7 +85,7 @@
                             </div>
 
                             <form class="settings__role__options" method="post" action="{{ url('settings-account') }}">
-                                {{ input_csrf('settings') }}
+                                {{ input_csrf() }}
                                 {{ input_hidden('role[id]', role.role_id) }}
 
                                 <button class="settings__role__option{% if is_display_role %} settings__role__option--disabled{% endif %}"
@@ -110,7 +110,7 @@
 
     <form action="{{ url('settings-account') }}" method="post" class="container settings__container">
         {{ container_title('<i class="fas fa-unlock-alt fa-fw"></i> Two Factor Authentication') }}
-        {{ input_csrf('settings') }}
+        {{ input_csrf() }}
 
         <div class="settings__description">
             <p>Secure your account by requiring a second step during log in in the form of a time based code. You can use applications like Authy, Google or Microsoft Authenticator or other compliant TOTP applications.</p>

@@ -7,7 +7,7 @@
 {% block content %}
     <form action="" method="get" class="container forum__confirm">
         {{ container_title('<i class="' ~ class|default('fas fa-exclamation-circle') ~ ' fa-fw"></i> ' ~ title) }}
-        {{ input_csrf(csrf|default('forum_post')) }}
+        {{ input_csrf() }}
         {% for name, value in params %}
             <input type="hidden" name="{{ name }}" value="{{ value }}">
         {% endfor %}

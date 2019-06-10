@@ -47,68 +47,25 @@ function resetForm(form: HTMLFormElement, defaults: FormHiddenDefault[] = []): v
     }
 }
 
-function getRawCSRFTokenList(): CSRFToken[]
-{
-    const csrfTokenList: HTMLDivElement = document.getElementById('js-csrf-tokens') as HTMLDivElement;
-
-    if (!csrfTokenList)
-        return [];
-
-    return JSON.parse(csrfTokenList.textContent) as CSRFToken[];
-}
-
-class CSRFToken {
-    realm: string;
-    token: string;
-}
-
-let CSRFTokenStore: CSRFToken[] = [];
+let CSRFToken: string;
 
 function initCSRF(): void {
-    CSRFTokenStore = getRawCSRFTokenList();
+    CSRFToken = document.querySelector('[name="csrf-token"]').getAttribute('value');
 }
 
-function getCSRF(realm: string): CSRFToken {
-    return CSRFTokenStore.find(i => i.realm.toLowerCase() === realm.toLowerCase());
+function getCSRFToken(): string {
+    return CSRFToken;
 }
 
-function getCSRFToken(realm: string): string {
-    const token: CSRFToken = getCSRF(realm);
-    return token ? token.token : '';
-}
-
-function setCSRF(realm: string, token: string): void {
-    let csrf: CSRFToken = getCSRF(realm);
-
-    if (csrf) {
-        csrf.token = token;
-    } else {
-        csrf = new CSRFToken;
-        csrf.realm = realm;
-        csrf.token = token;
-        CSRFTokenStore.push(csrf);
-    }
-}
-
-function updateCSRF(token: string, realm: string = null, name: string = 'csrf'): void
+function updateCSRF(token: string): void
 {
     if (token === null) {
         return;
     }
 
-    const tokenSplit: string[] = token.split(';');
+    document.querySelector('[name="csrf-token"]').setAttribute('value', CSRFToken = token);
 
-    if (tokenSplit.length > 1) {
-        token = tokenSplit[1];
-
-        if (!realm) {
-            realm = tokenSplit[0];
-        }
-    }
-
-    setCSRF(realm, token);
-
-    const elements: NodeListOf<HTMLInputElement> = document.getElementsByName(`${name}[${realm}]`) as NodeListOf<HTMLInputElement>;
+    const elements: NodeListOf<HTMLInputElement> = document.getElementsByName('csrf') as NodeListOf<HTMLInputElement>;
 
     for (let i = 0; i < elements.length; i++) {
         elements[i].value = token;

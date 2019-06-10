@@ -11,7 +11,7 @@ $currentUserId = user_session_current('user_id');
 $currentEmail = user_email_get($currentUserId);
 $isRestricted = user_warning_check_restriction($currentUserId);
 $twoFactorInfo = user_totp_info($currentUserId);
-$isVerifiedRequest = csrf_verify('settings', $_POST['csrf'] ?? '');
+$isVerifiedRequest = csrf_verify_request();
 
 if(!$isRestricted && $isVerifiedRequest && !empty($_POST['role'])) {
     $roleId = (int)($_POST['role']['id'] ?? 0);

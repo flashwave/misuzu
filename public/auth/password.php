@@ -26,7 +26,7 @@ $remainingAttempts = user_login_attempts_remaining($ipAddress);
 
 while ($canResetPassword) {
     if (!empty($reset) && $userId > 0) {
-        if (!csrf_verify('passreset', $_POST['csrf'] ?? '')) {
+        if (!csrf_verify_request()) {
             $notices[] = 'Was unable to verify the request, please try again!';
             break;
         }
@@ -69,7 +69,7 @@ while ($canResetPassword) {
     }
 
     if (!empty($forgot)) {
-        if (!csrf_verify('passforgot', $_POST['csrf'] ?? '')) {
+        if (!csrf_verify_request()) {
             $notices[] = 'Was unable to verify the request, please try again!';
             break;
         }

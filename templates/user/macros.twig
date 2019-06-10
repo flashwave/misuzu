@@ -132,7 +132,7 @@
                 </div>
 
                 <form class="settings__session__actions" method="post" action="{{ url('settings-sessions') }}">
-                    {{ input_csrf('user_session') }}
+                    {{ input_csrf() }}
                     {{ input_hidden('session[]', session.session_id) }}
 
                     <button class="settings__session__action" title="{{ is_current_session ? 'Logout' : 'End Session' }}">

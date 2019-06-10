@@ -5,7 +5,7 @@
 
 {% block manage_content %}
     <form action="?v=role{{ edit_role is defined ? '&r=' ~ edit_role.role_id : '' }}" method="post"{% if edit_role is defined %} style="{{ edit_role.role_colour|html_colour('--accent-colour') }}"{% endif %}>
-        {{ input_csrf('users_role') }}
+        {{ input_csrf() }}
 
         <div class="container">
             {{ container_title(edit_role is defined ? 'Editing ' ~ edit_role.role_name ~ ' (' ~ edit_role.role_id ~ ')' : 'Creating a new role') }}

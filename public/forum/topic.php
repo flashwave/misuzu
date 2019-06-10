@@ -69,34 +69,34 @@ $validModerationModes = [
     'bump', 'lock', 'unlock',
 ];
 
-if (in_array($moderationMode, $validModerationModes, true)) {
+if(in_array($moderationMode, $validModerationModes, true)) {
     $redirect = !empty($_SERVER['HTTP_REFERER']) && empty($_SERVER['HTTP_X_MISUZU_XHR']) ? $_SERVER['HTTP_REFERER'] : '';
     $isXHR = !$redirect;
 
-    if ($isXHR) {
+    if($isXHR) {
         header('Content-Type: application/json; charset=utf-8');
-    } elseif (!is_local_url($redirect)) {
+    } elseif(!is_local_url($redirect)) {
         echo render_info('Possible request forgery detected.', 403);
         return;
     }
 
-    if (!csrf_verify('forum_post', $_GET['csrf'] ?? '') && !csrf_verify('forum_post', csrf_http_header_parse($_SERVER['HTTP_X_MISUZU_CSRF'] ?? '')['token'])) {
+    if(!csrf_verify_request()) {
         echo render_info_or_json($isXHR, "Couldn't verify this request, please refresh the page and try again.", 403);
         return;
     }
 
-    header(csrf_http_header('forum_post'));
+    csrf_http_header();
 
-    if (!user_session_active()) {
+    if(!user_session_active()) {
         echo render_info_or_json($isXHR, 'You must be logged in to manage posts.', 401);
         return;
     }
 
-    if (user_warning_check_expiration($topicUserId, MSZ_WARN_BAN) > 0) {
+    if(user_warning_check_expiration($topicUserId, MSZ_WARN_BAN) > 0) {
         echo render_info_or_json($isXHR, 'You have been banned, check your profile for more information.', 403);
         return;
     }
-    if (user_warning_check_expiration($topicUserId, MSZ_WARN_SILENCE) > 0) {
+    if(user_warning_check_expiration($topicUserId, MSZ_WARN_SILENCE) > 0) {
         echo render_info_or_json($isXHR, 'You have been silenced, check your profile for more information.', 403);
         return;
     }

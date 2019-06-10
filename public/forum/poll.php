@@ -11,7 +11,7 @@ if ($isXHR) {
     return;
 }
 
-if (!csrf_verify('forum_poll', $_REQUEST['csrf'] ?? '')) {
+if (!csrf_verify_request()) {
     echo render_info_or_json($isXHR, "Couldn't verify this request, please refresh the page and try again.", 403);
     return;
 }
@@ -32,7 +32,7 @@ if (user_warning_check_expiration($currentUserId, MSZ_WARN_SILENCE) > 0) {
     return;
 }
 
-header(csrf_http_header('forum_poll'));
+csrf_http_header();
 
 if (empty($_POST['poll']['id']) || !ctype_digit($_POST['poll']['id'])) {
     echo render_info_or_json($isXHR, "Invalid request.", 400);

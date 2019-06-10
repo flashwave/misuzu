@@ -17,7 +17,7 @@
 
         <div class="settings__sessions">
             <form action="{{ url('settings-sessions') }}" method="post" class="settings__sessions__all">
-                {{ input_csrf('user_session') }}
+                {{ input_csrf() }}
                 {{ input_hidden('session', 'all') }}
 
                 <button class="input__button">

@@ -23,7 +23,7 @@
     {% if warnings.user_id > 0 and warnings.username|length > 0 %}{# shittiest validation in the world, but it should work #}
         <form class="container container--lazy" method="post" action="">
             {{ container_title('<i class="fas fa-user-shield fa-fw"></i> Warn ' ~ warnings.username) }}
-            {{ input_csrf('users_edit') }}
+            {{ input_csrf() }}
             {{ input_hidden('warning[user]', warnings.user_id) }}
 
             {{ input_select('warning[type]', warnings.types) }}
@@ -86,7 +86,7 @@
             </div>
 
             {% for warning in warnings.list %}
-                {{ user_profile_warning(warning, true, true, csrf_token('warning-delete[%d]'|format(warning.warning_id))) }}
+                {{ user_profile_warning(warning, true, true, csrf_token()) }}
             {% endfor %}
         </div>
 

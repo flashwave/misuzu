@@ -17,13 +17,7 @@ if ($isXHR) {
     return;
 }
 
-if (!empty($_REQUEST['csrf'])) {
-    $postRequestVerified = csrf_verify('forum_post', $_REQUEST['csrf'] ?? '');
-} elseif (!empty($_SERVER['HTTP_X_MISUZU_CSRF'])) {
-    $postRequestVerified = csrf_verify('forum_post', csrf_http_header_parse($_SERVER['HTTP_X_MISUZU_CSRF'])['token']);
-} else {
-    $postRequestVerified = false;
-}
+$postRequestVerified = csrf_verify_request();
 
 if (!empty($postMode) && !user_session_active()) {
     echo render_info_or_json($isXHR, 'You must be logged in to manage posts.', 401);
@@ -51,7 +45,7 @@ if ($isXHR) {
         return;
     }
 
-    header(csrf_http_header('forum_post'));
+    csrf_http_header();
 }
 
 $postInfo = forum_post_get($postId, true);

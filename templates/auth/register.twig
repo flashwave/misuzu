@@ -30,7 +30,7 @@
             {% endif %}
 
             <div class="auth__register__form">
-                {{ input_csrf('register') }}
+                {{ input_csrf() }}
 
                 {% if register_restricted %}
                     <div class="warning auth__warning">

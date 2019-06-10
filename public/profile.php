@@ -58,7 +58,7 @@ if ($isEditing) {
     ]);
 
     if (!empty($_POST) && is_array($_POST)) {
-        if (!csrf_verify('profile', $_POST['csrf'] ?? '')) {
+        if (!csrf_verify_request()) {
             $notices[] = MSZ_TMP_USER_ERROR_STRINGS['csrf'];
         } else {
             if (!empty($_POST['profile']) && is_array($_POST['profile'])) {

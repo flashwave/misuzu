@@ -8,7 +8,7 @@
     <form class="container auth__container auth__twofactor" method="post" action="{{ url('auth-two-factor') }}">
         {{ container_title('<i class="fas fa-user-shield fa-fw"></i> Two Factor Authentication') }}
 
-        {{ input_csrf('twofactor') }}
+        {{ input_csrf() }}
         {{ input_hidden('twofactor[redirect]', twofactor_redirect) }}
         {{ input_hidden('twofactor[token]', twofactor_token) }}
 

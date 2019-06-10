@@ -5,7 +5,7 @@
 
 {% block content %}
     <form class="container auth__container auth__login js-login-form" method="post" action="{{ url('auth-login') }}">
-        {{ input_csrf('login') }}
+        {{ input_csrf() }}
         {{ input_hidden('login[redirect]', login_redirect) }}
 
         <div class="container__title">

@@ -9,7 +9,7 @@
 {% block manage_content %}
     <div class="container">
         <form action="{{ url('manage-changelog-change', {'change': change.change_id|default(0)}) }}" method="post">
-            {{ input_csrf('changelog_add') }}
+            {{ input_csrf() }}
 
             {{ container_title(change is not null ? 'Editing #' ~ change.change_id : 'Adding a new change') }}
 

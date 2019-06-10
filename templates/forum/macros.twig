@@ -529,7 +529,7 @@
             {% if options_available %}
                 <form method="post" action="{{ url('forum-poll-vote') }}" class="container forum__poll__container forum__poll__container--poll js-forum-poll"
                     data-poll-id="{{ poll.poll_id }}" data-poll-max-votes="{{ poll.poll_max_votes }}">
-                    {{ input_csrf('forum_poll') }}
+                    {{ input_csrf() }}
                     {{ input_hidden('poll[id]', poll.poll_id) }}
 
                     <div class="forum__poll__options">

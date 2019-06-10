@@ -8,7 +8,7 @@
     <form method="post" action="{{ url('manage-news-post', {'post': post.post_id|default(0)}) }}" class="container">
         {{ container_title(is_new ? 'New Post' : 'Editing ' ~ post.post_title) }}
 
-        {{ input_csrf('news_post') }}
+        {{ input_csrf() }}
         {{ input_hidden('post[id]', post.post_id|default(0)) }}
 
         <table style="color:inherit">

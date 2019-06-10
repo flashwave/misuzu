@@ -7,7 +7,7 @@
         method="post" action="{{ url('comment-create') }}"
         id="comment-{{ reply_mode ? 'reply-' ~ reply_to.comment_id : 'create-' ~ category.category_id }}">
         {{ input_hidden('comment[category]', category.category_id) }}
-        {{ input_csrf('comments') }}
+        {{ input_csrf() }}
 
         {% if reply_mode %}
             {{ input_hidden('comment[reply]', reply_to.comment_id) }}

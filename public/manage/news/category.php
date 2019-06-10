@@ -9,7 +9,7 @@ if(!perms_check_user(MSZ_PERMS_NEWS, user_session_current('user_id'), MSZ_PERM_N
 $category = [];
 $categoryId = (int)($_GET['c'] ?? null);
 
-if(!empty($_POST['category']) && csrf_verify('news_category', $_POST['csrf'] ?? '')) {
+if(!empty($_POST['category']) && csrf_verify_request()) {
     $originalCategoryId = (int)($_POST['category']['id'] ?? null);
     $categoryId = news_category_create(
         $_POST['category']['name'] ?? null,

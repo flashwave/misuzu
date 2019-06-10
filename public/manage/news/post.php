@@ -10,7 +10,7 @@ $post = [];
 $postId = (int)($_GET['p'] ?? null);
 $categories = news_categories_get(0, 0, false, false, true);
 
-if(!empty($_POST['post']) && csrf_verify('news_post', $_POST['csrf'] ?? '')) {
+if(!empty($_POST['post']) && csrf_verify_request()) {
     $originalPostId = (int)($_POST['post']['id'] ?? null);
     $currentUserId = user_session_current('user_id');
     $title = $_POST['post']['title'] ?? null;

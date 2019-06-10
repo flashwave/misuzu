@@ -84,7 +84,7 @@ function urlVariable(value: string, vars: UrlRegistryVariable[]): string
     }
 
     if (value[0] === '{' && value.slice(-1) === '}') {
-        return getCSRFToken(value.slice(1, -1));
+        return getCSRFToken();
     }
 
     return value;

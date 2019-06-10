@@ -24,7 +24,7 @@ if (empty($tokenInfo['user_totp_key'])) {
 }
 
 while (!empty($twofactor)) {
-    if (!csrf_verify('twofactor', $_POST['csrf'] ?? '')) {
+    if (!csrf_verify_request()) {
         $notices[] = 'Was unable to verify the request, please try again!';
         break;
     }
