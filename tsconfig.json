@@ -11,6 +11,6 @@
         "sourceMap": false,
     },
     "files": [
-        "./assets/typescript/misuzu.ts",
+        "./assets/typescript/misuzu.tsx",
     ]
 }

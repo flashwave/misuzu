@@ -111,6 +111,23 @@ window.addEventListener('load', () => {
     commentsInit();
     forumPostingInit();
     forumPollsInit();
+
+    if(Math.round(Math.random() * 1000) > 900)
+        <img src="about:logo" onError={() => {
+            let ffxPos: number = -1000;
+            const ffx: HTMLElement = <a href="https://firefox.com" title="This PSA is brought to you by the van de Groep &amp; von Schnitzel Alliance For A Better Tomorrow."
+                style={`position: fixed; bottom: ${ffxPos}px; left: calc(50% - 234px);`}>
+                <img src="/images/ffbxexy.png" alt="Get Firefox!"/>
+            </a>;
+
+            const ffxInterval: number = setInterval(() => {
+                ffx.style.bottom = (ffxPos++).toString() + "px";
+                if(ffxPos >= 10)
+                    clearInterval(ffxInterval);
+            }, 100);
+
+            document.body.append(ffx);
+        }}/>
 });
 
 function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTMLInputElement, force: boolean = false): void {
