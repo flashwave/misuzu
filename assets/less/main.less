@@ -38,6 +38,27 @@
     --header-accent-colour: var(--accent-colour);
 }
 
+.light-theme {
+    @background-colour-light: #eee;
+    --background-colour: @background-colour-light;
+    --background-colour-translucent-1: fade(@background-colour-light, 10%);
+    --background-colour-translucent-2: fade(@background-colour-light, 20%);
+    --background-colour-translucent-3: fade(@background-colour-light, 30%);
+    --background-colour-translucent-4: fade(@background-colour-light, 40%);
+    --background-colour-translucent-5: fade(@background-colour-light, 50%);
+    --background-colour-translucent-6: fade(@background-colour-light, 60%);
+    --background-colour-translucent-7: fade(@background-colour-light, 70%);
+    --background-colour-translucent-8: fade(@background-colour-light, 80%);
+    --background-colour-translucent-9: fade(@background-colour-light, 90%);
+    --background-pattern: url('/images/clouds-inverse.png') fixed;
+
+    @container-colour-light: #e9e9e9;
+    --container-colour: @container-colour-light;
+
+    --text-colour: #000;
+    --text-colour-inverted: #fff;
+}
+
 * {
     margin: 0;
     padding: 0;
