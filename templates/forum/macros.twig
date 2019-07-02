@@ -312,10 +312,6 @@
 
                 {% if topic.topic_pages|default(0) > 1 %}
                     <div class="forum__topic__pagination">
-                        <div class="forum__topic__pagination__title">
-                            Page:
-                        </div>
-
                         {% for i in 1..topic.topic_pages|clamp(0, 3) %}
                             <a href="{{ url('forum-topic', {'topic': topic.topic_id, 'page': i}) }}" class="forum__topic__pagination__item">
                                 {{ i }}

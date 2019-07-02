@@ -242,16 +242,13 @@
         font-size: .9em;
         line-height: 1.2em;
 
-        &__title {
-            margin-right: 2px;
-
-            @media (max-width: @site-mobile-width) {
-                display: none;
-            }
+        @media (min-width: @site-mobile-width) {
+            position: absolute;
+            right: 0;
         }
 
         &__separator {
-            margin: 0 4px;
+            margin: 0 8px;
 
             @media (max-width: @site-mobile-width) {
                 display: none;
@@ -265,13 +262,16 @@
             margin: 0 1px;
             padding: 2px 4px;
             border-radius: 2px;
+            min-width: 25px;
+            height: 25px;
+            line-height: 20px;
+            text-align: center;
+            background-color: fade(#000, 20%);
+            box-shadow: 0 1px 1px #111;
+            border-radius: 2px;
             transition: background-color .2s, box-shadow .2s;
 
             @media (max-width: @site-mobile-width) {
-                background-color: fade(#000, 20%);
-                box-shadow: 0 1px 1px #111;
-                line-height: 25px;
-                text-align: center;
                 min-width: 30px;
                 height: 30px;
                 font-size: 1.2em;
