@@ -442,6 +442,15 @@ function forum_mark_read(?int $forumId, int $userId): void {
     }
 
     $entireForum = $forumId === null;
+
+    if(!$entireForum) {
+        $children = forum_get_child_ids($forumId);
+
+        foreach($children as $child) {
+            forum_mark_read($child, $userId);
+        }
+    }
+
     $doMark = db_prepare(sprintf(
         '
             INSERT INTO `msz_forum_topics_track`
