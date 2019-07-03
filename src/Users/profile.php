@@ -206,6 +206,7 @@ function user_profile_get(int $userId): array {
                     u.`user_about_parser`, u.`user_about_content`,
                     u.`user_signature_parser`, u.`user_signature_content`,
                     %1$s,
+                    TIMESTAMPDIFF(YEAR, IF(u.`user_birthdate` < \'0001-01-01\', NULL, u.`user_birthdate`), NOW()) AS `user_age`,
                     COALESCE(u.`user_title`, r.`role_title`) AS `user_title`,
                     COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`,
                     `user_background_settings` & 0x0F AS `user_background_attachment`,
