@@ -5,7 +5,7 @@ define('MSZ_POST_TEXT_LENGTH_MIN', 1);
 define('MSZ_POST_TEXT_LENGTH_MAX', 60000);
 
 function forum_validate_title(string $title): string {
-    $length = mb_strlen($title);
+    $length = mb_strlen(trim($title));
 
     if($length < MSZ_TOPIC_TITLE_LENGTH_MIN) {
         return 'too-short';
@@ -19,7 +19,7 @@ function forum_validate_title(string $title): string {
 }
 
 function forum_validate_post(string $text): string {
-    $length = mb_strlen($text);
+    $length = mb_strlen(trim($text));
 
     if($length < MSZ_POST_TEXT_LENGTH_MIN) {
         return 'too-short';
