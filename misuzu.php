@@ -40,6 +40,7 @@ require_once 'src/comments.php';
 require_once 'src/config.php';
 require_once 'src/csrf.php';
 require_once 'src/db.php';
+require_once 'src/emotes.php';
 require_once 'src/general.php';
 require_once 'src/git.php';
 require_once 'src/integer.php';

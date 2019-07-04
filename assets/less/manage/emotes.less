@@ -1,0 +1,46 @@
+.manage__emotes {
+
+    &__actions {
+        margin: 2px;
+    }
+
+    &__emoticon {
+        max-width: 100px;
+        max-height: 100px;
+    }
+
+    &__list {
+        width: 100%;
+    }
+
+    &__entry {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 2px;
+        text-align: center;
+
+        &--header {
+            border-bottom: 1px solid var(--accent-colour);
+            padding-bottom: 2px;
+        }
+
+        &__id,
+        &__order,
+        &__hierarchy {
+            min-width: 40px;
+        }
+
+        &__string {
+            min-width: 150px;
+        }
+
+        &__image {
+            flex: 1 1 auto;
+        }
+
+        &__actions {
+            min-width: 164px;
+        }
+    }
+}

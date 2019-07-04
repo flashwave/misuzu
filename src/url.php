@@ -97,6 +97,7 @@ define('MSZ_URLS', [
     'manage-general-overview'           => ['/manage/general'],
     'manage-general-logs'               => ['/manage/general/logs.php'],
     'manage-general-emoticons'          => ['/manage/general/emoticons.php'],
+    'manage-general-emoticon'           => ['/manage/general/emoticon.php',     ['e' => '<emote>']],
     'manage-general-settings'           => ['/manage/general/settings.php'],
     'manage-general-blacklist'          => ['/manage/general/blacklist.php'],
 

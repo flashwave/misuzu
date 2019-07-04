@@ -1,1 +1,63 @@
 {% extends 'manage/general/master.twig' %}
+{% from 'macros.twig' import container_title %}
+
+{% block manage_content %}
+    <div class="container manage__emotes">
+        {{ container_title('<i class="fas fa-grimace fa-fw"></i> Emoticons') }}
+
+        <div class="manage__description">
+            Here you can manage emoticons and their aliases and other properties.
+        </div>
+
+        <div class="manage__emotes__actions">
+            <a class="input__button" href="{{ url('manage-general-emoticon') }}">Add New</a>
+        </div>
+
+        <div class="manage__emotes__list">
+            <div class="manage__emotes__entry manage__emotes__entry--header">
+                <div class="manage__emotes__entry__id">
+                    ID
+                </div>
+                <div class="manage__emotes__entry__order">
+                    Order
+                </div>
+                <div class="manage__emotes__entry__hierarchy">
+                    Hier.
+                </div>
+                <div class="manage__emotes__entry__string">
+                    String
+                </div>
+                <div class="manage__emotes__entry__image">
+                    Image
+                </div>
+                <div class="manage__emotes__entry__actions">
+                    Actions
+                </div>
+            </div>
+
+            {% for emote in emotes %}
+                <div id="emote-{{ emote.emote_id }}" class="manage__emotes__entry">
+                    <div class="manage__emotes__entry__id">
+                        #{{ emote.emote_id }}
+                    </div>
+                    <div class="manage__emotes__entry__order">
+                        {{ emote.emote_order }}
+                    </div>
+                    <div class="manage__emotes__entry__hierarchy">
+                        {{ emote.emote_hierarchy }}
+                    </div>
+                    <div class="manage__emotes__entry__string">
+                        {{ emote.emote_string }}
+                    </div>
+                    <div class="manage__emotes__entry__image">
+                        <img src="{{ emote.emote_url }}" alt="{{ emote.emote_string }}" class="emoticon manage__emotes__emoticon">
+                    </div>
+                    <div class="manage__emotes__entry__actions">
+                        <button class="input__button">Alias</button>
+                        <a class="input__button" href="{{ url('manage-general-emoticon', {'emote': emote.emote_id}) }}">Edit</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
