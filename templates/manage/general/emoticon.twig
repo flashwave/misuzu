@@ -1,0 +1,39 @@
+{% extends 'manage/general/master.twig' %}
+{% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_csrf, input_text, input_checkbox, input_file, input_select, input_colour %}
+
+{% set title = emote_info is null ? 'Adding a new emoticon' : 'Editing ' ~ emote_info.emote_string %}
+
+{% block manage_content %}
+    <div class="container manage__emotes">
+        {{ container_title('<i class="fas fa-grimace fa-fw"></i> ' ~ title) }}
+
+        <form method="post" action="{{ url('manage-general-emoticon', {'emote': emote_info.emote_id|default(0)}) }}" class="manage__emote">
+            {{ input_csrf() }}
+
+            <label class="manage__emote__field">
+                <div class="manage__emote__field__name">Order</div>
+                {{ input_text('emote_order', 'manage__emote__field__value', emote_info.emote_order|default(0), 'number') }}
+            </label>
+
+            <label class="manage__emote__field">
+                <div class="manage__emote__field__name">Hierarchy</div>
+                {{ input_text('emote_hierarchy', 'manage__emote__field__value', emote_info.emote_hierarchy|default(0), 'number') }}
+            </label>
+
+            <label class="manage__emote__field">
+                <div class="manage__emote__field__name">String</div>
+                {{ input_text('emote_string', 'manage__emote__field__value', emote_info.emote_string|default(), 'text', '', true) }}
+            </label>
+
+            <label class="manage__emote__field">
+                <div class="manage__emote__field__name">URL</div>
+                {{ input_text('emote_url', 'manage__emote__field__value', emote_info.emote_url|default(), 'text', '', true) }}
+            </label>
+
+            <div class="manage__emote__actions">
+                <button class="input__button">Save</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

@@ -6,11 +6,11 @@
         {{ container_title('<i class="fas fa-grimace fa-fw"></i> Emoticons') }}
 
         <div class="manage__description">
-            Here you can manage emoticons and their aliases and other properties.
+            Here you can manage emoticons and their aliases and other properties. There are no imposed restrictions on strings (aside from being ASCII only) but if you add shit like spaces or uppercase letters I will kill you dead.
         </div>
 
         <div class="manage__emotes__actions">
-            <a class="input__button" href="{{ url('manage-general-emoticon') }}">Add New</a>
+            <a class="input__button" href="{{ url('manage-general-emoticon') }}">Add</a>
         </div>
 
         <div class="manage__emotes__list">
@@ -53,11 +53,30 @@
                         <img src="{{ emote.emote_url }}" alt="{{ emote.emote_string }}" class="emoticon manage__emotes__emoticon">
                     </div>
                     <div class="manage__emotes__entry__actions">
-                        <button class="input__button">Alias</button>
-                        <a class="input__button" href="{{ url('manage-general-emoticon', {'emote': emote.emote_id}) }}">Edit</a>
+                        <button class="input__button input__button--autosize" title="Create Alias" onclick="createEmoteAlias({{ emote.emote_id }}, prompt('Enter an alias for this emoticon...'))"><i class="fas fa-copy fa-fw"></i></button>
+                        <a class="input__button input__button--autosize" href="{{ url('manage-general-emoticon', {'emote': emote.emote_id}) }}" title="Edit"><i class="fas fa-edit fa-fw"></i></a>
+                        <a class="input__button input__button--autosize input__button--destroy" href="{{ url('manage-general-emoticon-delete', {'emote': emote.emote_id}) }}" title="Delete" onclick="return confirm('ARE YOU SURE ABOUT THAT?');"><i class="fas fa-times fa-fw"></i></a>
+                        <a class="input__button input__button--autosize input__button--blue" href="{{ url('manage-general-emoticon-order-up', {'emote': emote.emote_id}) }}" title="Move up"><i class="fas fa-angle-up fa-fw"></i></a>
+                        <a class="input__button input__button--autosize input__button--blue" href="{{ url('manage-general-emoticon-order-down', {'emote': emote.emote_id}) }}" title="Move down"><i class="fas fa-angle-down fa-fw"></i></a>
                     </div>
                 </div>
             {% endfor %}
         </div>
     </div>
+
+    <script>
+        function createEmoteAlias(id, alias) {
+            if(!id || !alias)
+                return;
+
+            var xhr = new XMLHttpRequest;
+            xhr.addEventListener('readystatechange', () => {
+                if(xhr.readyState !== 4)
+                    return;
+                location.reload();
+            });
+            xhr.open('GET', "{{ url('manage-general-emoticon-alias', {'emote': '%1', 'string': '%2'})|raw }}".replace('%1', id).replace('%2', alias));
+            xhr.send();
+        }
+    </script>
 {% endblock %}

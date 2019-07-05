@@ -2,7 +2,7 @@
 {% from 'macros.twig' import container_title %}
 {% from 'manage/macros.twig' import manage_navigation %}
 
-{% set title = 'Broom Closet' %}
+{% set title = title|default('Broom Closet') %}
 {% set site_logo = '/images/logos/imouto-broom.png' %}
 
 {% block content %}

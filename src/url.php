@@ -98,6 +98,10 @@ define('MSZ_URLS', [
     'manage-general-logs'               => ['/manage/general/logs.php'],
     'manage-general-emoticons'          => ['/manage/general/emoticons.php'],
     'manage-general-emoticon'           => ['/manage/general/emoticon.php',     ['e' => '<emote>']],
+    'manage-general-emoticon-order-up'  => ['/manage/general/emoticons.php',    ['emote' => '<emote>', 'order' => 'd', 'csrf' => '{token}']],
+    'manage-general-emoticon-order-down'=> ['/manage/general/emoticons.php',    ['emote' => '<emote>', 'order' => 'i', 'csrf' => '{token}']],
+    'manage-general-emoticon-delete'    => ['/manage/general/emoticons.php',    ['emote' => '<emote>', 'delete' => '1', 'csrf' => '{token}']],
+    'manage-general-emoticon-alias'     => ['/manage/general/emoticons.php',    ['emote' => '<emote>', 'alias' => '<string>', 'csrf' => '{token}']],
     'manage-general-settings'           => ['/manage/general/settings.php'],
     'manage-general-blacklist'          => ['/manage/general/blacklist.php'],
 
