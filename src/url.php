@@ -196,9 +196,14 @@ function url_variable(string $value, array $variables): string {
 }
 
 function url_list(): array {
+    global $hasManageAccess;
+
     $collection = [];
 
     foreach(MSZ_URLS as $name => $urlInfo) {
+        if(empty($hasManageAccess) && starts_with($name, 'manage-'))
+            continue;
+
         $item = [
             'name' => $name,
             'path' => $urlInfo[0],
