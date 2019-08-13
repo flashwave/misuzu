@@ -1,7 +1,10 @@
 .warning {
-    --start-colour: yellow;
-    --end-colour: black;
+    @start-colour: yellow;
+    @end-colour: black;
+    --start-colour: @start-colour;
+    --end-colour: @end-colour;
 
+    background-image: repeating-linear-gradient(-45deg, @start-colour, @start-colour 10px, @end-colour 10px, @end-colour 20px);
     background-image: repeating-linear-gradient(-45deg, var(--start-colour), var(--start-colour) 10px, var(--end-colour) 10px, var(--end-colour) 20px);
     box-shadow: 0 1px 4px #111;
     margin: 2px 0;

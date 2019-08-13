@@ -2,6 +2,7 @@
     display: block;
     color: inherit;
     text-decoration: none;
+    background-color: @accent-colour;
     background-color: var(--accent-colour);
     box-shadow: 0 1px 2px #000A;
     text-shadow: 0 1px 4px #000;
@@ -12,6 +13,7 @@
     margin: 1px 1px 1px 0;
 
     &__background {
+        background-color: @background-colour-translucent-9;
         background-color: var(--background-colour-translucent-9);
         position: absolute;
         top: 0;
@@ -23,10 +25,12 @@
 
     &:hover &__background,
     &:focus &__background {
+        background-color: @background-colour-translucent-8;
         background-color: var(--background-colour-translucent-8);
     }
 
     &:active &__background {
+        background-color: @background-colour-translucent-7;
         background-color: var(--background-colour-translucent-7);
     }
 

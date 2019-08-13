@@ -1,5 +1,7 @@
 .manage__tag {
     border-radius: 2px;
+    border: 1px solid @accent-colour;
+    background-color: @accent-colour;
     border: 1px solid var(--accent-colour);
     background-color: var(--accent-colour);
     display: inline-block;
@@ -10,6 +12,7 @@
         left: 0;
         width: 100%;
         height: 100%;
+        background-color: @background-colour-translucent-9;
         background-color: var(--background-colour-translucent-9);
         transition: background-color .2s;
     }
@@ -17,6 +20,7 @@
     &:hover &__background,
     &:focus &__background,
     &:focus-within &__background {
+        background-color: @background-colour-translucent-8;
         background-color: var(--background-colour-translucent-8);
     }
 

@@ -11,6 +11,7 @@
     }
 
     &__wrapper {
+        max-width: @site-max-width;
         max-width: var(--site-max-width);
         margin: 0 auto;
         text-align: center;
@@ -25,9 +26,13 @@
         left: 0;
         width: 100%;
         height: 100%;
+        mask-image: linear-gradient(180deg, transparent 10%, @background-colour 100%);
+        -webkit-mask-image: linear-gradient(180deg, transparent 10%, @background-colour 100%);
         mask-image: linear-gradient(180deg, transparent 10%, var(--background-colour) 100%);
         -webkit-mask-image: linear-gradient(180deg, transparent 10%, var(--background-colour) 100%);
+        background: @background-pattern;
         background: var(--background-pattern);
+        background-color: @header-accent-colour;
         background-color: var(--header-accent-colour);
         background-blend-mode: multiply;
     }

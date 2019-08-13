@@ -5,6 +5,7 @@
     width: 100%;
     display: flex;
     border-width: 0;
+    border-color: @text-colour;
     border-color: var(--text-colour);
     border-style: solid;
     border-top-width: 1px;
@@ -49,11 +50,13 @@
     &__option {
         list-style: none;
         background-color: #c9bbcc;
+        border: 1px solid @text-colour;
         border: 1px solid var(--text-colour);
         border-top-width: 0;
         flex-grow: 0;
 
         @media (max-width: @mio-navigation-mobile) {
+            background-color: @accent-colour;
             background-color: var(--accent-colour);
             width: 100%;
             border: none;
@@ -66,6 +69,7 @@
         }
 
         &--selected {
+            background-color: @accent-colour;
             background-color: var(--accent-colour);
             top: -1px;
 
@@ -90,6 +94,7 @@
     &__link {
         display: block;
         padding: 2px 1em;
+        color: @text-colour;
         color: var(--text-colour);
         text-decoration: none;
 

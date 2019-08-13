@@ -31,6 +31,7 @@
         transition: border-color .2s;
 
         &__icon {
+            background-color: @accent-colour;
             background-color: var(--accent-colour);
             background-size: 28px 28px;
             background-image: radial-gradient(ellipse at center, fade(#fff, 20%) 0%, fade(#000, 40%) 100%);
@@ -50,6 +51,7 @@
 
     &:not(&--disabled):hover &__display,
     &:not(&--disabled) &__input:focus ~ &__display {
+        border-color: @accent-colour;
         border-color: var(--accent-colour);
     }
 

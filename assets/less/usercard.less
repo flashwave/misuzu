@@ -4,13 +4,16 @@
     transition: box-shadow .5s;
     z-index: 1;
     color: #fff;
+    background-color: @background-colour;
     background-color: var(--background-colour);
     box-shadow: 0 1px 2px #000A;
     text-shadow: 0 1px 4px #000;
     overflow: hidden;
     flex: 1 1 auto;
 
-    --usercard-header-overlay-start: transparent;
+    @usercard-header-overlay-start: transparent;
+    --usercard-header-overlay-start: @usercard-header-overlay-start;
+    @usercard-header-overlay-stop: @background-colour-translucent-9;
     --usercard-header-overlay-stop: var(--background-colour-translucent-9);
 
     &:hover {
@@ -24,6 +27,7 @@
         left: 0;
         width: 100%;
         height: 100%;
+        background: @accent-colour @background-pattern;
         background: var(--accent-colour) var(--background-pattern);
         background-blend-mode: multiply;
     }
@@ -49,6 +53,7 @@
             display: flex;
             align-items: center;
             padding: 10px;
+            background-image: linear-gradient(0deg, @usercard-header-overlay-stop, @usercard-header-overlay-start);
             background-image: linear-gradient(0deg, var(--usercard-header-overlay-stop), var(--usercard-header-overlay-start));
             pointer-events: none;
         }
@@ -64,6 +69,7 @@
 
         &__relation {
             font-variant: all-small-caps;
+            background: @usercard-header-overlay-stop;
             background: var(--usercard-header-overlay-stop);
             border-radius: 2px;
             line-height: 1.2em;
@@ -95,6 +101,7 @@
 
     &__container {
         flex: 1 1 auto;
+        background-color: @usercard-header-overlay-stop;
         background-color: var(--usercard-header-overlay-stop);
         display: flex;
         flex-direction: column;
@@ -150,6 +157,7 @@
 
         &[href]:hover,
         &[href]:focus {
+            border-bottom: 2px solid @accent-colour;
             border-bottom: 2px solid var(--accent-colour);
             padding-bottom: 3px;
         }

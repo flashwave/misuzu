@@ -1,6 +1,7 @@
 .container {
+    background-color: @container-colour;
     background-color: var(--container-colour);
-    box-shadow: 0 1px 2px #000A;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
     text-shadow: 0 1px 4px #000;
     overflow: hidden;
     word-wrap: break-word;
@@ -25,6 +26,7 @@
             text-decoration: none;
 
             &:hover {
+                color: @accent-colour;
                 color: var(--accent-colour);
             }
         }
@@ -35,9 +37,13 @@
             left: 0;
             width: 100%;
             height: 100%;
+            mask-image: linear-gradient(0deg, transparent 10%, @background-colour 100%);
+            -webkit-mask-image: linear-gradient(0deg, transparent 10%, @background-colour 100%);
             mask-image: linear-gradient(0deg, transparent 10%, var(--background-colour) 100%);
             -webkit-mask-image: linear-gradient(0deg, transparent 10%, var(--background-colour) 100%);
+            background: @background-pattern;
             background: var(--background-pattern);
+            background-color: @accent-colour;
             background-color: var(--accent-colour);
             background-blend-mode: multiply;
         }

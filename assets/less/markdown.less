@@ -25,6 +25,7 @@
         height: 2px;
         padding: 0;
         margin: @font-size 0;
+        background-color: @accent-colour;
         background-color: var(--accent-colour);
         border: 0;
     }
@@ -32,6 +33,7 @@
     blockquote {
         padding: 0 1em;
         color: var(--accent-colour);
+        border-left: 0.25em solid @accent-colour;
         border-left: 0.25em solid var(--accent-colour);
 
         > :first-child {
@@ -108,12 +110,14 @@
     h1 {
         padding-bottom: 0.3em;
         font-size: 2em;
+        border-bottom: 1px solid @accent-colour;
         border-bottom: 1px solid var(--accent-colour);
     }
 
     h2 {
         padding-bottom: 0.3em;
         font-size: 1.5em;
+        border-bottom: 1px solid @accent-colour;
         border-bottom: 1px solid var(--accent-colour);
     }
 
@@ -131,12 +135,14 @@
 
     h6 {
         font-size: 0.85em;
+        color: @accent-colour;
         color: var(--accent-colour);
     }
 
     img {
         box-sizing: content-box;
-        background-color: var(--background-color);
+        background-color: @background-colour;
+        background-color: var(--background-colour);
         max-width: 100%;
         max-height: 100%;
 
@@ -203,14 +209,19 @@
         th,
         td {
             padding: 6px 13px;
+            border: 1px solid @accent-colour;
             border: 1px solid var(--accent-colour);
         }
 
         tr {
+            background-color: @background-colour;
+            border-top: 1px solid @accent-colour;
             background-color: var(--background-colour);
             border-top: 1px solid var(--accent-colour);
 
             &:nth-child(2n) {
+                background-image: linear-gradient(0deg, @background-colour-translucent-9, @background-colour-translucent-9);
+                background-color: @accent-colour;
                 background-image: linear-gradient(0deg, var(--background-colour-translucent-9), var(--background-colour-translucent-9));
                 background-color: var(--accent-colour);
             }

@@ -10,6 +10,7 @@
         overflow: auto;
         flex: 0 0 auto;
         scrollbar-width: thin;
+        scrollbar-color: @accent-colour @background-colour;
         scrollbar-color: var(--accent-colour) var(--background-colour);
 
         &--pages {
@@ -33,6 +34,9 @@
         padding: 3px 10px 4px;
         text-align: center;
         text-decoration: none;
+        background-color: @background-colour;
+        color: @accent-colour;
+        border: 1px solid @accent-colour;
         background-color: var(--background-colour);
         color: var(--accent-colour);
         border: 1px solid var(--accent-colour);
@@ -62,6 +66,8 @@
         &:not(&--disabled):hover,
         &:not(&--disabled):active,
         &:not(&--disabled):focus {
+            background-color: @accent-colour;
+            color: @accent-colour;
             background-color: var(--accent-colour);
             color: var(--background-colour);
         }

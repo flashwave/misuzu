@@ -1,4 +1,5 @@
 .input__button {
+    background-color: @background-colour;
     background-color: var(--background-colour);
     font-family: @mio-font-regular;
     font-size: 1.2em;
@@ -23,6 +24,8 @@
     &:checked,
     &--checked {
         color: #111;
+        background-color: @accent-colour;
+        border-color: @accent-colour;
         background-color: var(--accent-colour);
         border-color: var(--accent-colour);
     }

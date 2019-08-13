@@ -1,10 +1,12 @@
 .settings__session {
+    border: 1px solid @accent-colour;
     border: 1px solid var(--accent-colour);
     border-radius: 2px;
     overflow: hidden;
     margin: 4px;
 
     &--current {
+        background-color: @accent-colour;
         background-color: var(--accent-colour);
     }
 
@@ -52,6 +54,7 @@
         transition: color .2s;
 
         &:hover {
+            color: @accent-colour;
             color: var(--accent-colour);
         }
     }
@@ -70,6 +73,7 @@
         min-width: 120px;
 
         &__title {
+            border-bottom: 1px solid @accent-colour;
             border-bottom: 1px solid var(--accent-colour);
             font-weight: 700;
             padding: 1px 5px;

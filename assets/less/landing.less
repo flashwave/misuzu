@@ -31,6 +31,7 @@
         }
 
         &__link {
+            color: @user-colour;
             color: var(--user-colour);
             text-decoration: none;
 
@@ -47,6 +48,7 @@
         margin: 6px;
 
         &__user {
+            color: @user-colour;
             color: var(--user-colour);
             text-decoration: none;
             font-size: 0;
@@ -56,6 +58,7 @@
             transition: box-shadow .2s;
 
             &:hover {
+                box-shadow: 0 0 2px @user-colour;
                 box-shadow: 0 0 2px var(--user-colour);
             }
         }
@@ -115,6 +118,7 @@
         &__username {
             font-size: 1.5em;
             line-height: 1.4em;
+            color: @user-colour;
             color: var(--user-colour);
         }
 
