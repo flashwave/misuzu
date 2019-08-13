@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "target": "es6",
-        "module": "amd",
+        "target": "es5",
+        "module": "none",
         "jsx": "react",
         "jsxFactory": "mszCreateElement",
         "removeComments": true,
