@@ -247,11 +247,11 @@ function url_construct(string $url, array $query = [], ?string $fragment = null)
 }
 
 function url_proxy_media(?string $url): ?string {
-    if(empty($url) || !config_get_default(false, 'Proxy', 'enabled') || is_local_url($url)) {
+    if(empty($url) || !config_get('media_proxy.enable', MSZ_CFG_BOOL) || is_local_url($url)) {
         return $url;
     }
 
-    $secret = config_get_default('insecure', 'Proxy', 'secret_key');
+    $secret = config_get('media_proxy.secret', MSZ_CFG_STR, 'insecure');
     $url = base64url_encode($url);
     $hash = hash_hmac('sha256', $url, $secret);
 

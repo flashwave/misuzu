@@ -52,7 +52,7 @@ if(!user_relation_set($userId, $subjectId, $relationType)) {
 
 
 if(($relationType === MSZ_USER_RELATION_NONE || $relationType === MSZ_USER_RELATION_FOLLOW)
-    && in_array($subjectId, explode(' ', config_get_default('', 'Relations', 'replicate_relation_with')))) {
+    && in_array($subjectId, config_get('relations.replicate', MSZ_CFG_ARR))) {
     user_relation_set($subjectId, $userId, $relationType);
 }
 

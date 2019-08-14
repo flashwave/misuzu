@@ -34,10 +34,10 @@ if(!empty($_POST['post']) && csrf_verify_request()) {
     );
 
     if(!$originalPostId && $isFeatured) {
-        $twitterApiKey = config_get('Twitter', 'api_key');
-        $twitterApiSecret = config_get('Twitter', 'api_secret');
-        $twitterToken = config_get('Twitter', 'token');
-        $twitterTokenSecret = config_get('Twitter', 'token_secret');
+        $twitterApiKey = config_get('twitter.api.key', MSZ_CFG_STR);
+        $twitterApiSecret = config_get('twitter.api.secret', MSZ_CFG_STR);
+        $twitterToken = config_get('twitter.token.key', MSZ_CFG_STR);
+        $twitterTokenSecret = config_get('twitter.token.secret', MSZ_CFG_STR);
 
         if(!empty($twitterApiKey) && !empty($twitterApiSecret)
             && !empty($twitterToken) && !empty($twitterTokenSecret)) {

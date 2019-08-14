@@ -19,8 +19,8 @@ if($userId > 0 && empty($username)) {
 }
 
 $notices = [];
-$siteIsPrivate = boolval(config_get_default(false, 'Private', 'enabled'));
-$canResetPassword = $siteIsPrivate ? boolval(config_get_default(false, 'Private', 'password_reset')) : true;
+$siteIsPrivate = config_get('private.enable', MSZ_CFG_BOOL);
+$canResetPassword = $siteIsPrivate ? config_get('private.allow_password_reset', MSZ_CFG_BOOL, true) : true;
 $ipAddress = ip_remote_address();
 $remainingAttempts = user_login_attempts_remaining($ipAddress);
 

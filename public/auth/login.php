@@ -13,8 +13,9 @@ if(!empty($_GET['resolve_user']) && is_string($_GET['resolve_user'])) {
 }
 
 $notices = [];
-$siteIsPrivate = boolval(config_get_default(false, 'Private', 'enabled'));
-$loginPermission = $siteIsPrivate ? intval(config_get_default(0, 'Private', 'permission')) : 0;
+$siteIsPrivate = config_get('private.enable', MSZ_CFG_BOOL);
+$loginPermCat = $siteIsPrivate ? config_get('private.perm.cat', MSZ_CFG_STR) : '';
+$loginPermVal = $siteIsPrivate ? config_get('private.perm.val', MSZ_CFG_INT) : 0;
 $ipAddress = ip_remote_address();
 $remainingAttempts = user_login_attempts_remaining($ipAddress);
 
@@ -67,7 +68,7 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
         user_password_set($userData['user_id'], $_POST['login']['password']);
     }
 
-    if($loginPermission > 0 && !perms_check_user(MSZ_PERMS_GENERAL, $userData['user_id'], $loginPermission)) {
+    if(!empty($loginPermCat) && $loginPermVal > 0 && !perms_check_user($loginPermCat, $userData['user_id'], $loginPermVal)) {
         $notices[] = "Login succeeded, but you're not allowed to browse the site right now.";
         user_login_attempt_record(true, $userData['user_id'], $ipAddress, $userAgent);
         break;
@@ -107,8 +108,8 @@ $loginUsername = !empty($_POST['login']['username']) && is_string($_POST['login'
     !empty($_GET['username']) && is_string($_GET['username']) ? $_GET['username'] : ''
 );
 $loginRedirect = $welcomeMode ? url('index') : (!empty($_GET['redirect']) && is_string($_GET['redirect']) ? $_GET['redirect'] : null) ?? $_SERVER['HTTP_REFERER'] ?? url('index');
-$sitePrivateMessage = $siteIsPrivate ? config_get_default('', 'Private', 'message') : '';
-$canResetPassword = $siteIsPrivate ? boolval(config_get_default(false, 'Private', 'password_reset')) : true;
+$sitePrivateMessage = $siteIsPrivate ? config_get('private.msg', MSZ_CFG_STR) : '';
+$canResetPassword = $siteIsPrivate ? config_get('private.allow_password_reset', MSZ_CFG_BOOL, true) : true;
 $canRegisterAccount = !$siteIsPrivate;
 
 echo tpl_render('auth.login', [

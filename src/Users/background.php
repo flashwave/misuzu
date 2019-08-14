@@ -91,14 +91,12 @@ function user_background_is_allowed_type(int $type): bool {
     return in_array($type, MSZ_USER_BACKGROUND_TYPES, true);
 }
 
-define('MSZ_USER_BACKGROUND_OPTIONS', [
-    'max_width' => 3840,
-    'max_height' => 2160,
-    'max_size' => 1000000,
-]);
-
 function user_background_default_options(): array {
-    return array_merge(MSZ_USER_BACKGROUND_OPTIONS, config_get_default([], 'Background'));
+    return [
+        'max_width' => config_get('background.max_width', MSZ_CFG_INT, 3840),
+        'max_height' => config_get('background.max_height', MSZ_CFG_INT, 2160),
+        'max_size' => config_get('background.max_height', MSZ_CFG_INT, 1000000),
+    ];
 }
 
 define('MSZ_USER_BACKGROUND_NO_ERRORS', 0);
@@ -115,7 +113,7 @@ function user_background_set_from_path(int $userId, string $path, array $options
         return MSZ_USER_BACKGROUND_ERROR_FILE_NOT_FOUND;
     }
 
-    $options = array_merge(MSZ_USER_BACKGROUND_OPTIONS, $options);
+    $options = array_merge(user_background_default_options(), $options);
 
     // 0 => width, 1 => height, 2 => type
     $imageInfo = getimagesize($path);

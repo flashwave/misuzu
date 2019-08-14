@@ -78,22 +78,38 @@ require_once 'src/Users/user.php';
 require_once 'src/Users/validation.php';
 require_once 'src/Users/warning.php';
 
-config_load(MSZ_ROOT . '/config/config.ini');
-mail_settings(config_get_default([], 'Mail'));
+$dbConfig = parse_ini_file(MSZ_ROOT . '/config/config.ini', true, INI_SCANNER_TYPED);
 
-if(!empty($errorReporter)) {
-    $errorReporter->setReportInfo(
-        config_get('Exceptions', 'report_url'),
-        config_get('Exceptions', 'hash_key')
-    );
+if(empty($dbConfig)) {
+    echo 'Database config is missing.';
+    exit;
 }
 
 db_settings([
-    'mysql-main' => config_get_default([], 'Database.mysql-main')
+    'mysql-main' => $dbConfig['Database'] ?? $dbConfig['Database.mysql-main'] ?? [],
 ]);
 
+config_init();
+mail_settings([
+    'method' => config_get('mail.method', MSZ_CFG_STR),
+    'host' => config_get('mail.host', MSZ_CFG_STR),
+    'port' => config_get('mail.port', MSZ_CFG_INT, 587),
+    'encryption' => config_get('mail.encryption', MSZ_CFG_STR),
+    'username' => config_get('mail.username', MSZ_CFG_STR),
+    'password' => config_get('mail.password', MSZ_CFG_STR),
+    'sender_email' => config_get('mail.sender.address', MSZ_CFG_STR),
+    'sender_name' => config_get('mail.sender.name', MSZ_CFG_STR),
+]);
+
+if(!empty($errorReporter)) {
+    $errorReporter->setReportInfo(
+        config_get('error_report.url', MSZ_CFG_STR),
+        config_get('error_report.secret', MSZ_CFG_STR)
+    );
+}
+
 // replace this with a better storage mechanism
-define('MSZ_STORAGE', config_get_default(MSZ_ROOT . '/store', 'Storage', 'path'));
+define('MSZ_STORAGE', config_get('storage.path', MSZ_CFG_STR, MSZ_ROOT . '/store'));
 mkdirs(MSZ_STORAGE, true);
 
 if(PHP_SAPI === 'cli') {
@@ -333,8 +349,8 @@ MIG;
                 break;
 
             case 'twitter-auth':
-                $apiKey = config_get('Twitter', 'api_key');
-                $apiSecret = config_get('Twitter', 'api_secret');
+                $apiKey = config_get('twitter.api.key', MSZ_CFG_STR);
+                $apiSecret = config_get('twitter.api.secret', MSZ_CFG_STR);
 
                 if(empty($apiKey) || empty($apiSecret)) {
                     echo 'No Twitter api keys set in config.' . PHP_EOL;
@@ -390,7 +406,7 @@ MIG;
         exit;
     }
 
-    geoip_init(config_get_default('', 'GeoIP', 'database_path'));
+    geoip_init(config_get('geoip.database', MSZ_CFG_STR, '/var/lib/GeoIP/GeoLite2-Country.mmdb'));
 
     if(!MSZ_DEBUG) {
         $twigCache = sys_get_temp_dir() . '/msz-tpl-cache-' . md5(MSZ_ROOT);
@@ -404,10 +420,10 @@ MIG;
     ]);
 
     tpl_var('globals', [
-        'site_name' => config_get_default('Misuzu', 'Site', 'name'),
-        'site_description' => config_get('Site', 'description'),
-        'site_twitter' => config_get('Site', 'twitter'),
-        'site_url' => config_get('Site', 'url'),
+        'site_name' => config_get('site.name', MSZ_CFG_STR, 'Misuzu'),
+        'site_description' => config_get('site.desc', MSZ_CFG_STR),
+        'site_url' => config_get('site.url', MSZ_CFG_STR),
+        'site_twitter' => config_get('social.twitter', MSZ_CFG_STR),
     ]);
 
     tpl_add_path(MSZ_ROOT . '/templates');
@@ -466,26 +482,27 @@ MIG;
     }
 
     csrf_settings(
-        config_get_default('insecure', 'CSRF', 'secret_key'),
+        config_get('csrf.secret', MSZ_CFG_STR, 'insecure'),
         empty($userDisplayInfo) ? ip_remote_address() : $cookieData['session_token']
     );
 
-    if(config_get_default(false, 'Private', 'enabled')) {
+    if(config_get('private.enabled', MSZ_CFG_BOOL)) {
         $onLoginPage = $_SERVER['PHP_SELF'] === url('auth-login');
         $onPasswordPage = parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH) === url('auth-forgot');
         $misuzuBypassLockdown = !empty($misuzuBypassLockdown) || $onLoginPage;
 
         if(!$misuzuBypassLockdown) {
             if(user_session_active()) {
-                $privatePermission = (int)config_get_default(0, 'Private', 'permission');
+                $privatePermCat = config_get('private.perm.cat', MSZ_CFG_STR);
+                $privatePermVal = config_get('private.perm.val', MSZ_CFG_INT);
 
-                if($privatePermission > 0) {
-                    if(!perms_check_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'], $privatePermission)) {
+                if(!empty($privatePermCat) && $privatePermVal > 0) {
+                    if(!perms_check_user($privatePermCat, $userDisplayInfo['user_id'], $privatePermVal)) {
                         unset($userDisplayInfo);
                         user_session_stop(); // au revoir
                     }
                 }
-            } elseif(!$onLoginPage && !($onPasswordPage && config_get_default(false, 'Private', 'password_reset'))) {
+            } elseif(!$onLoginPage && !($onPasswordPage && config_get('private.allow_password_reset', MSZ_CFG_BOOL, true))) {
                 url_redirect('auth-login');
                 exit;
             }

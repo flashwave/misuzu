@@ -17,11 +17,11 @@ $canViewImages = !$userExists
 switch($userAssetsMode) {
     case 'avatar':
         if(!$canViewImages) {
-            $filename = config_get_default(MSZ_ROOT . '/public/images/banned-avatar.png', 'Avatar', 'banned_path');
+            $filename = config_get('avatar.banned', MSZ_CFG_STR, MSZ_ROOT . '/public/images/banned-avatar.png');
             break;
         }
 
-        $filename = config_get_default(MSZ_ROOT . '/public/images/no-avatar.png', 'Avatar', 'default_path');
+        $filename = config_get('avatar.default', MSZ_CFG_STR, MSZ_ROOT . '/public/images/no-avatar.png');
 
         if(!$userExists) {
             break;

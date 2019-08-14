@@ -59,14 +59,12 @@ function user_avatar_is_allowed_type(int $type): bool {
     return in_array($type, MSZ_USER_AVATAR_TYPES, true);
 }
 
-define('MSZ_USER_AVATAR_OPTIONS', [
-    'max_width' => 1000,
-    'max_height' => 1000,
-    'max_size' => 500000,
-]);
-
 function user_avatar_default_options(): array {
-    return array_merge(MSZ_USER_AVATAR_OPTIONS, config_get_default([], 'Avatar'));
+    return [
+        'max_width' => config_get('avatar.max_width', MSZ_CFG_INT, 1000),
+        'max_height' => config_get('avatar.max_height', MSZ_CFG_INT, 1000),
+        'max_size' => config_get('avatar.max_height', MSZ_CFG_INT, 500000),
+    ];
 }
 
 define('MSZ_USER_AVATAR_NO_ERRORS', 0);
@@ -83,7 +81,7 @@ function user_avatar_set_from_path(int $userId, string $path, array $options = [
         return MSZ_USER_AVATAR_ERROR_FILE_NOT_FOUND;
     }
 
-    $options = array_merge(MSZ_USER_AVATAR_OPTIONS, $options);
+    $options = array_merge(user_avatar_default_options(), $options);
 
     // 0 => width, 1 => height, 2 => type
     $imageInfo = getimagesize($path);

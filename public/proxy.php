@@ -33,12 +33,12 @@ if(empty($parsedUrl['scheme'])
     return;
 }
 
-if(!config_get_default(false, 'Proxy', 'enabled')) {
+if(!config_get('media_proxy.enable', MSZ_CFG_BOOL)) {
     redirect($proxyUrlDecoded);
     return;
 }
 
-$proxySecret = config_get_default('insecure', 'Proxy', 'secret_key');
+$proxySecret = config_get('media_proxy.secret', MSZ_CFG_STR, 'insecure');
 $expectedHash = hash_hmac('sha256', $proxyUrl, $proxySecret);
 
 if(!hash_equals($expectedHash, $proxyHash)) {

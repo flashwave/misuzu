@@ -1,36 +1,64 @@
 <?php
+define('MSZ_CFG_ANY', '');
+define('MSZ_CFG_STR', 'string');
+define('MSZ_CFG_INT', 'integer');
+define('MSZ_CFG_BOOL', 'boolean');
+define('MSZ_CFG_ARR', 'array');
+
+define('MSZ_CFG_DEFAULTS', [
+    MSZ_CFG_ANY => null,
+    MSZ_CFG_STR => '',
+    MSZ_CFG_INT => 0,
+    MSZ_CFG_BOOL => false,
+    MSZ_CFG_ARR => [],
+]);
+
 function config_store(?array $append = null): array {
     static $store = [];
 
     if(!is_null($append)) {
-        $store = array_merge_recursive($store, $append);
+        $store = array_merge($store, $append);
     }
 
     return $store;
 }
 
-function config_load(string $path, bool $isText = false): void {
-    $config = $isText
-        ? parse_ini_string($path, true, INI_SCANNER_TYPED)
-        : parse_ini_file($path, true, INI_SCANNER_TYPED);
+function config_init(): void {
+    $dbconfig = db_fetch_all(db_prepare('SELECT * FROM `msz_config`'));
+    $config = [];
+
+    foreach($dbconfig as $record)
+        $config[$record['config_name']] = unserialize($record['config_value']);
 
     config_store($config);
 }
 
-function config_get(string ...$key) {
-    $value = config_store();
+function config_get(string $key, string $type = MSZ_CFG_ANY, $default = null) {
+    $value = config_store()[$key] ?? null;
 
-    for($i = 0; $i < count($key); $i++) {
-        if(empty($value[$key[$i]])) {
-            return null;
-        }
+    if($type !== MSZ_CFG_ANY && gettype($value) !== $type)
+        $value = null;
 
-        $value = $value[$key[$i]];
-    }
-
-    return $value;
+    return $value ?? $default ?? MSZ_CFG_DEFAULTS[$type];
 }
 
-function config_get_default($default, string ...$key) {
-    return config_get(...$key) ?? $default;
+function config_set(string $key, $value, bool $soft = false): void {
+    config_store([$key => $value]);
+
+    if($soft)
+        return;
+
+    $value = serialize($value);
+    $saveVal = db_prepare('
+        INSERT INTO `msz_config`
+            (`config_name`, `config_value`)
+        VALUES
+            (:name, :value_1)
+        ON DUPLICATE KEY UPDATE
+            `config_value` = :value_2
+    ');
+    $saveVal->bindValue('name', $key);
+    $saveVal->bindValue('value_1', $value);
+    $saveVal->bindValue('value_2', $value);
+    $saveVal->execute();
 }

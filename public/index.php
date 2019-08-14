@@ -7,12 +7,12 @@ $showActivityFeed = false; /*user_session_active()
 if($showActivityFeed) {
     // load activity shit garbage here
 } else {
-    if(config_get_default(false, 'Site', 'embed_linked_data')) {
+    if(config_get('social.embed_linked', MSZ_CFG_BOOL)) {
         tpl_var('linked_data', [
-            'name' => config_get('Site', 'name'),
-            'url' => config_get('Site', 'url'),
-            'logo' => config_get('Site', 'external_logo'),
-            'same_as' => explode(',', config_get_default('', 'Site', 'social_media')),
+            'name' => config_get('site.name', MSZ_CFG_STR, 'Misuzu'),
+            'url' => config_get('site.url', MSZ_CFG_STR),
+            'logo' => config_get('site.ext_logo', MSZ_CFG_STR),
+            'same_as' => config_get('social.linked', MSZ_CFG_ARR),
         ]);
     }
 

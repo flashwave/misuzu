@@ -44,7 +44,7 @@ if($isVerifiedRequest && isset($_POST['tfa']['enable']) && (bool)$twoFactorInfo[
             'settings_2fa_image' => totp_qrcode(totp_uri(
                 sprintf(
                     '%s:%s',
-                    config_get_default('Misuzu', 'Site', 'name'),
+                    config_get('site.name', MSZ_CFG_STR, 'Misuzu'),
                     $twoFactorInfo['username']
                 ),
                 $tfaKey,

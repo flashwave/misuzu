@@ -8,7 +8,7 @@ function geoip_init(?string $database = null): void {
         $existing->close();
     }
 
-    geoip_instance(new GeoIPDBReader($database ?? config_get('GeoIP', 'database_path')));
+    geoip_instance(new GeoIPDBReader($database ?? config_get('geoip.database')));
 }
 
 function geoip_instance(?GeoIPDBReader $newInstance = null): ?GeoIPDBReader {
