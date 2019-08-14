@@ -6,8 +6,7 @@ use PDO;
 // MariaDB migration!
 // Gotta get rid of possible incompatible stuff like WITH RECURSIVE for new installations.
 
-function migrate_up(PDO $conn): void
-{
+function migrate_up(PDO $conn): void {
     $getMigrations = $conn->prepare("SELECT COUNT(*) FROM `msz_migrations`");
     $migrations = (int)($getMigrations->execute() ? $getMigrations->fetchColumn() : 0);
 
@@ -673,8 +672,7 @@ function migrate_up(PDO $conn): void
     ");
 }
 
-function migrate_down(PDO $conn): void
-{
+function migrate_down(PDO $conn): void {
     $conn->exec("DROP TABLE `msz_forum_posts`");
     $conn->exec("DROP TABLE `msz_forum_topics_track`");
     $conn->exec("DROP TABLE `msz_forum_topics`");

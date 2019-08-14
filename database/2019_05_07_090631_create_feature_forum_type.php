@@ -3,8 +3,7 @@ namespace Misuzu\DatabaseMigrations\CreateFeatureForumType;
 
 use PDO;
 
-function migrate_up(PDO $conn): void
-{
+function migrate_up(PDO $conn): void {
     $conn->exec("
         CREATE TABLE `msz_forum_topics_priority` (
             `topic_id`          INT(10) UNSIGNED    NOT NULL,
@@ -27,8 +26,7 @@ function migrate_up(PDO $conn): void
     ");
 }
 
-function migrate_down(PDO $conn): void
-{
+function migrate_down(PDO $conn): void {
     $conn->exec("
         DROP TABLE `msz_forum_topics_priority`
     ");

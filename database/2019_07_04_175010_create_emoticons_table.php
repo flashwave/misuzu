@@ -3,8 +3,7 @@ namespace Misuzu\DatabaseMigrations\CreateEmoticonsTable;
 
 use PDO;
 
-function migrate_up(PDO $conn): void
-{
+function migrate_up(PDO $conn): void {
     $conn->exec("
         CREATE TABLE `msz_emoticons` (
             `emote_id`          INT(10) UNSIGNED    NOT NULL AUTO_INCREMENT,
@@ -21,8 +20,7 @@ function migrate_up(PDO $conn): void
     ");
 }
 
-function migrate_down(PDO $conn): void
-{
+function migrate_down(PDO $conn): void {
     $conn->exec("
         DROP TABLE `msz_emoticons`;
     ");

@@ -3,8 +3,7 @@ namespace Misuzu\DatabaseMigrations\CreateConfigTable;
 
 use PDO;
 
-function migrate_up(PDO $conn): void
-{
+function migrate_up(PDO $conn): void {
     $conn->exec("
         CREATE TABLE `msz_config` (
             `config_name`   VARCHAR(100)    NOT NULL COLLATE 'utf8mb4_bin',
@@ -14,7 +13,6 @@ function migrate_up(PDO $conn): void
     ");
 }
 
-function migrate_down(PDO $conn): void
-{
+function migrate_down(PDO $conn): void {
     $conn->exec("DROP TABLE `msz_config`;");
 }

@@ -327,15 +327,13 @@ namespace Misuzu\DatabaseMigrations\\$namespace;
 
 use PDO;
 
-function migrate_up(PDO \$conn): void
-{
+function migrate_up(PDO \$conn): void {
     \$conn->exec("
         CREATE TABLE ...
     ");
 }
 
-function migrate_down(PDO \$conn): void
-{
+function migrate_down(PDO \$conn): void {
     \$conn->exec("
         DROP TABLE ...
     ");
