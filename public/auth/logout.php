@@ -7,7 +7,7 @@ if(!user_session_active()) {
 }
 
 if(csrf_verify_request()) {
-    setcookie('msz_auth', '', -9001, '/', '', true, true);
+    setcookie('msz_auth', '', -9001, '/', '', !empty($_SERVER['HTTPS']), true);
     user_session_stop(true);
     url_redirect('index');
     return;

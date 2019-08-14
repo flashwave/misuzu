@@ -68,7 +68,7 @@ while(!empty($twofactor)) {
 
     $cookieLife = strtotime(user_session_current('session_expires'));
     $cookieValue = base64url_encode(user_session_cookie_pack($tokenInfo['user_id'], $sessionKey));
-    setcookie('msz_auth', $cookieValue, $cookieLife, '/', '', true, true);
+    setcookie('msz_auth', $cookieValue, $cookieLife, '/', '', !empty($_SERVER['HTTPS']), true);
 
     if(!is_local_url($redirect)) {
         $redirect = url('index');

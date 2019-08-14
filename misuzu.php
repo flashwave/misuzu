@@ -439,9 +439,9 @@ MIG;
         && ctype_digit($_COOKIE['msz_uid']) && ctype_xdigit($_COOKIE['msz_sid'])
         && strlen($_COOKIE['msz_sid']) === 64) {
         $_COOKIE['msz_auth'] = base64url_encode(user_session_cookie_pack($_COOKIE['msz_uid'], $_COOKIE['msz_sid']));
-        setcookie('msz_auth', $_COOKIE['msz_auth'], strtotime('1 year'), '/', '', true, true);
-        setcookie('msz_uid', '', -3600, '/', '', true, true);
-        setcookie('msz_sid', '', -3600, '/', '', true, true);
+        setcookie('msz_auth', $_COOKIE['msz_auth'], strtotime('1 year'), '/', '', !empty($_SERVER['HTTPS']), true);
+        setcookie('msz_uid', '', -3600, '/', '', !empty($_SERVER['HTTPS']), true);
+        setcookie('msz_sid', '', -3600, '/', '', !empty($_SERVER['HTTPS']), true);
     }
 
     if(!empty($_COOKIE['msz_auth']) && is_string($_COOKIE['msz_auth'])) {
@@ -462,7 +462,7 @@ MIG;
 
             if($userDisplayInfo) {
                 if(!is_null($userDisplayInfo['user_deleted'])) {
-                    setcookie('msz_auth', '', -9001, '/', '', true, true);
+                    setcookie('msz_auth', '', -9001, '/', '', !empty($_SERVER['HTTPS']), true);
                     user_session_stop(true);
                     $userDisplayInfo = [];
                 } else {
@@ -470,7 +470,7 @@ MIG;
                     user_session_bump_active(user_session_current('session_id'));
 
                     if(user_session_current('session_expires_bump')) {
-                        setcookie('msz_auth', $_COOKIE['msz_auth'], strtotime('1 month'), '/', '', true, true);
+                        setcookie('msz_auth', $_COOKIE['msz_auth'], strtotime('1 month'), '/', '', !empty($_SERVER['HTTPS']), true);
                     }
 
                     $userDisplayInfo['perms'] = perms_get_user($userDisplayInfo['user_id']);
