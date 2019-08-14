@@ -101,7 +101,7 @@ function colourFromRGB(red: number, green: number, blue: number): number {
 }
 
 function colourFromHex(hex: string): number {
-    if(hex.startsWith('#'))
+    if(hex.indexOf('#') === 0)
         hex = hex.substr(1);
 
     const length: number = hex.length;

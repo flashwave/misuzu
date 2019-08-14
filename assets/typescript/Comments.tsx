@@ -232,7 +232,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
             <form id={"comment-reply-" + comment.comment_id} class="comment comment--input comment--reply" method="post"
                 action="javascript:void(0);" onSubmit={commentPostEventHandler}>
                 <input type="hidden" name="comment[category]" value={comment.category_id} />
-                <input type="hidden" name="csrf[comments]" value={getCSRFToken('comments')} />
+                <input type="hidden" name="csrf[comments]" value={getCSRFToken()} />
                 <input type="hidden" name="comment[reply]" value={comment.comment_id} />
                 <div class="comment__container">
                     <div class="avatar comment__avatar"
