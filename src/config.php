@@ -24,7 +24,12 @@ function config_store(?array $append = null): array {
 }
 
 function config_init(): void {
-    $dbconfig = db_fetch_all(db_prepare('SELECT * FROM `msz_config`'));
+    try {
+        $dbconfig = db_fetch_all(db_prepare('SELECT * FROM `msz_config`'));
+    } catch (PDOException $ex) {
+        return;
+    }
+
     $config = [];
 
     foreach($dbconfig as $record)
