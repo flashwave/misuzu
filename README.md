@@ -1,6 +1,5 @@
 # Misuzu
-[![CodeFactor](https://www.codefactor.io/repository/github/flashwave/misuzu/badge)](https://www.codefactor.io/repository/github/flashwave/misuzu)
-[![License](https://img.shields.io/github/license/flashwave/misuzu.svg)](https://github.com/flashwave/misuzu/blob/master/LICENSE)
+> Misuzu can and will steal your lunch money.
 
 ## Requirements
  - PHP 7.3
