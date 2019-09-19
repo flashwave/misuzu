@@ -1,0 +1,42 @@
+{% extends 'settings/master.twig' %}
+{% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_select %}
+
+{% set title = 'Settings / Data' %}
+
+{% block settings_content %}
+    <form action="{{ url('settings-data') }}" method="post" class="container settings__container">
+        {{ container_title('<i class="fas fa-database fa-fw"></i> Download account data') }}
+        {{ input_csrf() }}
+
+        <div class="settings__description">
+            <p>Here you can request raw json files containing pretty much all data relating to your account. Moderator identities are concealed and password hashes are removed from the output.</p>
+        </div>
+
+        <div class="settings__data__content">
+            {{ input_text('password', 'settings__data__password', '', 'password', 'Password', true) }}
+
+            <div class="settings__data__actions">
+                <button class="input__button" name="action" value="data">Download</button>
+            </div>
+        </div>
+    </form>
+
+    {#<form action="{{ url('settings-data') }}" method="post" class="container settings__container">
+        {{ container_title('<i class="fas fa-trash-alt fa-fw"></i> Deactivate account') }}
+        {{ input_csrf() }}
+
+        <div class="settings__description">
+            <p>Deactivation will mark your account for deletion after 7 days unless you log in again. All content associated with your account EXCEPT forum topics and posts will be irrecoverably removed after these 7 days. Forum topics and posts will become associated with a default user effectively removing your identity from them. If you wish to have your forum posts removed please contact staff.</p>
+            <p><b>Temporarily deactivating as a means to gain attention of some kind is frowned upon and you will likely be banned after returning. Use this feature cautiously.</b></p>
+        </div>
+
+        <div class="settings__data__content">
+            {{ input_text('password', 'settings__data__password', '', 'password', 'Password', true) }}
+
+            <div class="settings__data__actions">
+                <button class="input__button" name="action" value="deactivate" onclick="return confirm('Are you absolutely sure?');">Deactivate</button>
+            </div>
+        </div>
+    </form>#}
+{% endblock %}

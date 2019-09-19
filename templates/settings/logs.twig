@@ -20,9 +20,15 @@
                 {{ lhpagination }}
             </div>
 
-            {% for attempt in login_history_list %}
-                {{ user_login_attempt(attempt) }}
-            {% endfor %}
+            {% if login_history_list|length < 1 %}
+                <div class="settings__login-attempts__none">
+                    There are no recent log in attempts to display.
+                </div>
+            {% else %}
+                {% for attempt in login_history_list %}
+                    {{ user_login_attempt(attempt) }}
+                {% endfor %}
+            {% endif %}
 
             <div class="settings__login-attempts__pagination">
                 {{ lhpagination }}

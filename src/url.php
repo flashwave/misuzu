@@ -84,6 +84,7 @@ define('MSZ_URLS', [
     'settings-account'                  => ['/settings/account.php'],
     'settings-sessions'                 => ['/settings/sessions.php'],
     'settings-logs'                     => ['/settings/logs.php'],
+    'settings-data'                     => ['/settings/data.php'],
 
     'comment-create'                    => ['/comments.php',                    ['m' => 'create']],
     'comment-vote'                      => ['/comments.php',                    ['c' => '<comment>', 'csrf' => '{csrf}', 'm' => 'vote', 'v' => '<vote>']],

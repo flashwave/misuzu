@@ -3,6 +3,7 @@ audit_log_define('PERSONAL_EMAIL_CHANGE');
 audit_log_define('PERSONAL_PASSWORD_CHANGE');
 audit_log_define('PERSONAL_SESSION_DESTROY');
 audit_log_define('PERSONAL_SESSION_DESTROY_ALL');
+audit_log_define('PERSONAL_DATA_DOWNLOAD');
 audit_log_define('PASSWORD_RESET');
 audit_log_define('CHANGELOG_ENTRY_CREATE');
 audit_log_define('CHANGELOG_ENTRY_EDIT');
@@ -62,6 +63,7 @@ define('MSZ_AUDIT_LOG_STRINGS', [
     MSZ_AUDIT_FORUM_TOPIC_BUMP              => 'Manually bumped forum topic #%d.',
     MSZ_AUDIT_FORUM_TOPIC_LOCK              => 'Locked forum topic #%d.',
     MSZ_AUDIT_FORUM_TOPIC_UNLOCK            => 'Unlocked forum topic #%d.',
+    MSZ_AUDIT_PERSONAL_DATA_DOWNLOAD        => 'Downloaded archive of account data.',
 ]);
 
 function audit_log_define(string $name): void {
