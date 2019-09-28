@@ -280,7 +280,7 @@ if(PHP_SAPI === 'cli') {
                 touch(MSZ_ROOT . '/.migrating');
 
                 echo "Creating migration manager.." . PHP_EOL;
-                $migrationManager = new DatabaseMigrationManager(DB::getPDO(), $path);
+                $migrationManager = new DatabaseMigrationManager(DB::getPDO(), MSZ_ROOT . '/database');
                 $migrationManager->setLogger(function ($log) {
                     echo $log . PHP_EOL;
                 });
