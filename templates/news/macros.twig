@@ -1,5 +1,5 @@
 {% macro news_preview(post) %}
-    {% from 'macros.twig' import container_title %}
+    {% from 'macros.twig' import container_title, avatar %}
 
     <div class="container news__preview" style="{% if post.user_colour is not null %}{{ post.user_colour|html_colour }}{% endif %}">
         <div class="news__preview__info">
@@ -7,9 +7,8 @@
             <div class="news__preview__info__content">
                 {% if post.user_id is not null %}
                     <div class="news__preview__user">
-                        <a class="avatar news__preview__avatar"
-                            style="background-image:url('{{ url('user-avatar', {'user': post.user_id, 'res': 120}) }}');"
-                            href="{{ url('user-profile', {'user': post.user_id}) }}">
+                        <a class="news__preview__avatar" href="{{ url('user-profile', {'user': post.user_id}) }}">
+                            {{ avatar(post.user_id, 60, post.username) }}
                         </a>
 
                         <div class="news__preview__user__details">
@@ -47,15 +46,16 @@
 {% endmacro %}
 
 {% macro news_post(post) %}
+    {% from 'macros.twig' import avatar %}
+
     <div class="container news__post" style="{% if post.user_colour is not null %}{{ post.user_colour|html_colour('--accent-colour') }}{% endif %}">
         <div class="news__post__info">
             <div class="news__post__info__background"></div>
             <div class="news__post__info__content">
                 {% if post.user_id is not null %}
                     <div class="news__post__user">
-                        <a class="avatar news__post__avatar"
-                            style="background-image:url('{{ url('user-avatar', {'user': post.user_id, 'res': 120}) }}');"
-                            href="{{ url('user-profile', {'user': post.user_id}) }}">
+                        <a class="news__post__avatar" href="{{ url('user-profile', {'user': post.user_id}) }}">
+                            {{ avatar(post.user_id, 60, post.username) }}
                         </a>
 
                         <div class="news__post__user__details">

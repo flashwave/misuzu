@@ -81,7 +81,7 @@ window.addEventListener('load', () => {
     if(loginForms.length > 0) {
         for(let i = 0; i < loginForms.length; i++) {
             const loginForm: HTMLFormElement = loginForms[i],
-                loginAvatar: HTMLElement = loginForm.getElementsByClassName('js-login-avatar')[0] as HTMLElement,
+                loginAvatar: HTMLImageElement = loginForm.getElementsByClassName('js-login-avatar')[0] as HTMLImageElement,
                 loginUsername: HTMLInputElement = loginForm.getElementsByClassName('js-login-username')[0] as HTMLInputElement;
 
             // Initial bump, in case anything is prefilled.
@@ -111,26 +111,9 @@ window.addEventListener('load', () => {
     commentsInit();
     forumPostingInit();
     forumPollsInit();
-
-    if(Math.round(Math.random() * 1000) > 900)
-        <img src="about:logo" onError={() => {
-            let ffxPos: number = -1000;
-            const ffx: HTMLElement = <a href="https://firefox.com" title="This PSA is brought to you by the van de Groep &amp; von Schnitzel Alliance For A Better Tomorrow."
-                style={`position: fixed; bottom: ${ffxPos}px; left: calc(50% - 234px);`}>
-                <img src="/images/ffbxexy.png" alt="Get Firefox!"/>
-            </a>;
-
-            const ffxInterval: number = setInterval(() => {
-                ffx.style.bottom = (ffxPos++).toString() + "px";
-                if(ffxPos >= 10)
-                    clearInterval(ffxInterval);
-            }, 100);
-
-            document.body.append(ffx);
-        }}/>
 });
 
-function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTMLInputElement, force: boolean = false): void {
+function loginFormUpdateAvatar(avatarElement: HTMLImageElement, usernameElement: HTMLInputElement, force: boolean = false): void {
     if(!force) {
         if(loginFormAvatarTimeout)
             return;
@@ -148,10 +131,10 @@ function loginFormUpdateAvatar(avatarElement: HTMLElement, usernameElement: HTML
         if(xhr.readyState !== 4)
             return;
 
-        avatarElement.style.backgroundImage = "url('{0}')".replace('{0}', urlFormat('user-avatar', [
-            { name: 'user', value: xhr.responseText },
+        avatarElement.src = urlFormat('user-avatar', [
+            { name: 'user', value: xhr.responseText.indexOf('<') !== -1 ? '0' : xhr.responseText },
             { name: 'res', value: 100 },
-        ]));
+        ]);
     });
     xhr.open('GET', urlFormat('auth-resolve-user', [{name: 'username', value: encodeURIComponent(usernameElement.value)}]));
     xhr.send();

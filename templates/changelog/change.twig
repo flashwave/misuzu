@@ -1,5 +1,5 @@
 {% extends 'changelog/master.twig' %}
-{% from 'macros.twig' import container_title %}
+{% from 'macros.twig' import container_title, avatar %}
 {% from '_layout/comments.twig' import comments_section %}
 
 {% set title = 'Changelog » Change #' ~ change.change_id %}
@@ -40,9 +40,8 @@
             <div class="changelog__change__info__content">
                 {% if change.user_id is not null %}
                     <div class="changelog__change__user">
-                        <a class="avatar changelog__change__avatar"
-                            style="background-image:url('{{ url('user-avatar', {'user': change.user_id, 'res': 120}) }}');"
-                            href="{{ url('user-profile', {'user': change.user_id}) }}">
+                        <a class="changelog__change__avatar" href="{{ url('user-profile', {'user': change.user_id}) }}">
+                            {{ avatar(change.user_id, 60, change.username) }}
                         </a>
 
                         <div class="changelog__change__user__details">

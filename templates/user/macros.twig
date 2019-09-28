@@ -1,4 +1,6 @@
 {% macro user_card(user) %}
+    {% from 'macros.twig' import avatar %}
+
     <div class="usercard"{% if user.user_colour is defined %} style="{{ user.user_colour|html_colour('--accent-colour') }}"{% endif %}>
         <div class="usercard__background"></div>
 
@@ -6,8 +8,8 @@
             <a class="usercard__header__link" href="{{ url('user-profile', {'user': user.user_id}) }}"></a>
 
             <div class="usercard__header__container">
-                <div class="avatar usercard__header__avatar"
-                    style="background-image:url('{{ url('user-avatar', {'user': user.user_id, 'res': 120}) }}')">
+                <div class="usercard__header__avatar">
+                    {{ avatar(user.user_id, 60, user.username) }}
                 </div>
 
                 <div class="usercard__header__details">
@@ -263,10 +265,12 @@
 {% endmacro %}
 
 {% macro user_account_log(data, strings) %}
+    {% from 'macros.twig' import avatar %}
+
     <div class="settings__account-log" id="account-log-{{ data.log_id }}">
         {% if data.user_id is defined %}
             <a href="{{ url('user-profile', {'user': data.user_id}) }}" class="settings__account-log__user" style="{{ data.user_colour|html_colour }}">
-                <div class="avatar settings__account-log__user__avatar" style="background-image:url('{{ url('user-avatar', {'user': data.user_id, 'res': 40}) }}');"></div>
+                <div class="settings__account-log__user__avatar">{{ avatar(data.user_id, 20, data.username) }}</div>
                 <div class="settings__account-log__user__name">{{ data.username }}</div>
             </a>
         {% endif %}
@@ -308,6 +312,7 @@
 {% endmacro %}
 
 {% macro user_profile_warning(warning, show_private_note, show_user_info, delete_csrf) %}
+    {% from 'macros.twig' import avatar %}
     {% if warning.warning_type == constant('MSZ_WARN_SILENCE') %}
         {% set warning_text = 'Silence' %}
         {% set warning_class = 'silence' %}
@@ -331,7 +336,9 @@
                     {% if warning.username is defined or warning.user_ip is defined %}
                         <div class="profile__warning__user">
                             {% if warning.username is defined %}
-                                <div class="avatar profile__warning__user__avatar" style="background-image:url('{{ url('user-avatar', {'user': warning.user_id, 'res': 40}) }}');"></div>
+                                <div class="profile__warning__user__avatar">
+                                    {{ avatar(warning.user_id, 20, warning.username) }}
+                                </div>
                                 <a class="profile__warning__user__username" href="{{ url('user-profile', {'user': warning.user_id}) }}">
                                     {{ warning.username }}
                                 </a>
@@ -346,7 +353,9 @@
                     {% endif %}
 
                     <div class="profile__warning__user">
-                        <div class="avatar profile__warning__user__avatar" style="background-image:url('{{ url('user-avatar', {'user': warning.issuer_id, 'res': 40}) }}');"></div>
+                        <div class="profile__warning__user__avatar">
+                            {{ avatar(warning.issuer_id, 20, warning.issuer_username) }}
+                        </div>
                         <a class="profile__warning__user__username" href="{{ url('user-profile', {'user': warning.user_id}) }}">
                             {{ warning.issuer_username }}
                         </a>

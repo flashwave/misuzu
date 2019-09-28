@@ -22,7 +22,7 @@
                     function updateAvatarPreview(name, url, preview) {
                         url = url || "{{ url('user-avatar', {'user': profile.user_id, 'res': 240})|raw }}";
                         preview = preview || document.getElementById('avatar-preview');
-                        preview.style.backgroundImage = 'url(\'{0}\')'.replace('{0}', url);
+                        preview.src = url;
                         preview.title = name;
                     }
 

@@ -1,7 +1,7 @@
 {% extends 'master.twig' %}
 
 {% if profile is defined %}
-    {% set image = url('user-avatar', {'user': profile.user_id, 'res': 240}) %}
+    {% set image = url('user-avatar', {'user': profile.user_id, 'res': 200}) %}
     {% set manage_link = url('manage-user', {'user': profile.user_id}) %}
     {% set stats = [
         {

@@ -1,4 +1,5 @@
 {% extends 'forum/master.twig' %}
+{% from 'macros.twig' import avatar %}
 {% from 'forum/macros.twig' import forum_header %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_button, input_select, input_checkbox %}
 
@@ -46,7 +47,7 @@
             <div class="forum__post__info">
                 <div class="forum__post__info__background"></div>
                 <div class="forum__post__info__content">
-                    <span class="avatar forum__post__avatar" style="background-image:url('{{ url('user-avatar', {'user': posting_post.poster_id|default(current_user.user_id), 'res': 240}) }}');"></span>
+                    <span class="forum__post__avatar">{{ avatar(posting_post.poster_id|default(current_user.user_id), 120, posting_post.poster_name|default(current_user.username)) }}</span>
 
                     <span class="forum__post__username">{{ posting_post.poster_name|default(current_user.username) }}</span>
 

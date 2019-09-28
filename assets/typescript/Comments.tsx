@@ -209,11 +209,12 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
 
     const commentElement: HTMLDivElement = <div class="comment" id={"comment-" + comment.comment_id}>
         <div class="comment__container">
-            <a class="avatar comment__avatar" href={urlFormat('user-profile', [{name:'user',value:comment.user_id}])}
-                style={"background-image: url('{0}')".replace('{0}', urlFormat('user-avatar', [
+            <a class="comment__avatar" href={urlFormat('user-profile', [{name:'user',value:comment.user_id}])}>
+                <img class="avatar" alt={comment.username} width={layer <= 1 ? 50 : 40} height={layer <= 1 ? 50 : 40} src={urlFormat('user-avatar', [
                     { name: 'user', value: comment.user_id },
-                    { name: 'res', value: layer < 1 ? 100 : 80 }
-                ]))}></a>
+                    { name: 'res', value: layer <= 1 ? 100 : 80 }
+                ])}/>
+            </a>
             <div class="comment__content">
                 <div class="comment__info">
                     <a class="comment__user comment__user--link" href={urlFormat('user-profile', [{name:'user',value:comment.user_id}])}
@@ -231,12 +232,13 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
             <input type="checkbox" id={"comment-reply-toggle-" + comment.comment_id} class="comment__reply-toggle" />
             <form id={"comment-reply-" + comment.comment_id} class="comment comment--input comment--reply" method="post"
                 action="javascript:void(0);" onSubmit={commentPostEventHandler}>
+                <input type="hidden" name="csrf" value={getCSRFToken()} />
                 <input type="hidden" name="comment[category]" value={comment.category_id} />
-                <input type="hidden" name="csrf[comments]" value={getCSRFToken()} />
                 <input type="hidden" name="comment[reply]" value={comment.comment_id} />
                 <div class="comment__container">
-                    <div class="avatar comment__avatar"
-                        style={"background-image: url('{0}')".replace('{0}', urlFormat('user-avatar', [{name:'user',value:comment.user_id},{name:'res',value:80}]))}></div>
+                    <div class="avatar comment__avatar">
+                           <img class="avatar" width="40" height="40" src={urlFormat('user-avatar', [{name:'user',value:comment.user_id},{name:'res',value:80}])}/>
+                    </div>
                     <div class="comment__content">
                         <div class="comment__info"></div>
                         <textarea class="comment__text input__textarea comment__text--input" name="comment[text]" placeholder="Share your extensive insights..." onKeyDown={commentInputEventHandler}></textarea>

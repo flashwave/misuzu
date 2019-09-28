@@ -1,3 +1,4 @@
+{% from 'macros.twig' import avatar %}
 {% from '_layout/input.twig' import input_checkbox_raw %}
 
 {% set site_menu = [
@@ -139,11 +140,13 @@
             {% endfor %}
 
             {% if current_user is defined %}
-                <a href="{{ url('user-profile', {'user': current_user.user_id}) }}" class="avatar header__desktop__user__avatar" title="{{ current_user.username }}"
-                    style="background-image:url('{{ url('user-avatar', {'user': current_user.user_id, 'res': 120}) }}');{{ current_user.user_colour|html_colour }}"></a>
+                <a href="{{ url('user-profile', {'user': current_user.user_id}) }}" class="avatar header__desktop__user__avatar" title="{{ current_user.username }}" style="{{ current_user.user_colour|html_colour }}">
+                    {{ avatar(current_user.user_id, 60, current_user.username) }}
+                </a>
             {% else %}
-                <a href="{{ url('auth-login') }}" class="avatar header__desktop__user__avatar"
-                    style="background-image:url('{{ url('user-avatar', {'res': 120}) }}');"></a>
+                <a href="{{ url('auth-login') }}" class="avatar header__desktop__user__avatar">
+                    {{ avatar(0, 60, 'Log in') }}
+                </a>
             {% endif %}
         </div>
     </div>
@@ -158,8 +161,8 @@
                 {{ globals.site_name }}
             </a>
 
-            <label class="header__mobile__icon avatar header__mobile__avatar" for="toggle-mobile-header"
-                style="background-image:url('{{ url('user-avatar', {'user': current_user.user_id|default(0), 'res': 80}) }}');">
+            <label class="header__mobile__icon header__mobile__avatar" for="toggle-mobile-header">
+                {{ avatar(current_user.user_id|default(0), 40, current_user.username|default('Log in')) }}
             </label>
         </div>
 

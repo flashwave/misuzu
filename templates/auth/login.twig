@@ -1,4 +1,5 @@
 {% extends 'auth/master.twig' %}
+{% from 'macros.twig' import avatar %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text %}
 
 {% set title = 'Login' %}
@@ -11,7 +12,9 @@
         <div class="container__title">
             <div class="container__title__background"></div>
             <div class="auth__login__header">
-                <div class="avatar auth__login__avatar js-login-avatar" style="background-image:url('{{ url('user-avatar', {'res': 200}) }}');"></div>
+                <div class="auth__login__avatar">
+                    {{ avatar(0, 100, 'Avatar', {'class':'js-login-avatar'}) }}
+                </div>
             </div>
         </div>
 

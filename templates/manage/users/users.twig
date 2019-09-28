@@ -1,5 +1,5 @@
 {% extends 'manage/users/master.twig' %}
-{% from 'macros.twig' import pagination, container_title %}
+{% from 'macros.twig' import pagination, container_title, avatar %}
 
 {% set users_pagination = pagination(manage_users_pagination, url('manage-users')) %}
 
@@ -19,7 +19,7 @@
                     <a href="{{ url('manage-user', {'user': user.user_id}) }}" class="manage__user-item__background"></a>
 
                     <div class="manage__user-item__container">
-                        <div class="avatar manage__user-item__avatar" style="background-image: url('{{ url('user-avatar', {'user': user.user_id, 'res': 80}) }}')"></div>
+                        <div class="manage__user-item__avatar">{{ avatar(user.user_id, 40, user.username) }}</div>
                         <div class="manage__user-item__info">
                             <div class="manage__user-item__name">
                                 {{ user.username }}

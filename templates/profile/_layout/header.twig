@@ -1,3 +1,4 @@
+{% from 'macros.twig' import avatar %}
 {% from '_layout/input.twig' import input_checkbox_raw %}
 
 <div class="container profile__header">
@@ -6,10 +7,9 @@
     <div class="profile__header__details">
         <div class="profile__header__avatar">
             {% if profile_is_editing and perms.edit_avatar %}
-                <label class="avatar profile__header__avatar__image profile__header__avatar__image--edit"
-                    style="background-image:url('{{ image }}')"
-                    id="avatar-preview"
-                    for="avatar-selection"></label>
+                <label class="profile__header__avatar__image profile__header__avatar__image--edit" for="avatar-selection">
+                    {{ avatar(profile.user_id, 120, profile.username, {'id': 'avatar-preview'}) }}
+                </label>
 
                 <div class="profile__header__avatar__options">
                     <label class="input__button profile__header__avatar__option" for="avatar-selection">
@@ -23,7 +23,9 @@
                     </label>
                 </div>
             {% else %}
-                <div class="avatar profile__header__avatar__image" style="background-image:url('{{ image }}')"></div>
+                <div class="profile__header__avatar__image">
+                    {{ avatar(profile.user_id|default(0), 120, profile.username|default('')) }}
+                </div>
             {% endif %}
         </div>
 

@@ -108,6 +108,7 @@
 {% endmacro %}
 
 {% macro forum_category_entry(forum, forum_unread, forum_icon) %}
+    {% from 'macros.twig' import avatar %}
     {% set forum_unread = forum_unread|default(forum.forum_unread|default(false)) ? 'unread' : 'read' %}
 
     {% if forum_icon is empty %}
@@ -198,9 +199,8 @@
                             </div>
 
                             {% if forum.recent_post_user_id is not null %}
-                                <a href="{{ url('user-profile', {'user': forum.recent_post_user_id}) }}"
-                                    class="avatar forum__category__avatar"
-                                    style="background-image:url('{{ url('user-avatar', {'user': forum.recent_post_user_id, 'res': 80}) }}')">
+                                <a href="{{ url('user-profile', {'user': forum.recent_post_user_id}) }}" class="avatar forum__category__avatar">
+                                    {{ avatar(forum.recent_post_user_id, 40, forum.recent_post_username) }}
                                 </a>
                             {% endif %}
                         {% endif %}
@@ -254,6 +254,7 @@
 {% endmacro %}
 
 {% macro forum_topic_entry(topic, topic_icon, topic_unread) %}
+    {% from 'macros.twig' import avatar %}
     {% set topic_unread = topic_unread|default(topic.topic_unread|default(false)) %}
     {% set topic_important = topic.topic_type == constant('MSZ_TOPIC_TYPE_STICKY') or topic.topic_type == constant('MSZ_TOPIC_TYPE_ANNOUNCEMENT') or topic.topic_type == constant('MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT') %}
     {% set has_priority_voting = forum_has_priority_voting(topic.forum_type) %}
@@ -354,9 +355,8 @@
                 </div>
 
                 {% if topic.respondent_id is not null %}
-                    <a href="{{ url('user-profile', {'user': topic.respondent_id}) }}"
-                        class="avatar forum__topic__avatar"
-                        style="background-image:url('{{ url('user-avatar', {'user': topic.respondent_id, 'res': 60}) }}')">
+                    <a href="{{ url('user-profile', {'user': topic.respondent_id}) }}" class="forum__topic__avatar">
+                        {{ avatar(topic.respondent_id, 30, topic.respondent_name) }}
                     </a>
                 {% endif %}
             </div>

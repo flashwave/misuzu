@@ -1,6 +1,7 @@
 {% macro comments_input(category, user, perms, reply_to) %}
     {% set reply_mode = reply_to is not null %}
 
+    {% from 'macros.twig' import avatar %}
     {% from '_layout/input.twig' import input_hidden, input_csrf, input_checkbox %}
 
     <form class="comment comment--input{% if reply_mode %} comment--reply{% endif %}"
@@ -14,8 +15,8 @@
         {% endif %}
 
         <div class="comment__container">
-            <div class="avatar comment__avatar"
-                style="background-image:url('{{ url('user-avatar', {'user':user.user_id, 'res': (reply_mode ? 80 : 100)}) }}')">
+            <div class="avatar comment__avatar">
+                {{ avatar(user.user_id, reply_mode ? 40 : 50, user.username) }}
             </div>
             <div class="comment__content">
                 <textarea
@@ -40,6 +41,7 @@
 {% endmacro %}
 
 {% macro comments_entry(comment, indent, category, user, perms) %}
+    {% from 'macros.twig' import avatar %}
     {% from '_layout/input.twig' import input_checkbox_raw %}
     {% set is_deleted = comment.comment_deleted is not null %}
     {% set hide_details = is_deleted and not perms.can_delete_any %}
@@ -50,11 +52,12 @@
         <div class="comment{% if is_deleted %} comment--deleted{% endif %}" id="comment-{{ comment.comment_id }}">
             <div class="comment__container">
                 {% if hide_details %}
-                    <div class="avatar comment__avatar" style="background-image:url('{{ url('user-avatar', {'res': indent > 1 ? 80 : 100}) }}')"></div>
+                    <div class="comment__avatar">
+                        {{ avatar(0, indent > 1 ? 40 : 50) }}
+                    </div>
                 {% else %}
-                    <a class="avatar comment__avatar"
-                        href="{{ url('user-profile', {'user':comment.user_id}) }}"
-                        style="background-image:url('{{ url('user-avatar', {'user': comment.user_id, 'res': indent > 1 ? 80 : 100}) }}')">
+                    <a class="comment__avatar" href="{{ url('user-profile', {'user':comment.user_id}) }}">
+                        {{ avatar(comment.user_id, indent > 1 ? 40 : 50, comment.username) }}
                     </a>
                 {% endif %}
                 <div class="comment__content">

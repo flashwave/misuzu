@@ -149,3 +149,37 @@ function html_colour(?int $colour, $attribs = '--user-colour'): string {
 
     return $css;
 }
+
+function html_avatar(int $userId, int $resolution, string $altText = '', array $attributes = []): string {
+    $attributes['src'] = url('user-avatar', ['user' => $userId, 'res' => $resolution * 2]);
+    $attributes['alt'] = $altText;
+    $attributes['class'] = trim('avatar ' . ($attributes['class'] ?? ''));
+
+    if(!isset($attributes['width']))
+        $attributes['width'] = $resolution;
+    if(!isset($attributes['height']))
+        $attributes['height'] = $resolution;
+
+    return html_tag('img', $attributes);
+}
+
+function html_tag(string $name, array $atrributes = [], ?bool $close = null, string $content = ''): string {
+    $html = '<' . $name;
+
+    foreach($atrributes as $key => $value) {
+        $html .= ' ' . $key;
+
+        if(!empty($value))
+            $html .= '="' . $value . '"';
+    }
+
+    if($close === false)
+        $html .= '/';
+
+    $html .= '>';
+
+    if($close === true)
+        $html .= $content . '</' . $name . '>';
+
+    return $html;
+}

@@ -1,4 +1,5 @@
 {% extends 'forum/master.twig' %}
+{% from 'macros.twig' import avatar %}
 {% from 'forum/macros.twig' import forum_header %}
 
 {% set title = 'Forum Leaderboard » ' ~ leaderboard_name %}
@@ -35,7 +36,7 @@
                 <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="forum__leaderboard__user__background"></a>
                 <div class="forum__leaderboard__user__content">
                     <div class="forum__leaderboard__user__rank">{{ user.rank|number_format }}</div>
-                    <div class="avatar forum__leaderboard__user__avatar" style="background-image:url('{{ url('user-avatar', {'user': user.user_id, 'r': 80}) }}')"></div>
+                    <div class="forum__leaderboard__user__avatar">{{ avatar(user.user_id, user.rank == 1 ? 50 : 40, user.username) }}</div>
                     <div class="forum__leaderboard__user__username">{{ user.username }}</div>
                     <div class="forum__leaderboard__user__posts">{{ user.posts|number_format }} posts</div>
                 </div>
