@@ -24,13 +24,13 @@ require_once 'vendor/autoload.php';
 
 $errorHandler = new \Whoops\Run;
 $errorHandler->pushHandler(
-    MSZ_DEBUG
-    ? (
-        PHP_SAPI === 'cli'
-        ? new \Whoops\Handler\PlainTextHandler
-        : new \Whoops\Handler\PrettyPageHandler
+    PHP_SAPI === 'cli'
+    ? new \Whoops\Handler\PlainTextHandler
+    : (
+        MSZ_DEBUG
+        ? new \Whoops\Handler\PrettyPageHandler
+        : ($errorReporter = new WhoopsReporter)
     )
-    : ($errorReporter = new WhoopsReporter)
 );
 $errorHandler->register();
 
