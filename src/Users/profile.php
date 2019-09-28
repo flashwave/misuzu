@@ -144,7 +144,7 @@ function user_profile_fields_set(int $userId, array $fields): array {
     }
 
     if(count($values) > 0) {
-        $updateFields = db_prepare('
+        $updateFields = \Misuzu\DB::prepare('
             UPDATE `msz_users`
             SET ' . pdo_prepare_array_update($values, true) . '
             WHERE `user_id` = :user_id
@@ -197,7 +197,7 @@ function user_profile_fields_display(array $user, bool $hideEmpty = true): array
 }
 
 function user_profile_get(int $userId): array {
-    $getProfile = db_prepare(
+    $getProfile = \Misuzu\DB::prepare(
         sprintf(
             '
                 SELECT
@@ -259,6 +259,6 @@ function user_profile_get(int $userId): array {
             MSZ_USER_RELATION_FOLLOW
         )
     );
-    $getProfile->bindValue('user_id', $userId);
-    return db_fetch($getProfile);
+    $getProfile->bind('user_id', $userId);
+    return $getProfile->fetch();
 }

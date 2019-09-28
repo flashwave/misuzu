@@ -65,7 +65,7 @@ function perms_get_user(int $user): array {
         return $memo[$user];
     }
 
-    $getPerms = db_prepare(sprintf(
+    $getPerms = \Misuzu\DB::prepare(sprintf(
         '
             SELECT %s
             FROM `msz_permissions`
@@ -81,10 +81,10 @@ function perms_get_user(int $user): array {
         ',
         perms_get_select()
     ));
-    $getPerms->bindValue('user_id_1', $user);
-    $getPerms->bindValue('user_id_2', $user);
+    $getPerms->bind('user_id_1', $user);
+    $getPerms->bind('user_id_2', $user);
 
-    return $memo[$user] = db_fetch($getPerms);
+    return $memo[$user] = $getPerms->fetch();
 }
 
 function perms_delete_user(int $user): bool {
@@ -92,12 +92,12 @@ function perms_delete_user(int $user): bool {
         return false;
     }
 
-    $deletePermissions = db_prepare('
+    $deletePermissions = \Misuzu\DB::prepare('
         DELETE FROM `msz_permissions`
         WHERE `role_id` IS NULL
         AND `user_id` = :user_id
     ');
-    $deletePermissions->bindValue('user_id', $user);
+    $deletePermissions->bind('user_id', $user);
     return $deletePermissions->execute();
 }
 
@@ -112,7 +112,7 @@ function perms_get_role(int $role): array {
         return $memo[$role];
     }
 
-    $getPerms = db_prepare(sprintf(
+    $getPerms = \Misuzu\DB::prepare(sprintf(
         '
             SELECT %s
             FROM `msz_permissions`
@@ -121,9 +121,9 @@ function perms_get_role(int $role): array {
         ',
         perms_get_select()
     ));
-    $getPerms->bindValue('role_id', $role);
+    $getPerms->bind('role_id', $role);
 
-    return $memo[$role] = db_fetch($getPerms);
+    return $memo[$role] = $getPerms->fetch();
 }
 
 function perms_get_user_raw(int $user): array {
@@ -131,14 +131,14 @@ function perms_get_user_raw(int $user): array {
         return perms_create();
     }
 
-    $getPerms = db_prepare(sprintf('
+    $getPerms = \Misuzu\DB::prepare(sprintf('
         SELECT `%s`
         FROM `msz_permissions`
         WHERE `user_id` = :user_id
         AND `role_id` IS NULL
     ', implode('`, `', perms_get_keys())));
-    $getPerms->bindValue('user_id', $user);
-    $perms = db_fetch($getPerms);
+    $getPerms->bind('user_id', $user);
+    $perms = $getPerms->fetch();
 
     if(empty($perms)) {
         return perms_create();
@@ -159,7 +159,7 @@ function perms_set_user_raw(int $user, array $perms): bool {
         $realPerms[$perm] = (int)($perms[$perm] ?? 0);
     }
 
-    $setPermissions = db_prepare(sprintf(
+    $setPermissions = \Misuzu\DB::prepare(sprintf(
         '
             REPLACE INTO `msz_permissions`
                 (`role_id`, `user_id`, `%s`)
@@ -169,10 +169,10 @@ function perms_set_user_raw(int $user, array $perms): bool {
         implode('`, `', $permKeys),
         implode(', :', $permKeys)
     ));
-    $setPermissions->bindValue('user_id', $user);
+    $setPermissions->bind('user_id', $user);
 
     foreach($realPerms as $key => $value) {
-        $setPermissions->bindValue($key, $value);
+        $setPermissions->bind($key, $value);
     }
 
     return $setPermissions->execute();
@@ -183,14 +183,14 @@ function perms_get_role_raw(int $role): array {
         return perms_create();
     }
 
-    $getPerms = db_prepare(sprintf('
+    $getPerms = \Misuzu\DB::prepare(sprintf('
         SELECT `%s`
         FROM `msz_permissions`
         WHERE `user_id` IS NULL
         AND `role_id` = :role_id
     ', implode('`, `', perms_get_keys())));
-    $getPerms->bindValue('role_id', $role);
-    $perms = db_fetch($getPerms);
+    $getPerms->bind('role_id', $role);
+    $perms = $getPerms->fetch();
 
     if(empty($perms)) {
         return perms_create();

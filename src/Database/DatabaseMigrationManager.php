@@ -1,5 +1,5 @@
 <?php
-namespace Misuzu;
+namespace Misuzu\Database;
 
 use Exception;
 use PDO;

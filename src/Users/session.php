@@ -8,7 +8,7 @@ function user_session_create(
 ): string {
     $sessionKey = user_session_generate_key();
 
-    $createSession = db_prepare('
+    $createSession = \Misuzu\DB::prepare('
         INSERT INTO `msz_sessions`
             (
                 `user_id`, `session_ip`, `session_country`,
@@ -20,11 +20,11 @@ function user_session_create(
                 :session_user_agent, :session_key, NOW(), NOW() + INTERVAL 1 MONTH
             )
     ');
-    $createSession->bindValue('user_id', $userId);
-    $createSession->bindValue('session_ip', $ipAddress);
-    $createSession->bindValue('session_country', ip_country_code($ipAddress));
-    $createSession->bindValue('session_user_agent', $userAgent);
-    $createSession->bindValue('session_key', $sessionKey);
+    $createSession->bind('user_id', $userId);
+    $createSession->bind('session_ip', $ipAddress);
+    $createSession->bind('session_country', ip_country_code($ipAddress));
+    $createSession->bind('session_user_agent', $userAgent);
+    $createSession->bind('session_key', $sessionKey);
 
     return $createSession->execute() ? $sessionKey : '';
 }
@@ -34,7 +34,7 @@ function user_session_find($sessionId, bool $byKey = false): array {
         return [];
     }
 
-    $findSession = db_prepare(sprintf('
+    $findSession = \Misuzu\DB::prepare(sprintf('
         SELECT
             `session_id`, `user_id`,
             INET6_NTOA(`session_ip`) as `session_ip`,
@@ -44,16 +44,16 @@ function user_session_find($sessionId, bool $byKey = false): array {
         FROM `msz_sessions`
         WHERE `%s` = :session_id
     ', $byKey ? 'session_key' : 'session_id'));
-    $findSession->bindValue('session_id', $sessionId);
-    return db_fetch($findSession);
+    $findSession->bind('session_id', $sessionId);
+    return $findSession->fetch();
 }
 
 function user_session_delete(int $sessionId): void {
-    $deleteSession = db_prepare('
+    $deleteSession = \Misuzu\DB::prepare('
         DELETE FROM `msz_sessions`
         WHERE `session_id` = :session_id
     ');
-    $deleteSession->bindValue('session_id', $sessionId);
+    $deleteSession->bind('session_id', $sessionId);
     $deleteSession->execute();
 }
 
@@ -62,7 +62,7 @@ function user_session_generate_key(): string {
 }
 
 function user_session_purge_all(int $userId): void {
-    db_prepare('
+    \Misuzu\DB::prepare('
         DELETE FROM `msz_sessions`
         WHERE `user_id` = :user_id
     ')->execute([
@@ -71,24 +71,24 @@ function user_session_purge_all(int $userId): void {
 }
 
 function user_session_count($userId = 0): int {
-    $getCount = db_prepare(sprintf('
+    $getCount = \Misuzu\DB::prepare(sprintf('
         SELECT COUNT(`session_id`)
         FROM `msz_sessions`
         %s
     ', $userId < 1 ? '' : 'WHERE `user_id` = :user_id'));
 
     if($userId >= 1) {
-        $getCount->bindValue('user_id', $userId);
+        $getCount->bind('user_id', $userId);
     }
 
-    return $getCount->execute() ? (int)$getCount->fetchColumn() : 0;
+    return (int)$getCount->fetchColumn();
 }
 
 function user_session_list(int $offset, int $take, int $userId = 0): array {
     $offset = max(0, $offset);
     $take = max(1, $take);
 
-    $getSessions = db_prepare(sprintf('
+    $getSessions = \Misuzu\DB::prepare(sprintf('
         SELECT
             `session_id`, `session_country`, `session_user_agent`, `session_created`,
             `session_expires`, `session_active`, `session_expires_bump`,
@@ -101,13 +101,13 @@ function user_session_list(int $offset, int $take, int $userId = 0): array {
     ', $userId < 1 ? '1' : '`user_id` = :user_id'));
 
     if($userId > 0) {
-        $getSessions->bindValue('user_id', $userId);
+        $getSessions->bind('user_id', $userId);
     }
 
-    $getSessions->bindValue('offset', $offset);
-    $getSessions->bindValue('take', $take);
+    $getSessions->bind('offset', $offset);
+    $getSessions->bind('take', $take);
 
-    return db_fetch_all($getSessions);
+    return $getSessions->fetchAll();
 }
 
 function user_session_bump_active(int $sessionId, string $ipAddress = null): void {
@@ -115,15 +115,15 @@ function user_session_bump_active(int $sessionId, string $ipAddress = null): voi
         return;
     }
 
-    $bump = db_prepare('
+    $bump = \Misuzu\DB::prepare('
         UPDATE `msz_sessions`
         SET `session_active` = NOW(),
             `session_ip_last` = INET6_ATON(:last_ip),
             `session_expires` = IF(`session_expires_bump`, NOW() + INTERVAL 1 MONTH, `session_expires`)
         WHERE `session_id` = :session_id
     ');
-    $bump->bindValue('session_id', $sessionId);
-    $bump->bindValue('last_ip', $ipAddress ?? ip_remote_address());
+    $bump->bind('session_id', $sessionId);
+    $bump->bind('last_ip', $ipAddress ?? ip_remote_address());
     $bump->execute();
 }
 

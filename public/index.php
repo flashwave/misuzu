@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../misuzu.php';
 
 $showActivityFeed = false; /*user_session_active()
@@ -18,7 +20,7 @@ if($showActivityFeed) {
 
     $news = news_posts_get(0, 5, null, true);
 
-    $stats = db_fetch(db_query('
+    $stats = DB::query('
         SELECT
         (
             SELECT COUNT(`user_id`)
@@ -50,9 +52,9 @@ if($showActivityFeed) {
             FROM `msz_forum_posts`
             WHERE `post_deleted` IS NULL
         ) AS `count_forum_posts`
-    '));
+    ')->fetch();
 
-    $changelog = db_fetch_all(db_query('
+    $changelog = DB::query('
         SELECT
             `change_id`, `change_log`, `change_action`,
             DATE(`change_created`) AS `change_date`,
@@ -60,11 +62,11 @@ if($showActivityFeed) {
         FROM `msz_changelog_changes`
         ORDER BY `change_created` DESC
         LIMIT 10
-    '));
+    ')->fetchAll();
 
     $birthdays = user_session_active() ? user_get_birthdays() : [];
 
-    $latestUser = db_fetch(db_query('
+    $latestUser = DB::query('
         SELECT
             u.`user_id`, u.`username`, u.`user_created`,
             COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
@@ -74,9 +76,9 @@ if($showActivityFeed) {
         WHERE `user_deleted` IS NULL
         ORDER BY u.`user_id` DESC
         LIMIT 1
-    '));
+    ')->fetch();
 
-    $onlineUsers = db_fetch_all(db_query('
+    $onlineUsers = DB::query('
         SELECT
             u.`user_id`, u.`username`,
             COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
@@ -86,7 +88,7 @@ if($showActivityFeed) {
         WHERE u.`user_active` >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
         ORDER BY u.`user_active` DESC
         LIMIT 104
-    '));
+    ')->fetchAll();
 
     tpl_vars([
         'statistics' => $stats,

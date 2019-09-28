@@ -22,15 +22,16 @@ function user_relation_set(int $userId, int $subjectId, int $type = MSZ_USER_REL
         return false;
     }
 
-    $addRelation = db_prepare('
+    // TODO: don't use REPLACE INTO
+    $addRelation = \Misuzu\DB::prepare('
         REPLACE INTO `msz_user_relations`
             (`user_id`, `subject_id`, `relation_type`)
         VALUES
             (:user_id, :subject_id, :type)
     ');
-    $addRelation->bindValue('user_id', $userId);
-    $addRelation->bindValue('subject_id', $subjectId);
-    $addRelation->bindValue('type', $type);
+    $addRelation->bind('user_id', $userId);
+    $addRelation->bind('subject_id', $subjectId);
+    $addRelation->bind('type', $type);
     $addRelation->execute();
 
     return $addRelation->execute();
@@ -41,19 +42,19 @@ function user_relation_remove(int $userId, int $subjectId): bool {
         return false;
     }
 
-    $removeRelation = db_prepare('
+    $removeRelation = \Misuzu\DB::prepare('
         DELETE FROM `msz_user_relations`
         WHERE `user_id` = :user_id
         AND `subject_id` = :subject_id
     ');
-    $removeRelation->bindValue('user_id', $userId);
-    $removeRelation->bindValue('subject_id', $subjectId);
+    $removeRelation->bind('user_id', $userId);
+    $removeRelation->bind('subject_id', $subjectId);
 
     return $removeRelation->execute();
 }
 
 function user_relation_info(int $userId, int $subjectId): array {
-    $getRelationInfo = db_prepare('
+    $getRelationInfo = \Misuzu\DB::prepare('
         SELECT
             :user_id as `user_id_arg`, :subject_id as `subject_id_arg`,
             (
@@ -75,9 +76,9 @@ function user_relation_info(int $userId, int $subjectId): array {
                 OR (`user_id` = `subject_id_arg` AND `subject_id` = `user_id_arg`)
             ) as `relation_created`
     ');
-    $getRelationInfo->bindValue('user_id', $userId);
-    $getRelationInfo->bindValue('subject_id', $subjectId);
-    return db_fetch($getRelationInfo);
+    $getRelationInfo->bind('user_id', $userId);
+    $getRelationInfo->bind('subject_id', $subjectId);
+    return $getRelationInfo->fetch();
 }
 
 function user_relation_count(int $userId, int $type, bool $from): int {
@@ -89,7 +90,7 @@ function user_relation_count(int $userId, int $type, bool $from): int {
     $fetchCount = $getCount[$from] ?? null;
 
     if(empty($fetchCount)) {
-        $getCount[$from] = $fetchCount = db_prepare(sprintf(
+        $getCount[$from] = $fetchCount = \Misuzu\DB::prepare(sprintf(
             '
                 SELECT COUNT(`%1$s`)
                 FROM `msz_user_relations`
@@ -101,10 +102,10 @@ function user_relation_count(int $userId, int $type, bool $from): int {
         ));
     }
 
-    $fetchCount->bindValue('user_id', $userId);
-    $fetchCount->bindValue('type', $type);
+    $fetchCount->bind('user_id', $userId);
+    $fetchCount->bind('type', $type);
 
-    return (int)($fetchCount->execute() ? $fetchCount->fetchColumn() : 0);
+    return (int)$fetchCount->fetchColumn();
 }
 
 function user_relation_count_to(int $userId, int $type): int {
@@ -134,7 +135,7 @@ function user_relation_users(
     $fetchUsers = $prepared[$key] ?? null;
 
     if(empty($fetchUsers)) {
-        $prepared[$key] = $fetchUsers = db_prepare(sprintf(
+        $prepared[$key] = $fetchUsers = \Misuzu\DB::prepare(sprintf(
             '
                 SELECT
                     :current_user_id AS `current_user_id`,
@@ -194,16 +195,16 @@ function user_relation_users(
         ));
     }
 
-    $fetchUsers->bindValue('user_id', $userId);
-    $fetchUsers->bindValue('current_user_id', $requestingUserId);
-    $fetchUsers->bindValue('type', $type);
+    $fetchUsers->bind('user_id', $userId);
+    $fetchUsers->bind('current_user_id', $requestingUserId);
+    $fetchUsers->bind('type', $type);
 
     if(!$fetchAll) {
-        $fetchUsers->bindValue('take', $take);
-        $fetchUsers->bindValue('offset', $offset);
+        $fetchUsers->bind('take', $take);
+        $fetchUsers->bind('offset', $offset);
     }
 
-    return db_fetch_all($fetchUsers);
+    return $fetchUsers->fetchAll();
 }
 
 function user_relation_users_to(

@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_USER, user_session_current('user_id'), MSZ_PERM_USER_MANAGE_USERS)) {
@@ -6,7 +8,7 @@ if(!perms_check_user(MSZ_PERMS_USER, user_session_current('user_id'), MSZ_PERM_U
     return;
 }
 
-$manageUsersCount = db_query('
+$manageUsersCount = (int)DB::query('
     SELECT COUNT(`user_id`)
     FROM `msz_users`
 ')->fetchColumn();
@@ -19,7 +21,7 @@ if(!pagination_is_valid_offset($usersOffset)) {
     return;
 }
 
-$getManageUsers = db_prepare('
+$getManageUsers = DB::prepare('
     SELECT
         u.`user_id`, u.`username`, u.`user_country`, r.`role_id`,
         u.`user_created`, u.`user_active`, u.`user_deleted`,
@@ -32,9 +34,9 @@ $getManageUsers = db_prepare('
     ORDER BY `user_id`
     LIMIT :offset, :take
 ');
-$getManageUsers->bindValue('offset', $usersOffset);
-$getManageUsers->bindValue('take', $usersPagination['range']);
-$manageUsers = db_fetch_all($getManageUsers);
+$getManageUsers->bind('offset', $usersOffset);
+$getManageUsers->bind('take', $usersPagination['range']);
+$manageUsers = $getManageUsers->fetchAll();
 
 echo tpl_render('manage.users.users', [
     'manage_users' => $manageUsers,

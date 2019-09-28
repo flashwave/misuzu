@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_USER, user_session_current('user_id'), MSZ_PERM_USER_MANAGE_ROLES)) {
@@ -6,7 +8,7 @@ if(!perms_check_user(MSZ_PERMS_USER, user_session_current('user_id'), MSZ_PERM_U
     return;
 }
 
-$manageRolesCount = db_query('
+$manageRolesCount = (int)DB::query('
     SELECT COUNT(`role_id`)
     FROM `msz_roles`
 ')->fetchColumn();
@@ -19,7 +21,7 @@ if(!pagination_is_valid_offset($rolesOffset)) {
     return;
 }
 
-$getManageRoles = db_prepare('
+$getManageRoles = DB::prepare('
     SELECT
         `role_id`, `role_colour`, `role_name`, `role_title`,
         (
@@ -30,9 +32,9 @@ $getManageRoles = db_prepare('
     FROM `msz_roles` as r
     LIMIT :offset, :take
 ');
-$getManageRoles->bindValue('offset', $rolesOffset);
-$getManageRoles->bindValue('take', $rolesPagination['range']);
-$manageRoles = db_fetch_all($getManageRoles);
+$getManageRoles->bind('offset', $rolesOffset);
+$getManageRoles->bind('take', $rolesPagination['range']);
+$manageRoles = $getManageRoles->fetchAll();
 
 echo tpl_render('manage.users.roles', [
     'manage_roles' => $manageRoles,

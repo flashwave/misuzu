@@ -32,13 +32,13 @@ function user_validate_username(string $username, bool $checkInUse = false): str
     }
 
     if($checkInUse) {
-        $getUser = db_prepare('
+        $getUser = \Misuzu\DB::prepare('
             SELECT COUNT(`user_id`)
             FROM `msz_users`
             WHERE LOWER(`username`) = LOWER(:username)
         ');
-        $getUser->bindValue('username', $username);
-        $userId = $getUser->execute() ? $getUser->fetchColumn() : 0;
+        $getUser->bind('username', $username);
+        $userId = $getUser->fetchColumn(0, 0);
 
         if($userId > 0) {
             return 'in-use';
@@ -63,13 +63,13 @@ function user_validate_email(string $email, bool $checkInUse = false): string {
     }
 
     if($checkInUse) {
-        $getUser = db_prepare('
+        $getUser = \Misuzu\DB::prepare('
             SELECT COUNT(`user_id`)
             FROM `msz_users`
             WHERE LOWER(`email`) = LOWER(:email)
         ');
-        $getUser->bindValue('email', $email);
-        $userId = $getUser->execute() ? $getUser->fetchColumn() : 0;
+        $getUser->bind('email', $email);
+        $userId = $getUser->fetchColumn(0, 0);
 
         if($userId > 0) {
             return 'in-use';

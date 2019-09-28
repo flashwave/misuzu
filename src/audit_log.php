@@ -84,32 +84,32 @@ function audit_log(
         }
     }
 
-    $addLog = db_prepare('
+    $addLog = \Misuzu\DB::prepare('
         INSERT INTO `msz_audit_log`
             (`log_action`, `user_id`, `log_params`, `log_ip`, `log_country`)
         VALUES
             (:action, :user, :params, INET6_ATON(:ip), :country)
     ');
-    $addLog->bindValue('action', $action);
-    $addLog->bindValue('user', $userId < 1 ? null : $userId);
-    $addLog->bindValue('params', json_encode($params));
-    $addLog->bindValue('ip', $ipAddress);
-    $addLog->bindValue('country', ip_country_code($ipAddress));
+    $addLog->bind('action', $action);
+    $addLog->bind('user', $userId < 1 ? null : $userId);
+    $addLog->bind('params', json_encode($params));
+    $addLog->bind('ip', $ipAddress);
+    $addLog->bind('country', ip_country_code($ipAddress));
     $addLog->execute();
 }
 
 function audit_log_count($userId = 0): int {
-    $getCount = db_prepare(sprintf('
+    $getCount = \Misuzu\DB::prepare(sprintf('
         SELECT COUNT(`log_id`)
         FROM `msz_audit_log`
         %s
     ', $userId < 1 ? '' : 'WHERE `user_id` = :user_id'));
 
     if($userId >= 1) {
-        $getCount->bindValue('user_id', $userId);
+        $getCount->bind('user_id', $userId);
     }
 
-    return $getCount->execute() ? (int)$getCount->fetchColumn() : 0;
+    return (int)$getCount->fetchColumn();
 }
 
 function audit_log_list(int $offset, int $take, int $userId = 0): array {
@@ -117,7 +117,7 @@ function audit_log_list(int $offset, int $take, int $userId = 0): array {
     $take = max(1, $take);
     $isGlobal = $userId < 1;
 
-    $getLogs = db_prepare(sprintf(
+    $getLogs = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 l.`log_id`, l.`log_action`, l.`log_params`, l.`log_created`, l.`log_country`,
@@ -137,10 +137,10 @@ function audit_log_list(int $offset, int $take, int $userId = 0): array {
     ));
 
     if(!$isGlobal) {
-        $getLogs->bindValue('user_id', $userId);
+        $getLogs->bind('user_id', $userId);
     }
 
-    $getLogs->bindValue('offset', $offset);
-    $getLogs->bindValue('take', $take);
-    return db_fetch_all($getLogs);
+    $getLogs->bind('offset', $offset);
+    $getLogs->bind('take', $take);
+    return $getLogs->fetchAll();
 }

@@ -25,7 +25,7 @@ function config_store(?array $append = null): array {
 
 function config_init(): void {
     try {
-        $dbconfig = db_fetch_all(db_prepare('SELECT * FROM `msz_config`'));
+        $dbconfig = \Misuzu\DB::prepare('SELECT * FROM `msz_config`')->fetchAll();
     } catch (PDOException $ex) {
         return;
     }
@@ -54,7 +54,7 @@ function config_set(string $key, $value, bool $soft = false): void {
         return;
 
     $value = serialize($value);
-    $saveVal = db_prepare('
+    $saveVal = \Misuzu\DB::prepare('
         INSERT INTO `msz_config`
             (`config_name`, `config_value`)
         VALUES
@@ -62,8 +62,8 @@ function config_set(string $key, $value, bool $soft = false): void {
         ON DUPLICATE KEY UPDATE
             `config_value` = :value_2
     ');
-    $saveVal->bindValue('name', $key);
-    $saveVal->bindValue('value_1', $value);
-    $saveVal->bindValue('value_2', $value);
+    $saveVal->bind('name', $key);
+    $saveVal->bind('value_1', $value);
+    $saveVal->bind('value_2', $value);
     $saveVal->execute();
 }

@@ -12,14 +12,14 @@ function news_post_create(
     ?int $postId = null
 ): int {
     if($postId < 1) {
-        $post = db_prepare('
+        $post = \Misuzu\DB::prepare('
             INSERT INTO `msz_news_posts`
                 (`category_id`, `user_id`, `post_is_featured`, `post_title`, `post_text`, `post_scheduled`)
             VALUES
                 (:category, :user, :featured, :title, :text, COALESCE(:scheduled, CURRENT_TIMESTAMP))
         ');
     } else {
-        $post = db_prepare('
+        $post = \Misuzu\DB::prepare('
             UPDATE `msz_news_posts`
             SET `category_id` = :category,
                 `user_id` = :user,
@@ -29,43 +29,43 @@ function news_post_create(
                 `post_scheduled` = COALESCE(:scheduled, `post_scheduled`)
             WHERE `post_id` = :id
         ');
-        $post->bindValue('id', $postId);
+        $post->bind('id', $postId);
     }
 
-    $post->bindValue('title', $title);
-    $post->bindValue('text', $text);
-    $post->bindValue('category', $category);
-    $post->bindValue('user', $user);
-    $post->bindValue('featured', $featured ? 1 : 0);
-    $post->bindValue('scheduled', empty($scheduled) ? null : date('Y-m-d H:i:s', $scheduled));
+    $post->bind('title', $title);
+    $post->bind('text', $text);
+    $post->bind('category', $category);
+    $post->bind('user', $user);
+    $post->bind('featured', $featured ? 1 : 0);
+    $post->bind('scheduled', empty($scheduled) ? null : date('Y-m-d H:i:s', $scheduled));
 
-    return $post->execute() ? ($postId < 1 ? (int)db_last_insert_id() : $postId) : 0;
+    return $post->execute() ? ($postId < 1 ? \Misuzu\DB::lastId() : $postId) : 0;
 }
 
 function news_category_create(string $name, string $description, bool $isHidden, ?int $categoryId = null): int {
     if($categoryId < 1) {
-        $category = db_prepare('
+        $category = \Misuzu\DB::prepare('
             INSERT INTO `msz_news_categories`
                 (`category_name`, `category_description`, `category_is_hidden`)
             VALUES
                 (:name, :description, :hidden)
         ');
     } else {
-        $category = db_prepare('
+        $category = \Misuzu\DB::prepare('
             UPDATE `msz_news_categories`
             SET `category_name` = :name,
                 `category_description` = :description,
                 `category_is_hidden` = :hidden
             WHERE `category_id` = :id
         ');
-        $category->bindValue('id', $categoryId);
+        $category->bind('id', $categoryId);
     }
 
-    $category->bindValue('name', $name);
-    $category->bindValue('description', $description);
-    $category->bindValue('hidden', $isHidden ? 1 : 0);
+    $category->bind('name', $name);
+    $category->bind('description', $description);
+    $category->bind('hidden', $isHidden ? 1 : 0);
 
-    return $category->execute() ? ($categoryId < 1 ? (int)db_last_insert_id() : $categoryId) : 0;
+    return $category->execute() ? ($categoryId < 1 ? \Misuzu\DB::lastId() : $categoryId) : 0;
 }
 
 function news_categories_get(
@@ -118,24 +118,24 @@ function news_categories_get(
         );
     }
 
-    $getCats = db_prepare($query);
+    $getCats = \Misuzu\DB::prepare($query);
 
     if(!$getAll) {
-        $getCats->bindValue('offset', $offset);
-        $getCats->bindValue('take', $take);
+        $getCats->bind('offset', $offset);
+        $getCats->bind('take', $take);
     }
 
-    return db_fetch_all($getCats);
+    return $getCats->fetchAll();
 }
 
 function news_categories_count(bool $includeHidden = false): int {
-    $countCats = db_prepare(sprintf('
+    $countCats = \Misuzu\DB::prepare(sprintf('
         SELECT COUNT(`category_id`)
         FROM `msz_news_categories`
         %s
     ', $includeHidden ? '' : 'WHERE `category_is_hidden` = 0'));
 
-    return $countCats->execute() ? (int)$countCats->fetchColumn() : 0;
+    return (int)$countCats->fetchColumn();
 }
 
 function news_category_get(
@@ -175,9 +175,9 @@ function news_category_get(
         ';
     }
 
-    $getCategory = db_prepare($query);
-    $getCategory->bindValue('category', $category);
-    return db_fetch($getCategory);
+    $getCategory = \Misuzu\DB::prepare($query);
+    $getCategory->bind('category', $category);
+    return $getCategory->fetch();
 }
 
 function news_posts_count(
@@ -188,7 +188,7 @@ function news_posts_count(
 ): int {
     $hasCategory= $category !== null;
 
-    $countPosts = db_prepare(sprintf(
+    $countPosts = \Misuzu\DB::prepare(sprintf(
         '
             SELECT COUNT(`post_id`)
             FROM `msz_news_posts`
@@ -201,10 +201,10 @@ function news_posts_count(
     ));
 
     if($hasCategory) {
-        $countPosts->bindValue('category', $category);
+        $countPosts->bind('category', $category);
     }
 
-    return $countPosts->execute() ? (int)$countPosts->fetchColumn() : 0;
+    return (int)$countPosts->fetchColumn();
 }
 
 function news_posts_get(
@@ -218,7 +218,7 @@ function news_posts_get(
     $getAll = $offset < 0 || $take < 1;
     $hasCategory = $category !== null;
 
-    $getPosts = db_prepare(sprintf(
+    $getPosts = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 p.`post_id`, p.`post_is_featured`, p.`post_title`, p.`post_text`, p.`comment_section_id`,
@@ -251,19 +251,19 @@ function news_posts_get(
     ));
 
     if($hasCategory) {
-        $getPosts->bindValue('category', $category);
+        $getPosts->bind('category', $category);
     }
 
     if(!$getAll) {
-        $getPosts->bindValue('take', $take);
-        $getPosts->bindValue('offset', $offset);
+        $getPosts->bind('take', $take);
+        $getPosts->bind('offset', $offset);
     }
 
-    return db_fetch_all($getPosts);
+    return $getPosts->fetchAll();
 }
 
 function news_posts_search(string $query): array {
-    $searchPosts = db_prepare('
+    $searchPosts = \Misuzu\DB::prepare('
         SELECT
             p.`post_id`, p.`post_is_featured`, p.`post_title`, p.`post_text`, p.`comment_section_id`,
             p.`post_created`, p.`post_updated`, p.`post_deleted`, p.`post_scheduled`,
@@ -289,13 +289,13 @@ function news_posts_search(string $query): array {
         AND p.`post_scheduled` < NOW()
         ORDER BY p.`post_created` DESC
     ');
-    $searchPosts->bindValue('query', $query);
+    $searchPosts->bind('query', $query);
 
-    return db_fetch_all($searchPosts);
+    return $searchPosts->fetchAll();
 }
 
 function news_post_comments_set(int $postId, int $sectionId): void {
-    db_prepare('
+    \Misuzu\DB::prepare('
         UPDATE `msz_news_posts`
         SET `comment_section_id` = :comment_section_id
         WHERE `post_id` = :post_id
@@ -306,7 +306,7 @@ function news_post_comments_set(int $postId, int $sectionId): void {
 }
 
 function news_post_get(int $postId): array {
-    $getPost = db_prepare('
+    $getPost = \Misuzu\DB::prepare('
         SELECT
             p.`post_id`, p.`post_title`, p.`post_text`, p.`post_is_featured`, p.`post_scheduled`,
             p.`post_created`, p.`post_updated`, p.`post_deleted`, p.`comment_section_id`,
@@ -322,8 +322,8 @@ function news_post_get(int $postId): array {
         ON u.`display_role` = r.`role_id`
         WHERE `post_id` = :post_id
     ');
-    $getPost->bindValue(':post_id', $postId);
-    return db_fetch($getPost);
+    $getPost->bind(':post_id', $postId);
+    return $getPost->fetch();
 }
 
 define('MSZ_NEWS_FEED_ATOM', 'atom');

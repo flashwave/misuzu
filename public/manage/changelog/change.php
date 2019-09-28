@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_PERM_CHANGELOG_MANAGE_CHANGES)) {
@@ -11,7 +13,7 @@ $changeId = (int)($_GET['c'] ?? 0);
 if($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify_request()) {
     if(!empty($_POST['change']) && is_array($_POST['change'])) {
         if($changeId > 0) {
-            $postChange = db_prepare('
+            $postChange = DB::prepare('
                 UPDATE `msz_changelog_changes`
                 SET `change_log` = :log,
                     `change_text` = :text,
@@ -20,9 +22,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify_request()) {
                     `change_created` = :created
                 WHERE `change_id` = :change_id
             ');
-            $postChange->bindValue('change_id', $changeId);
+            $postChange->bind('change_id', $changeId);
         } else {
-            $postChange = db_prepare('
+            $postChange = DB::prepare('
                 INSERT INTO `msz_changelog_changes`
                     (
                         `change_log`, `change_text`, `change_action`,
@@ -33,21 +35,21 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify_request()) {
             ');
         }
 
-        $postChange->bindValue('log', $_POST['change']['log']);
-        $postChange->bindValue('action', $_POST['change']['action']);
-        $postChange->bindValue('text', strlen($_POST['change']['text'])
+        $postChange->bind('log', $_POST['change']['log']);
+        $postChange->bind('action', $_POST['change']['action']);
+        $postChange->bind('text', strlen($_POST['change']['text'])
             ? $_POST['change']['text']
             : null);
-        $postChange->bindValue('user', is_numeric($_POST['change']['user'])
+        $postChange->bind('user', is_numeric($_POST['change']['user'])
             ? $_POST['change']['user']
             : null);
-        $postChange->bindValue('created', strlen($_POST['change']['created'])
+        $postChange->bind('created', strlen($_POST['change']['created'])
             ? $_POST['change']['created']
             : null);
         $postChange->execute();
 
         if($changeId < 1) {
-            $changeId = db_last_insert_id();
+            $changeId = DB::lastId();
             audit_log(MSZ_AUDIT_CHANGELOG_ENTRY_CREATE, user_session_current('user_id', 0), [$changeId]);
         } else {
             audit_log(MSZ_AUDIT_CHANGELOG_ENTRY_EDIT, user_session_current('user_id', 0), [$changeId]);
@@ -57,24 +59,24 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify_request()) {
     if(!empty($_POST['tags']) && is_array($_POST['tags']) && array_test($_POST['tags'], 'ctype_digit')) {
         $setTags = array_apply($_POST['tags'], 'intval');
 
-        $removeTags = db_prepare(sprintf('
+        $removeTags = DB::prepare(sprintf('
             DELETE FROM `msz_changelog_change_tags`
             WHERE `change_id` = :change_id
             AND `tag_id` NOT IN (%s)
         ', implode(',', $setTags)));
-        $removeTags->bindValue('change_id', $changeId);
+        $removeTags->bind('change_id', $changeId);
         $removeTags->execute();
 
-        $addTag = db_prepare('
+        $addTag = DB::prepare('
             INSERT IGNORE INTO `msz_changelog_change_tags`
                 (`change_id`, `tag_id`)
             VALUES
                 (:change_id, :tag_id)
         ');
-        $addTag->bindValue('change_id', $changeId);
+        $addTag->bind('change_id', $changeId);
 
         foreach($setTags as $role) {
-            $addTag->bindValue('tag_id', $role);
+            $addTag->bind('tag_id', $role);
             $addTag->execute();
         }
     }
@@ -90,15 +92,15 @@ $actions = [
 ];
 
 if($changeId > 0) {
-    $getChange = db_prepare('
+    $getChange = DB::prepare('
         SELECT
             `change_id`, `change_log`, `change_text`, `user_id`,
             `change_action`, `change_created`
         FROM `msz_changelog_changes`
         WHERE `change_id` = :change_id
     ');
-    $getChange->bindValue('change_id', $changeId);
-    $change = db_fetch($getChange);
+    $getChange->bind('change_id', $changeId);
+    $change = $getChange->fetch();
 
     if(!$change) {
         url_redirect('manage-changelog-changes');
@@ -106,7 +108,7 @@ if($changeId > 0) {
     }
 }
 
-$getChangeTags = db_prepare('
+$getChangeTags = DB::prepare('
     SELECT
         ct.`tag_id`, ct.`tag_name`,
         (
@@ -117,8 +119,8 @@ $getChangeTags = db_prepare('
         ) AS `has_tag`
     FROM `msz_changelog_tags` AS ct
 ');
-$getChangeTags->bindValue('change_id', $change['change_id'] ?? 0);
-$changeTags = db_fetch_all($getChangeTags);
+$getChangeTags->bind('change_id', $change['change_id'] ?? 0);
+$changeTags = $getChangeTags->fetchAll();
 
 echo tpl_render('manage.changelog.change', [
     'change' => $change ?? null,

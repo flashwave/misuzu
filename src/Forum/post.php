@@ -10,21 +10,21 @@ function forum_post_create(
     int $parser = MSZ_PARSER_PLAIN,
     bool $displaySignature = true
 ): int {
-    $createPost = db_prepare('
+    $createPost = \Misuzu\DB::prepare('
         INSERT INTO `msz_forum_posts`
             (`topic_id`, `forum_id`, `user_id`, `post_ip`, `post_text`, `post_parse`, `post_display_signature`)
         VALUES
             (:topic_id, :forum_id, :user_id, INET6_ATON(:post_ip), :post_text, :post_parse, :post_display_signature)
     ');
-    $createPost->bindValue('topic_id', $topicId);
-    $createPost->bindValue('forum_id', $forumId);
-    $createPost->bindValue('user_id', $userId);
-    $createPost->bindValue('post_ip', $ipAddress);
-    $createPost->bindValue('post_text', $text);
-    $createPost->bindValue('post_parse', $parser);
-    $createPost->bindValue('post_display_signature', $displaySignature ? 1 : 0);
+    $createPost->bind('topic_id', $topicId);
+    $createPost->bind('forum_id', $forumId);
+    $createPost->bind('user_id', $userId);
+    $createPost->bind('post_ip', $ipAddress);
+    $createPost->bind('post_text', $text);
+    $createPost->bind('post_parse', $parser);
+    $createPost->bind('post_display_signature', $displaySignature ? 1 : 0);
 
-    return $createPost->execute() ? db_last_insert_id() : 0;
+    return $createPost->execute() ? \Misuzu\DB::lastId() : 0;
 }
 
 function forum_post_update(
@@ -39,7 +39,7 @@ function forum_post_update(
         return false;
     }
 
-    $updatePost = db_prepare('
+    $updatePost = \Misuzu\DB::prepare('
         UPDATE `msz_forum_posts`
         SET `post_ip` = INET6_ATON(:post_ip),
             `post_text` = :post_text,
@@ -48,18 +48,18 @@ function forum_post_update(
             `post_edited` = IF(:bump, NOW(), `post_edited`)
         WHERE `post_id` = :post_id
     ');
-    $updatePost->bindValue('post_id', $postId);
-    $updatePost->bindValue('post_ip', $ipAddress);
-    $updatePost->bindValue('post_text', $text);
-    $updatePost->bindValue('post_parse', $parser);
-    $updatePost->bindValue('post_display_signature', $displaySignature ? 1 : 0);
-    $updatePost->bindValue('bump', $bumpUpdate ? 1 : 0);
+    $updatePost->bind('post_id', $postId);
+    $updatePost->bind('post_ip', $ipAddress);
+    $updatePost->bind('post_text', $text);
+    $updatePost->bind('post_parse', $parser);
+    $updatePost->bind('post_display_signature', $displaySignature ? 1 : 0);
+    $updatePost->bind('bump', $bumpUpdate ? 1 : 0);
 
     return $updatePost->execute();
 }
 
 function forum_post_find(int $postId, int $userId): array {
-    $getPostInfo = db_prepare(sprintf(
+    $getPostInfo = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 p.`post_id`, p.`topic_id`,
@@ -82,12 +82,12 @@ function forum_post_find(int $postId, int $userId): array {
             FROM `msz_forum_posts` AS p
             WHERE p.`post_id` = :post_id
         '));
-    $getPostInfo->bindValue('post_id', $postId);
-    return db_fetch($getPostInfo);
+    $getPostInfo->bind('post_id', $postId);
+    return $getPostInfo->fetch();
 }
 
 function forum_post_get(int $postId, bool $allowDeleted = false): array {
-    $getPost = db_prepare(sprintf(
+    $getPost = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 p.`post_id`, p.`post_text`, p.`post_created`, p.`post_parse`, p.`post_display_signature`,
@@ -125,12 +125,12 @@ function forum_post_get(int $postId, bool $allowDeleted = false): array {
         ',
         $allowDeleted ? '' : 'AND `post_deleted` IS NULL'
     ));
-    $getPost->bindValue('post_id', $postId);
-    return db_fetch($getPost);
+    $getPost->bind('post_id', $postId);
+    return $getPost->fetch();
 }
 
 function forum_post_search(string $query): array {
-    $searchPosts = db_prepare('
+    $searchPosts = \Misuzu\DB::prepare('
         SELECT
             p.`post_id`, p.`post_text`, p.`post_created`, p.`post_parse`, p.`post_display_signature`,
             p.`topic_id`, p.`post_deleted`, p.`post_edited`, p.`topic_id`, p.`forum_id`,
@@ -168,12 +168,12 @@ function forum_post_search(string $query): array {
         AND `post_deleted` IS NULL
         ORDER BY `post_id`
     ');
-    $searchPosts->bindValue('query', $query);
-    return db_fetch_all($searchPosts);
+    $searchPosts->bind('query', $query);
+    return $searchPosts->fetchAll();
 }
 
 function forum_post_count_user(int $userId, bool $showDeleted = false): int {
-    $getPosts = db_prepare(sprintf(
+    $getPosts = \Misuzu\DB::prepare(sprintf(
         '
             SELECT COUNT(p.`post_id`)
             FROM `msz_forum_posts` AS p
@@ -182,9 +182,9 @@ function forum_post_count_user(int $userId, bool $showDeleted = false): int {
         ',
         $showDeleted ? '' : 'AND `post_deleted` IS NULL'
     ));
-    $getPosts->bindValue('user_id', $userId);
+    $getPosts->bind('user_id', $userId);
 
-    return (int)($getPosts->execute() ? $getPosts->fetchColumn() : 0);
+    return (int)$getPosts->fetchColumn();
 }
 
 function forum_post_listing(
@@ -195,7 +195,7 @@ function forum_post_listing(
     bool $selectAuthor = false
 ): array {
     $hasPagination = $offset >= 0 && $take > 0;
-    $getPosts = db_prepare(sprintf(
+    $getPosts = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 p.`post_id`, p.`post_text`, p.`post_created`, p.`post_parse`,
@@ -238,14 +238,14 @@ function forum_post_listing(
         $hasPagination ? 'LIMIT :offset, :take' : '',
         $selectAuthor ? 'p.`user_id`' : 'p.`topic_id`'
     ));
-    $getPosts->bindValue('topic_id', $topicId);
+    $getPosts->bind('topic_id', $topicId);
 
     if($hasPagination) {
-        $getPosts->bindValue('offset', $offset);
-        $getPosts->bindValue('take', $take);
+        $getPosts->bind('offset', $offset);
+        $getPosts->bind('take', $take);
     }
 
-    return db_fetch_all($getPosts);
+    return $getPosts->fetchAll();
 }
 
 define('MSZ_E_FORUM_POST_DELETE_OK', 0);        // deleting is fine
@@ -321,13 +321,13 @@ function forum_post_delete(int $postId): bool {
         return false;
     }
 
-    $markDeleted = db_prepare('
+    $markDeleted = \Misuzu\DB::prepare('
         UPDATE `msz_forum_posts`
         SET `post_deleted` = NOW()
         WHERE `post_id` = :post
         AND `post_deleted` IS NULL
     ');
-    $markDeleted->bindValue('post', $postId);
+    $markDeleted->bind('post', $postId);
     return $markDeleted->execute();
 }
 
@@ -336,13 +336,13 @@ function forum_post_restore(int $postId): bool {
         return false;
     }
 
-    $markDeleted = db_prepare('
+    $markDeleted = \Misuzu\DB::prepare('
         UPDATE `msz_forum_posts`
         SET `post_deleted` = NULL
         WHERE `post_id` = :post
         AND `post_deleted` IS NOT NULL
     ');
-    $markDeleted->bindValue('post', $postId);
+    $markDeleted->bind('post', $postId);
     return $markDeleted->execute();
 }
 
@@ -351,10 +351,10 @@ function forum_post_nuke(int $postId): bool {
         return false;
     }
 
-    $markDeleted = db_prepare('
+    $markDeleted = \Misuzu\DB::prepare('
         DELETE FROM `msz_forum_posts`
         WHERE `post_id` = :post
     ');
-    $markDeleted->bindValue('post', $postId);
+    $markDeleted->bind('post', $postId);
     return $markDeleted->execute();
 }

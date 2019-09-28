@@ -34,7 +34,7 @@ function user_create(
     string $email,
     string $ipAddress
 ): int {
-    $createUser = db_prepare('
+    $createUser = \Misuzu\DB::prepare('
         INSERT INTO `msz_users`
             (
                 `username`, `password`, `email`, `register_ip`,
@@ -46,41 +46,41 @@ function user_create(
                 INET6_ATON(:last_ip), :user_country, 1
             )
     ');
-    $createUser->bindValue('username', $username);
-    $createUser->bindValue('password', user_password_hash($password));
-    $createUser->bindValue('email', $email);
-    $createUser->bindValue('register_ip', $ipAddress);
-    $createUser->bindValue('last_ip', $ipAddress);
-    $createUser->bindValue('user_country', ip_country_code($ipAddress));
+    $createUser->bind('username', $username);
+    $createUser->bind('password', user_password_hash($password));
+    $createUser->bind('email', $email);
+    $createUser->bind('register_ip', $ipAddress);
+    $createUser->bind('last_ip', $ipAddress);
+    $createUser->bind('user_country', ip_country_code($ipAddress));
 
-    return $createUser->execute() ? (int)db_last_insert_id() : 0;
+    return $createUser->execute() ? \Misuzu\DB::lastId() : 0;
 }
 
 function user_find_for_login(string $usernameOrMail): array {
-    $getUser = db_prepare('
+    $getUser = \Misuzu\DB::prepare('
         SELECT `user_id`, `password`, `user_totp_key` IS NOT NULL AS `totp_enabled`, `user_deleted`
         FROM `msz_users`
         WHERE LOWER(`email`) = LOWER(:email)
         OR LOWER(`username`) = LOWER(:username)
     ');
-    $getUser->bindValue('email', $usernameOrMail);
-    $getUser->bindValue('username', $usernameOrMail);
-    return db_fetch($getUser);
+    $getUser->bind('email', $usernameOrMail);
+    $getUser->bind('username', $usernameOrMail);
+    return $getUser->fetch();
 }
 
 function user_find_for_reset(string $email): array {
-    $getUser = db_prepare('
+    $getUser = \Misuzu\DB::prepare('
         SELECT `user_id`, `username`, `email`
         FROM `msz_users`
         WHERE LOWER(`email`) = LOWER(:email)
         AND `user_deleted` IS NULL
     ');
-    $getUser->bindValue('email', $email);
-    return db_fetch($getUser);
+    $getUser->bind('email', $email);
+    return $getUser->fetch();
 }
 
 function user_find_for_profile(string $idOrUsername): int {
-    $getUserId = db_prepare('
+    $getUserId = \Misuzu\DB::prepare('
         SELECT
             :user_id as `input_id`,
             (
@@ -91,8 +91,8 @@ function user_find_for_profile(string $idOrUsername): int {
                 LIMIT 1
             ) as `user_id`
     ');
-    $getUserId->bindValue('user_id', $idOrUsername);
-    return (int)($getUserId->execute() ? $getUserId->fetchColumn(1) : 0);
+    $getUserId->bind('user_id', $idOrUsername);
+    return (int)$getUserId->fetchColumn(1, 0);
 }
 
 function user_password_hash(string $password): string {
@@ -104,13 +104,13 @@ function user_password_needs_rehash(string $hash): bool {
 }
 
 function user_password_set(int $userId, string $password): bool {
-    $updatePassword = db_prepare('
+    $updatePassword = \Misuzu\DB::prepare('
         UPDATE `msz_users`
         SET `password` = :password
         WHERE `user_id` = :user
     ');
-    $updatePassword->bindValue('user', $userId);
-    $updatePassword->bindValue('password', user_password_hash($password));
+    $updatePassword->bind('user', $userId);
+    $updatePassword->bind('password', user_password_hash($password));
     return $updatePassword->execute();
 }
 
@@ -119,16 +119,16 @@ function user_totp_info(int $userId): array {
         return [];
     }
 
-    $getTwoFactorInfo = db_prepare('
+    $getTwoFactorInfo = \Misuzu\DB::prepare('
         SELECT
             `username`, `user_totp_key`,
             `user_totp_key` IS NOT NULL AS `totp_enabled`
         FROM `msz_users`
         WHERE `user_id` = :user_id
     ');
-    $getTwoFactorInfo->bindValue('user_id', $userId);
+    $getTwoFactorInfo->bind('user_id', $userId);
 
-    return db_fetch($getTwoFactorInfo);
+    return $getTwoFactorInfo->fetch();
 }
 
 function user_totp_update(int $userId, ?string $key): void {
@@ -138,13 +138,13 @@ function user_totp_update(int $userId, ?string $key): void {
 
     $key = empty($key) ? null : $key;
 
-    $updateTotpKey = db_prepare('
+    $updateTotpKey = \Misuzu\DB::prepare('
         UPDATE `msz_users`
         SET `user_totp_key` = :key
         WHERE `user_id` = :user_id
     ');
-    $updateTotpKey->bindValue('user_id', $userId);
-    $updateTotpKey->bindValue('key', $key);
+    $updateTotpKey->bind('user_id', $userId);
+    $updateTotpKey->bind('key', $key);
     $updateTotpKey->execute();
 }
 
@@ -153,23 +153,23 @@ function user_email_get(int $userId): string {
         return '';
     }
 
-    $fetchMail = db_prepare('
+    $fetchMail = \Misuzu\DB::prepare('
         SELECT `email`
         FROM `msz_users`
         WHERE `user_id` = :user_id
     ');
-    $fetchMail->bindValue('user_id', $userId);
-    return $fetchMail->execute() ? (string)$fetchMail->fetchColumn() : '';
+    $fetchMail->bind('user_id', $userId);
+    return (string)$fetchMail->fetchColumn(0, '');
 }
 
 function user_email_set(int $userId, string $email): bool {
-    $updateMail = db_prepare('
+    $updateMail = \Misuzu\DB::prepare('
         UPDATE `msz_users`
         SET `email` = LOWER(:email)
         WHERE `user_id` = :user
     ');
-    $updateMail->bindValue('user', $userId);
-    $updateMail->bindValue('email', $email);
+    $updateMail->bind('user', $userId);
+    $updateMail->bind('email', $email);
     return $updateMail->execute();
 }
 
@@ -178,13 +178,13 @@ function user_password_verify_db(int $userId, string $password): bool {
         return false;
     }
 
-    $fetchPassword = db_prepare('
+    $fetchPassword = \Misuzu\DB::prepare('
         SELECT `password`
         FROM `msz_users`
         WHERE `user_id` = :user_id
     ');
-    $fetchPassword->bindValue('user_id', $userId);
-    $currentPassword = $fetchPassword->execute() ? $fetchPassword->fetchColumn() : '';
+    $fetchPassword->bind('user_id', $userId);
+    $currentPassword = $fetchPassword->fetchColumn(0, '');
 
     return !empty($currentPassword) && password_verify($password, $currentPassword);
 }
@@ -201,62 +201,62 @@ function user_exists(int $userId): bool {
         return $exists[$userId];
     }
 
-    $check = db_prepare('
+    $check = \Misuzu\DB::prepare('
         SELECT COUNT(`user_id`) > 0
         FROM `msz_users`
         WHERE `user_id` = :user_id
     ');
 
-    $check->bindValue('user_id', $userId);
+    $check->bind('user_id', $userId);
 
-    return $exists[$userId] = (bool)($check->execute() ? $check->fetchColumn() : false);
+    return $exists[$userId] = (bool)$check->fetchColumn(0, false);
 }
 
 function user_id_from_username(string $username): int {
-    $getId = db_prepare('SELECT `user_id` FROM `msz_users` WHERE LOWER(`username`) = LOWER(:username)');
-    $getId->bindValue('username', $username);
-    return $getId->execute() ? (int)$getId->fetchColumn() : 0;
+    $getId = \Misuzu\DB::prepare('SELECT `user_id` FROM `msz_users` WHERE LOWER(`username`) = LOWER(:username)');
+    $getId->bind('username', $username);
+    return (int)$getId->fetchColumn(0, 0);
 }
 
 function user_username_from_id(int $userId): string {
-    $getName = db_prepare('SELECT `username` FROM `msz_users` WHERE `user_id` = :user_id');
-    $getName->bindValue('user_id', $userId);
-    return $getName->execute() ? $getName->fetchColumn() : '';
+    $getName = \Misuzu\DB::prepare('SELECT `username` FROM `msz_users` WHERE `user_id` = :user_id');
+    $getName->bind('user_id', $userId);
+    return $getName->fetchColumn(0, '');
 }
 
 function user_bump_last_active(int $userId, string $ipAddress = null): void {
-    $bumpUserLast = db_prepare('
+    $bumpUserLast = \Misuzu\DB::prepare('
         UPDATE `msz_users`
         SET `user_active` = NOW(),
             `last_ip` = INET6_ATON(:last_ip)
         WHERE `user_id` = :user_id
     ');
-    $bumpUserLast->bindValue('last_ip', $ipAddress ?? ip_remote_address());
-    $bumpUserLast->bindValue('user_id', $userId);
+    $bumpUserLast->bind('last_ip', $ipAddress ?? ip_remote_address());
+    $bumpUserLast->bind('user_id', $userId);
     $bumpUserLast->execute();
 }
 
 function user_get_last_ip(int $userId): string {
-    $getAddress = db_prepare('
+    $getAddress = \Misuzu\DB::prepare('
         SELECT INET6_NTOA(`last_ip`)
         FROM `msz_users`
         WHERE `user_id` = :user_id
     ');
-    $getAddress->bindValue('user_id', $userId);
-    return $getAddress->execute() ? $getAddress->fetchColumn() : '';
+    $getAddress->bind('user_id', $userId);
+    return $getAddress->fetchColumn(0, '');
 }
 
 function user_check_super(int $userId): bool {
     static $superUsers = [];
 
     if(!isset($superUsers[$userId])) {
-        $checkSuperUser = db_prepare("
+        $checkSuperUser = \Misuzu\DB::prepare("
             SELECT `user_super`
             FROM `msz_users`
             WHERE `user_id` = :user_id
         ");
-        $checkSuperUser->bindValue('user_id', $userId);
-        $superUsers[$userId] = (bool)($checkSuperUser->execute() ? $checkSuperUser->fetchColumn() : false);
+        $checkSuperUser->bind('user_id', $userId);
+        $superUsers[$userId] = (bool)$checkSuperUser->fetchColumn(0, false);
     }
 
     return $superUsers[$userId];
@@ -267,7 +267,7 @@ function user_check_authority(int $userId, int $subjectId, bool $canManageSelf =
         return true;
     }
 
-    $checkHierarchy = db_prepare('
+    $checkHierarchy = \Misuzu\DB::prepare('
         SELECT (
             SELECT MAX(r.`role_hierarchy`)
             FROM `msz_roles` AS r
@@ -282,21 +282,21 @@ function user_check_authority(int $userId, int $subjectId, bool $canManageSelf =
             WHERE ur.`user_id` = :subject_id
         )
     ');
-    $checkHierarchy->bindValue('user_id', $userId);
-    $checkHierarchy->bindValue('subject_id', $subjectId);
-    return (bool)($checkHierarchy->execute() ? $checkHierarchy->fetchColumn() : false);
+    $checkHierarchy->bind('user_id', $userId);
+    $checkHierarchy->bind('subject_id', $subjectId);
+    return (bool)$checkHierarchy->fetchColumn(0, false);
 }
 
 function user_get_hierarchy(int $userId): int {
-    $getHierarchy = db_prepare('
+    $getHierarchy = \Misuzu\DB::prepare('
         SELECT MAX(r.`role_hierarchy`)
         FROM `msz_roles` AS r
         LEFT JOIN `msz_user_roles` AS ur
         ON ur.`role_id` = r.`role_id`
         WHERE ur.`user_id` = :user_id
     ');
-    $getHierarchy->bindValue('user_id', $userId);
-    return (int)($getHierarchy->execute() ? $getHierarchy->fetchColumn() : 0);
+    $getHierarchy->bind('user_id', $userId);
+    return (int)$getHierarchy->fetchColumn(0, 0);
 }
 
 define('MSZ_E_USER_BIRTHDATE_OK', 0);
@@ -327,13 +327,13 @@ function user_set_birthdate(int $userId, int $day, int $month, int $year, int $y
     }
 
     $birthdate = $unset ? null : implode('-', [$year, $month, $day]);
-    $setBirthdate = db_prepare('
+    $setBirthdate = \Misuzu\DB::prepare('
         UPDATE `msz_users`
         SET `user_birthdate` = :birthdate
         WHERE `user_id` = :user
     ');
-    $setBirthdate->bindValue('birthdate', $birthdate);
-    $setBirthdate->bindValue('user', $userId);
+    $setBirthdate->bind('birthdate', $birthdate);
+    $setBirthdate->bind('user', $userId);
 
     return $setBirthdate->execute()
         ? MSZ_E_USER_BIRTHDATE_OK
@@ -347,15 +347,15 @@ function user_get_birthdays(int $day = 0, int $month = 0) {
         $date = "%-{$month}-{$day}";
     }
 
-    $getBirthdays = db_prepare('
+    $getBirthdays = \Misuzu\DB::prepare('
         SELECT `user_id`, `username`, `user_birthdate`,
             IF(YEAR(`user_birthdate`) < 1, NULL, YEAR(NOW()) - YEAR(`user_birthdate`)) AS `user_age`
         FROM `msz_users`
         WHERE `user_deleted` IS NULL
         AND `user_birthdate` LIKE :birthdate
     ');
-    $getBirthdays->bindValue('birthdate', $date);
-    return db_fetch_all($getBirthdays);
+    $getBirthdays->bind('birthdate', $date);
+    return $getBirthdays->fetchAll();
 }
 
 define('MSZ_USER_ABOUT_MAX_LENGTH', 0xFFFF);
@@ -381,15 +381,15 @@ function user_set_about_page(int $userId, string $content, int $parser = MSZ_PAR
         return MSZ_E_USER_ABOUT_TOO_LONG;
     }
 
-    $setAbout = db_prepare('
+    $setAbout = \Misuzu\DB::prepare('
         UPDATE `msz_users`
         SET `user_about_content` = :content,
             `user_about_parser` = :parser
         WHERE `user_id` = :user
     ');
-    $setAbout->bindValue('user', $userId);
-    $setAbout->bindValue('content', $length < 1 ? null : $content);
-    $setAbout->bindValue('parser', $parser);
+    $setAbout->bind('user', $userId);
+    $setAbout->bind('content', $length < 1 ? null : $content);
+    $setAbout->bind('parser', $parser);
 
     return $setAbout->execute()
         ? MSZ_E_USER_ABOUT_OK
@@ -419,15 +419,15 @@ function user_set_signature(int $userId, string $content, int $parser = MSZ_PARS
         return MSZ_E_USER_SIGNATURE_TOO_LONG;
     }
 
-    $setSignature = db_prepare('
+    $setSignature = \Misuzu\DB::prepare('
         UPDATE `msz_users`
         SET `user_signature_content` = :content,
             `user_signature_parser` = :parser
         WHERE `user_id` = :user
     ');
-    $setSignature->bindValue('user', $userId);
-    $setSignature->bindValue('content', $length < 1 ? null : $content);
-    $setSignature->bindValue('parser', $parser);
+    $setSignature->bind('user', $userId);
+    $setSignature->bind('content', $length < 1 ? null : $content);
+    $setSignature->bind('parser', $parser);
 
     return $setSignature->execute()
         ? MSZ_E_USER_SIGNATURE_OK

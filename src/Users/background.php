@@ -63,13 +63,13 @@ function user_background_set_settings(int $userId, int $settings): void {
         return;
     }
 
-    $setAttrs = db_prepare('
+    $setAttrs = \Misuzu\DB::prepare('
         UPDATE `msz_users`
         SET `user_background_settings` = :settings
         WHERE `user_id` = :user
     ');
-    $setAttrs->bindValue('settings', $settings & 0xFF);
-    $setAttrs->bindValue('user', $userId);
+    $setAttrs->bind('settings', $settings & 0xFF);
+    $setAttrs->bind('user', $userId);
     $setAttrs->execute();
 }
 

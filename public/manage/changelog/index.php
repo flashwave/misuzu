@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_PERM_CHANGELOG_MANAGE_CHANGES)) {
@@ -6,7 +8,7 @@ if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_P
     return;
 }
 
-$changesCount = (int)db_query('
+$changesCount = (int)DB::query('
     SELECT COUNT(`change_id`)
     FROM `msz_changelog_changes`
 ')->fetchColumn();
@@ -19,7 +21,7 @@ if(!pagination_is_valid_offset($changelogOffset)) {
     return;
 }
 
-$getChanges = db_prepare('
+$getChanges = DB::prepare('
     SELECT
         c.`change_id`, c.`change_log`, c.`change_created`, c.`change_action`,
         u.`user_id`, u.`username`,
@@ -34,11 +36,11 @@ $getChanges = db_prepare('
     ORDER BY c.`change_id` DESC
     LIMIT :offset, :take
 ');
-$getChanges->bindValue('take', $changelogPagination['range']);
-$getChanges->bindValue('offset', $changelogOffset);
-$changes = db_fetch_all($getChanges);
+$getChanges->bind('take', $changelogPagination['range']);
+$getChanges->bind('offset', $changelogOffset);
+$changes = $getChanges->fetchAll();
 
-$getTags = db_prepare('
+$getTags = DB::prepare('
     SELECT
         t.`tag_id`, t.`tag_name`, t.`tag_description`
     FROM `msz_changelog_change_tags` as ct
@@ -49,8 +51,8 @@ $getTags = db_prepare('
 
 // grab tags
 for($i = 0; $i < count($changes); $i++) {
-    $getTags->bindValue('change_id', $changes[$i]['change_id']);
-    $changes[$i]['tags'] = db_fetch_all($getTags);
+    $getTags->bind('change_id', $changes[$i]['change_id']);
+    $changes[$i]['tags'] = $getTags->fetchAll();
 }
 
 echo tpl_render('manage.changelog.changes', [

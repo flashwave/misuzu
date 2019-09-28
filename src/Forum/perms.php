@@ -26,7 +26,7 @@ function forum_perms_get_user(?int $forum, int $user): array {
         );
     }
 
-    $getPerms = db_prepare(sprintf(
+    $getPerms = \Misuzu\DB::prepare(sprintf(
         '
             SELECT %s
             FROM `msz_forum_permissions`
@@ -46,11 +46,11 @@ function forum_perms_get_user(?int $forum, int $user): array {
         ',
         perms_get_select(MSZ_FORUM_PERM_MODES)
     ));
-    $getPerms->bindValue('forum_id', $forum);
-    $getPerms->bindValue('user_id_1', $user);
-    $getPerms->bindValue('user_id_2', $user);
+    $getPerms->bind('forum_id', $forum);
+    $getPerms->bind('user_id_1', $user);
+    $getPerms->bind('user_id_2', $user);
 
-    return $memo[$memoId] = array_bit_or($perms, db_fetch($getPerms));
+    return $memo[$memoId] = array_bit_or($perms, $getPerms->fetch());
 }
 
 function forum_perms_get_role(?int $forum, int $role): array {
@@ -74,7 +74,7 @@ function forum_perms_get_role(?int $forum, int $role): array {
         );
     }
 
-    $getPerms = db_prepare(sprintf(
+    $getPerms = \Misuzu\DB::prepare(sprintf(
         '
             SELECT %s
             FROM `msz_forum_permissions`
@@ -84,10 +84,10 @@ function forum_perms_get_role(?int $forum, int $role): array {
         ',
         perms_get_select(MSZ_FORUM_PERM_MODES)
     ));
-    $getPerms->bindValue('forum_id', $forum);
-    $getPerms->bindValue('role_id', $role);
+    $getPerms->bind('forum_id', $forum);
+    $getPerms->bind('role_id', $role);
 
-    return $memo[$memoId] = array_bit_or($perms, db_fetch($getPerms));
+    return $memo[$memoId] = array_bit_or($perms, $getPerms->fetch());
 }
 
 function forum_perms_get_user_raw(?int $forum, int $user): array {
@@ -95,7 +95,7 @@ function forum_perms_get_user_raw(?int $forum, int $user): array {
         return perms_create(MSZ_FORUM_PERM_MODES);
     }
 
-    $getPerms = db_prepare(sprintf(
+    $getPerms = \Misuzu\DB::prepare(sprintf(
         '
             SELECT `%s`
             FROM `msz_forum_permissions`
@@ -108,11 +108,11 @@ function forum_perms_get_user_raw(?int $forum, int $user): array {
     ));
 
     if($forum !== null) {
-        $getPerms->bindValue('forum_id', $forum);
+        $getPerms->bind('forum_id', $forum);
     }
 
-    $getPerms->bindValue('user_id', $user);
-    $perms = db_fetch($getPerms);
+    $getPerms->bind('user_id', $user);
+    $perms = $getPerms->fetch();
 
     if(empty($perms)) {
         return perms_create(MSZ_FORUM_PERM_MODES);
@@ -126,7 +126,7 @@ function forum_perms_get_role_raw(?int $forum, ?int $role): array {
         return perms_create(MSZ_FORUM_PERM_MODES);
     }
 
-    $getPerms = db_prepare(sprintf(
+    $getPerms = \Misuzu\DB::prepare(sprintf(
         '
             SELECT `%s`
             FROM `msz_forum_permissions`
@@ -140,14 +140,14 @@ function forum_perms_get_role_raw(?int $forum, ?int $role): array {
     ));
 
     if($forum !== null) {
-        $getPerms->bindValue('forum_id', $forum);
+        $getPerms->bind('forum_id', $forum);
     }
 
     if($role !== null) {
-        $getPerms->bindValue('role_id', $role);
+        $getPerms->bind('role_id', $role);
     }
 
-    $perms = db_fetch($getPerms);
+    $perms = $getPerms->fetch();
 
     if(empty($perms)) {
         return perms_create(MSZ_FORUM_PERM_MODES);

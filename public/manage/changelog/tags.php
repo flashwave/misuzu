@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_PERM_CHANGELOG_MANAGE_TAGS)) {
@@ -6,7 +8,7 @@ if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_P
     return;
 }
 
-$getTags = db_prepare('
+$getTags = DB::prepare('
     SELECT
         t.`tag_id`, t.`tag_name`, t.`tag_description`, t.`tag_created`,
         (
@@ -19,5 +21,5 @@ $getTags = db_prepare('
 ');
 
 echo tpl_render('manage.changelog.tags', [
-    'changelog_tags' => db_fetch_all($getTags),
+    'changelog_tags' => $getTags->fetchAll(),
 ]);

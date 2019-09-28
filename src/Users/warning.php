@@ -74,26 +74,26 @@ function user_warning_add(
         $duration = 0;
     }
 
-    $addWarning = db_prepare('
+    $addWarning = \Misuzu\DB::prepare('
         INSERT INTO `msz_user_warnings`
             (`user_id`, `user_ip`, `issuer_id`, `issuer_ip`, `warning_type`, `warning_note`, `warning_note_private`, `warning_duration`)
         VALUES
             (:user_id, INET6_ATON(:user_ip), :issuer_id, INET6_ATON(:issuer_ip), :type, :note, :note_private, :duration)
     ');
-    $addWarning->bindValue('user_id', $userId);
-    $addWarning->bindValue('user_ip', $userIp);
-    $addWarning->bindValue('issuer_id', $issuerId);
-    $addWarning->bindValue('issuer_ip', $issuerIp);
-    $addWarning->bindValue('type', $type);
-    $addWarning->bindValue('note', $publicNote);
-    $addWarning->bindValue('note_private', $privateNote);
-    $addWarning->bindValue('duration', $duration < 1 ? null : date('Y-m-d H:i:s', $duration));
+    $addWarning->bind('user_id', $userId);
+    $addWarning->bind('user_ip', $userIp);
+    $addWarning->bind('issuer_id', $issuerId);
+    $addWarning->bind('issuer_ip', $issuerIp);
+    $addWarning->bind('type', $type);
+    $addWarning->bind('note', $publicNote);
+    $addWarning->bind('note_private', $privateNote);
+    $addWarning->bind('duration', $duration < 1 ? null : date('Y-m-d H:i:s', $duration));
 
     if(!$addWarning->execute()) {
         return MSZ_E_WARNING_ADD_DB;
     }
 
-    return (int)db_last_insert_id();
+    return \Misuzu\DB::lastId();
 }
 
 function user_warning_count(int $userId): int {
@@ -101,13 +101,13 @@ function user_warning_count(int $userId): int {
         return 0;
     }
 
-    $countWarnings = db_prepare('
+    $countWarnings = \Misuzu\DB::prepare('
         SELECT COUNT(`warning_id`)
         FROM `msz_user_warnings`
         WHERE `user_id` = :user_id
     ');
-    $countWarnings->bindValue('user_id', $userId);
-    return (int)($countWarnings->execute() ? $countWarnings->fetchColumn() : 0);
+    $countWarnings->bind('user_id', $userId);
+    return (int)$countWarnings->fetchColumn(0, 0);
 }
 
 function user_warning_remove(int $warningId): bool {
@@ -115,11 +115,11 @@ function user_warning_remove(int $warningId): bool {
         return false;
     }
 
-    $removeWarning = db_prepare('
+    $removeWarning = \Misuzu\DB::prepare('
         DELETE FROM `msz_user_warnings`
         WHERE `warning_id` = :warning_id
     ');
-    $removeWarning->bindValue('warning_id', $warningId);
+    $removeWarning->bind('warning_id', $warningId);
     return $removeWarning->execute();
 }
 
@@ -128,7 +128,7 @@ function user_warning_fetch(
     ?int $days = null,
     array $displayTypes = MSZ_WARN_TYPES
 ): array {
-    $fetchWarnings = db_prepare(sprintf(
+    $fetchWarnings = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 uw.`warning_id`, uw.`warning_created`, uw.`warning_type`, uw.`warning_note`,
@@ -146,31 +146,31 @@ function user_warning_fetch(
         implode(',', array_apply($displayTypes, 'intval')),
         $days !== null ? 'AND (uw.`warning_created` >= NOW() - INTERVAL :days DAY OR (uw.`warning_duration` IS NOT NULL AND uw.`warning_duration` > NOW()))' : ''
     ));
-    $fetchWarnings->bindValue('user_id', $userId);
+    $fetchWarnings->bind('user_id', $userId);
 
     if($days !== null) {
-        $fetchWarnings->bindValue('days', $days);
+        $fetchWarnings->bind('days', $days);
     }
 
-    return db_fetch_all($fetchWarnings);
+    return $fetchWarnings->fetchAll();
 }
 
 function user_warning_global_count(?int $userId = null): int {
-    $countWarnings = db_prepare(sprintf('
+    $countWarnings = \Misuzu\DB::prepare(sprintf('
         SELECT COUNT(`warning_id`)
         FROM `msz_user_warnings`
         %s
     ', $userId > 0 ? 'WHERE `user_id` = :user_id' : ''));
 
     if($userId > 0) {
-        $countWarnings->bindValue('user_id', $userId);
+        $countWarnings->bind('user_id', $userId);
     }
 
-    return (int)($countWarnings->execute() ? $countWarnings->fetchColumn() : 0);
+    return (int)$countWarnings->fetchColumn(0, 0);
 }
 
 function user_warning_global_fetch(int $offset = 0, int $take = 50, ?int $userId = null): array {
-    $fetchWarnings = db_prepare(sprintf(
+    $fetchWarnings = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 uw.`warning_id`, uw.`warning_created`, uw.`warning_type`, uw.`warning_note`,
@@ -188,18 +188,18 @@ function user_warning_global_fetch(int $offset = 0, int $take = 50, ?int $userId
         ',
         $userId > 0 ? 'WHERE uw.`user_id` = :user_id' : ''
     ));
-    $fetchWarnings->bindValue('offset', $offset);
-    $fetchWarnings->bindValue('take', $take);
+    $fetchWarnings->bind('offset', $offset);
+    $fetchWarnings->bind('take', $take);
 
     if($userId > 0) {
-        $fetchWarnings->bindValue('user_id', $userId);
+        $fetchWarnings->bind('user_id', $userId);
     }
 
-    return db_fetch_all($fetchWarnings);
+    return $fetchWarnings->fetchAll();
 }
 
 function user_warning_check_ip(string $address): bool {
-    $checkAddress = db_prepare(sprintf(
+    $checkAddress = \Misuzu\DB::prepare(sprintf(
         '
             SELECT COUNT(`warning_id`) > 0
             FROM `msz_user_warnings`
@@ -210,8 +210,8 @@ function user_warning_check_ip(string $address): bool {
         ',
         implode(',', MSZ_WARN_TYPES_HAS_DURATION)
     ));
-    $checkAddress->bindValue('address', $address);
-    return (bool)($checkAddress->execute() ? $checkAddress->fetchColumn() : false);
+    $checkAddress->bind('address', $address);
+    return (bool)$checkAddress->fetchColumn(0, false);
 }
 
 function user_warning_check_expiration(int $userId, int $type): int {
@@ -226,7 +226,7 @@ function user_warning_check_expiration(int $userId, int $type): int {
         return $memo[$memoId];
     }
 
-    $getExpiration = db_prepare('
+    $getExpiration = \Misuzu\DB::prepare('
         SELECT `warning_duration`
         FROM `msz_user_warnings`
         WHERE `warning_type` = :type
@@ -236,9 +236,9 @@ function user_warning_check_expiration(int $userId, int $type): int {
         ORDER BY `warning_duration` DESC
         LIMIT 1
     ');
-    $getExpiration->bindValue('type', $type);
-    $getExpiration->bindValue('user', $userId);
-    $expiration = $getExpiration->execute() ? $getExpiration->fetchColumn() : '';
+    $getExpiration->bind('type', $type);
+    $getExpiration->bind('user', $userId);
+    $expiration = $getExpiration->fetchColumn(0, '');
 
     return $memo[$memoId] = (empty($expiration) ? 0 : strtotime($expiration));
 }
@@ -254,7 +254,7 @@ function user_warning_check_restriction(int $userId): bool {
         return $memo[$userId];
     }
 
-    $checkAddress = db_prepare(sprintf(
+    $checkAddress = \Misuzu\DB::prepare(sprintf(
         '
             SELECT COUNT(`warning_id`) > 0
             FROM `msz_user_warnings`
@@ -265,6 +265,6 @@ function user_warning_check_restriction(int $userId): bool {
         ',
         implode(',', MSZ_WARN_TYPES_HAS_DURATION)
     ));
-    $checkAddress->bindValue('user', $userId);
-    return $memo[$userId] = (bool)($checkAddress->execute() ? $checkAddress->fetchColumn() : false);
+    $checkAddress->bind('user', $userId);
+    return $memo[$userId] = (bool)$checkAddress->fetchColumn(0, false);
 }

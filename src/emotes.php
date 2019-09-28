@@ -1,15 +1,15 @@
 <?php
 function emotes_list(int $hierarchy = PHP_INT_MAX, bool $unique = false, bool $order = true): array {
-    $getEmotes = db_prepare('
+    $getEmotes = \Misuzu\DB::prepare('
         SELECT      `emote_id`, `emote_order`, `emote_hierarchy`,
                     `emote_string`, `emote_url`
         FROM        `msz_emoticons`
         WHERE       `emote_hierarchy` <= :hierarchy
         ORDER BY    IF(:order, `emote_order`, `emote_id`)
     ');
-    $getEmotes->bindValue('hierarchy', $hierarchy);
-    $getEmotes->bindValue('order', $order);
-    $emotes = db_fetch_all($getEmotes);
+    $getEmotes->bind('hierarchy', $hierarchy);
+    $getEmotes->bind('order', $order);
+    $emotes = $getEmotes->fetchAll();
 
     // Removes aliases, emote with lowest ordering is considered the main
     if($unique) {
@@ -32,14 +32,14 @@ function emotes_get_by_id(int $emoteId): array {
         return [];
     }
 
-    $getEmote = db_prepare('
+    $getEmote = \Misuzu\DB::prepare('
             SELECT  `emote_id`, `emote_order`, `emote_hierarchy`,
                     `emote_string`, `emote_url`
             FROM    `msz_emoticons`
             WHERE   `emote_id` = :id
     ');
-    $getEmote->bindValue('id', $emoteId);
-    return db_fetch($getEmote);
+    $getEmote->bind('id', $emoteId);
+    return $getEmote->fetch();
 }
 
 function emotes_add(string $string, string $url, int $hierarchy = 0, int $order = 0): int {
@@ -47,7 +47,7 @@ function emotes_add(string $string, string $url, int $hierarchy = 0, int $order 
         return -1;
     }
 
-    $insertEmote = db_prepare('
+    $insertEmote = \Misuzu\DB::prepare('
         INSERT INTO `msz_emoticons` (
             `emote_order`, `emote_hierarchy`, `emote_string`, `emote_url`
         )
@@ -55,16 +55,16 @@ function emotes_add(string $string, string $url, int $hierarchy = 0, int $order 
             :order, :hierarchy, :string, :url
         )
     ');
-    $insertEmote->bindValue('order', $order);
-    $insertEmote->bindValue('hierarchy', $hierarchy);
-    $insertEmote->bindValue('string', $string);
-    $insertEmote->bindValue('url', $url);
+    $insertEmote->bind('order', $order);
+    $insertEmote->bind('hierarchy', $hierarchy);
+    $insertEmote->bind('string', $string);
+    $insertEmote->bind('url', $url);
 
     if(!$insertEmote->execute()) {
         return -2;
     }
 
-    return db_last_insert_id();
+    return \Misuzu\DB::lastId();
 }
 
 function emotes_add_alias(int $emoteId, string $alias): int {
@@ -72,7 +72,7 @@ function emotes_add_alias(int $emoteId, string $alias): int {
         return -1;
     }
 
-    $createAlias = db_prepare('
+    $createAlias = \Misuzu\DB::prepare('
         INSERT INTO `msz_emoticons` (
             `emote_order`, `emote_hierarchy`, `emote_string`, `emote_url`
         )
@@ -80,14 +80,14 @@ function emotes_add_alias(int $emoteId, string $alias): int {
         FROM    `msz_emoticons`
         WHERE   `emote_id` = :id
     ');
-    $createAlias->bindValue('id', $emoteId);
-    $createAlias->bindValue('alias', $alias);
+    $createAlias->bind('id', $emoteId);
+    $createAlias->bind('alias', $alias);
 
     if(!$createAlias->execute()) {
         return -2;
     }
 
-    return db_last_insert_id();
+    return \Misuzu\DB::lastId();
 }
 
 function emotes_update_url(string $existingUrl, string $url, int $hierarchy = 0, int $order = 0): void {
@@ -95,17 +95,17 @@ function emotes_update_url(string $existingUrl, string $url, int $hierarchy = 0,
         return;
     }
 
-    $updateByUrl = db_prepare('
+    $updateByUrl = \Misuzu\DB::prepare('
         UPDATE  `msz_emoticons`
         SET     `emote_url`         = :url,
                 `emote_hierarchy`   = :hierarchy,
                 `emote_order`       = :order
         WHERE   `emote_url`         = :existing_url
     ');
-    $updateByUrl->bindValue('existing_url', $existingUrl);
-    $updateByUrl->bindValue('url', $url);
-    $updateByUrl->bindValue('hierarchy', $hierarchy);
-    $updateByUrl->bindValue('order', $order);
+    $updateByUrl->bind('existing_url', $existingUrl);
+    $updateByUrl->bind('url', $url);
+    $updateByUrl->bind('hierarchy', $hierarchy);
+    $updateByUrl->bind('order', $order);
     $updateByUrl->execute();
 }
 
@@ -114,43 +114,43 @@ function emotes_update_string(string $id, string $string): void {
         return;
     }
 
-    $updateString = db_prepare('
+    $updateString = \Misuzu\DB::prepare('
         UPDATE  `msz_emoticons`
         SET     `emote_string` = :string
         WHERE   `emote_id` = :id
     ');
-    $updateString->bindValue('id', $id);
-    $updateString->bindValue('string', $string);
+    $updateString->bind('id', $id);
+    $updateString->bind('string', $string);
     $updateString->execute();
 }
 
 // use this for actually removing emoticons
 function emotes_remove_url(string $url): void {
-    $removeByUrl = db_prepare('
+    $removeByUrl = \Misuzu\DB::prepare('
         DELETE FROM `msz_emoticons`
         WHERE `emote_url` = :url
     ');
-    $removeByUrl->bindValue('url', $url);
+    $removeByUrl->bind('url', $url);
     $removeByUrl->execute();
 }
 
 // use this for removing single aliases
 function emotes_remove_id(int $emoteId): void {
-    $removeById = db_prepare('
+    $removeById = \Misuzu\DB::prepare('
         DELETE FROM `msz_emoticons`
         WHERE `emote_id` = :id
     ');
-    $removeById->bindValue('id', $emoteId);
+    $removeById->bind('id', $emoteId);
     $removeById->execute();
 }
 
 function emotes_order_change(int $id, bool $increase): void {
-    $increaseOrder = db_prepare('
+    $increaseOrder = \Misuzu\DB::prepare('
         UPDATE  `msz_emoticons`
         SET     `emote_order` = IF(:increase, `emote_order` + 1, `emote_order` - 1)
         WHERE   `emote_id` = :id
     ');
-    $increaseOrder->bindValue('id', $id);
-    $increaseOrder->bindValue('increase', $increase ? 1 : 0);
+    $increaseOrder->bind('id', $id);
+    $increaseOrder->bind('increase', $increase ? 1 : 0);
     $increaseOrder->execute();
 }

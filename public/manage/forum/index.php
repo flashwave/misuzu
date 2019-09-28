@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), MSZ_PERM_FORUM_MANAGE_FORUMS)) {
@@ -6,7 +8,7 @@ if(!perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), MSZ_PER
     return;
 }
 
-$forums = db_query('SELECT * FROM `msz_forum_categories`');
+$forums = DB::query('SELECT * FROM `msz_forum_categories`')->fetchAll();
 $rawPerms = perms_create(MSZ_FORUM_PERM_MODES);
 $perms = manage_forum_perms_list($rawPerms);
 

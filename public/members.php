@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../misuzu.php';
 
 $roleId = !empty($_GET['r']) && is_string($_GET['r']) ? (int)$_GET['r'] : MSZ_ROLE_MAIN;
@@ -95,7 +97,7 @@ if(!pagination_is_valid_offset($usersOffset)) {
 
 $roles = user_role_all();
 
-$getUsers = db_prepare(sprintf(
+$getUsers = DB::prepare(sprintf(
     '
         SELECT
             :current_user_id AS `current_user_id`,
@@ -154,11 +156,11 @@ $getUsers = db_prepare(sprintf(
     $orderDir,
     MSZ_USER_RELATION_FOLLOW
 ));
-$getUsers->bindValue('role_id', $role['role_id']);
-$getUsers->bindValue('offset', $usersOffset);
-$getUsers->bindValue('take', $usersPagination['range']);
-$getUsers->bindValue('current_user_id', user_session_current('user_id', 0));
-$users = db_fetch_all($getUsers);
+$getUsers->bind('role_id', $role['role_id']);
+$getUsers->bind('offset', $usersOffset);
+$getUsers->bind('take', $usersPagination['range']);
+$getUsers->bind('current_user_id', user_session_current('user_id', 0));
+$users = $getUsers->fetchAll();
 
 echo tpl_render('user.listing', [
     'roles' => $roles,

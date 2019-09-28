@@ -31,18 +31,18 @@ function changelog_entry_create(int $userId, int $action, string $log, string $t
         return -1;
     }
 
-    $createChange = db_prepare('
+    $createChange = \Misuzu\DB::prepare('
         INSERT INTO `msz_changelog_changes`
             (`user_id`, `change_action`, `change_log`, `change_text`)
         VALUES
             (:user_id, :action, :change_log, :change_text)
     ');
-    $createChange->bindValue('user_id', $userId);
-    $createChange->bindValue('action', $action);
-    $createChange->bindValue('change_log', $log);
-    $createChange->bindValue('change_text', $text);
+    $createChange->bind('user_id', $userId);
+    $createChange->bind('action', $action);
+    $createChange->bind('change_log', $log);
+    $createChange->bind('change_text', $text);
 
-    return $createChange->execute() ? (int)db_last_insert_id() : 0;
+    return $createChange->execute() ? \Misuzu\DB::lastId() : 0;
 }
 
 define('MSZ_CHANGELOG_GET_QUERY', '
@@ -75,20 +75,20 @@ function changelog_get_changes(string $date, int $user, int $offset, int $take):
         !$hasDate ? 'LIMIT :offset, :take' : ''
     );
 
-    $prep = db_prepare($query);
+    $prep = \Misuzu\DB::prepare($query);
 
     if(!$hasDate) {
-        $prep->bindValue('offset', $offset);
-        $prep->bindValue('take', $take);
+        $prep->bind('offset', $offset);
+        $prep->bind('take', $take);
     } else {
-        $prep->bindValue('date', $date);
+        $prep->bind('date', $date);
     }
 
     if($hasUser) {
-        $prep->bindValue('user', $user);
+        $prep->bind('user', $user);
     }
 
-    return db_fetch_all($prep);
+    return $prep->fetchAll();
 }
 
 define('MSZ_CHANGELOG_COUNT_QUERY', '
@@ -108,21 +108,21 @@ function changelog_count_changes(string $date, int $user): int {
         $hasUser ? '`user_id` = :user' : '1'
     );
 
-    $prep = db_prepare($query);
+    $prep = \Misuzu\DB::prepare($query);
 
     if($hasDate) {
-        $prep->bindValue('date', $date);
+        $prep->bind('date', $date);
     }
 
     if($hasUser) {
-        $prep->bindValue('user', $user);
+        $prep->bind('user', $user);
     }
 
-    return $prep->execute() ? (int)$prep->fetchColumn() : 0;
+    return (int)$prep->fetchColumn();
 }
 
 function changelog_change_get(int $changeId): array {
-    $getChange = db_prepare('
+    $getChange = \Misuzu\DB::prepare('
         SELECT
             c.`change_id`, c.`change_created`, c.`change_log`, c.`change_text`, c.`change_action`,
             u.`user_id`, u.`username`, u.`display_role` AS `user_role`,
@@ -136,12 +136,12 @@ function changelog_change_get(int $changeId): array {
         ON r.`role_id` = u.`display_role`
         WHERE `change_id` = :change_id
     ');
-    $getChange->bindValue('change_id', $changeId);
-    return db_fetch($getChange);
+    $getChange->bind('change_id', $changeId);
+    return $getChange->fetch();
 }
 
 function changelog_change_tags_get(int $changeId): array {
-    $getTags = db_prepare('
+    $getTags = \Misuzu\DB::prepare('
         SELECT
             t.`tag_id`, t.`tag_name`, t.`tag_description`
         FROM `msz_changelog_tags` as t
@@ -149,6 +149,6 @@ function changelog_change_tags_get(int $changeId): array {
         ON ct.`tag_id` = t.`tag_id`
         WHERE ct.`change_id` = :change_id
     ');
-    $getTags->bindValue('change_id', $changeId);
-    return db_fetch_all($getTags);
+    $getTags->bind('change_id', $changeId);
+    return $getTags->fetchAll();
 }

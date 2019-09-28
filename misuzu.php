@@ -1,6 +1,9 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Database\{ Database, DatabaseMigrationManager };
+use PDO;
+
 define('MSZ_STARTUP', microtime(true));
 define('MSZ_ROOT', __DIR__);
 define('MSZ_DEBUG', is_file(MSZ_ROOT . '/.debug'));
@@ -39,7 +42,6 @@ require_once 'src/colour.php';
 require_once 'src/comments.php';
 require_once 'src/config.php';
 require_once 'src/csrf.php';
-require_once 'src/db.php';
 require_once 'src/emotes.php';
 require_once 'src/general.php';
 require_once 'src/git.php';
@@ -85,8 +87,19 @@ if(empty($dbConfig)) {
     exit;
 }
 
-db_settings([
-    'mysql-main' => $dbConfig['Database'] ?? $dbConfig['Database.mysql-main'] ?? [],
+$dbConfig = $dbConfig['Database'] ?? $dbConfig['Database.mysql-main'] ?? [];
+
+DB::init(DB::buildDSN($dbConfig), $dbConfig['username'] ?? '', $dbConfig['password'] ?? '', [
+    PDO::ATTR_CASE => PDO::CASE_NATURAL,
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
+    PDO::ATTR_STRINGIFY_FETCHES => false,
+    PDO::ATTR_EMULATE_PREPARES => false,
+    PDO::MYSQL_ATTR_INIT_COMMAND => "
+        SET SESSION
+            sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION',
+            time_zone = '+00:00';
+    ",
 ]);
 
 config_init();
@@ -250,7 +263,7 @@ if(PHP_SAPI === 'cli') {
 
                         switch($cronTask['type']) {
                             case 'sql':
-                                db_exec($cronTask['command']);
+                                DB::exec($cronTask['command']);
                                 break;
 
                             case 'func':
@@ -262,45 +275,34 @@ if(PHP_SAPI === 'cli') {
                 break;
 
             case 'migrate':
-                $migrationTargets = [
-                    'mysql-main' => MSZ_ROOT . '/database',
-                ];
                 $doRollback = !empty($argv[2]) && $argv[2] === 'rollback';
-                $targetDb = isset($argv[$doRollback ? 3 : 2]) ? $argv[$doRollback ? 3 : 2] : null;
-
-                if($targetDb !== null && !array_key_exists($targetDb, $migrationTargets)) {
-                    echo 'Invalid target database connection.' . PHP_EOL;
-                    break;
-                }
 
                 touch(MSZ_ROOT . '/.migrating');
 
-                foreach($migrationTargets as $db => $path) {
-                    echo "Creating migration manager for '{$db}'..." . PHP_EOL;
-                    $migrationManager = new DatabaseMigrationManager(db_connection($db), $path);
-                    $migrationManager->setLogger(function ($log) {
-                        echo $log . PHP_EOL;
-                    });
+                echo "Creating migration manager.." . PHP_EOL;
+                $migrationManager = new DatabaseMigrationManager(DB::getPDO(), $path);
+                $migrationManager->setLogger(function ($log) {
+                    echo $log . PHP_EOL;
+                });
 
-                    if($doRollback) {
-                        echo "Rolling back last migrations for '{$db}'..." . PHP_EOL;
-                        $migrationManager->rollback();
-                    } else {
-                        echo "Running migrations for '{$db}'..." . PHP_EOL;
-                        $migrationManager->migrate();
-                    }
+                if($doRollback) {
+                    echo "Rolling back last migrations..." . PHP_EOL;
+                    $migrationManager->rollback();
+                } else {
+                    echo "Running migrations..." . PHP_EOL;
+                    $migrationManager->migrate();
+                }
 
-                    $errors = $migrationManager->getErrors();
-                    $errorCount = count($errors);
+                $errors = $migrationManager->getErrors();
+                $errorCount = count($errors);
 
-                    if($errorCount < 1) {
-                        echo 'Completed with no errors!' . PHP_EOL;
-                    } else {
-                        echo PHP_EOL . "There were {$errorCount} errors during the migrations..." . PHP_EOL;
+                if($errorCount < 1) {
+                    echo 'Completed with no errors!' . PHP_EOL;
+                } else {
+                    echo PHP_EOL . "There were {$errorCount} errors during the migrations..." . PHP_EOL;
 
-                        foreach($errors as $error) {
-                            echo $error . PHP_EOL;
-                        }
+                    foreach($errors as $error) {
+                        echo $error . PHP_EOL;
                     }
                 }
 
@@ -446,7 +448,7 @@ MIG;
         $cookieData = user_session_cookie_unpack(base64url_decode($_COOKIE['msz_auth']));
 
         if(!empty($cookieData) && user_session_start($cookieData['user_id'], $cookieData['session_token'])) {
-            $getUserDisplayInfo = db_prepare('
+            $userDisplayInfo = DB::prepare('
                 SELECT
                     u.`user_id`, u.`username`, u.`user_background_settings`, u.`user_deleted`,
                     COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
@@ -455,8 +457,8 @@ MIG;
                 ON u.`display_role` = r.`role_id`
                 WHERE `user_id` = :user_id
             ');
-            $getUserDisplayInfo->bindValue('user_id', $cookieData['user_id']);
-            $userDisplayInfo = db_fetch($getUserDisplayInfo);
+            $userDisplayInfo->bind('user_id', $cookieData['user_id']);
+            $userDisplayInfo = $userDisplayInfo->fetch();
 
             if($userDisplayInfo) {
                 if(!is_null($userDisplayInfo['user_deleted'])) {

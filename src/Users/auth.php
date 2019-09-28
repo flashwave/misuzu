@@ -12,14 +12,14 @@ function user_auth_tfa_token_create(int $userId): string {
 
     $token = user_auth_tfa_token_generate();
 
-    $createToken = db_prepare('
+    $createToken = \Misuzu\DB::prepare('
         INSERT INTO `msz_auth_tfa`
             (`user_id`, `tfa_token`)
         VALUES
             (:user_id, :token)
     ');
-    $createToken->bindValue('user_id', $userId);
-    $createToken->bindValue('token', $token);
+    $createToken->bind('user_id', $userId);
+    $createToken->bind('token', $token);
 
     if(!$createToken->execute()) {
         return '';
@@ -29,16 +29,16 @@ function user_auth_tfa_token_create(int $userId): string {
 }
 
 function user_auth_tfa_token_invalidate(string $token): void {
-    $deleteToken = db_prepare('
+    $deleteToken = \Misuzu\DB::prepare('
         DELETE FROM `msz_auth_tfa`
         WHERE `tfa_token` = :token
     ');
-    $deleteToken->bindValue('token', $token);
+    $deleteToken->bind('token', $token);
     $deleteToken->execute();
 }
 
 function user_auth_tfa_token_info(string $token): array {
-    $getTokenInfo = db_prepare('
+    $getTokenInfo = \Misuzu\DB::prepare('
         SELECT
             at.`user_id`, at.`tfa_token`, at.`tfa_created`, u.`user_totp_key`
         FROM `msz_auth_tfa` AS at
@@ -47,6 +47,6 @@ function user_auth_tfa_token_info(string $token): array {
         WHERE at.`tfa_token` = :token
         AND at.`tfa_created` >= NOW() - INTERVAL 15 MINUTE
     ');
-    $getTokenInfo->bindValue('token', $token);
-    return db_fetch($getTokenInfo);
+    $getTokenInfo->bind('token', $token);
+    return $getTokenInfo->fetch();
 }

@@ -2,48 +2,48 @@
 define('MSZ_ROLE_MAIN', 1);
 
 function user_role_add(int $userId, int $roleId): bool {
-    $addRole = db_prepare('
+    $addRole = \Misuzu\DB::prepare('
         INSERT INTO `msz_user_roles`
             (`user_id`, `role_id`)
         VALUES
             (:user_id, :role_id)
     ');
-    $addRole->bindValue('user_id', $userId);
-    $addRole->bindValue('role_id', $roleId);
+    $addRole->bind('user_id', $userId);
+    $addRole->bind('role_id', $roleId);
     return $addRole->execute();
 }
 
 function user_role_remove(int $userId, int $roleId): bool {
-    $removeRole = db_prepare('
+    $removeRole = \Misuzu\DB::prepare('
         DELETE FROM `msz_user_roles`
         WHERE `user_id` = :user_id
         AND `role_id` = :role_id
     ');
-    $removeRole->bindValue('user_id', $userId);
-    $removeRole->bindValue('role_id', $roleId);
+    $removeRole->bind('user_id', $userId);
+    $removeRole->bind('role_id', $roleId);
     return $removeRole->execute();
 }
 
 function user_role_can_leave(int $roleId): bool {
-    $canLeaveRole = db_prepare('
+    $canLeaveRole = \Misuzu\DB::prepare('
         SELECT `role_can_leave` != 0
         FROM `msz_roles`
         WHERE `role_id` = :role_id
     ');
-    $canLeaveRole->bindValue('role_id', $roleId);
-    return $canLeaveRole->execute() ? (bool)$canLeaveRole->fetchColumn() : false;
+    $canLeaveRole->bind('role_id', $roleId);
+    return (bool)$canLeaveRole->fetchColumn();
 }
 
 function user_role_has(int $userId, int $roleId): bool {
-    $hasRole = db_prepare('
+    $hasRole = \Misuzu\DB::prepare('
         SELECT COUNT(`role_id`) > 0
         FROM `msz_user_roles`
         WHERE `user_id` = :user_id
         AND `role_id` = :role_id
     ');
-    $hasRole->bindValue('user_id', $userId);
-    $hasRole->bindValue('role_id', $roleId);
-    return $hasRole->execute() ? (bool)$hasRole->fetchColumn() : false;
+    $hasRole->bind('user_id', $userId);
+    $hasRole->bind('role_id', $roleId);
+    return (bool)$hasRole->fetchColumn();
 }
 
 function user_role_set_display(int $userId, int $roleId): bool {
@@ -51,13 +51,13 @@ function user_role_set_display(int $userId, int $roleId): bool {
         return false;
     }
 
-    $setDisplay = db_prepare('
+    $setDisplay = \Misuzu\DB::prepare('
         UPDATE `msz_users`
         SET `display_role` = :role_id
         WHERE `user_id` = :user_id
     ');
-    $setDisplay->bindValue('user_id', $userId);
-    $setDisplay->bindValue('role_id', $roleId);
+    $setDisplay->bind('user_id', $userId);
+    $setDisplay->bind('role_id', $roleId);
 
     return $setDisplay->execute();
 }
@@ -67,17 +67,17 @@ function user_role_get_display(int $userId): int {
         return MSZ_ROLE_MAIN;
     }
 
-    $fetchRole = db_prepare('
+    $fetchRole = \Misuzu\DB::prepare('
         SELECT `display_role`
         FROM `msz_users`
         WHERE `user_id` = :user_id
     ');
-    $fetchRole->bindValue('user_id', $userId);
-    return $fetchRole->execute() ? (int)$fetchRole->fetchColumn() : MSZ_ROLE_MAIN;
+    $fetchRole->bind('user_id', $userId);
+    return (int)$fetchRole->fetchColumn(0, MSZ_ROLE_MAIN);
 }
 
 function user_role_all_user(int $userId): array {
-    $getUserRoles = db_prepare('
+    $getUserRoles = \Misuzu\DB::prepare('
         SELECT
             r.`role_id`, r.`role_name`, r.`role_description`,
             r.`role_colour`, r.`role_can_leave`, r.`role_created`
@@ -87,12 +87,12 @@ function user_role_all_user(int $userId): array {
         WHERE ur.`user_id` = :user_id
         ORDER BY r.`role_hierarchy` DESC
     ');
-    $getUserRoles->bindValue('user_id', $userId);
-    return db_fetch_all($getUserRoles);
+    $getUserRoles->bind('user_id', $userId);
+    return $getUserRoles->fetchAll();
 }
 
 function user_role_all(bool $withHidden = false) {
-    return db_query(sprintf(
+    return \Misuzu\DB::query(sprintf(
         '
             SELECT
                 r.`role_id`, r.`role_name`, r.`role_description`,
@@ -107,11 +107,11 @@ function user_role_all(bool $withHidden = false) {
             ORDER BY `role_id`
         ',
         $withHidden ? '' : 'WHERE `role_hidden` = 0'
-    ))->fetchAll(PDO::FETCH_ASSOC);
+    ))->fetchAll();
 }
 
 function user_role_get(int $roleId): array {
-    $getRole = db_prepare('
+    $getRole = \Misuzu\DB::prepare('
         SELECT
             r.`role_id`, r.`role_name`, r.`role_description`,
             r.`role_colour`, r.`role_can_leave`, r.`role_created`,
@@ -123,12 +123,12 @@ function user_role_get(int $roleId): array {
         FROM `msz_roles` AS r
         WHERE `role_id` = :role_id
     ');
-    $getRole->bindValue('role_id', $roleId);
-    return db_fetch($getRole);
+    $getRole->bind('role_id', $roleId);
+    return $getRole->fetch();
 }
 
 function user_role_check_authority(int $userId, int $roleId): bool {
-    $checkHierarchy = db_prepare('
+    $checkHierarchy = \Misuzu\DB::prepare('
         SELECT (
             SELECT MAX(r.`role_hierarchy`)
             FROM `msz_roles` AS r
@@ -141,7 +141,7 @@ function user_role_check_authority(int $userId, int $roleId): bool {
             WHERE `role_id` = :role_id
         )
     ');
-    $checkHierarchy->bindValue('user_id', $userId);
-    $checkHierarchy->bindValue('role_id', $roleId);
-    return (bool)($checkHierarchy->execute() ? $checkHierarchy->fetchColumn() : false);
+    $checkHierarchy->bind('user_id', $userId);
+    $checkHierarchy->bind('role_id', $roleId);
+    return (bool)$checkHierarchy->fetchColumn();
 }

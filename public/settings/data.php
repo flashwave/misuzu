@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../misuzu.php';
 
 if(!user_session_active()) {
@@ -7,17 +9,17 @@ if(!user_session_active()) {
 }
 
 function db_to_zip(ZipArchive $archive, int $userId, string $filename, string $query, int $params = 1): void {
-    $prepare = db_prepare($query);
+    $prepare = DB::prepare($query);
 
     if($params < 2) {
-        $prepare->bindValue('user_id', $userId);
+        $prepare->bind('user_id', $userId);
     } else {
         for($i = 1; $i <= $params; $i++) {
-            $prepare->bindValue('user_id_' . $i, $userId);
+            $prepare->bind('user_id_' . $i, $userId);
         }
     }
 
-    $archive->addFromString($filename, json_encode(db_fetch_all($prepare), JSON_PRETTY_PRINT));
+    $archive->addFromString($filename, json_encode($prepare->fetchAll(), JSON_PRETTY_PRINT));
 }
 
 $errors = [];

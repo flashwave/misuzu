@@ -4,7 +4,7 @@ function forum_poll_get(int $poll): array {
         return [];
     }
 
-    $getPoll = db_prepare("
+    $getPoll = \Misuzu\DB::prepare("
         SELECT fp.`poll_id`, fp.`poll_max_votes`, fp.`poll_expires`, fp.`poll_preview_results`, fp.`poll_change_vote`,
             (fp.`poll_expires` < CURRENT_TIMESTAMP) AS `poll_expired`,
             (
@@ -15,8 +15,8 @@ function forum_poll_get(int $poll): array {
         FROM `msz_forum_polls` AS fp
         WHERE fp.`poll_id` = :poll
     ");
-    $getPoll->bindValue('poll', $poll);
-    return db_fetch($getPoll);
+    $getPoll->bind('poll', $poll);
+    return $getPoll->fetch();
 }
 
 function forum_poll_create(int $maxVotes = 1): int {
@@ -24,14 +24,14 @@ function forum_poll_create(int $maxVotes = 1): int {
         return -1;
     }
 
-    $createPoll = db_prepare("
+    $createPoll = \Misuzu\DB::prepare("
         INSERT INTO `msz_forum_polls`
             (`poll_max_votes`)
         VALUES
             (:max_votes)
     ");
-    $createPoll->bindValue('max_votes', $maxVotes);
-    return (int)($createPoll->execute() ? db_last_insert_id() : -1);
+    $createPoll->bind('max_votes', $maxVotes);
+    return $createPoll->execute() ? \Misuzu\DB::lastId() : -1;
 }
 
 function forum_poll_get_options(int $poll): array {
@@ -45,7 +45,7 @@ function forum_poll_get_options(int $poll): array {
         return $polls[$poll];
     }
 
-    $getOptions = db_prepare('
+    $getOptions = \Misuzu\DB::prepare('
         SELECT `option_id`, `option_text`,
             (
                 SELECT COUNT(*)
@@ -55,9 +55,9 @@ function forum_poll_get_options(int $poll): array {
         FROM `msz_forum_polls_options` AS fpo
         WHERE `poll_id` = :poll
     ');
-    $getOptions->bindValue('poll', $poll);
+    $getOptions->bind('poll', $poll);
 
-    return $polls[$poll] = db_fetch_all($getOptions);
+    return $polls[$poll] = $getOptions->fetchAll();
 }
 
 function forum_poll_get_user_answers(int $poll, int $user): array {
@@ -65,15 +65,15 @@ function forum_poll_get_user_answers(int $poll, int $user): array {
         return [];
     }
 
-    $getAnswers = db_prepare("
+    $getAnswers = \Misuzu\DB::prepare("
         SELECT `option_id`
         FROM `msz_forum_polls_answers`
         WHERE `poll_id` = :poll
         AND `user_id` = :user
     ");
-    $getAnswers->bindValue('poll', $poll);
-    $getAnswers->bindValue('user', $user);
-    return array_column(db_fetch_all($getAnswers), 'option_id');
+    $getAnswers->bind('poll', $poll);
+    $getAnswers->bind('user', $user);
+    return array_column($getAnswers->fetchAll(), 'option_id');
 }
 
 function forum_poll_reset_answers(int $poll): void {
@@ -81,11 +81,11 @@ function forum_poll_reset_answers(int $poll): void {
         return;
     }
 
-    $resetAnswers = db_prepare("
+    $resetAnswers = \Misuzu\DB::prepare("
         DELETE FROM `msz_forum_polls_answers`
         WHERE `poll_id` = :poll
     ");
-    $resetAnswers->bindValue('poll', $poll);
+    $resetAnswers->bind('poll', $poll);
     $resetAnswers->execute();
 }
 
@@ -94,15 +94,15 @@ function forum_poll_option_add(int $poll, string $text): int {
         return -1;
     }
 
-    $addOption = db_prepare("
+    $addOption = \Misuzu\DB::prepare("
         INSERT INTO `msz_forum_polls_options`
             (`poll_id`, `option_text`)
         VALUES
             (:poll, :text)
     ");
-    $addOption->bindValue('poll', $poll);
-    $addOption->bindValue('text', $text);
-    return (int)($createPoll->execute() ? db_last_insert_id() : -1);
+    $addOption->bind('poll', $poll);
+    $addOption->bind('text', $text);
+    return $addOption->execute() ? \Misuzu\DB::lastId() : -1;
 }
 
 function forum_poll_option_remove(int $option): void {
@@ -110,11 +110,11 @@ function forum_poll_option_remove(int $option): void {
         return;
     }
 
-    $removeOption = db_prepare("
+    $removeOption = \Misuzu\DB::prepare("
         DELETE FROM `msz_forum_polls_options`
         WHERE `option_id` = :option
     ");
-    $removeOption->bindValue('option', $option);
+    $removeOption->bind('option', $option);
     $removeOption->execute();
 }
 
@@ -123,13 +123,13 @@ function forum_poll_vote_remove(int $user, int $poll): void {
         return;
     }
 
-    $purgeVote = db_prepare("
+    $purgeVote = \Misuzu\DB::prepare("
         DELETE FROM `msz_forum_polls_answers`
         WHERE `user_id` = :user
         AND `poll_id` = :poll
     ");
-    $purgeVote->bindValue('user', $user);
-    $purgeVote->bindValue('poll', $poll);
+    $purgeVote->bind('user', $user);
+    $purgeVote->bind('poll', $poll);
     $purgeVote->execute();
 }
 
@@ -138,15 +138,15 @@ function forum_poll_vote_cast(int $user, int $poll, int $option): void {
         return;
     }
 
-    $castVote = db_prepare("
+    $castVote = \Misuzu\DB::prepare("
         INSERT INTO `msz_forum_polls_answers`
             (`user_id`, `poll_id`, `option_id`)
         VALUES
             (:user, :poll, :option)
     ");
-    $castVote->bindValue('user', $user);
-    $castVote->bindValue('poll', $poll);
-    $castVote->bindValue('option', $option);
+    $castVote->bind('user', $user);
+    $castVote->bind('poll', $poll);
+    $castVote->bind('option', $option);
     $castVote->execute();
 }
 
@@ -155,16 +155,16 @@ function forum_poll_validate_option(int $poll, int $option): bool {
         return false;
     }
 
-    $checkVote = db_prepare("
+    $checkVote = \Misuzu\DB::prepare("
         SELECT COUNT(`option_id`) > 0
         FROM `msz_forum_polls_options`
         WHERE `poll_id` = :poll
         AND `option_id` = :option
     ");
-    $checkVote->bindValue('poll', $poll);
-    $checkVote->bindValue('option', $option);
+    $checkVote->bind('poll', $poll);
+    $checkVote->bind('option', $option);
 
-    return (bool)($checkVote->execute() ? $checkVote->fetchColumn() : false);
+    return (bool)$checkVote->fetchColumn();
 }
 
 function forum_poll_has_voted(int $user, int $poll): bool {
@@ -172,16 +172,16 @@ function forum_poll_has_voted(int $user, int $poll): bool {
         return false;
     }
 
-    $getAnswers = db_prepare("
+    $getAnswers = \Misuzu\DB::prepare("
         SELECT COUNT(`user_id`) > 0
         FROM `msz_forum_polls_answers`
         WHERE `poll_id` = :poll
         AND `user_id` = :user
     ");
-    $getAnswers->bindValue('poll', $poll);
-    $getAnswers->bindValue('user', $user);
+    $getAnswers->bind('poll', $poll);
+    $getAnswers->bind('user', $user);
 
-    return (bool)($getAnswers->execute() ? $getAnswers->fetchColumn() : false);
+    return (bool)$getAnswers->fetchColumn();
 }
 
 function forum_poll_get_topic(int $poll): array {
@@ -189,12 +189,12 @@ function forum_poll_get_topic(int $poll): array {
         return [];
     }
 
-    $getTopic = db_prepare("
+    $getTopic = \Misuzu\DB::prepare("
         SELECT `forum_id`, `topic_id`, `topic_locked`
         FROM `msz_forum_topics`
         WHERE `poll_id` = :poll
     ");
-    $getTopic->bindValue('poll', $poll);
+    $getTopic->bind('poll', $poll);
 
-    return db_fetch($getTopic);
+    return $getTopic->fetch();
 }

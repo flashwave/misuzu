@@ -103,16 +103,16 @@ function ip_cidr_to_raw(string $cidr): ?array {
 }
 
 function ip_blacklist_check(string $address): bool {
-    $checkBlacklist = db_prepare("
+    $checkBlacklist = \Misuzu\DB::prepare("
         SELECT COUNT(*) > 0
         FROM `msz_ip_blacklist`
         WHERE LENGTH(`ip_subnet`) = LENGTH(INET6_ATON(:ip1))
         AND `ip_subnet`         & LPAD('', LENGTH(`ip_subnet`), X'FF') << LENGTH(`ip_subnet`) * 8 - `ip_mask`
             = INET6_ATON(:ip2)  & LPAD('', LENGTH(`ip_subnet`), X'FF') << LENGTH(`ip_subnet`) * 8 - `ip_mask`
     ");
-    $checkBlacklist->bindValue('ip1', $address);
-    $checkBlacklist->bindValue('ip2', $address);
-    return (bool)($checkBlacklist->execute() ? $checkBlacklist->fetchColumn() : false);
+    $checkBlacklist->bind('ip1', $address);
+    $checkBlacklist->bind('ip2', $address);
+    return (bool)$checkBlacklist->fetchColumn();
 }
 
 function ip_blacklist_add_raw(string $subnet, ?int $mask = null): bool {
@@ -130,14 +130,15 @@ function ip_blacklist_add_raw(string $subnet, ?int $mask = null): bool {
         return false;
     }
 
-    $addBlacklist = db_prepare('
+    // TODO: don't use REPLACE INTO
+    $addBlacklist = \Misuzu\DB::prepare('
         REPLACE INTO `msz_ip_blacklist`
             (`ip_subnet`, `ip_mask`)
         VALUES
             (:subnet, :mask)
     ');
-    $addBlacklist->bindValue('subnet', $subnet);
-    $addBlacklist->bindValue('mask', $mask);
+    $addBlacklist->bind('subnet', $subnet);
+    $addBlacklist->bind('mask', $mask);
     return $addBlacklist->execute();
 }
 
@@ -152,13 +153,13 @@ function ip_blacklist_add(string $cidr): bool {
 }
 
 function ip_blacklist_remove_raw(string $subnet, ?int $mask = null): bool {
-    $removeBlacklist = db_prepare('
+    $removeBlacklist = \Misuzu\DB::prepare('
         DELETE FROM `msz_ip_blacklist`
         WHERE `ip_subnet` = :subnet
         AND `ip_mask` = :mask
     ');
-    $removeBlacklist->bindValue('subnet', $subnet);
-    $removeBlacklist->bindValue('mask', $mask);
+    $removeBlacklist->bind('subnet', $subnet);
+    $removeBlacklist->bind('mask', $mask);
     return $removeBlacklist->execute();
 }
 
@@ -173,13 +174,12 @@ function ip_blacklist_remove(string $cidr): bool {
 }
 
 function ip_blacklist_list(): array {
-    $getBlacklist = db_query("
+    return \Misuzu\DB::query("
         SELECT
             INET6_NTOA(`ip_subnet`) AS `ip_subnet`,
             `ip_mask`,
             LENGTH(`ip_subnet`) AS `ip_bytes`,
             CONCAT(INET6_NTOA(`ip_subnet`), '/', `ip_mask`) as `ip_cidr`
         FROM `msz_ip_blacklist`
-    ");
-    return db_fetch_all($getBlacklist);
+    ")->fetchAll();
 }

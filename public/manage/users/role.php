@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 // TODO: UNFUCK THIS FILE
 
 require_once '../../../misuzu.php';
@@ -87,7 +89,7 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && csrf_verify_request()) 
     }
 
     if($roleId < 1) {
-        $updateRole = db_prepare('
+        $updateRole = DB::prepare('
             INSERT INTO `msz_roles`
                 (
                     `role_name`, `role_hierarchy`, `role_hidden`, `role_colour`,
@@ -100,7 +102,7 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && csrf_verify_request()) 
                 )
         ');
     } else {
-        $updateRole = db_prepare('
+        $updateRole = DB::prepare('
             UPDATE `msz_roles`
             SET `role_name` = :role_name,
                 `role_hierarchy` = :role_hierarchy,
@@ -110,19 +112,19 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && csrf_verify_request()) 
                 `role_title` = :role_title
             WHERE `role_id` = :role_id
         ');
-        $updateRole->bindValue('role_id', $roleId);
+        $updateRole->bind('role_id', $roleId);
     }
 
-    $updateRole->bindValue('role_name', $roleName);
-    $updateRole->bindValue('role_hierarchy', $roleHierarchy);
-    $updateRole->bindValue('role_hidden', $roleSecret ? 1 : 0);
-    $updateRole->bindValue('role_colour', $roleColour);
-    $updateRole->bindValue('role_description', $roleDescription);
-    $updateRole->bindValue('role_title', $roleTitle);
+    $updateRole->bind('role_name', $roleName);
+    $updateRole->bind('role_hierarchy', $roleHierarchy);
+    $updateRole->bind('role_hidden', $roleSecret ? 1 : 0);
+    $updateRole->bind('role_colour', $roleColour);
+    $updateRole->bind('role_description', $roleDescription);
+    $updateRole->bind('role_title', $roleTitle);
     $updateRole->execute();
 
     if($roleId < 1) {
-        $roleId = (int)db_last_insert_id();
+        $roleId = DB::lastId();
     }
 
     if(!empty($permissions) && !empty($_POST['perms']) && is_array($_POST['perms'])) {
@@ -130,26 +132,26 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && csrf_verify_request()) 
 
         if($perms !== null) {
             $permKeys = array_keys($perms);
-            $setPermissions = db_prepare('
+            $setPermissions = DB::prepare('
                 REPLACE INTO `msz_permissions`
                     (`role_id`, `user_id`, `' . implode('`, `', $permKeys) . '`)
                 VALUES
                     (:role_id, NULL, :' . implode(', :', $permKeys) . ')
             ');
-            $setPermissions->bindValue('role_id', $roleId);
+            $setPermissions->bind('role_id', $roleId);
 
             foreach($perms as $key => $value) {
-                $setPermissions->bindValue($key, $value);
+                $setPermissions->bind($key, $value);
             }
 
             $setPermissions->execute();
         } else {
-            $deletePermissions = db_prepare('
+            $deletePermissions = DB::prepare('
                 DELETE FROM `msz_permissions`
                 WHERE `role_id` = :role_id
                 AND `user_id` IS NULL
             ');
-            $deletePermissions->bindValue('role_id', $roleId);
+            $deletePermissions->bind('role_id', $roleId);
             $deletePermissions->execute();
         }
     }
@@ -164,13 +166,13 @@ if($roleId !== null) {
         return;
     }
 
-    $getEditRole = db_prepare('
+    $getEditRole = DB::prepare('
         SELECT *
         FROM `msz_roles`
         WHERE `role_id` = :role_id
     ');
-    $getEditRole->bindValue('role_id', $roleId);
-    $editRole = db_fetch($getEditRole);
+    $getEditRole->bind('role_id', $roleId);
+    $editRole = $getEditRole->fetch();
 
     if(empty($editRole)) {
         echo 'invalid role';

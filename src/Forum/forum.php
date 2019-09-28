@@ -99,7 +99,7 @@ function forum_has_priority_voting(int $forumType): bool {
 }
 
 function forum_get(int $forumId, bool $showDeleted = false): array {
-    $getForum = db_prepare(sprintf(
+    $getForum = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_archived`,
@@ -115,12 +115,12 @@ function forum_get(int $forumId, bool $showDeleted = false): array {
         ',
         $showDeleted ? '' : 'AND `topic_deleted` IS NULL'
     ));
-    $getForum->bindValue('forum_id', $forumId);
-    return db_fetch($getForum);
+    $getForum->bind('forum_id', $forumId);
+    return $getForum->fetch();
 }
 
 function forum_get_root_categories(int $userId): array {
-    $getCategories = db_prepare(sprintf(
+    $getCategories = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 f.`forum_id`, f.`forum_name`, f.`forum_type`, f.`forum_colour`, f.`forum_icon`,
@@ -138,9 +138,9 @@ function forum_get_root_categories(int $userId): array {
         ',
         MSZ_FORUM_TYPE_CATEGORY
     ));
-    $categories = array_merge([MSZ_FORUM_ROOT_DATA], db_fetch_all($getCategories));
+    $categories = array_merge([MSZ_FORUM_ROOT_DATA], $getCategories->fetchAll());
 
-    $getRootForumCount = db_prepare(sprintf(
+    $getRootForumCount = \Misuzu\DB::prepare(sprintf(
         "
             SELECT COUNT(`forum_id`)
             FROM `msz_forum_categories`
@@ -150,7 +150,7 @@ function forum_get_root_categories(int $userId): array {
         MSZ_FORUM_ROOT,
         MSZ_FORUM_TYPE_CATEGORY
     ));
-    $categories[0]['forum_children'] = (int)($getRootForumCount->execute() ? $getRootForumCount->fetchColumn() : 0);
+    $categories[0]['forum_children'] = (int)$getRootForumCount->fetchColumn();
 
     foreach($categories as $key => $category) {
         $categories[$key]['forum_permissions'] = $perms = forum_perms_get_user($category['forum_id'], $userId)[MSZ_FORUM_PERMS_GENERAL];
@@ -177,15 +177,15 @@ function forum_get_breadcrumbs(
     array $indexLink = ['Forums' => '/forum/']
 ): array {
     $breadcrumbs = [];
-    $getBreadcrumb = db_prepare('
+    $getBreadcrumb = \Misuzu\DB::prepare('
         SELECT `forum_id`, `forum_name`, `forum_type`, `forum_parent`
         FROM `msz_forum_categories`
         WHERE `forum_id` = :forum_id
     ');
 
     while($forumId > 0) {
-        $getBreadcrumb->bindValue('forum_id', $forumId);
-        $breadcrumb = db_fetch($getBreadcrumb);
+        $getBreadcrumb->bind('forum_id', $forumId);
+        $breadcrumb = $getBreadcrumb->fetch();
 
         if(empty($breadcrumb)) {
             break;
@@ -205,15 +205,15 @@ function forum_get_breadcrumbs(
 }
 
 function forum_get_colour(int $forumId): int {
-    $getColours = db_prepare('
+    $getColours = \Misuzu\DB::prepare('
         SELECT `forum_id`, `forum_parent`, `forum_colour`
         FROM `msz_forum_categories`
         WHERE `forum_id` = :forum_id
     ');
 
     while($forumId > 0) {
-        $getColours->bindValue('forum_id', $forumId);
-        $colourInfo = db_fetch($getColours);
+        $getColours->bind('forum_id', $forumId);
+        $colourInfo = $getColours->fetch();
 
         if(empty($colourInfo)) {
             break;
@@ -230,14 +230,14 @@ function forum_get_colour(int $forumId): int {
 }
 
 function forum_increment_clicks(int $forumId): void {
-    $incrementLinkClicks = db_prepare(sprintf('
+    $incrementLinkClicks = \Misuzu\DB::prepare(sprintf('
         UPDATE `msz_forum_categories`
         SET `forum_link_clicks` = `forum_link_clicks` + 1
         WHERE `forum_id` = :forum_id
         AND `forum_type` = %d
         AND `forum_link_clicks` IS NOT NULL
     ', MSZ_FORUM_TYPE_LINK));
-    $incrementLinkClicks->bindValue('forum_id', $forumId);
+    $incrementLinkClicks->bind('forum_id', $forumId);
     $incrementLinkClicks->execute();
 }
 
@@ -252,14 +252,14 @@ function forum_get_parent_id(int $forumId): int {
         return $memoized[$forumId];
     }
 
-    $getParent = db_prepare('
+    $getParent = \Misuzu\DB::prepare('
         SELECT `forum_parent`
         FROM `msz_forum_categories`
         WHERE `forum_id` = :forum_id
     ');
-    $getParent->bindValue('forum_id', $forumId);
+    $getParent->bind('forum_id', $forumId);
 
-    return (int)($getParent->execute() ? $getParent->fetchColumn() : 0);
+    return (int)$getParent->fetchColumn();
 }
 
 function forum_get_child_ids(int $forumId): array {
@@ -273,13 +273,13 @@ function forum_get_child_ids(int $forumId): array {
         return $memoized[$forumId];
     }
 
-    $getChildren = db_prepare('
+    $getChildren = \Misuzu\DB::prepare('
         SELECT `forum_id`
         FROM `msz_forum_categories`
         WHERE `forum_parent` = :forum_id
     ');
-    $getChildren->bindValue('forum_id', $forumId);
-    $children = db_fetch_all($getChildren);
+    $getChildren->bind('forum_id', $forumId);
+    $children = $getChildren->fetchAll();
 
     return $memoized[$forumId] = array_column($children, 'forum_id');
 }
@@ -304,7 +304,7 @@ function forum_topics_unread(int $forumId, int $userId): int {
     }
 
     if(forum_perms_check_user(MSZ_FORUM_PERMS_GENERAL, $forumId, $userId, MSZ_FORUM_PERM_SET_READ)) {
-        $countUnread = db_prepare('
+        $countUnread = \Misuzu\DB::prepare('
             SELECT COUNT(ti.`topic_id`)
             FROM `msz_forum_topics` AS ti
             LEFT JOIN `msz_forum_topics_track` AS tt
@@ -317,9 +317,9 @@ function forum_topics_unread(int $forumId, int $userId): int {
                 OR tt.`track_last_read` < ti.`topic_bumped`
             )
         ');
-        $countUnread->bindValue('forum_id', $forumId);
-        $countUnread->bindValue('user_id', $userId);
-        $memoized[$memoId] += (int)($countUnread->execute() ? $countUnread->fetchColumn() : 0);
+        $countUnread->bind('forum_id', $forumId);
+        $countUnread->bind('user_id', $userId);
+        $memoized[$memoId] += (int)$countUnread->fetchColumn();
     }
 
     return $memoized[$memoId];
@@ -341,7 +341,7 @@ function forum_latest_post(int $forumId, int $userId): array {
         return $memoized[$memoId] = [];
     }
 
-    $getLastPost = db_prepare('
+    $getLastPost = \Misuzu\DB::prepare('
         SELECT
             p.`post_id` AS `recent_post_id`, t.`topic_id` AS `recent_topic_id`,
             t.`topic_title` AS `recent_topic_title`, t.`topic_bumped` AS `recent_topic_bumped`,
@@ -361,8 +361,8 @@ function forum_latest_post(int $forumId, int $userId): array {
         AND p.`post_deleted` IS NULL
         ORDER BY p.`post_id` DESC
     ');
-    $getLastPost->bindValue('forum_id', $forumId);
-    $currentLast = db_fetch($getLastPost);
+    $getLastPost->bind('forum_id', $forumId);
+    $currentLast = $getLastPost->fetch();
 
     $children = forum_get_child_ids($forumId);
 
@@ -378,7 +378,7 @@ function forum_latest_post(int $forumId, int $userId): array {
 }
 
 function forum_get_children(int $parentId, int $userId): array {
-    $getListing = db_prepare(sprintf(
+    $getListing = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 :user_id AS `target_user_id`,
@@ -399,10 +399,10 @@ function forum_get_children(int $parentId, int $userId): array {
         MSZ_FORUM_TYPE_CATEGORY
     ));
 
-    $getListing->bindValue('user_id', $userId);
-    $getListing->bindValue('parent_id', $parentId);
+    $getListing->bind('user_id', $userId);
+    $getListing->bind('parent_id', $parentId);
 
-    $listing = db_fetch_all($getListing);
+    $listing = $getListing->fetchAll();
 
     foreach($listing as $key => $forum) {
         $listing[$key]['forum_permissions'] = $perms = forum_perms_get_user($forum['forum_id'], $userId)[MSZ_FORUM_PERMS_GENERAL];
@@ -423,16 +423,16 @@ function forum_get_children(int $parentId, int $userId): array {
 }
 
 function forum_timeout(int $forumId, int $userId): int {
-    $checkTimeout = db_prepare('
+    $checkTimeout = \Misuzu\DB::prepare('
         SELECT TIMESTAMPDIFF(SECOND, COALESCE(MAX(`post_created`), NOW() - INTERVAL 1 YEAR), NOW())
         FROM `msz_forum_posts`
         WHERE `forum_id` = :forum_id
         AND `user_id` = :user_id
     ');
-    $checkTimeout->bindValue('forum_id', $forumId);
-    $checkTimeout->bindValue('user_id', $userId);
+    $checkTimeout->bind('forum_id', $forumId);
+    $checkTimeout->bind('user_id', $userId);
 
-    return (int)($checkTimeout->execute() ? $checkTimeout->fetchColumn() : 0);
+    return (int)$checkTimeout->fetchColumn();
 }
 
 // $forumId == null marks all forums as read
@@ -451,7 +451,7 @@ function forum_mark_read(?int $forumId, int $userId): void {
         }
     }
 
-    $doMark = db_prepare(sprintf(
+    $doMark = \Misuzu\DB::prepare(sprintf(
         '
             INSERT INTO `msz_forum_topics_track`
                 (`user_id`, `topic_id`, `forum_id`, `track_last_read`)
@@ -468,17 +468,17 @@ function forum_mark_read(?int $forumId, int $userId): void {
         ',
         $entireForum ? '' : 'AND t.`forum_id` = :forum'
     ));
-    $doMark->bindValue('user', $userId);
+    $doMark->bind('user', $userId);
 
     if(!$entireForum) {
-        $doMark->bindValue('forum', $forumId);
+        $doMark->bind('forum', $forumId);
     }
 
     $doMark->execute();
 }
 
 function forum_posting_info(int $userId): array {
-    $getPostingInfo = db_prepare('
+    $getPostingInfo = \Misuzu\DB::prepare('
         SELECT
             u.`user_country`, u.`user_created`,
             (
@@ -498,12 +498,12 @@ function forum_posting_info(int $userId): array {
         FROM `msz_users` as u
         WHERE `user_id` = :user_id
     ');
-    $getPostingInfo->bindValue('user_id', $userId);
-    return db_fetch($getPostingInfo);
+    $getPostingInfo->bind('user_id', $userId);
+    return $getPostingInfo->fetch();
 }
 
 function forum_count_increase(int $forumId, bool $topic = false): void {
-    $increaseCount = db_prepare(sprintf(
+    $increaseCount = \Misuzu\DB::prepare(sprintf(
         '
             UPDATE `msz_forum_categories`
             SET `forum_count_posts` = `forum_count_posts` + 1
@@ -512,7 +512,7 @@ function forum_count_increase(int $forumId, bool $topic = false): void {
         ',
         $topic ? ',`forum_count_topics` = `forum_count_topics` + 1' : ''
     ));
-    $increaseCount->bindValue('forum', $forumId);
+    $increaseCount->bind('forum', $forumId);
     $increaseCount->execute();
 }
 
@@ -522,7 +522,7 @@ function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = tru
     static $setCounts = null;
 
     if(is_null($getChildren)) {
-        $getChildren = db_prepare('
+        $getChildren = \Misuzu\DB::prepare('
             SELECT `forum_id`, `forum_parent`
             FROM `msz_forum_categories`
             WHERE `forum_parent` = :parent
@@ -530,7 +530,7 @@ function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = tru
     }
 
     if(is_null($getCounts)) {
-        $getCounts = db_prepare('
+        $getCounts = \Misuzu\DB::prepare('
             SELECT :forum as `target_forum_id`,
             (
                 SELECT COUNT(`topic_id`)
@@ -548,7 +548,7 @@ function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = tru
     }
 
     if($save && is_null($setCounts)) {
-        $setCounts = db_prepare('
+        $setCounts = \Misuzu\DB::prepare('
             UPDATE `msz_forum_categories`
             SET `forum_count_topics` = :topics,
                 `forum_count_posts` = :posts
@@ -556,8 +556,8 @@ function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = tru
         ');
     }
 
-    $getChildren->bindValue('parent', $forumId);
-    $children = db_fetch_all($getChildren);
+    $getChildren->bind('parent', $forumId);
+    $children = $getChildren->fetchAll();
 
     $topics = 0;
     $posts = 0;
@@ -568,15 +568,15 @@ function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = tru
         $posts += $childCount['posts'];
     }
 
-    $getCounts->bindValue('forum', $forumId);
-    $counts = db_fetch($getCounts);
+    $getCounts->bind('forum', $forumId);
+    $counts = $getCounts->fetch();
     $topics += $counts['count_topics'];
     $posts += $counts['count_posts'];
 
     if($forumId > 0 && $save) {
-        $setCounts->bindValue('forum_id', $forumId);
-        $setCounts->bindValue('topics', $topics);
-        $setCounts->bindValue('posts', $posts);
+        $setCounts->bind('forum_id', $forumId);
+        $setCounts->bind('topics', $topics);
+        $setCounts->bind('posts', $posts);
         $setCounts->execute();
     }
 

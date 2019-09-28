@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../misuzu.php';
 
 $searchQuery = !empty($_GET['q']) && is_string($_GET['q']) ? $_GET['q'] : '';
@@ -8,7 +10,7 @@ if(!empty($searchQuery)) {
     $forumPosts = forum_post_search($searchQuery);
     $newsPosts = news_posts_search($searchQuery);
 
-    $findUsers = db_prepare(sprintf(
+    $findUsers = DB::prepare(sprintf(
         '
             SELECT
                 :current_user_id AS `current_user_id`,
@@ -62,9 +64,9 @@ if(!empty($searchQuery)) {
         ',
         MSZ_USER_RELATION_FOLLOW
     ));
-    $findUsers->bindValue('query', $searchQuery);
-    $findUsers->bindValue('current_user_id', user_session_current('user_id', 0));
-    $users = db_fetch_all($findUsers);
+    $findUsers->bind('query', $searchQuery);
+    $findUsers->bind('current_user_id', user_session_current('user_id', 0));
+    $users = $findUsers->fetchAll();
 }
 
 echo tpl_render('home.search', [

@@ -56,7 +56,7 @@ function forum_leaderboard_listing(
     $unrankedForums = implode(',', $unrankedForums);
     $unrankedTopics = implode(',', $unrankedTopics);
 
-    $rawLeaderboard = db_fetch_all(db_query(sprintf(
+    $rawLeaderboard = \Misuzu\DB::query(sprintf(
         '
             SELECT
                 u.`user_id`, u.`username`,
@@ -78,7 +78,7 @@ function forum_leaderboard_listing(
             $hasMonth ? $month : 1,
             $hasMonth ? $month : 12
         )
-    )));
+    ))->fetchAll();
 
     $leaderboard = [];
     $ranking = 0;

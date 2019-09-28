@@ -30,18 +30,18 @@ function forum_topic_create(
         return 0;
     }
 
-    $createTopic = db_prepare('
+    $createTopic = \Misuzu\DB::prepare('
         INSERT INTO `msz_forum_topics`
             (`forum_id`, `user_id`, `topic_title`, `topic_type`)
         VALUES
             (:forum_id, :user_id, :topic_title, :topic_type)
     ');
-    $createTopic->bindValue('forum_id', $forumId);
-    $createTopic->bindValue('user_id', $userId);
-    $createTopic->bindValue('topic_title', $title);
-    $createTopic->bindValue('topic_type', $type);
+    $createTopic->bind('forum_id', $forumId);
+    $createTopic->bind('user_id', $userId);
+    $createTopic->bind('topic_title', $title);
+    $createTopic->bind('topic_type', $type);
 
-    return $createTopic->execute() ? (int)db_last_insert_id() : 0;
+    return $createTopic->execute() ? \Misuzu\DB::lastId() : 0;
 }
 
 function forum_topic_update(int $topicId, ?string $title, ?int $type = null): bool {
@@ -58,21 +58,21 @@ function forum_topic_update(int $topicId, ?string $title, ?int $type = null): bo
         return false;
     }
 
-    $updateTopic = db_prepare('
+    $updateTopic = \Misuzu\DB::prepare('
         UPDATE `msz_forum_topics`
         SET `topic_title` = COALESCE(:topic_title, `topic_title`),
             `topic_type` = COALESCE(:topic_type, `topic_type`)
         WHERE `topic_id` = :topic_id
     ');
-    $updateTopic->bindValue('topic_id', $topicId);
-    $updateTopic->bindValue('topic_title', $title);
-    $updateTopic->bindValue('topic_type', $type);
+    $updateTopic->bind('topic_id', $topicId);
+    $updateTopic->bind('topic_title', $title);
+    $updateTopic->bind('topic_type', $type);
 
     return $updateTopic->execute();
 }
 
 function forum_topic_get(int $topicId, bool $allowDeleted = false): array {
-    $getTopic = db_prepare(sprintf(
+    $getTopic = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`, t.`topic_created`,
@@ -113,18 +113,18 @@ function forum_topic_get(int $topicId, bool $allowDeleted = false): array {
         ',
         $allowDeleted ? '' : 'AND t.`topic_deleted` IS NULL'
     ));
-    $getTopic->bindValue('topic_id', $topicId);
-    return db_fetch($getTopic);
+    $getTopic->bind('topic_id', $topicId);
+    return $getTopic->fetch();
 }
 
 function forum_topic_bump(int $topicId): bool {
-    $bumpTopic = db_prepare('
+    $bumpTopic = \Misuzu\DB::prepare('
         UPDATE `msz_forum_topics`
         SET `topic_bumped` = NOW()
         WHERE `topic_id` = :topic_id
         AND `topic_deleted` IS NULL
     ');
-    $bumpTopic->bindValue('topic_id', $topicId);
+    $bumpTopic->bind('topic_id', $topicId);
     return $bumpTopic->execute();
 }
 
@@ -133,12 +133,12 @@ function forum_topic_views_increment(int $topicId): void {
         return;
     }
 
-    $bumpViews = db_prepare('
+    $bumpViews = \Misuzu\DB::prepare('
         UPDATE `msz_forum_topics`
         SET `topic_count_views` = `topic_count_views` + 1
         WHERE `topic_id` = :topic_id
     ');
-    $bumpViews->bindValue('topic_id', $topicId);
+    $bumpViews->bind('topic_id', $topicId);
     $bumpViews->execute();
 }
 
@@ -151,34 +151,34 @@ function forum_topic_mark_read(int $userId, int $topicId, int $forumId): void {
     // but those explode when running on a lot of queries (like forum_mark_read() does)
     // so instead we get to live with this garbage now
     try {
-        $markAsRead = db_prepare('
+        $markAsRead = \Misuzu\DB::prepare('
             INSERT INTO `msz_forum_topics_track`
                 (`user_id`, `topic_id`, `forum_id`, `track_last_read`)
             VALUES
                 (:user_id, :topic_id, :forum_id, NOW())
         ');
-        $markAsRead->bindValue('user_id', $userId);
-        $markAsRead->bindValue('topic_id', $topicId);
-        $markAsRead->bindValue('forum_id', $forumId);
+        $markAsRead->bind('user_id', $userId);
+        $markAsRead->bind('topic_id', $topicId);
+        $markAsRead->bind('forum_id', $forumId);
 
         if($markAsRead->execute()) {
             forum_topic_views_increment($topicId);
         }
     } catch(PDOException $ex) {
-        if($ex->getCode() !== MSZ_DATABASE_DUPLICATE_KEY) {
+        if($ex->getCode() != '23000') {
             throw $ex;
         }
 
-        $markAsRead = db_prepare('
+        $markAsRead = \Misuzu\DB::prepare('
             UPDATE `msz_forum_topics_track`
             SET `track_last_read` = NOW(),
                 `forum_id` = :forum_id
             WHERE `user_id` = :user_id
             AND `topic_id` = :topic_id
         ');
-        $markAsRead->bindValue('user_id', $userId);
-        $markAsRead->bindValue('topic_id', $topicId);
-        $markAsRead->bindValue('forum_id', $forumId);
+        $markAsRead->bind('user_id', $userId);
+        $markAsRead->bind('topic_id', $topicId);
+        $markAsRead->bind('forum_id', $forumId);
         $markAsRead->execute();
     }
 }
@@ -189,7 +189,7 @@ function forum_topic_listing(
     bool $showDeleted = false,  bool $sortByPriority = false
 ): array {
     $hasPagination = $offset >= 0 && $take > 0;
-    $getTopics = db_prepare(sprintf(
+    $getTopics = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 :user_id AS `target_user_id`,
@@ -276,19 +276,19 @@ function forum_topic_listing(
         MSZ_FORUM_POSTS_PER_PAGE,
         $sortByPriority ? '`topic_priority` DESC,' : ''
     ));
-    $getTopics->bindValue('forum_id', $forumId);
-    $getTopics->bindValue('user_id', $userId);
+    $getTopics->bind('forum_id', $forumId);
+    $getTopics->bind('user_id', $userId);
 
     if($hasPagination) {
-        $getTopics->bindValue('offset', $offset);
-        $getTopics->bindValue('take', $take);
+        $getTopics->bind('offset', $offset);
+        $getTopics->bind('take', $take);
     }
 
-    return db_fetch_all($getTopics);
+    return $getTopics->fetchAll();
 }
 
 function forum_topic_count_user(int $authorId, int $userId, bool $showDeleted = false): int {
-    $getTopics = db_prepare(sprintf(
+    $getTopics = \Misuzu\DB::prepare(sprintf(
         '
             SELECT COUNT(`topic_id`)
             FROM `msz_forum_topics` AS t
@@ -297,10 +297,10 @@ function forum_topic_count_user(int $authorId, int $userId, bool $showDeleted = 
         ',
         $showDeleted ? '' : 'AND t.`topic_deleted` IS NULL'
     ));
-    $getTopics->bindValue('author_id', $authorId);
-    //$getTopics->bindValue('user_id', $userId);
+    $getTopics->bind('author_id', $authorId);
+    //$getTopics->bind('user_id', $userId);
 
-    return (int)($getTopics->execute() ? $getTopics->fetchColumn() : 0);
+    return (int)$getTopics->fetchColumn();
 }
 
 // Remove unneccesary stuff from the sql stmt
@@ -312,7 +312,7 @@ function forum_topic_listing_user(
     bool $showDeleted = false
 ): array {
     $hasPagination = $offset >= 0 && $take > 0;
-    $getTopics = db_prepare(sprintf(
+    $getTopics = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 :user_id AS `target_user_id`,
@@ -391,19 +391,19 @@ function forum_topic_listing_user(
         $showDeleted ? '' : 'AND `post_deleted` IS NULL',
         MSZ_FORUM_POSTS_PER_PAGE
     ));
-    $getTopics->bindValue('author_id', $authorId);
-    $getTopics->bindValue('user_id', $userId);
+    $getTopics->bind('author_id', $authorId);
+    $getTopics->bind('user_id', $userId);
 
     if($hasPagination) {
-        $getTopics->bindValue('offset', $offset);
-        $getTopics->bindValue('take', $take);
+        $getTopics->bind('offset', $offset);
+        $getTopics->bind('take', $take);
     }
 
-    return db_fetch_all($getTopics);
+    return $getTopics->fetchAll();
 }
 
 function forum_topic_listing_search(string $query, int $userId): array {
-    $getTopics = db_prepare(sprintf(
+    $getTopics = \Misuzu\DB::prepare(sprintf(
         '
             SELECT
                 :user_id AS `target_user_id`,
@@ -478,10 +478,10 @@ function forum_topic_listing_search(string $query, int $userId): array {
         implode(',', array_reverse(MSZ_TOPIC_TYPE_ORDER)),
         MSZ_FORUM_POSTS_PER_PAGE
     ));
-    $getTopics->bindValue('query', $query);
-    $getTopics->bindValue('user_id', $userId);
+    $getTopics->bind('query', $query);
+    $getTopics->bind('user_id', $userId);
 
-    return db_fetch_all($getTopics);
+    return $getTopics->fetchAll();
 }
 
 function forum_topic_lock(int $topicId): bool {
@@ -489,13 +489,13 @@ function forum_topic_lock(int $topicId): bool {
         return false;
     }
 
-    $markLocked = db_prepare('
+    $markLocked = \Misuzu\DB::prepare('
         UPDATE `msz_forum_topics`
         SET `topic_locked` = NOW()
         WHERE `topic_id` = :topic
         AND `topic_locked` IS NULL
     ');
-    $markLocked->bindValue('topic', $topicId);
+    $markLocked->bind('topic', $topicId);
 
     return $markLocked->execute();
 }
@@ -505,13 +505,13 @@ function forum_topic_unlock(int $topicId): bool {
         return false;
     }
 
-    $markUnlocked = db_prepare('
+    $markUnlocked = \Misuzu\DB::prepare('
         UPDATE `msz_forum_topics`
         SET `topic_locked` = NULL
         WHERE `topic_id` = :topic
         AND `topic_locked` IS NOT NULL
     ');
-    $markUnlocked->bindValue('topic', $topicId);
+    $markUnlocked->bind('topic', $topicId);
 
     return $markUnlocked->execute();
 }
@@ -594,19 +594,19 @@ function forum_topic_delete(int $topicId): bool {
         return false;
     }
 
-    $markTopicDeleted = db_prepare('
+    $markTopicDeleted = \Misuzu\DB::prepare('
         UPDATE `msz_forum_topics`
         SET `topic_deleted` = NOW()
         WHERE `topic_id` = :topic
         AND `topic_deleted` IS NULL
     ');
-    $markTopicDeleted->bindValue('topic', $topicId);
+    $markTopicDeleted->bind('topic', $topicId);
 
     if(!$markTopicDeleted->execute()) {
         return false;
     }
 
-    $markPostsDeleted = db_prepare('
+    $markPostsDeleted = \Misuzu\DB::prepare('
         UPDATE `msz_forum_posts` as p
         SET p.`post_deleted` = (
             SELECT `topic_deleted`
@@ -616,7 +616,7 @@ function forum_topic_delete(int $topicId): bool {
         WHERE p.`topic_id` = :topic
         AND p.`post_deleted` IS NULL
     ');
-    $markPostsDeleted->bindValue('topic', $topicId);
+    $markPostsDeleted->bind('topic', $topicId);
 
     return $markPostsDeleted->execute();
 }
@@ -626,7 +626,7 @@ function forum_topic_restore(int $topicId): bool {
         return false;
     }
 
-    $markPostsRestored = db_prepare('
+    $markPostsRestored = \Misuzu\DB::prepare('
         UPDATE `msz_forum_posts` as p
         SET p.`post_deleted` = NULL
         WHERE p.`topic_id` = :topic
@@ -636,19 +636,19 @@ function forum_topic_restore(int $topicId): bool {
             WHERE `topic_id` = p.`topic_id`
         )
     ');
-    $markPostsRestored->bindValue('topic', $topicId);
+    $markPostsRestored->bind('topic', $topicId);
 
     if(!$markPostsRestored->execute()) {
         return false;
     }
 
-    $markTopicRestored = db_prepare('
+    $markTopicRestored = \Misuzu\DB::prepare('
         UPDATE `msz_forum_topics`
         SET `topic_deleted` = NULL
         WHERE `topic_id` = :topic
         AND `topic_deleted` IS NOT NULL
     ');
-    $markTopicRestored->bindValue('topic', $topicId);
+    $markTopicRestored->bind('topic', $topicId);
 
     return $markTopicRestored->execute();
 }
@@ -658,11 +658,11 @@ function forum_topic_nuke(int $topicId): bool {
         return false;
     }
 
-    $nukeTopic = db_prepare('
+    $nukeTopic = \Misuzu\DB::prepare('
         DELETE FROM `msz_forum_topics`
         WHERE `topic_id` = :topic
     ');
-    $nukeTopic->bindValue('topic', $topicId);
+    $nukeTopic->bind('topic', $topicId);
     return $nukeTopic->execute();
 }
 
@@ -671,7 +671,7 @@ function forum_topic_priority(int $topic): array {
         return [];
     }
 
-    $getPriority = db_prepare('
+    $getPriority = \Misuzu\DB::prepare('
         SELECT
             tp.`topic_id`, tp.`topic_priority`,
             u.`user_id`, u.`username`,
@@ -683,9 +683,9 @@ function forum_topic_priority(int $topic): array {
         ON u.`display_role` = r.`role_id`
         WHERE `topic_id` = :topic
     ');
-    $getPriority->bindValue('topic', $topic);
+    $getPriority->bind('topic', $topic);
 
-    return db_fetch_all($getPriority);
+    return $getPriority->fetchAll();
 }
 
 function forum_topic_priority_increase(int $topic, int $user, int $bump = 1): void {
@@ -693,7 +693,7 @@ function forum_topic_priority_increase(int $topic, int $user, int $bump = 1): vo
         return;
     }
 
-    $bumpPriority = db_prepare('
+    $bumpPriority = \Misuzu\DB::prepare('
         INSERT INTO `msz_forum_topics_priority`
             (`topic_id`, `user_id`, `topic_priority`)
         VALUES
@@ -701,9 +701,9 @@ function forum_topic_priority_increase(int $topic, int $user, int $bump = 1): vo
         ON DUPLICATE KEY UPDATE
             `topic_priority` = `topic_priority` + :bump2
     ');
-    $bumpPriority->bindValue('topic', $topic);
-    $bumpPriority->bindValue('user', $user);
-    $bumpPriority->bindValue('bump1', $bump);
-    $bumpPriority->bindValue('bump2', $bump);
+    $bumpPriority->bind('topic', $topic);
+    $bumpPriority->bind('user', $user);
+    $bumpPriority->bind('bump1', $bump);
+    $bumpPriority->bind('bump2', $bump);
     $bumpPriority->execute();
 }

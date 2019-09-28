@@ -23,13 +23,13 @@ $permissions = manage_perms_list(perms_get_user_raw($userId));
 if(csrf_verify_request() && $canEdit) {
     if(!empty($_POST['roles']) && is_array($_POST['roles']) && array_test($_POST['roles'], 'ctype_digit')) {
         // Fetch existing roles
-        $existingRoles = db_prepare('
+        $existingRoles = DB::prepare('
             SELECT `role_id`
             FROM `msz_user_roles`
             WHERE `user_id` = :user_id
         ');
-        $existingRoles->bindValue('user_id', $userId);
-        $existingRoles = db_fetch_all($existingRoles);
+        $existingRoles->bind('user_id', $userId);
+        $existingRoles = $existingRoles->fetchAll();
 
         // Initialise set array with existing role ids
         $setRoles = array_column($existingRoles, 'role_id');
@@ -70,24 +70,24 @@ if(csrf_verify_request() && $canEdit) {
         if(!empty($setRoles)) {
             // The implode here probably sets off alarm bells, but the array is
             // guaranteed to only contain integers so it's probably fine.
-            $removeRanks = db_prepare(sprintf('
+            $removeRanks = DB::prepare(sprintf('
                 DELETE FROM `msz_user_roles`
                 WHERE `user_id` = :user_id
                 AND `role_id` NOT IN (%s)
             ', implode(',', $setRoles)));
-            $removeRanks->bindValue('user_id', $userId);
+            $removeRanks->bind('user_id', $userId);
             $removeRanks->execute();
 
-            $addRank = db_prepare('
+            $addRank = DB::prepare('
                 INSERT IGNORE INTO `msz_user_roles`
                     (`user_id`, `role_id`)
                 VALUES
                     (:user_id, :role_id)
             ');
-            $addRank->bindValue('user_id', $userId);
+            $addRank->bind('user_id', $userId);
 
             foreach($setRoles as $role) {
-                $addRank->bindValue('role_id', $role);
+                $addRank->bind('role_id', $role);
                 $addRank->execute();
             }
         }
@@ -166,7 +166,7 @@ if(csrf_verify_request() && $canEdit) {
     }
 
     if(empty($notices) && !empty($setUserInfo)) {
-        $userUpdate = db_prepare(sprintf(
+        $userUpdate = DB::prepare(sprintf(
             '
                 UPDATE `msz_users`
                 SET %s
@@ -174,10 +174,10 @@ if(csrf_verify_request() && $canEdit) {
             ',
             pdo_prepare_array_update($setUserInfo, true)
         ));
-        $userUpdate->bindValue('set_user_id', $userId);
+        $userUpdate->bind('set_user_id', $userId);
 
         foreach($setUserInfo as $key => $value) {
-            $userUpdate->bindValue($key, $value);
+            $userUpdate->bind($key, $value);
         }
 
         if(!$userUpdate->execute()) {
@@ -203,7 +203,7 @@ if(csrf_verify_request() && $canEdit) {
     }
 }
 
-$getUser = db_prepare('
+$getUser = DB::prepare('
     SELECT
         u.*,
         INET6_NTOA(u.`register_ip`) as `register_ip_decoded`,
@@ -215,15 +215,15 @@ $getUser = db_prepare('
     WHERE `user_id` = :user_id
     ORDER BY `user_id`
 ');
-$getUser->bindValue('user_id', $userId);
-$manageUser = db_fetch($getUser);
+$getUser->bind('user_id', $userId);
+$manageUser = $getUser->fetch();
 
 if(empty($manageUser)) {
     echo render_error(404);
     return;
 }
 
-$getRoles = db_prepare('
+$getRoles = DB::prepare('
     SELECT
         r.`role_id`, r.`role_name`, r.`role_hierarchy`, r.`role_colour`,
         (
@@ -234,8 +234,8 @@ $getRoles = db_prepare('
         ) AS `has_role`
     FROM `msz_roles` AS r
 ');
-$getRoles->bindValue('user_id', $manageUser['user_id']);
-$roles = db_fetch_all($getRoles);
+$getRoles->bind('user_id', $manageUser['user_id']);
+$roles = $getRoles->fetchAll();
 
 echo tpl_render('manage.users.user', [
     'manage_user' => $manageUser,

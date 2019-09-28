@@ -6,13 +6,13 @@ if(!perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), MSZ_PER
     return;
 }
 
-$getForum = db_prepare('
+$getForum = DB::prepare('
     SELECT *
     FROM `msz_forum_categories`
     WHERE `forum_id` = :forum_id
 ');
-$getForum->bindValue('forum_id', (int)($_GET['f'] ?? 0));
-$forum = db_fetch($getForum);
+$getForum->bind('forum_id', (int)($_GET['f'] ?? 0));
+$forum = $getForum->fetch();
 
 if(!$forum) {
     echo render_error(404);
