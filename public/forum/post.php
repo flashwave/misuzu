@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../misuzu.php';
 
 $postId = !empty($_GET['p']) && is_string($_GET['p']) ? (int)$_GET['p'] : 0;

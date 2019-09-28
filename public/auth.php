@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 // Delete this file in April 2019
 
 require_once '../misuzu.php';

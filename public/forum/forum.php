@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../misuzu.php';
 
 $forumId = !empty($_GET['f']) && is_string($_GET['f']) ? (int)$_GET['f'] : 0;

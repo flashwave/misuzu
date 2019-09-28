@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../misuzu.php';
 
 http_response_code(301);

@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../misuzu.php';
 
 if(user_session_active()) {

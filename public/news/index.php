@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../misuzu.php';
 
 $categories = news_categories_get(0, 0, true);

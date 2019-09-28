@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../misuzu.php';
 
 $changelogChange = !empty($_GET['c']) && is_string($_GET['c']) ? (int)$_GET['c'] : 0;

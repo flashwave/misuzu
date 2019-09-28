@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../misuzu.php';
 
 $userId = !empty($_GET['u']) && is_string($_GET['u']) ? (int)$_GET['u'] : 0;

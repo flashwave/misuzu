@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 $userAssetsMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
 $misuzuBypassLockdown = $userAssetsMode === 'avatar';
 

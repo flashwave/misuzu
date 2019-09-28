@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../misuzu.php';
 
 $indexMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';

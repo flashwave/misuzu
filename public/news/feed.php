@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../../misuzu.php';
 
 $feedMode = trim($_SERVER['PATH_INFO'] ?? '', '/');

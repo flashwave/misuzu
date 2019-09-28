@@ -1,4 +1,6 @@
 <?php
+namespace Misuzu;
+
 require_once '../misuzu.php';
 
 // basing whether or not this is an xhr request on whether a referrer header is present
