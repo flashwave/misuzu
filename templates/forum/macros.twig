@@ -373,6 +373,7 @@
 {% endmacro %}
 
 {% macro forum_post_entry(post, user_id, perms) %}
+    {% from 'macros.twig' import avatar %}
     {% set is_deleted   = post.post_deleted is not null %}
     {% set can_post     = perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_POST')) %}
     {% set can_edit     = perms|perms_check(constant('MSZ_FORUM_PERM_EDIT_ANY_POST')) or (
@@ -392,9 +393,8 @@
             <div class="forum__post__info__background"></div>
             <div class="forum__post__info__content">
                 {% if post.poster_id is not null %}
-                    <a class="avatar forum__post__avatar"
-                        style="background-image:url('{{ url('user-avatar', {'user': post.poster_id, 'res': 240}) }}');"
-                        href="{{ url('user-profile', {'user': post.poster_id}) }}">
+                    <a class="forum__post__avatar" href="{{ url('user-profile', {'user': post.poster_id}) }}">
+                        {{ avatar(post.poster_id, 120, post.poster_name) }}
                     </a>
 
                     <a class="forum__post__username" href="{{ url('user-profile', {'user': post.poster_id}) }}">{{ post.poster_name }}</a>

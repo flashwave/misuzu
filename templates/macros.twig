@@ -86,3 +86,8 @@
         {% if has_url %}</a>{% endif %}
     </div>
 {% endmacro %}
+
+{% macro avatar(user_id, resolution, alt_text) %}
+{% set avatar_url = url('user-avatar', {'user': user_id, 'res': resolution * 2}) %}
+<img class="avatar" src="{{ avatar_url }}" width="{{ resolution }}" height="{{ resolution }}" alt="{{ alt_text|default(avatar_url) }}">
+{% endmacro %}
