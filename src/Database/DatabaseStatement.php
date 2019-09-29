@@ -8,7 +8,6 @@ class DatabaseStatement {
     public $pdo;
     public $stmt;
     private $isQuery;
-    private $hasExecuted = false;
 
     public function __construct(PDOStatement $stmt, PDO $pdo, bool $isQuery) {
         $this->stmt = $stmt;
@@ -22,24 +21,11 @@ class DatabaseStatement {
     }
 
     public function execute(array $params = []): bool {
-        if($this->hasExecuted)
-            return true;
-        $this->hasExecuted = true;
-
         return count($params) ? $this->stmt->execute($params) : $this->stmt->execute();
     }
 
     public function executeGetId(array $params = []): int {
-        if($this->hasExecuted)
-            return true;
-        $this->hasExecuted = true;
-
         return $this->execute($params) ? $this->pdo->lastInsertId() : 0;
-    }
-
-    public function reset(): DatabaseStatement {
-        $this->hasExecuted = false;
-        return $this;
     }
 
     public function fetch($default = []) {
@@ -61,7 +47,7 @@ class DatabaseStatement {
         $out = false;
 
         if($this->isQuery || $this->execute()) {
-            $out = $args === null ? $this->fetchObject($className) : $this->fetchObject($className, $args);
+            $out = $args === null ? $this->stmt->fetchObject($className) : $this->stmt->fetchObject($className, $args);
         }
 
         return $out !== false ? $out : $default;
@@ -70,8 +56,10 @@ class DatabaseStatement {
     public function fetchObjects(string $className = 'stdClass', ?array $args = null): array {
         $objects = [];
 
-        while(($object = $this->fetchObject($className, $args, false)) !== false) {
-            $objects[] = $object;
+        if($this->isQuery || $this->execute()) {
+            while(($object = $this->stmt->fetchObject($className, $args)) !== false) {
+                $objects[] = $object;
+            }
         }
 
         return $objects;
