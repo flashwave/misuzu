@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Users\User;
+
 require_once '../../misuzu.php';
 
 if(user_session_active()) {
@@ -66,20 +68,20 @@ while(!$restricted && !empty($register)) {
         break;
     }
 
-    $createUser = user_create(
+    $createUser = User::create(
         $register['username'],
         $register['password'],
         $register['email'],
         $ipAddress
     );
 
-    if($createUser < 1) {
+    if($createUser === null) {
         $notices[] = 'Something went wrong while creating your account, please alert an administrator or a developer about this!';
         break;
     }
 
-    user_role_add($createUser, MSZ_ROLE_MAIN);
-    url_redirect('auth-login-welcome', ['username' => $register['username']]);
+    user_role_add($createUser->user_id, MSZ_ROLE_MAIN);
+    url_redirect('auth-login-welcome', ['username' => $createUser->username]);
     return;
 }
 

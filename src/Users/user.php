@@ -28,46 +28,6 @@ define(
     )
 );
 
-function user_create(
-    string $username,
-    string $password,
-    string $email,
-    string $ipAddress
-): int {
-    $createUser = \Misuzu\DB::prepare('
-        INSERT INTO `msz_users`
-            (
-                `username`, `password`, `email`, `register_ip`,
-                `last_ip`, `user_country`, `display_role`
-            )
-        VALUES
-            (
-                :username, :password, LOWER(:email), INET6_ATON(:register_ip),
-                INET6_ATON(:last_ip), :user_country, 1
-            )
-    ');
-    $createUser->bind('username', $username);
-    $createUser->bind('password', user_password_hash($password));
-    $createUser->bind('email', $email);
-    $createUser->bind('register_ip', $ipAddress);
-    $createUser->bind('last_ip', $ipAddress);
-    $createUser->bind('user_country', ip_country_code($ipAddress));
-
-    return $createUser->execute() ? \Misuzu\DB::lastId() : 0;
-}
-
-function user_find_for_login(string $usernameOrMail): array {
-    $getUser = \Misuzu\DB::prepare('
-        SELECT `user_id`, `password`, `user_totp_key` IS NOT NULL AS `totp_enabled`, `user_deleted`
-        FROM `msz_users`
-        WHERE LOWER(`email`) = LOWER(:email)
-        OR LOWER(`username`) = LOWER(:username)
-    ');
-    $getUser->bind('email', $usernameOrMail);
-    $getUser->bind('username', $usernameOrMail);
-    return $getUser->fetch();
-}
-
 function user_find_for_reset(string $email): array {
     $getUser = \Misuzu\DB::prepare('
         SELECT `user_id`, `username`, `email`
@@ -97,10 +57,6 @@ function user_find_for_profile(string $idOrUsername): int {
 
 function user_password_hash(string $password): string {
     return password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO);
-}
-
-function user_password_needs_rehash(string $hash): bool {
-    return password_needs_rehash($hash, MSZ_USERS_PASSWORD_HASH_ALGO);
 }
 
 function user_password_set(int $userId, string $password): bool {

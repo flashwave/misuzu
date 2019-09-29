@@ -32,16 +32,13 @@ class User {
         string $ipAddress
     ): ?User {
         $createUser = DB::prepare('
-            INSERT INTO `msz_users`
-                (
-                    `username`, `password`, `email`, `register_ip`,
-                    `last_ip`, `user_country`, `display_role`
-                )
-            VALUES
-                (
-                    :username, :password, LOWER(:email), INET6_ATON(:register_ip),
-                    INET6_ATON(:last_ip), :user_country, 1
-                )
+            INSERT INTO `msz_users` (
+                `username`, `password`, `email`, `register_ip`,
+                `last_ip`, `user_country`, `display_role`
+            ) VALUES (
+                :username, :password, LOWER(:email), INET6_ATON(:register_ip),
+                INET6_ATON(:last_ip), :user_country, 1
+            )
         ')  ->bind('username', $username)->bind('email', $email)
             ->bind('register_ip', $ipAddress)->bind('last_ip', $ipAddress)
             ->bind('password', user_password_hash($password))
@@ -55,8 +52,46 @@ class User {
     }
 
     public static function get(int $userId): ?User {
-        return DB::prepare(self::USER_SELECT . 'WHERE   `user_id` = :user_id')
+        return DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id')
             ->bind('user_id', $userId)
             ->fetchObject(User::class);
+    }
+
+    public static function findForLogin(string $usernameOrEmail): ?User {
+        return DB::prepare(self::USER_SELECT . 'WHERE LOWER(`email`) = LOWER(:email) OR LOWER(`username`) = LOWER(:username)')
+            ->bind('email', $usernameOrEmail)
+            ->bind('username', $usernameOrEmail)
+            ->fetchObject(User::class);
+    }
+
+    public function hasUserId(): bool {
+        return isset($this->user_id) && $this->user_id > 0;
+    }
+
+    public function hasPassword(): bool {
+        return !empty($this->password);
+    }
+    public function checkPassword(string $password): bool {
+        return $this->hasPassword() && password_verify($password, $this->password);
+    }
+    public function passwordNeedsRehash(): bool {
+        return password_needs_rehash($this->password, MSZ_USERS_PASSWORD_HASH_ALGO);
+    }
+    public function setPassword(string $password): void {
+        if(!$this->hasUserId())
+            return;
+
+        DB::prepare('UPDATE `msz_users` SET `password` = :password WHERE `user_id` = :user_id')
+            ->bind('password', password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO))
+            ->bind('user_id', $this->user_id)
+            ->execute();
+    }
+
+    public function isDeleted(): bool {
+        return !empty($this->user_deleted);
+    }
+
+    public function hasTOTP(): bool {
+        return !empty($this->user_totp_key);
     }
 }
