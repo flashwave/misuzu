@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu;
 
+use ZipArchive;
+
 require_once '../../misuzu.php';
 
 if(!user_session_active()) {
