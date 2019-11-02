@@ -395,11 +395,6 @@ MIG;
         exit;
     }
 
-    if(!MSZ_DEBUG) {
-        ob_start('ob_gzhandler');
-    }
-
-    // we're running this again because ob_clean breaks gzip otherwise
     ob_start();
 
     if(!is_readable(MSZ_STORAGE) || !is_writable(MSZ_STORAGE)) {
