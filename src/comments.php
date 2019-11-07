@@ -54,7 +54,7 @@ function comments_parse_for_display(string $text): string {
     );
 
     $text = preg_replace_callback(MSZ_COMMENTS_MARKUP_USER_ID, function ($matches) {
-        $getInfo = DB::prepare('
+        $getInfo = \Misuzu\DB::prepare('
             SELECT
                 u.`user_id`, u.`username`,
                 COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
