@@ -149,16 +149,16 @@ $getUsers = DB::prepare(sprintf(
         WHERE ur.`role_id` = :role_id
         %1$s
         ORDER BY %2$s %3$s
-        LIMIT :offset, :take
+        LIMIT %5$d, %6$d
     ',
     $canManageUsers ? '' : 'AND u.`user_deleted` IS NULL',
     $orderFields[$orderBy]['column'],
     $orderDir,
-    MSZ_USER_RELATION_FOLLOW
+    MSZ_USER_RELATION_FOLLOW,
+    $usersOffset < 0 ? 0 : $usersOffset,
+    isset($usersPagination['range']) ? $usersPagination['range'] : 0
 ));
 $getUsers->bind('role_id', $role['role_id']);
-$getUsers->bind('offset', $usersOffset);
-$getUsers->bind('take', $usersPagination['range']);
 $getUsers->bind('current_user_id', user_session_current('user_id', 0));
 $users = $getUsers->fetchAll();
 
