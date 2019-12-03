@@ -109,16 +109,6 @@ Mailer::init(Config::get('mail.method', Config::TYPE_STR), [
     'sender_name' => Config::get('mail.sender.name',    Config::TYPE_STR),
     'sender_addr' => Config::get('mail.sender.address', Config::TYPE_STR),
 ]);
-mail_settings([
-    'method' => Config::get('mail.method', Config::TYPE_STR),
-    'host' => Config::get('mail.host', Config::TYPE_STR),
-    'port' => Config::get('mail.port', Config::TYPE_INT, 587),
-    'encryption' => Config::get('mail.encryption', Config::TYPE_STR),
-    'username' => Config::get('mail.username', Config::TYPE_STR),
-    'password' => Config::get('mail.password', Config::TYPE_STR),
-    'sender_email' => Config::get('mail.sender.address', Config::TYPE_STR),
-    'sender_name' => Config::get('mail.sender.name', Config::TYPE_STR),
-]);
 
 if(!empty($errorReporter)) {
     $errorReporter->setReportInfo(
