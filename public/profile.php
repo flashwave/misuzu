@@ -72,7 +72,9 @@ if($isEditing) {
                     $profileFields = $profileUser->profileFields(false);
 
                     foreach($profileFields as $profileField) {
-                        if(isset($_POST['profile'][$profileField->field_key]) && !$profileField->setFieldValue($_POST['profile'][$profileField->field_key])) {
+                        if(isset($_POST['profile'][$profileField->field_key])
+                            && $profileField->field_value !== $_POST['profile'][$profileField->field_key]
+                            && !$profileField->setFieldValue($_POST['profile'][$profileField->field_key])) {
                             $notices[] = sprintf(MSZ_TMP_USER_ERROR_STRINGS['profile']['invalid'], $profileField->field_title);
                         }
                     }
