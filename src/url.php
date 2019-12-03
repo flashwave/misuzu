@@ -253,7 +253,7 @@ function url_proxy_media(?string $url): ?string {
     }
 
     $secret = config_get('media_proxy.secret', MSZ_CFG_STR, 'insecure');
-    $url = Base64::encode($url, true);
+    $url = \Misuzu\Base64::encode($url, true);
     $hash = hash_hmac('sha256', $url, $secret);
 
     return url('media-proxy', compact('hash', 'url'));
