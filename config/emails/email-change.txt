@@ -1,0 +1,7 @@
+Flashii.net E-mail Change
+
+Hey %username%,
+
+The e-mail address associated with your account has been changed from %email_previous% to %email_new% from IP address %ip_address%.
+
+If you didn't do this yourself please contact us immediately <https://flashii.net/info.php/contact>.

@@ -44,7 +44,6 @@ require_once 'src/emotes.php';
 require_once 'src/general.php';
 require_once 'src/git.php';
 require_once 'src/integer.php';
-require_once 'src/mail.php';
 require_once 'src/manage.php';
 require_once 'src/news.php';
 require_once 'src/otp.php';
@@ -101,6 +100,15 @@ DB::init(DB::buildDSN($dbConfig), $dbConfig['username'] ?? '', $dbConfig['passwo
 ]);
 
 Config::init();
+Mailer::init(Config::get('mail.method', Config::TYPE_STR), [
+    'host'        => Config::get('mail.host',           Config::TYPE_STR),
+    'port'        => Config::get('mail.port',           Config::TYPE_INT, 25),
+    'username'    => Config::get('mail.username',       Config::TYPE_STR),
+    'password'    => Config::get('mail.password',       Config::TYPE_STR),
+    'encryption'  => Config::get('mail.encryption',     Config::TYPE_STR),
+    'sender_name' => Config::get('mail.sender.name',    Config::TYPE_STR),
+    'sender_addr' => Config::get('mail.sender.address', Config::TYPE_STR),
+]);
 mail_settings([
     'method' => Config::get('mail.method', Config::TYPE_STR),
     'host' => Config::get('mail.host', Config::TYPE_STR),

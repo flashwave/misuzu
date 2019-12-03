@@ -102,23 +102,17 @@ while($canResetPassword) {
                 throw new UnexpectedValueException('A verification code failed to insert.');
             }
 
-            $messageBody = <<<MSG
-Hey {$forgotUser['username']},
+            $recoveryMessage = Mailer::template('password-recovery', [
+                'username' => $forgotUser['username'],
+                'token' => $verificationCode,
+            ]);
 
-You, or someone pretending to be you, has requested a password reset for your account.
-
-Your verification code is: {$verificationCode}
-
-If you weren't the person who requested this reset, please send a reply to this e-mail.
-MSG;
-
-            $message = mail_compose(
+            $recoveryMail = Mailer::sendMessage(
                 [$forgotUser['email'] => $forgotUser['username']],
-                'Flashii Password Reset',
-                $messageBody
+                $recoveryMessage['subject'], $recoveryMessage['message']
             );
 
-            if(!mail_send($message)) {
+            if(!$recoveryMail) {
                 $notices[] = "Failed to send reset email, please contact the administrator.";
                 user_recovery_token_invalidate($forgotUser['user_id'], $verificationCode);
                 break;
