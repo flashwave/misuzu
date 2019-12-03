@@ -1,4 +1,5 @@
 <?php
+use Misuzu\Base32;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 
@@ -12,7 +13,7 @@ function otp_generate(
     int $digits = MSZ_TOTP_DEFAULT_DIGITS,
     string $algo = MSZ_TOTP_DEFAULT_ALGO
 ): ?string {
-    $hash = hash_hmac($algo, pack('J', $data), base32_decode($secret), true);
+    $hash = hash_hmac($algo, pack('J', $data), Base32::decode($secret), true);
     $offset = ord($hash[strlen($hash) - 1]) & 0x0F;
 
     $bin = 0;
@@ -64,5 +65,5 @@ function totp_qrcode(string $uri): string {
 
 // will generate a 26 character code
 function totp_generate_key(): string {
-    return base32_encode(random_bytes(16));
+    return Base32::encode(random_bytes(16));
 }

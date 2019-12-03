@@ -24,7 +24,7 @@ if(empty($proxyHash) || empty($proxyUrl)) {
     return;
 }
 
-$proxyUrlDecoded = base64url_decode($proxyUrl);
+$proxyUrlDecoded = Base64::decode($proxyUrl, true);
 $parsedUrl = parse_url($proxyUrlDecoded);
 
 if(empty($parsedUrl['scheme'])

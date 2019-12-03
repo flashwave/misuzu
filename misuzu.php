@@ -36,7 +36,6 @@ $errorHandler->register();
 
 require_once 'src/array.php';
 require_once 'src/audit_log.php';
-require_once 'src/base32.php';
 require_once 'src/changelog.php';
 require_once 'src/colour.php';
 require_once 'src/comments.php';
@@ -431,14 +430,14 @@ MIG;
     if(!empty($_COOKIE['msz_uid']) && !empty($_COOKIE['msz_sid'])
         && ctype_digit($_COOKIE['msz_uid']) && ctype_xdigit($_COOKIE['msz_sid'])
         && strlen($_COOKIE['msz_sid']) === 64) {
-        $_COOKIE['msz_auth'] = base64url_encode(user_session_cookie_pack($_COOKIE['msz_uid'], $_COOKIE['msz_sid']));
+        $_COOKIE['msz_auth'] = Base64::decode(user_session_cookie_pack($_COOKIE['msz_uid'], $_COOKIE['msz_sid']), true);
         setcookie('msz_auth', $_COOKIE['msz_auth'], strtotime('1 year'), '/', '', !empty($_SERVER['HTTPS']), true);
         setcookie('msz_uid', '', -3600, '/', '', !empty($_SERVER['HTTPS']), true);
         setcookie('msz_sid', '', -3600, '/', '', !empty($_SERVER['HTTPS']), true);
     }
 
     if(!empty($_COOKIE['msz_auth']) && is_string($_COOKIE['msz_auth'])) {
-        $cookieData = user_session_cookie_unpack(base64url_decode($_COOKIE['msz_auth']));
+        $cookieData = user_session_cookie_unpack(Base64::decode($_COOKIE['msz_auth'], true));
 
         if(!empty($cookieData) && user_session_start($cookieData['user_id'], $cookieData['session_token'])) {
             $userDisplayInfo = DB::prepare('

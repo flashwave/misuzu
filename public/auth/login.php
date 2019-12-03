@@ -96,7 +96,7 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
     user_session_start($userData->user_id, $sessionKey);
 
     $cookieLife = strtotime(user_session_current('session_expires'));
-    $cookieValue = base64url_encode(user_session_cookie_pack($userData->user_id, $sessionKey));
+    $cookieValue = Base64::encode(user_session_cookie_pack($userData->user_id, $sessionKey), true);
     setcookie('msz_auth', $cookieValue, $cookieLife, '/', '', !empty($_SERVER['HTTPS']), true);
 
     if(!is_local_url($loginRedirect)) {
