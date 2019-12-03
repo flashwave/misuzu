@@ -61,9 +61,9 @@ function user_avatar_is_allowed_type(int $type): bool {
 
 function user_avatar_default_options(): array {
     return [
-        'max_width' => config_get('avatar.max_width', MSZ_CFG_INT, 1000),
-        'max_height' => config_get('avatar.max_height', MSZ_CFG_INT, 1000),
-        'max_size' => config_get('avatar.max_height', MSZ_CFG_INT, 500000),
+        'max_width' => \Misuzu\Config::get('avatar.max_width', \Misuzu\Config::TYPE_INT, 1000),
+        'max_height' => \Misuzu\Config::get('avatar.max_height', \Misuzu\Config::TYPE_INT, 1000),
+        'max_size' => \Misuzu\Config::get('avatar.max_height', \Misuzu\Config::TYPE_INT, 500000),
     ];
 }
 

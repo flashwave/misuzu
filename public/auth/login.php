@@ -17,9 +17,9 @@ if(!empty($_GET['resolve_user']) && is_string($_GET['resolve_user'])) {
 }
 
 $notices = [];
-$siteIsPrivate = config_get('private.enable', MSZ_CFG_BOOL);
-$loginPermCat = $siteIsPrivate ? config_get('private.perm.cat', MSZ_CFG_STR) : '';
-$loginPermVal = $siteIsPrivate ? config_get('private.perm.val', MSZ_CFG_INT) : 0;
+$siteIsPrivate = Config::get('private.enable', Config::TYPE_BOOL);
+$loginPermCat = $siteIsPrivate ? Config::get('private.perm.cat', Config::TYPE_STR) : '';
+$loginPermVal = $siteIsPrivate ? Config::get('private.perm.val', Config::TYPE_INT) : 0;
 $ipAddress = ip_remote_address();
 $remainingAttempts = user_login_attempts_remaining($ipAddress);
 
@@ -112,8 +112,8 @@ $loginUsername = !empty($_POST['login']['username']) && is_string($_POST['login'
     !empty($_GET['username']) && is_string($_GET['username']) ? $_GET['username'] : ''
 );
 $loginRedirect = $welcomeMode ? url('index') : (!empty($_GET['redirect']) && is_string($_GET['redirect']) ? $_GET['redirect'] : null) ?? $_SERVER['HTTP_REFERER'] ?? url('index');
-$sitePrivateMessage = $siteIsPrivate ? config_get('private.msg', MSZ_CFG_STR) : '';
-$canResetPassword = $siteIsPrivate ? config_get('private.allow_password_reset', MSZ_CFG_BOOL, true) : true;
+$sitePrivateMessage = $siteIsPrivate ? Config::get('private.msg', Config::TYPE_STR) : '';
+$canResetPassword = $siteIsPrivate ? Config::get('private.allow_password_reset', Config::TYPE_BOOL, true) : true;
 $canRegisterAccount = !$siteIsPrivate;
 
 echo tpl_render('auth.login', [

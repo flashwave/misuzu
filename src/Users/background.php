@@ -93,9 +93,9 @@ function user_background_is_allowed_type(int $type): bool {
 
 function user_background_default_options(): array {
     return [
-        'max_width' => config_get('background.max_width', MSZ_CFG_INT, 3840),
-        'max_height' => config_get('background.max_height', MSZ_CFG_INT, 2160),
-        'max_size' => config_get('background.max_height', MSZ_CFG_INT, 1000000),
+        'max_width' => \Misuzu\Config::get('background.max_width', \Misuzu\Config::TYPE_INT, 3840),
+        'max_height' => \Misuzu\Config::get('background.max_height', \Misuzu\Config::TYPE_INT, 2160),
+        'max_size' => \Misuzu\Config::get('background.max_height', \Misuzu\Config::TYPE_INT, 1000000),
     ];
 }
 

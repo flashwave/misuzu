@@ -7,7 +7,7 @@ use PDO;
 define('MSZ_STARTUP', microtime(true));
 define('MSZ_ROOT', __DIR__);
 define('MSZ_DEBUG', is_file(MSZ_ROOT . '/.debug'));
-define('MSZ_PHP_MIN_VER', '7.3.0');
+define('MSZ_PHP_MIN_VER', '7.4.0');
 
 if(version_compare(PHP_VERSION, MSZ_PHP_MIN_VER, '<')) {
     die('Misuzu requires <i>at least</i> PHP <b>' . MSZ_PHP_MIN_VER . '</b> to run.');
@@ -39,7 +39,6 @@ require_once 'src/audit_log.php';
 require_once 'src/changelog.php';
 require_once 'src/colour.php';
 require_once 'src/comments.php';
-require_once 'src/config.php';
 require_once 'src/csrf.php';
 require_once 'src/emotes.php';
 require_once 'src/general.php';
@@ -101,27 +100,27 @@ DB::init(DB::buildDSN($dbConfig), $dbConfig['username'] ?? '', $dbConfig['passwo
     ",
 ]);
 
-config_init();
+Config::init();
 mail_settings([
-    'method' => config_get('mail.method', MSZ_CFG_STR),
-    'host' => config_get('mail.host', MSZ_CFG_STR),
-    'port' => config_get('mail.port', MSZ_CFG_INT, 587),
-    'encryption' => config_get('mail.encryption', MSZ_CFG_STR),
-    'username' => config_get('mail.username', MSZ_CFG_STR),
-    'password' => config_get('mail.password', MSZ_CFG_STR),
-    'sender_email' => config_get('mail.sender.address', MSZ_CFG_STR),
-    'sender_name' => config_get('mail.sender.name', MSZ_CFG_STR),
+    'method' => Config::get('mail.method', Config::TYPE_STR),
+    'host' => Config::get('mail.host', Config::TYPE_STR),
+    'port' => Config::get('mail.port', Config::TYPE_INT, 587),
+    'encryption' => Config::get('mail.encryption', Config::TYPE_STR),
+    'username' => Config::get('mail.username', Config::TYPE_STR),
+    'password' => Config::get('mail.password', Config::TYPE_STR),
+    'sender_email' => Config::get('mail.sender.address', Config::TYPE_STR),
+    'sender_name' => Config::get('mail.sender.name', Config::TYPE_STR),
 ]);
 
 if(!empty($errorReporter)) {
     $errorReporter->setReportInfo(
-        config_get('error_report.url', MSZ_CFG_STR),
-        config_get('error_report.secret', MSZ_CFG_STR)
+        Config::get('error_report.url', Config::TYPE_STR),
+        Config::get('error_report.secret', Config::TYPE_STR)
     );
 }
 
 // replace this with a better storage mechanism
-define('MSZ_STORAGE', config_get('storage.path', MSZ_CFG_STR, MSZ_ROOT . '/store'));
+define('MSZ_STORAGE', Config::get('storage.path', Config::TYPE_STR, MSZ_ROOT . '/store'));
 mkdirs(MSZ_STORAGE, true);
 
 if(PHP_SAPI === 'cli') {
@@ -346,8 +345,8 @@ MIG;
                 break;
 
             case 'twitter-auth':
-                $apiKey = config_get('twitter.api.key', MSZ_CFG_STR);
-                $apiSecret = config_get('twitter.api.secret', MSZ_CFG_STR);
+                $apiKey = Config::get('twitter.api.key', Config::TYPE_STR);
+                $apiSecret = Config::get('twitter.api.secret', Config::TYPE_STR);
 
                 if(empty($apiKey) || empty($apiSecret)) {
                     echo 'No Twitter api keys set in config.' . PHP_EOL;
@@ -398,7 +397,7 @@ MIG;
         exit;
     }
 
-    geoip_init(config_get('geoip.database', MSZ_CFG_STR, '/var/lib/GeoIP/GeoLite2-Country.mmdb'));
+    geoip_init(Config::get('geoip.database', Config::TYPE_STR, '/var/lib/GeoIP/GeoLite2-Country.mmdb'));
 
     if(!MSZ_DEBUG) {
         $twigCache = sys_get_temp_dir() . '/msz-tpl-cache-' . md5(MSZ_ROOT);
@@ -412,10 +411,10 @@ MIG;
     ]);
 
     tpl_var('globals', [
-        'site_name' => config_get('site.name', MSZ_CFG_STR, 'Misuzu'),
-        'site_description' => config_get('site.desc', MSZ_CFG_STR),
-        'site_url' => config_get('site.url', MSZ_CFG_STR),
-        'site_twitter' => config_get('social.twitter', MSZ_CFG_STR),
+        'site_name' => Config::get('site.name', Config::TYPE_STR, 'Misuzu'),
+        'site_description' => Config::get('site.desc', Config::TYPE_STR),
+        'site_url' => Config::get('site.url', Config::TYPE_STR),
+        'site_twitter' => Config::get('social.twitter', Config::TYPE_STR),
     ]);
 
     tpl_add_path(MSZ_ROOT . '/templates');
@@ -474,19 +473,19 @@ MIG;
     }
 
     csrf_settings(
-        config_get('csrf.secret', MSZ_CFG_STR, 'insecure'),
+        Config::get('csrf.secret', Config::TYPE_STR, 'insecure'),
         empty($userDisplayInfo) ? ip_remote_address() : $cookieData['session_token']
     );
 
-    if(config_get('private.enabled', MSZ_CFG_BOOL)) {
+    if(Config::get('private.enabled', Config::TYPE_BOOL)) {
         $onLoginPage = $_SERVER['PHP_SELF'] === url('auth-login');
         $onPasswordPage = parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH) === url('auth-forgot');
         $misuzuBypassLockdown = !empty($misuzuBypassLockdown) || $onLoginPage;
 
         if(!$misuzuBypassLockdown) {
             if(user_session_active()) {
-                $privatePermCat = config_get('private.perm.cat', MSZ_CFG_STR);
-                $privatePermVal = config_get('private.perm.val', MSZ_CFG_INT);
+                $privatePermCat = Config::get('private.perm.cat', Config::TYPE_STR);
+                $privatePermVal = Config::get('private.perm.val', Config::TYPE_INT);
 
                 if(!empty($privatePermCat) && $privatePermVal > 0) {
                     if(!perms_check_user($privatePermCat, $userDisplayInfo['user_id'], $privatePermVal)) {
@@ -494,7 +493,7 @@ MIG;
                         user_session_stop(); // au revoir
                     }
                 }
-            } elseif(!$onLoginPage && !($onPasswordPage && config_get('private.allow_password_reset', MSZ_CFG_BOOL, true))) {
+            } elseif(!$onLoginPage && !($onPasswordPage && Config::get('private.allow_password_reset', Config::TYPE_BOOL, true))) {
                 url_redirect('auth-login');
                 exit;
             }

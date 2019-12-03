@@ -9,12 +9,12 @@ $showActivityFeed = false; /*user_session_active()
 if($showActivityFeed) {
     // load activity shit garbage here
 } else {
-    if(config_get('social.embed_linked', MSZ_CFG_BOOL)) {
+    if(Config::get('social.embed_linked', Config::TYPE_BOOL)) {
         tpl_var('linked_data', [
-            'name' => config_get('site.name', MSZ_CFG_STR, 'Misuzu'),
-            'url' => config_get('site.url', MSZ_CFG_STR),
-            'logo' => config_get('site.ext_logo', MSZ_CFG_STR),
-            'same_as' => config_get('social.linked', MSZ_CFG_ARR),
+            'name' => Config::get('site.name', Config::TYPE_STR, 'Misuzu'),
+            'url' => Config::get('site.url', Config::TYPE_STR),
+            'logo' => Config::get('site.ext_logo', Config::TYPE_STR),
+            'same_as' => Config::get('social.linked', Config::TYPE_ARR),
         ]);
     }
 

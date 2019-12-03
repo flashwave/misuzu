@@ -54,7 +54,7 @@ if(!user_relation_set($userId, $subjectId, $relationType)) {
 
 
 if(($relationType === MSZ_USER_RELATION_NONE || $relationType === MSZ_USER_RELATION_FOLLOW)
-    && in_array($subjectId, config_get('relations.replicate', MSZ_CFG_ARR))) {
+    && in_array($subjectId, Config::get('relations.replicate', Config::TYPE_ARR))) {
     user_relation_set($subjectId, $userId, $relationType);
 }
 

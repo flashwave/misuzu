@@ -31,7 +31,7 @@ if(!$posts) {
 header("Content-Type: application/{$feedMode}+xml; charset=utf-8");
 
 echo news_feed($feedMode, $posts, [
-    'title' => config_get('site.name', MSZ_CFG_STR, 'Misuzu') . ' » ' . ($category['category_name'] ?? 'Featured News'),
+    'title' => Config::get('site.name', Config::TYPE_STR, 'Misuzu') . ' » ' . ($category['category_name'] ?? 'Featured News'),
     'subtitle' => $category['category_description'] ?? 'A live featured news feed.',
     'html-url' => empty($category) ? url('news-index') : url('news-category', ['category' => $category['category_id']]),
     'feed-url' => empty($category) ? url("news-feed-{$feedMode}") : url("news-category-feed-{$feedMode}", ['category' => $category['category_id']]),

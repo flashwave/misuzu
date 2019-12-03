@@ -248,11 +248,11 @@ function url_construct(string $url, array $query = [], ?string $fragment = null)
 }
 
 function url_proxy_media(?string $url): ?string {
-    if(empty($url) || !config_get('media_proxy.enable', MSZ_CFG_BOOL) || is_local_url($url)) {
+    if(empty($url) || !\Misuzu\Config::get('media_proxy.enable', \Misuzu\Config::TYPE_BOOL) || is_local_url($url)) {
         return $url;
     }
 
-    $secret = config_get('media_proxy.secret', MSZ_CFG_STR, 'insecure');
+    $secret = \Misuzu\Config::get('media_proxy.secret', \Misuzu\Config::TYPE_STR, 'insecure');
     $url = \Misuzu\Base64::encode($url, true);
     $hash = hash_hmac('sha256', $url, $secret);
 
