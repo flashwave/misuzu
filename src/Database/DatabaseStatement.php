@@ -57,7 +57,7 @@ class DatabaseStatement {
         $objects = [];
 
         if($this->isQuery || $this->execute()) {
-            while(($object = $this->stmt->fetchObject($className, $args)) !== false) {
+            while(($object = ($args === null ? $this->stmt->fetchObject($className) : $this->stmt->fetchObject($className, $args))) !== false) {
                 $objects[] = $object;
             }
         }

@@ -1,50 +1,50 @@
 {% extends 'master.twig' %}
 
-{% if profile is defined %}
-    {% set image = url('user-avatar', {'user': profile.user_id, 'res': 200}) %}
-    {% set manage_link = url('manage-user', {'user': profile.user_id}) %}
+{% if profile_user is defined %}
+    {% set image = url('user-avatar', {'user': profile_user.user_id, 'res': 200}) %}
+    {% set manage_link = url('manage-user', {'user': profile_user.user_id}) %}
     {% set stats = [
         {
             'title': 'Joined',
             'is_date': true,
-            'value': profile.user_created,
+            'value': profile_user.user_created,
         },
         {
             'title': 'Last seen',
             'is_date': true,
-            'value': profile.user_active,
+            'value': profile_user.user_active,
         },
         {
             'title': 'Following',
-            'value': profile.following_count,
-            'url': url('user-profile-following', {'user': profile.user_id}),
+            'value': profile_stats.following_count,
+            'url': url('user-profile-following', {'user': profile_user.user_id}),
             'active': profile_mode == 'following',
         },
         {
             'title': 'Followers',
-            'value': profile.followers_count,
-            'url': url('user-profile-followers', {'user': profile.user_id}),
+            'value': profile_stats.followers_count,
+            'url': url('user-profile-followers', {'user': profile_user.user_id}),
             'active': profile_mode == 'followers',
         },
         {
             'title': 'Topics',
-            'value': profile.forum_topic_count,
-            'url': url('user-profile-forum-topics', {'user': profile.user_id}),
+            'value': profile_stats.forum_topic_count,
+            'url': url('user-profile-forum-topics', {'user': profile_user.user_id}),
             'active': profile_mode == 'forum-topics',
         },
         {
             'title': 'Posts',
-            'value': profile.forum_post_count,
-            'url': url('user-profile-forum-posts', {'user': profile.user_id}),
+            'value': profile_stats.forum_post_count,
+            'url': url('user-profile-forum-posts', {'user': profile_user.user_id}),
             'active': profile_mode == 'forum-posts',
         },
         {
             'title': 'Comments',
-            'value': profile.comments_count,
+            'value': profile_stats.comments_count,
         },
         {
             'title': 'Changes',
-            'value': profile.changelog_count,
+            'value': profile_stats.changelog_count,
         },
     ] %}
 {% else %}

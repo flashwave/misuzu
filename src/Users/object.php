@@ -5,20 +5,20 @@ use Misuzu\DB;
 
 class User {
     private const USER_SELECT = '
-        SELECT  `user_id`, `username`, `password`, `email`, `user_super`, `user_title`,
-                `user_country`, `user_colour`, `display_role`, `user_totp_key`,
-                `user_about_content`, `user_about_parser`,
-                `user_signature_content`, `user_signature_parser`,
-                `user_birthdate`, `user_background_settings`,
-                INET6_NTOA(`register_ip`)       AS `register_ip`,
-                INET6_NTOA(`last_ip`)           AS `last_ip`,
-                UNIX_TIMESTAMP(`user_created`)  AS `user_created`,
-                UNIX_TIMESTAMP(`user_active`)   AS `user_active`,
-                UNIX_TIMESTAMP(`user_deleted`)  AS `user_deleted`,
-                `user_website`, `user_twitter`, `user_github`, `user_skype`,
-                `user_discord`, `user_youtube`, `user_steam`, `user_ninswitch`,
-                `user_twitchtv`, `user_osu`, `user_lastfm`
-        FROM    `msz_users`
+        SELECT u.`user_id`, u.`username`, u.`password`, u.`email`, u.`user_super`, u.`user_title`,
+               u.`user_country`, u.`user_colour`, u.`display_role`, u.`user_totp_key`,
+               u.`user_about_content`, u.`user_about_parser`,
+               u.`user_signature_content`, u.`user_signature_parser`,
+               u.`user_birthdate`, u.`user_background_settings`,
+               INET6_NTOA(u.`register_ip`) AS `register_ip`, INET6_NTOA(u.`last_ip`) AS `last_ip`,
+               UNIX_TIMESTAMP(u.`user_created`) AS `user_created`, UNIX_TIMESTAMP(u.`user_active`) AS `user_active`,
+               UNIX_TIMESTAMP(u.`user_deleted`) AS `user_deleted`,
+               COALESCE(u.`user_title`, r.`role_title`) AS `user_title`,
+               COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`,
+               TIMESTAMPDIFF(YEAR, IF(u.`user_birthdate` < \'0001-01-01\', NULL, u.`user_birthdate`), NOW()) AS `user_age`
+        FROM `msz_users` AS u
+        LEFT JOIN `msz_roles` AS r
+        ON r.`role_id` = u.`display_role`
     ';
 
     public function __construct() {
@@ -63,6 +63,12 @@ class User {
             ->bind('username', $usernameOrEmail)
             ->fetchObject(User::class);
     }
+    public static function findForProfile($userId): ?User {
+        return DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id OR LOWER(`username`) = LOWER(:username)')
+            ->bind('user_id', (int)$userId)
+            ->bind('username', (string)$userId)
+            ->fetchObject(User::class);
+    }
 
     public function hasUserId(): bool {
         return isset($this->user_id) && $this->user_id > 0;
@@ -93,5 +99,22 @@ class User {
 
     public function hasTOTP(): bool {
         return !empty($this->user_totp_key);
+    }
+
+    public function getBackgroundAttachment(): int {
+        return $this->user_background_settings & 0x0F;
+    }
+    public function getBackgroundBlend(): bool {
+        return ($this->user_background_settings & MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND) > 0;
+    }
+    public function getBackgroundSlide(): bool {
+        return ($this->user_background_settings & MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE) > 0;
+    }
+
+    public function profileFields(bool $filterEmpty = true): array {
+        if(!$this->hasUserId())
+            return [];
+
+        return ProfileField::user($this->user_id, $filterEmpty);
     }
 }

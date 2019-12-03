@@ -241,7 +241,6 @@ $roles = $getRoles->fetchAll();
 
 echo tpl_render('manage.users.user', [
     'manage_user' => $manageUser,
-    'profile_fields' => user_profile_fields_get(),
     'manage_notices' => $notices,
     'manage_roles' => $roles,
     'can_edit_user' => $canEdit,

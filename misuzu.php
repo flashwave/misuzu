@@ -72,7 +72,6 @@ require_once 'src/Users/avatar.php';
 require_once 'src/Users/background.php';
 require_once 'src/Users/login_attempt.php';
 require_once 'src/Users/object.php';
-require_once 'src/Users/profile.php';
 require_once 'src/Users/recovery.php';
 require_once 'src/Users/relations.php';
 require_once 'src/Users/role.php';
@@ -287,10 +286,8 @@ if(PHP_SAPI === 'cli') {
                 });
 
                 if($doRollback) {
-                    echo "Rolling back last migrations..." . PHP_EOL;
                     $migrationManager->rollback();
                 } else {
-                    echo "Running migrations..." . PHP_EOL;
                     $migrationManager->migrate();
                 }
 

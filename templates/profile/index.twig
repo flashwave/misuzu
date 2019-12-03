@@ -3,16 +3,16 @@
 {% from 'user/macros.twig' import user_profile_warning %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox, input_file, input_file_raw, input_select %}
 
-{% if profile is defined %}
-    {% set canonical_url = url('user-profile', {'user': profile.user_id}) %}
-    {% set title = profile.username %}
+{% if profile_user is defined %}
+    {% set canonical_url = url('user-profile', {'user': profile_user.user_id}) %}
+    {% set title = profile_user.username %}
 {% else %}
     {% set title = 'User not found!' %}
 {% endif %}
 
 {% block content %}
     {% if profile_is_editing %}
-        <form class="profile" method="post" action="{{ url('user-profile', {'user': profile.user_id}) }}" enctype="multipart/form-data">
+        <form class="profile" method="post" action="{{ url('user-profile', {'user': profile_user.user_id}) }}" enctype="multipart/form-data">
             {{ input_csrf('profile') }}
 
             {% if perms.edit_avatar %}
@@ -20,7 +20,7 @@
 
                 <script>
                     function updateAvatarPreview(name, url, preview) {
-                        url = url || "{{ url('user-avatar', {'user': profile.user_id, 'res': 240})|raw }}";
+                        url = url || "{{ url('user-avatar', {'user': profile_user.user_id, 'res': 240})|raw }}";
                         preview = preview || document.getElementById('avatar-preview');
                         preview.src = url;
                         preview.title = name;
@@ -70,13 +70,14 @@
                 <div class="warning">
                     <div class="warning__content">
                         {% for notice in profile_notices %}
-                            {{ notice }}
+                            <p>{{ notice }}</p>
                         {% endfor %}
                     </div>
                 </div>
             {% endif %}
 
             <div class="profile__content">
+                {% set profile_fields = profile_user.profileFields(not (profile_is_editing and perms.edit_profile)) %}
                 {% set show_profile_fields = profile_is_editing ? perms.edit_profile : profile_fields|default([])|length > 0 %}
                 {% set show_background_settings = profile_is_editing and perms.edit_background %}
                 {% set show_birthdate = profile_is_editing and perms.edit_birthdate %}
@@ -93,11 +94,11 @@
 
                                     {{ input_checkbox('background[attach]', 'None', true, '', 0, true, {'onchange':'profileChangeBackgroundAttach(this.value)'}) }}
                                     {% for key, value in background_attachments %}
-                                        {{ input_checkbox('background[attach]', value|capitalize, key == profile.user_background_attachment, '', key, true, {'onchange':'profileChangeBackgroundAttach(this.value)'}) }}
+                                        {{ input_checkbox('background[attach]', value|capitalize, key == profile_user.backgroundAttachment, '', key, true, {'onchange':'profileChangeBackgroundAttach(this.value)'}) }}
                                     {% endfor %}
 
-                                    {{ input_checkbox('background[attr][blend]', 'Blend', profile.user_background_blend, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'blend\', this.checked)'}) }}
-                                    {{ input_checkbox('background[attr][slide]', 'Slide', profile.user_background_slide, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'slide\', this.checked)'}) }}
+                                    {{ input_checkbox('background[attr][blend]', 'Blend', profile_user.backgroundBlend, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'blend\', this.checked)'}) }}
+                                    {{ input_checkbox('background[attr][slide]', 'Slide', profile_user.backgroundSlide, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'slide\', this.checked)'}) }}
                                 </div>
                             </div>
                         {% endif %}
@@ -112,22 +113,21 @@
                                 {{ container_title('Elsewhere') }}
 
                                 <div class="profile__accounts__content">
-                                    {% for name, data in profile_fields %}
+                                    {% for field in profile_fields %}
                                         <label class="profile__accounts__item">
                                             <div class="profile__accounts__title">
-                                                {{ data.name }}
+                                                {{ field.field_title }}
                                             </div>
 
                                             {% if profile_is_editing %}
-                                                {{ input_text('profile[' ~ name ~ ']', 'profile__accounts__input', profile['user_' ~ name], data.type|default('text')) }}
+                                                {{ input_text('profile[' ~ field.field_key ~ ']', 'profile__accounts__input', field.field_value, data.type|default('text')) }}
                                             {% else %}
-                                                <div class="profile__accounts__value"
-                                                    {% if data.tooltip is defined %}title="{{ data.tooltip|format(data.value)|raw }}"{% endif %}>
-                                                    {% set profile_field_value = (data.format is defined ? data.format : '%s')|format(data.value) %}
-                                                    {% if data.link is defined %}
-                                                        {{ data.link|format(data.value)|html_link(profile_field_value, 'profile__accounts__link')|raw }}
-                                                    {% else %}
+                                                <div class="profile__accounts__value">
+                                                    {% set profile_field_value = field.format_display|format(field.field_value) %}
+                                                    {% if field.format_link is empty %}
                                                         {{ profile_field_value }}
+                                                    {% else %}
+                                                        {{ field.format_link|format(field.field_value)|html_link(profile_field_value, 'profile__accounts__link')|raw }}
                                                     {% endif %}
                                                 </div>
                                             {% endif %}
@@ -140,7 +140,7 @@
                             <div class="container profile__container profile__birthdate">
                                 {{ container_title('Birthdate') }}
 
-                                {% set birthdate = profile.user_birthdate|split('-') %}
+                                {% set birthdate = profile_user.user_birthdate|split('-') %}
 
                                 <div class="profile__birthdate__content">
                                     <div class="profile__birthdate__date">
@@ -173,37 +173,37 @@
                     </div>
                 {% endif %}
 
-                {% if profile is defined %}
+                {% if profile_user is defined %}
                     <div class="profile__content__main">
-                        {% if (profile_is_editing and perms.edit_about) or profile.user_about_content|length > 0 %}
+                        {% if (profile_is_editing and perms.edit_about) or profile_user.user_about_content|length > 0 %}
                             <div class="container profile__container profile__about" id="about">
-                                {{ container_title('About ' ~ profile.username) }}
+                                {{ container_title('About ' ~ profile_user.username) }}
 
                                 {% if profile_is_editing %}
                                     <div class="profile__signature__editor">
-                                        {{ input_select('about[parser]', constant('MSZ_PARSERS_NAMES'), profile.user_about_parser, '', '', false, 'profile__about__select') }}
-                                        <textarea name="about[text]" class="input__textarea profile__about__text" id="about-textarea">{{ profile.user_about_content|escape }}</textarea>
+                                        {{ input_select('about[parser]', constant('MSZ_PARSERS_NAMES'), profile_user.user_about_parser, '', '', false, 'profile__about__select') }}
+                                        <textarea name="about[text]" class="input__textarea profile__about__text" id="about-textarea">{{ profile_user.user_about_content|escape }}</textarea>
                                     </div>
                                 {% else %}
-                                    <div class="profile__about__content{% if profile_is_editing %} profile__about__content--edit{% elseif profile.user_about_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
-                                        {{ profile.user_about_content|escape|parse_text(profile.user_about_parser)|raw }}
+                                    <div class="profile__about__content{% if profile_is_editing %} profile__about__content--edit{% elseif profile_user.user_about_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
+                                        {{ profile_user.user_about_content|escape|parse_text(profile_user.user_about_parser)|raw }}
                                     </div>
                                 {% endif %}
                             </div>
                         {% endif %}
 
-                        {% if (profile_is_editing and perms.edit_signature) or profile.user_signature_content|length > 0 %}
+                        {% if (profile_is_editing and perms.edit_signature) or profile_user.user_signature_content|length > 0 %}
                             <div class="container profile__container profile__signature" id="signature">
                                 {{ container_title('Signature') }}
 
                                 {% if profile_is_editing %}
                                     <div class="profile__signature__editor">
-                                        {{ input_select('signature[parser]', constant('MSZ_PARSERS_NAMES'), profile.user_signature_parser, '', '', false, 'profile__signature__select') }}
-                                        <textarea name="signature[text]" class="input__textarea profile__signature__text" id="signature-textarea">{{ profile.user_signature_content|escape }}</textarea>
+                                        {{ input_select('signature[parser]', constant('MSZ_PARSERS_NAMES'), profile_user.user_signature_parser, '', '', false, 'profile__signature__select') }}
+                                        <textarea name="signature[text]" class="input__textarea profile__signature__text" id="signature-textarea">{{ profile_user.user_signature_content|escape }}</textarea>
                                     </div>
                                 {% else %}
-                                    <div class="profile__signature__content{% if profile_is_editing %} profile__signature__content--edit{% elseif profile.user_signature_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
-                                    {{ profile.user_signature_content|escape|parse_text(profile.user_signature_parser)|raw }}
+                                    <div class="profile__signature__content{% if profile_is_editing %} profile__signature__content--edit{% elseif profile_user.user_signature_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
+                                    {{ profile_user.user_signature_content|escape|parse_text(profile_user.user_signature_parser)|raw }}
                                     </div>
                                 {% endif %}
                             </div>
@@ -211,7 +211,7 @@
 
                         {% if profile_warnings|length > 0 or profile_warnings_can_manage %}
                             <div class="container profile__container profile__warning__container" id="account-standing">
-                                {{ container_title('Account Standing', false, profile_warnings_can_manage ? url('manage-users-warnings', {'user': profile.user_id}) : '') }}
+                                {{ container_title('Account Standing', false, profile_warnings_can_manage ? url('manage-users-warnings', {'user': profile_user.user_id}) : '') }}
 
                                 <div class="profile__warning">
                                     <div class="profile__warning__background"></div>

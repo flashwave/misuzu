@@ -130,7 +130,6 @@ function ip_blacklist_add_raw(string $subnet, ?int $mask = null): bool {
         return false;
     }
 
-    // TODO: don't use REPLACE INTO
     $addBlacklist = \Misuzu\DB::prepare('
         REPLACE INTO `msz_ip_blacklist`
             (`ip_subnet`, `ip_mask`)

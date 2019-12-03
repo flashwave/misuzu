@@ -22,7 +22,6 @@ function user_relation_set(int $userId, int $subjectId, int $type = MSZ_USER_REL
         return false;
     }
 
-    // TODO: don't use REPLACE INTO
     $addRelation = \Misuzu\DB::prepare('
         REPLACE INTO `msz_user_relations`
             (`user_id`, `subject_id`, `relation_type`)

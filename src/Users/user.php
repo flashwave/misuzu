@@ -39,22 +39,6 @@ function user_find_for_reset(string $email): array {
     return $getUser->fetch();
 }
 
-function user_find_for_profile(string $idOrUsername): int {
-    $getUserId = \Misuzu\DB::prepare('
-        SELECT
-            :user_id as `input_id`,
-            (
-                SELECT `user_id`
-                FROM `msz_users`
-                WHERE `user_id` = `input_id`
-                OR LOWER(`username`) = LOWER(`input_id`)
-                LIMIT 1
-            ) as `user_id`
-    ');
-    $getUserId->bind('user_id', $idOrUsername);
-    return (int)$getUserId->fetchColumn(1, 0);
-}
-
 function user_password_hash(string $password): string {
     return password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO);
 }
@@ -444,9 +428,7 @@ define('MSZ_TMP_USER_ERROR_STRINGS', [
     'profile' => [
         '_' => 'An unexpected error occurred, contact an administator.',
         'not-allowed' => "You're not allowed to edit your profile.",
-        MSZ_USER_PROFILE_INVALID_FIELD => "Field '%1\$s' does not exist!",
-        MSZ_USER_PROFILE_FILTER_FAILED => '%2$s field was invalid!',
-        MSZ_USER_PROFILE_UPDATE_FAILED => 'Failed to update profile, contact an administator.',
+        'invalid' => '%s was formatted incorrectly!',
     ],
     'about' => [
         '_' => 'An unexpected error occurred, contact an administator.',
