@@ -1,7 +1,7 @@
 <?php
 namespace Misuzu;
 
-use Imagick;
+use Misuzu\Imaging\Image;
 
 $userAssetsMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
 $misuzuBypassLockdown = $userAssetsMode === 'avatar';
@@ -56,45 +56,9 @@ switch($userAssetsMode) {
                 try {
                     mkdirs($avatarStorage, true);
 
-                    $avatarImage = new Imagick($avatarOriginal);
-                    $avatarImage->setImageFormat($avatarImage->getNumberImages() > 1 ? 'gif' : 'png');
-                    $avatarImage = $avatarImage->coalesceImages();
-
-                    $avatarOriginalWidth = $avatarImage->getImageWidth();
-                    $avatarOriginalHeight = $avatarImage->getImageHeight();
-
-                    if($avatarOriginalWidth > $avatarOriginalHeight) {
-                        $avatarWidth = $avatarOriginalWidth * $dimensions / $avatarOriginalHeight;
-                        $avatarHeight = $dimensions;
-                    } else {
-                        $avatarWidth = $dimensions;
-                        $avatarHeight = $avatarOriginalHeight * $dimensions / $avatarOriginalWidth;
-                    }
-
-                    do {
-                        $avatarImage->resizeImage(
-                            $avatarWidth,
-                            $avatarHeight,
-                            Imagick::FILTER_LANCZOS,
-                            0.9
-                        );
-
-                        $avatarImage->cropImage(
-                            $dimensions,
-                            $dimensions,
-                            ($avatarWidth - $dimensions) / 2,
-                            ($avatarHeight - $dimensions) / 2
-                        );
-
-                        $avatarImage->setImagePage(
-                            $dimensions,
-                            $dimensions,
-                            0,
-                            0
-                        );
-                    } while($avatarImage->nextImage());
-
-                    $avatarImage->deconstructImages()->writeImages($filename = $avatarCropped, true);
+                    $avatarImage = Image::create($avatarOriginal);
+                    $avatarImage->squareCrop($dimensions);
+                    $avatarImage->save($filename = $avatarCropped);
                 } catch(Exception $ex) {}
             }
         }
