@@ -90,7 +90,7 @@ if(empty($role)) {
 $usersPagination = pagination_create($role['role_user_count'], 15);
 $usersOffset = pagination_offset($usersPagination, pagination_param());
 
-if(!pagination_is_valid_offset($usersOffset)) {
+if($usersOffset > 0 && !pagination_is_valid_offset($usersOffset)) {
     echo render_error(404);
     return;
 }
@@ -161,6 +161,10 @@ $getUsers->bind('offset', $usersOffset);
 $getUsers->bind('take', $usersPagination['range']);
 $getUsers->bind('current_user_id', user_session_current('user_id', 0));
 $users = $getUsers->fetchAll();
+
+if(empty($users)) {
+    http_response_code(404);
+}
 
 echo tpl_render('user.listing', [
     'roles' => $roles,

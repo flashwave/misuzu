@@ -9,7 +9,7 @@
     'role': url_role,
     'sort': url_sort,
     'direction': url_direction,
-    'page': users_pagination.page > 2 ? users_pagination.page : 0,
+    'page': users_pagination.page|default(0) > 2 ? users_pagination.page : 0,
 }) %}
 {% set title = role.role_id == 1 ? 'Members' : 'Role » ' ~ role.role_name  %}
 {% set manage_link = url('manage-users') %}
@@ -48,13 +48,19 @@
         {{ member_nav }}
     </div>
 
-    <div class="userlist">
-        {% for user in users %}
-            <div class="userlist__item">
-                {{ user_card(user) }}
-            </div>
-        {% endfor %}
-    </div>
+    {% if users|length > 0 %}
+        <div class="userlist">
+            {% for user in users %}
+                <div class="userlist__item">
+                    {{ user_card(user) }}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="userlist__empty">
+            This role has no members
+        </div>
+    {% endif %}
 
     <div class="container userlist__container" style="{{ role.role_colour|html_colour('--accent-colour') }}">
         {{ member_nav }}
