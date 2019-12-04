@@ -30,7 +30,7 @@ if(user_warning_check_restriction($forumUserId)) {
     $perms &= ~MSZ_FORUM_PERM_SET_WRITE;
 }
 
-tpl_var('forum_perms', $perms);
+Template::set('forum_perms', $perms);
 
 if($forum['forum_type'] == MSZ_FORUM_TYPE_LINK) {
     forum_increment_clicks($forum['forum_id']);
@@ -69,7 +69,7 @@ if($forumMayHaveChildren) {
     }
 }
 
-echo tpl_render('forum.forum', [
+Template::render('forum.forum', [
     'forum_breadcrumbs' => forum_get_breadcrumbs($forum['forum_id']),
     'global_accent_colour' => forum_get_colour($forum['forum_id']),
     'forum_may_have_topics' => $forumMayHaveTopics,

@@ -15,4 +15,4 @@ if(csrf_verify_request()) {
     return;
 }
 
-echo tpl_render('auth.logout');
+Template::render('auth.logout');

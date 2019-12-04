@@ -18,7 +18,7 @@ if(!pagination_is_valid_offset($categoriesOffset)) {
 
 $categories = news_categories_get($categoriesOffset, $categoriesPagination['range'], true, false, true);
 
-echo tpl_render('manage.news.categories', [
+Template::render('manage.news.categories', [
     'news_categories' => $categories,
     'categories_pagination' => $categoriesPagination,
 ]);

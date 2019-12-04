@@ -50,7 +50,6 @@ require_once 'src/otp.php';
 require_once 'src/pagination.php';
 require_once 'src/perms.php';
 require_once 'src/string.php';
-require_once 'src/tpl.php';
 require_once 'src/twitter.php';
 require_once 'src/url.php';
 require_once 'src/zalgo.php';
@@ -402,24 +401,20 @@ MIG;
         mkdirs($twigCache, true);
     }
 
-    tpl_init([
-        'debug' => MSZ_DEBUG,
-        'auto_reload' => MSZ_DEBUG,
-        'cache' => $twigCache ?? false,
-    ]);
+    Template::init($twigCache ?? null, MSZ_DEBUG);
 
-    tpl_var('globals', [
+    Template::set('globals', [
         'site_name' => Config::get('site.name', Config::TYPE_STR, 'Misuzu'),
         'site_description' => Config::get('site.desc', Config::TYPE_STR),
         'site_url' => Config::get('site.url', Config::TYPE_STR),
         'site_twitter' => Config::get('social.twitter', Config::TYPE_STR),
     ]);
 
-    tpl_add_path(MSZ_ROOT . '/templates');
+    Template::addPath(MSZ_ROOT . '/templates');
 
     if(file_exists(MSZ_ROOT . '/.migrating')) {
         http_response_code(503);
-        echo tpl_render('home.migration');
+        Template::render('home.migration');
         exit;
     }
 
@@ -499,14 +494,14 @@ MIG;
     }
 
     if(!empty($userDisplayInfo)) {
-        tpl_var('current_user', $userDisplayInfo);
+        Template::set('current_user', $userDisplayInfo);
     }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
     $hasManageAccess = !empty($userDisplayInfo['user_id'])
         && !user_warning_check_restriction($userDisplayInfo['user_id'])
         && perms_check_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'], MSZ_PERM_GENERAL_CAN_MANAGE);
-    tpl_var('has_manage_access', $hasManageAccess);
+    Template::set('has_manage_access', $hasManageAccess);
 
     if($inManageMode) {
         if(!$hasManageAccess) {
@@ -514,6 +509,6 @@ MIG;
             exit;
         }
 
-        tpl_var('manage_menu', manage_get_menu($userDisplayInfo['user_id'] ?? 0));
+        Template::set('manage_menu', manage_get_menu($userDisplayInfo['user_id'] ?? 0));
     }
 }

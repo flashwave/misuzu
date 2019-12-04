@@ -163,7 +163,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
 
             if(!$isXHR) {
                 if(!isset($_GET['confirm'])) {
-                    echo tpl_render('forum.confirm', [
+                    Template::render('forum.confirm', [
                         'title' => 'Confirm topic deletion',
                         'class' => 'far fa-trash-alt',
                         'message' => sprintf('You are about to delete topic #%d. Are you sure about that?', $topic['topic_id']),
@@ -215,7 +215,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
 
             if(!$isXHR) {
                 if(!isset($_GET['confirm'])) {
-                    echo tpl_render('forum.confirm', [
+                    Template::render('forum.confirm', [
                         'title' => 'Confirm topic restore',
                         'class' => 'fas fa-magic',
                         'message' => sprintf('You are about to restore topic #%d. Are you sure about that?', $topic['topic_id']),
@@ -258,7 +258,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
 
             if(!$isXHR) {
                 if(!isset($_GET['confirm'])) {
-                    echo tpl_render('forum.confirm', [
+                    Template::render('forum.confirm', [
                         'title' => 'Confirm topic nuke',
                         'class' => 'fas fa-radiation',
                         'message' => sprintf('You are about to PERMANENTLY DELETE topic #%d. Are you sure about that?', $topic['topic_id']),
@@ -351,7 +351,7 @@ if(!pagination_is_valid_offset($postsOffset)) {
     return;
 }
 
-tpl_var('topic_perms', $perms);
+Template::set('topic_perms', $perms);
 
 $posts = forum_post_listing(
     $topic['topic_id'],
@@ -369,7 +369,7 @@ $canReply = !$topicIsArchived && !$topicIsLocked && !$topicIsDeleted && perms_ch
 
 forum_topic_mark_read($topicUserId, $topic['topic_id'], $topic['forum_id']);
 
-echo tpl_render('forum.topic', [
+Template::render('forum.topic', [
     'topic_breadcrumbs' => forum_get_breadcrumbs($topic['forum_id']),
     'global_accent_colour' => forum_get_colour($topic['forum_id']),
     'topic_info' => $topic,

@@ -70,19 +70,19 @@ function render_info(?string $message, int $httpCode, string $template = 'errors
     http_response_code($httpCode);
 
     try {
-        tpl_var('http_code', $httpCode);
+        \Misuzu\Template::set('http_code', $httpCode);
 
         if(mb_strlen($message)) {
-            tpl_var('message', $message);
+            \Misuzu\Template::set('message', $message);
         }
 
         $template = sprintf($template, $httpCode);
 
-        if(!tpl_exists($template)) {
+        /*if(!tpl_exists($template)) {
             $template = 'errors.master';
-        }
+        }*/
 
-        return tpl_render(sprintf($template, $httpCode));
+        return Template::renderRaw(sprintf($template, $httpCode));
     } catch(Exception $ex) {
         echo $ex->getMessage();
         return $message ?? '';

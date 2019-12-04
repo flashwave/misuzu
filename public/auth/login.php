@@ -116,7 +116,7 @@ $sitePrivateMessage = $siteIsPrivate ? Config::get('private.msg', Config::TYPE_S
 $canResetPassword = $siteIsPrivate ? Config::get('private.allow_password_reset', Config::TYPE_BOOL, true) : true;
 $canRegisterAccount = !$siteIsPrivate;
 
-echo tpl_render('auth.login', [
+Template::render('auth.login', [
     'login_notices' => $notices,
     'login_username' => $loginUsername,
     'login_redirect' => $loginRedirect,

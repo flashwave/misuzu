@@ -18,7 +18,7 @@ if(!pagination_is_valid_offset($postsOffset)) {
 
 $posts = news_posts_get($postsOffset, $postsPagination['range'], null, false, true, false);
 
-echo tpl_render('manage.news.posts', [
+Template::render('manage.news.posts', [
     'news_posts' => $posts,
     'posts_pagination' => $postsPagination,
 ]);

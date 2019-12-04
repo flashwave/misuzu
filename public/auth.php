@@ -1,15 +1,13 @@
 <?php
 namespace Misuzu;
 
-// Delete this file in April 2019
-
 require_once '../misuzu.php';
 
 $mode = !empty($_GET['m']) && is_string($_GET['m']) ? $_GET['m'] : '';
 
 switch($mode) {
     case 'logout':
-        echo tpl_render('auth.logout');
+        Template::render('auth.logout');
         break;
 
     case 'reset':

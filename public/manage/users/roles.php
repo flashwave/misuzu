@@ -36,7 +36,7 @@ $getManageRoles->bind('offset', $rolesOffset);
 $getManageRoles->bind('take', $rolesPagination['range']);
 $manageRoles = $getManageRoles->fetchAll();
 
-echo tpl_render('manage.users.roles', [
+Template::render('manage.users.roles', [
     'manage_roles' => $manageRoles,
     'manage_roles_pagination' => $rolesPagination,
 ]);

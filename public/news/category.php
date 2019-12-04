@@ -27,7 +27,7 @@ $posts = news_posts_get(
 
 $featured = news_posts_get(0, 10, $category['category_id'], true);
 
-echo tpl_render('news.category', [
+Template::render('news.category', [
     'category' => $category,
     'posts' => $posts,
     'featured' => $featured,

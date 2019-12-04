@@ -238,16 +238,16 @@ if(!empty($_POST)) {
 }
 
 if(!empty($topic)) {
-    tpl_var('posting_topic', $topic);
+    Template::set('posting_topic', $topic);
 }
 
 if($mode === 'edit') { // $post is pretty much sure to be populated at this point
-    tpl_var('posting_post', $post);
+    Template::set('posting_post', $post);
 }
 
 $displayInfo = forum_posting_info(user_session_current('user_id'));
 
-echo tpl_render('forum.posting', [
+Template::render('forum.posting', [
     'posting_breadcrumbs' => forum_get_breadcrumbs($forumId),
     'global_accent_colour' => forum_get_colour($forumId),
     'posting_forum' => $forum,

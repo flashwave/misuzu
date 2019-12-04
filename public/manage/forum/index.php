@@ -15,7 +15,7 @@ $perms = manage_forum_perms_list($rawPerms);
 if(!empty($_POST['perms']) && is_array($_POST['perms'])) {
     $finalPerms = manage_perms_apply($perms, $_POST['perms'], $rawPerms);
     $perms = manage_forum_perms_list($finalPerms);
-    tpl_var('calculated_perms', $finalPerms);
+    Template::set('calculated_perms', $finalPerms);
 }
 
-echo tpl_render('manage.forum.listing', compact('forums', 'perms'));
+Template::render('manage.forum.listing', compact('forums', 'perms'));

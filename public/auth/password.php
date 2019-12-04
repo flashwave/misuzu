@@ -126,7 +126,7 @@ while($canResetPassword) {
     break;
 }
 
-echo tpl_render($userId > 0 ? 'auth.password_reset' : 'auth.password_forgot', [
+Template::render($userId > 0 ? 'auth.password_reset' : 'auth.password_forgot', [
     'password_notices' => $notices,
     'password_email' => !empty($forget['email']) && is_string($forget['email']) ? $forget['email'] : '',
     'password_attempts_remaining' => $remainingAttempts,

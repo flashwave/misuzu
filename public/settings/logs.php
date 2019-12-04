@@ -34,7 +34,7 @@ $accountLogList = audit_log_list(
     $currentUserId
 );
 
-echo tpl_render('settings.logs', [
+Template::render('settings.logs', [
     'login_history_list' => $loginHistoryList,
     'login_history_pagination' => $loginHistoryPagination,
     'account_log_list' => $accountLogList,

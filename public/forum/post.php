@@ -121,7 +121,7 @@ switch($postMode) {
                 ]);
                 break;
             } elseif(!$postRequestVerified) {
-                echo tpl_render('forum.confirm', [
+                Template::render('forum.confirm', [
                     'title' => 'Confirm post deletion',
                     'class' => 'far fa-trash-alt',
                     'message' => sprintf('You are about to delete post #%d. Are you sure about that?', $postInfo['post_id']),
@@ -171,7 +171,7 @@ switch($postMode) {
                 ]);
                 break;
             } elseif(!$postRequestVerified) {
-                echo tpl_render('forum.confirm', [
+                Template::render('forum.confirm', [
                     'title' => 'Confirm post nuke',
                     'class' => 'fas fa-radiation',
                     'message' => sprintf('You are about to PERMANENTLY DELETE post #%d. Are you sure about that?', $postInfo['post_id']),
@@ -213,7 +213,7 @@ switch($postMode) {
                 ]);
                 break;
             } elseif(!$postRequestVerified) {
-                echo tpl_render('forum.confirm', [
+                Template::render('forum.confirm', [
                     'title' => 'Confirm post restore',
                     'class' => 'fas fa-magic',
                     'message' => sprintf('You are about to restore post #%d. Are you sure about that?', $postInfo['post_id']),

@@ -6,7 +6,7 @@ require_once '../misuzu.php';
 $pathInfo = $_SERVER['PATH_INFO'] ?? '';
 
 if(empty($pathInfo) || $pathInfo === '/') {
-    echo tpl_render('info.index');
+    Template::render('info.index');
     return;
 }
 
@@ -59,6 +59,6 @@ if(empty($document['title'])) {
     }
 }
 
-echo tpl_render('info.view', [
+Template::render('info.view', [
     'document' => $document,
 ]);

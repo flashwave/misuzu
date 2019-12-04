@@ -179,10 +179,10 @@ if($roleId !== null) {
         return;
     }
 
-    tpl_vars(['edit_role' => $editRole]);
+    Template::set(['edit_role' => $editRole]);
 }
 
-echo tpl_render('manage.users.role', [
+Template::render('manage.users.role', [
     'can_manage_perms' => $canEditPerms,
     'permissions' => $permissions ?? [],
 ]);

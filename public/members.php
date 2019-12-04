@@ -166,7 +166,7 @@ if(empty($users)) {
     http_response_code(404);
 }
 
-echo tpl_render('user.listing', [
+Template::render('user.listing', [
     'roles' => $roles,
     'role' => $role,
     'users' => $users,

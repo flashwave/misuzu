@@ -57,7 +57,7 @@ $sessionList = user_session_list(
     $currentUserId
 );
 
-echo tpl_render('settings.sessions', [
+Template::render('settings.sessions', [
     'errors' => $errors,
     'session_list' => $sessionList,
     'session_active_id' => $sessionActive,

@@ -11,7 +11,7 @@ if($requestPath !== '/' && $requestPath !== $_SERVER['PHP_SELF']) {
 }
 
 if(Config::get('social.embed_linked', Config::TYPE_BOOL)) {
-    tpl_var('linked_data', [
+    Template::set('linked_data', [
         'name' => Config::get('site.name', Config::TYPE_STR, 'Misuzu'),
         'url' => Config::get('site.url', Config::TYPE_STR),
         'logo' => Config::get('site.ext_logo', Config::TYPE_STR),
@@ -91,7 +91,7 @@ $onlineUsers = DB::query('
     LIMIT 104
 ')->fetchAll();
 
-tpl_vars([
+Template::set([
     'statistics' => $stats,
     'latest_user' => $latestUser,
     'online_users' => $onlineUsers,
@@ -100,4 +100,4 @@ tpl_vars([
     'featured_news' => $news,
 ]);
 
-echo tpl_render('home.landing');
+Template::render('home.landing');

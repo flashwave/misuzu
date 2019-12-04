@@ -8,7 +8,7 @@ $changelogDate = !empty($_GET['d']) && is_string($_GET['d']) ? (string)$_GET['d'
 $changelogUser = !empty($_GET['u']) && is_string($_GET['u']) ? (int)$_GET['u'] : 0;
 $changelogTags = !empty($_GET['t']) && is_string($_GET['t']) ? (string)$_GET['t'] : '';
 
-tpl_var('comments_perms', $commentPerms = comments_get_perms(user_session_current('user_id', 0)));
+Template::set('comments_perms', $commentPerms = comments_get_perms(user_session_current('user_id', 0)));
 
 if($changelogChange > 0) {
     $change = changelog_change_get($changelogChange);
@@ -18,7 +18,7 @@ if($changelogChange > 0) {
         return;
     }
 
-    echo tpl_render('changelog.change', [
+    Template::render('changelog.change', [
         'change' => $change,
         'tags' => changelog_change_tags_get($change['change_id']),
         'comments_category' => $commentsCategory = comments_category_info(
@@ -53,13 +53,13 @@ if(!$changes) {
 }
 
 if(!empty($changelogDate) && count($changes) > 0) {
-    tpl_vars([
+    Template::set([
         'comments_category' => $commentsCategory = comments_category_info("changelog-date-{$changelogDate}", true),
         'comments' => comments_category_get($commentsCategory['category_id'], user_session_current('user_id', 0)),
     ]);
 }
 
-echo tpl_render('changelog.index', [
+Template::render('changelog.index', [
     'changes' => $changes,
     'changelog_count' => $changesCount,
     'changelog_date' => $changelogDate,

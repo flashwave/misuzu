@@ -24,6 +24,6 @@ if(csrf_verify_request() && !empty($_GET['emote']) && is_string($_GET['emote']))
     return;
 }
 
-echo tpl_render('manage.general.emoticons', [
+Template::render('manage.general.emoticons', [
     'emotes' => emotes_list(PHP_INT_MAX),
 ]);

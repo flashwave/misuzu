@@ -20,6 +20,6 @@ $getTags = DB::prepare('
     ORDER BY t.`tag_id` ASC
 ');
 
-echo tpl_render('manage.changelog.tags', [
+Template::render('manage.changelog.tags', [
     'changelog_tags' => $getTags->fetchAll(),
 ]);

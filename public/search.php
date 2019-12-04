@@ -69,7 +69,7 @@ if(!empty($searchQuery)) {
     $users = $findUsers->fetchAll();
 }
 
-echo tpl_render('home.search', [
+Template::render('home.search', [
     'search_query' => $searchQuery,
     'forum_topics' => $forumTopics ?? [],
     'forum_posts' => $forumPosts ?? [],

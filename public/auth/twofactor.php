@@ -80,7 +80,7 @@ while(!empty($twofactor)) {
     return;
 }
 
-echo tpl_render('auth.twofactor', [
+Template::render('auth.twofactor', [
     'twofactor_notices' => $notices,
     'twofactor_redirect' => !empty($_GET['redirect']) && is_string($_GET['redirect']) ? $_GET['redirect'] : url('index'),
     'twofactor_attempts_remaining' => $remainingAttempts,

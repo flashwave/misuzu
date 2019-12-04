@@ -33,4 +33,4 @@ if($categoryId > 0) {
     $category = news_category_get($categoryId);
 }
 
-echo tpl_render('manage.news.category', compact('category'));
+Template::render('manage.news.category', compact('category'));

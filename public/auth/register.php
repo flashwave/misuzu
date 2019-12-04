@@ -85,7 +85,7 @@ while(!$restricted && !empty($register)) {
     return;
 }
 
-echo tpl_render('auth.register', [
+Template::render('auth.register', [
     'register_notices' => $notices,
     'register_username' => !empty($register['username']) && is_string($register['username']) ? $register['username'] : '',
     'register_email' => !empty($register['email']) && is_string($register['email']) ? $register['email'] : '',

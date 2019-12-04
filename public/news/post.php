@@ -25,7 +25,7 @@ if($post['comment_section_id'] === null) {
     $commentsInfo = comments_category_info($post['comment_section_id']);
 }
 
-echo tpl_render('news.post', [
+Template::render('news.post', [
     'post' => $post,
     'comments_perms' => comments_get_perms(user_session_current('user_id', 0)),
     'comments_category' => $commentsInfo,

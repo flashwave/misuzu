@@ -55,7 +55,7 @@ for($i = 0; $i < count($changes); $i++) {
     $changes[$i]['tags'] = $getTags->fetchAll();
 }
 
-echo tpl_render('manage.changelog.changes', [
+Template::render('manage.changelog.changes', [
     'changelog_changes' => $changes,
     'changelog_changes_count' => $changesCount,
     'changelog_pagination' => $changelogPagination,

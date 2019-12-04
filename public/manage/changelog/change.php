@@ -122,7 +122,7 @@ $getChangeTags = DB::prepare('
 $getChangeTags->bind('change_id', $change['change_id'] ?? 0);
 $changeTags = $getChangeTags->fetchAll();
 
-echo tpl_render('manage.changelog.change', [
+Template::render('manage.changelog.change', [
     'change' => $change ?? null,
     'change_tags' => $changeTags,
     'change_actions' => $actions,

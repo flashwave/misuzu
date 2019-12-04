@@ -40,7 +40,7 @@ switch($indexMode) {
             }
         }
 
-        echo tpl_render('forum.index', [
+        Template::render('forum.index', [
             'forum_categories' => $categories,
             'forum_empty' => $blankForum,
         ]);

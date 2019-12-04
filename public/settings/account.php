@@ -41,7 +41,7 @@ if($isVerifiedRequest && isset($_POST['tfa']['enable']) && (bool)$twoFactorInfo[
     if((bool)$_POST['tfa']['enable']) {
         $tfaKey = totp_generate_key();
 
-        tpl_vars([
+        Template::set([
             'settings_2fa_code' => $tfaKey,
             'settings_2fa_image' => totp_qrcode(totp_uri(
                 sprintf(
@@ -121,7 +121,7 @@ if($isVerifiedRequest && !empty($_POST['current_password'])) {
 
 $userRoles = user_role_all_user($currentUserId);
 
-echo tpl_render('settings.account', [
+Template::render('settings.account', [
     'errors' => $errors,
     'current_email' => $currentEmail,
     'user_roles' => $userRoles,

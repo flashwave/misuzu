@@ -81,6 +81,6 @@ if(isset($_POST['action']) && is_string($_POST['action'])) {
     }
 }
 
-echo tpl_render('settings.data', [
+Template::render('settings.data', [
     'errors' => $errors,
 ]);

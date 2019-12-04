@@ -25,7 +25,7 @@ if(!$posts) {
     return;
 }
 
-echo tpl_render('news.index', [
+Template::render('news.index', [
     'categories' => $categories,
     'posts' => $posts,
     'news_pagination' => $newsPagination,

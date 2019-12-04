@@ -18,7 +18,7 @@ if(!pagination_is_valid_offset($logsOffset)) {
 
 $logs = audit_log_list($logsOffset, $logsPagination['range']);
 
-echo tpl_render('manage.general.logs', [
+Template::render('manage.general.logs', [
     'global_logs' => $logs,
     'global_logs_pagination' => $logsPagination,
     'global_logs_strings' => MSZ_AUDIT_LOG_STRINGS,

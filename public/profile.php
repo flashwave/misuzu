@@ -13,7 +13,7 @@ $profileUser = User::findForProfile($userId);
 
 if(empty($profileUser)) {
     http_response_code(404);
-    echo tpl_render('profile.index');
+    Template::render('profile.index');
     return;
 }
 
@@ -52,7 +52,7 @@ if($isEditing) {
         'edit_signature' => MSZ_PERM_USER_EDIT_SIGNATURE,
     ]);
 
-    tpl_vars([
+    Template::set([
         'perms' => $perms,
         'guidelines' => [
             'avatar' => $avatarProps = user_avatar_default_options(),
@@ -305,7 +305,7 @@ if(is_file($backgroundPath)) {
     $backgroundInfo = getimagesize($backgroundPath);
 
     if($backgroundInfo) {
-        tpl_var('site_background', [
+        Template::set('site_background', [
             'url' => url('user-background', ['user' => $profileUser->user_id]),
             'width' => $backgroundInfo[0],
             'height' => $backgroundInfo[1],
@@ -335,8 +335,8 @@ switch($profileMode) {
             $followingOffset, $currentUserId
         );
 
-        tpl_vars([
-            'title' => $profile['username'] . ' / following',
+        Template::set([
+            'title' => $profileUser->username . ' / following',
             'canonical_url' => url('user-profile-following', ['user' => $profileUser->user_id]),
             'profile_users' => $following,
             'profile_relation_pagination' => $followingPagination,
@@ -356,8 +356,8 @@ switch($profileMode) {
 
         $followers = user_relation_users_to($profileUser->user_id, MSZ_USER_RELATION_FOLLOW, $followerPagination['range'], $followerOffset, $currentUserId);
 
-        tpl_vars([
-            'title' => $profile['username'] . ' / followers',
+        Template::set([
+            'title' => $profileUser->username . ' / followers',
             'canonical_url' => url('user-profile-followers', ['user' => $profileUser->user_id]),
             'profile_users' => $followers,
             'profile_relation_pagination' => $followerPagination,
@@ -377,8 +377,8 @@ switch($profileMode) {
 
         $topics = forum_topic_listing_user($profileUser->user_id, $currentUserId, $topicsOffset, $topicsPagination['range']);
 
-        tpl_vars([
-            'title' => $profile['username'] . ' / topics',
+        Template::set([
+            'title' => $profileUser->username . ' / topics',
             'canonical_url' => url('user-profile-forum-topics', ['user' => $profileUser->user_id, 'page' => pagination_param()]),
             'profile_topics' => $topics,
             'profile_topics_pagination' => $topicsPagination,
@@ -398,8 +398,8 @@ switch($profileMode) {
 
         $posts = forum_post_listing($profileUser->user_id, $postsOffset, $postsPagination['range'], false, true);
 
-        tpl_vars([
-            'title' => $profile['username'] . ' / posts',
+        Template::set([
+            'title' => $profileUser->username . ' / posts',
             'canonical_url' => url('user-profile-forum-posts', ['user' => $profileUser->user_id, 'page' => pagination_param()]),
             'profile_posts' => $posts,
             'profile_posts_pagination' => $postsPagination,
@@ -422,7 +422,7 @@ switch($profileMode) {
                     )
             );
 
-        tpl_vars([
+        Template::set([
             'profile_warnings' => $warnings,
             'profile_warnings_view_private' => $viewingOwnProfile,
             'profile_warnings_can_manage' => $canManageWarnings,
@@ -431,7 +431,7 @@ switch($profileMode) {
 }
 
 if(!empty($template)) {
-    echo tpl_render($template, [
+    Template::render($template, [
         'profile_user' => $profileUser,
         'profile_stats' => $profileStats,
         'profile_mode' => $profileMode,

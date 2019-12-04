@@ -54,4 +54,4 @@ if($postId > 0) {
     $post = news_post_get($postId);
 }
 
-echo tpl_render('manage.news.post', compact('post', 'categories'));
+Template::render('manage.news.post', compact('post', 'categories'));

@@ -177,6 +177,6 @@ if(!empty($_GET['poll'])) {
     return;
 }
 
-echo tpl_render('manage.general.overview', [
+Template::render('manage.general.overview', [
     'statistics' => $statistics,
 ]);

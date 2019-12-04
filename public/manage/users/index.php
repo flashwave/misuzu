@@ -38,7 +38,7 @@ $getManageUsers->bind('offset', $usersOffset);
 $getManageUsers->bind('take', $usersPagination['range']);
 $manageUsers = $getManageUsers->fetchAll();
 
-echo tpl_render('manage.users.users', [
+Template::render('manage.users.users', [
     'manage_users' => $manageUsers,
     'manage_users_pagination' => $usersPagination,
 ]);

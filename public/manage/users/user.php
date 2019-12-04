@@ -239,7 +239,7 @@ $getRoles = DB::prepare('
 $getRoles->bind('user_id', $manageUser['user_id']);
 $roles = $getRoles->fetchAll();
 
-echo tpl_render('manage.users.user', [
+Template::render('manage.users.user', [
     'manage_user' => $manageUser,
     'manage_notices' => $notices,
     'manage_roles' => $roles,

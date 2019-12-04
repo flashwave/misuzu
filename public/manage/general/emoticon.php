@@ -34,6 +34,6 @@ if(csrf_verify_request()
     }
 }
 
-echo tpl_render('manage.general.emoticon', [
+Template::render('manage.general.emoticon', [
     'emote_info' => $emoteInfo ?? null,
 ]);

@@ -21,4 +21,4 @@ if(!$forum) {
     return;
 }
 
-echo tpl_render('manage.forum.forum', compact('forum'));
+Template::render('manage.forum.forum', compact('forum'));

@@ -46,10 +46,10 @@ MD;
         $markdown .= sprintf("| %s | [%s](%s%s) | %s |\r\n", $user['rank'], $user['username'], url_prefix(false), url('user-profile', ['user' => $user['user_id']]), $user['posts']);
     }
 
-    tpl_var('leaderboard_markdown', $markdown);
+    Template::set('leaderboard_markdown', $markdown);
 }
 
-echo tpl_render('forum.leaderboard', [
+Template::render('forum.leaderboard', [
     'leaderboard_id' => $leaderboardId,
     'leaderboard_name' => $leaderboardName,
     'leaderboard_categories' => $leaderboards,

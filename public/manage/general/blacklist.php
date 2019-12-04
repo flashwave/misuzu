@@ -42,7 +42,7 @@ if(!empty($_POST)) {
     }
 }
 
-echo tpl_render('manage.general.blacklist', [
+Template::render('manage.general.blacklist', [
     'notices' => $notices,
     'blacklist' => ip_blacklist_list(),
 ]);

@@ -147,7 +147,7 @@ $warningDurations = array_flip([
     'Until (strtotime) ->'  => -3,
 ]);
 
-echo tpl_render('manage.users.warnings', [
+Template::render('manage.users.warnings', [
     'warnings' => [
         'notices' => $notices,
         'pagination' => $warningsPagination,

@@ -54,11 +54,11 @@ if($tagId > 0) {
     $tag = $getTag->fetch();
 
     if($tag) {
-        tpl_var('edit_tag', $tag);
+        Template::set('edit_tag', $tag);
     } else {
         url_redirect('manage-changelog-tags');
         return;
     }
 }
 
-echo tpl_render('manage.changelog.tag');
+Template::render('manage.changelog.tag');
