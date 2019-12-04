@@ -6,7 +6,7 @@ require_once '../misuzu.php';
 $requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 if($requestPath !== '/' && $requestPath !== $_SERVER['PHP_SELF']) {
-    require_once MSZ_ROOT . '/public/not-found.php';
+    echo render_error(404);
     return;
 }
 
