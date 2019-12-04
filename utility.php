@@ -1,4 +1,89 @@
 <?php
+function array_test(array $array, callable $func): bool {
+    foreach($array as $value) {
+        if(!$func($value)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function array_apply(array $array, callable $func): array {
+    for($i = 0; $i < count($array); $i++) {
+        $array[$i] = $func($array[$i]);
+    }
+
+    return $array;
+}
+
+function array_bit_or(array $array1, array $array2): array {
+    foreach($array1 as $key => $value) {
+        $array1[$key] |= $array2[$key] ?? 0;
+    }
+
+    return $array1;
+}
+
+function clamp($num, int $min, int $max): int {
+    return max($min, min($max, intval($num)));
+}
+
+function starts_with(string $string, string $text, bool $multibyte = true): bool {
+    $strlen = $multibyte ? 'mb_strlen' : 'strlen';
+    $substr = $multibyte ? 'mb_substr' : 'substr';
+    return $substr($string, 0, $strlen($text)) === $text;
+}
+
+function ends_with(string $string, string $text, bool $multibyte = true): bool {
+    $strlen = $multibyte ? 'mb_strlen' : 'strlen';
+    $substr = $multibyte ? 'mb_substr' : 'substr';
+    return $substr($string, 0 - $strlen($text)) === $text;
+}
+
+function first_paragraph(string $text, string $delimiter = "\n"): string {
+    $index = mb_strpos($text, $delimiter);
+    return $index === false ? $text : mb_substr($text, 0, $index);
+}
+
+function camel_to_snake(string $camel): string {
+    return trim(mb_strtolower(preg_replace('#([A-Z][a-z]+)#', '$1_', $camel)), '_');
+}
+
+function snake_to_camel(string $snake): string {
+    return str_replace('_', '', ucwords($snake, '_'));
+}
+
+function unique_chars(string $input, bool $multibyte = true): int {
+    $chars = [];
+    $strlen = $multibyte ? 'mb_strlen' : 'strlen';
+    $substr = $multibyte ? 'mb_substr' : 'substr';
+    $length = $strlen($input);
+
+    for($i = 0; $i < $length; $i++) {
+        $current = $substr($input, $i, 1);
+
+        if(!in_array($current, $chars, true)) {
+            $chars[] = $current;
+        }
+    }
+
+    return count($chars);
+}
+
+function byte_symbol(int $bytes, bool $decimal = false, array $symbols = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']): string {
+    if($bytes < 1) {
+        return '0 B';
+    }
+
+    $divider = $decimal ? 1000 : 1024;
+    $exp = floor(log($bytes) / log($divider));
+    $bytes = $bytes / pow($divider, floor($exp));
+    $symbol = $symbols[$exp];
+
+    return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
+}
+
 function safe_delete(string $path): void {
     $path = realpath($path);
 
