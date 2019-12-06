@@ -59,7 +59,7 @@ function mszCreateElement(type: string, properties: {} = {}, children: any[] = [
 }
 
 // Initialisation process.
-window.addEventListener('load', () => {
+document.addEventListener('DOMContentLoaded', () => {
     console.log("%c     __  ____\n   /  |/  (_)______  ______  __  __\n  / /|_/ / / ___/ / / /_  / / / / /\n / /  / / (__  ) /_/ / / /_/ /_/ /\n/_/  /_/_/____/\\__,_/ /___/\\__,_/\nhttps://github.com/flashwave/misuzu", 'color: #8559a5');
 
     timeago.render(document.querySelectorAll('time'));
@@ -111,7 +111,41 @@ window.addEventListener('load', () => {
     commentsInit();
     forumPostingInit();
     forumPollsInit();
+
+    var d: Date = new Date;
+
+    if(d.getMonth() === 11 && d.getDay() >= 5 && d.getDay() <= 25)
+        mszEventChristmas();
 });
+
+function mszEventChristmas(): void {
+    var headerBg: HTMLDivElement = document.querySelector('.header__background'),
+        menuBgs: NodeListOf<HTMLDivElement> = document.querySelectorAll('.header__desktop__submenu__background'),
+        propName: string = 'msz-christmas-' + (new Date).getFullYear().toString();
+
+    if(!localStorage.getItem(propName))
+        localStorage.setItem(propName, '0');
+
+    var changeColour = function() {
+        var count = parseInt(localStorage.getItem(propName));
+        document.body.style.setProperty('--header-accent-colour', (count++ % 2) ? 'green' : 'red');
+        localStorage.setItem(propName, count.toString());
+    };
+
+    if(headerBg)
+        headerBg.style.transition = 'background-color .4s';
+
+    setTimeout(function() {
+        if(headerBg)
+            headerBg.style.transition = 'background-color 1s';
+
+        for(var i = 0; i < menuBgs.length; i++)
+            menuBgs[i].style.transition = 'background-color 1s';
+    }, 1000);
+
+    changeColour();
+    setInterval(changeColour, 10000);
+}
 
 function loginFormUpdateAvatar(avatarElement: HTMLImageElement, usernameElement: HTMLInputElement, force: boolean = false): void {
     if(!force) {
