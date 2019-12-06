@@ -65,8 +65,8 @@ HTML;
 
         $json = json_encode([
             'git' => [
-                'tag' => git_tag(),
-                'hash' => git_commit_hash(true),
+                'tag' => GitInfo::tag(),
+                'hash' => GitInfo::hash(true),
             ],
             'misuzu' => [
                 'trace_txt' => $this->getException()->getTraceAsString(),

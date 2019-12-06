@@ -9,28 +9,18 @@ if(!user_session_active()) {
 }
 
 $currentUserId = user_session_current('user_id');
-$loginHistoryPagination = pagination_create(user_login_attempts_count($currentUserId), 15);
-$accountLogPagination = pagination_create(audit_log_count($currentUserId), 15);
-
-if(!pagination_is_valid_offset(pagination_offset($loginHistoryPagination, pagination_param('hp')))) {
-    $loginHistoryPagination['offset'] = 0;
-    $loginHistoryPagination['page'] = 1;
-}
-
-if(!pagination_is_valid_offset(pagination_offset($accountLogPagination, pagination_param('ap')))) {
-    $accountLogPagination['offset'] = 0;
-    $accountLogPagination['page'] = 1;
-}
+$loginHistoryPagination = new Pagination(user_login_attempts_count($currentUserId), 15);
+$accountLogPagination = new Pagination(audit_log_count($currentUserId), 15);
 
 $loginHistoryList = user_login_attempts_list(
-    $loginHistoryPagination['offset'],
-    $loginHistoryPagination['range'],
+    $loginHistoryPagination->getOffset(),
+    $loginHistoryPagination->getRange(),
     $currentUserId
 );
 
 $accountLogList = audit_log_list(
-    $accountLogPagination['offset'],
-    $accountLogPagination['range'],
+    $accountLogPagination->getOffset(),
+    $accountLogPagination->getRange(),
     $currentUserId
 );
 

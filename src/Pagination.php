@@ -1,46 +1,77 @@
 <?php
-define('MSZ_PAGINATION_PAGE_START', 1);
-define('MSZ_PAGINATION_OFFSET_INVALID', -1);
+namespace Misuzu;
 
-function pagination_create(int $count, int $range): array {
-    $pages = ceil($count / $range);
-    return compact('count', 'range', 'pages');
-}
+final class Pagination {
+    private const INVALID_OFFSET = -1;
+    private const START_PAGE = 1;
+    public const DEFAULT_PARAM = 'p';
 
-function pagination_is_valid_array(array $pagination): bool {
-    return !empty($pagination['count']) && !empty($pagination['range']);
-}
+    private int $count = 0;
+    private int $range = 0;
+    private int $offset = 0;
 
-function pagination_is_valid_offset(int $offset): bool {
-    return $offset !== MSZ_PAGINATION_OFFSET_INVALID;
-}
+    public function __construct(int $count, int $range, ?string $readParam = self::DEFAULT_PARAM) {
+        $this->count = $count;
+        $this->range = $range;
 
-// Adds 'page' and 'offset' to the pagination array transparently!!!
-function pagination_offset(array &$pagination, ?int $page): int {
-    if(!pagination_is_valid_array($pagination)) {
-        return MSZ_PAGINATION_OFFSET_INVALID;
+        if(!empty($readParam))
+            $this->readPage($readParam);
     }
 
-    $page = $page ?? MSZ_PAGINATION_PAGE_START;
-
-    if($page < MSZ_PAGINATION_PAGE_START) {
-        return MSZ_PAGINATION_OFFSET_INVALID;
+    public function getCount(): int {
+        return $this->count;
     }
 
-    $offset = $pagination['range'] * ($page - 1);
-
-    if($offset > $pagination['count']) {
-        return MSZ_PAGINATION_OFFSET_INVALID;
+    public function getRange(): int {
+        return $this->range;
     }
 
-    $pagination['page'] = $page;
-    return $pagination['offset'] = $offset;
-}
+    public function getPages(): int {
+        return ceil($this->getCount() / $this->getRange());
+    }
 
-function pagination_param(string $name = 'p', int $default = 1, ?array $source = null): int {
-    if(!isset(($source ?? $_GET)[$name]) || !is_string(($source ?? $_GET)[$name])) {
+    public function hasValidOffset(): bool {
+        return $this->offset !== self::INVALID_OFFSET;
+    }
+
+    public function getOffset(): int {
+        return $this->hasValidOffset() ? $this->offset : 0;
+    }
+
+    public function setOffset(int $offset): self {
+        if($offset < 0)
+            $offset = self::INVALID_OFFSET;
+
+        $this->offset = $offset;
+        return $this;
+    }
+
+    public function getPage(): int {
+        if($this->getOffset() < 1)
+            return self::START_PAGE;
+
+        return floor($this->getOffset() / $this->getRange()) + self::START_PAGE;
+    }
+
+    public function setPage(int $page, bool $zeroBased = false): self {
+        if(!$zeroBased)
+            $page -= self::START_PAGE;
+
+        $this->setOffset($this->getRange() * $page);
+        return $this;
+    }
+
+    public function readPage(string $name = self::DEFAULT_PARAM, int $default = self::START_PAGE, ?array $source = null): self {
+        $this->setPage(self::param($name, $default, $source));
+        return $this;
+    }
+
+    public static function param(string $name = self::DEFAULT_PARAM, int $default = self::START_PAGE, ?array $source = null): int {
+        $source ??= $_GET;
+
+        if(isset($source[$name]) && is_string($source[$name]) && ctype_digit($source[$name]))
+            return $source[$name];
+
         return $default;
     }
-
-    return (int)(($source ?? $_GET)[$name] ?? $default);
 }

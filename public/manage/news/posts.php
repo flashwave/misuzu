@@ -8,15 +8,18 @@ if(!perms_check_user(MSZ_PERMS_NEWS, user_session_current('user_id'), MSZ_PERM_N
     return;
 }
 
-$postsPagination = pagination_create(news_posts_count(null, false, true, false), 15);
-$postsOffset = pagination_offset($postsPagination, pagination_param());
+$postsPagination = new Pagination(news_posts_count(null, false, true, false), 15);
 
-if(!pagination_is_valid_offset($postsOffset)) {
+if(!$postsPagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
 
-$posts = news_posts_get($postsOffset, $postsPagination['range'], null, false, true, false);
+$posts = news_posts_get(
+    $postsPagination->getOffset(),
+    $postsPagination->getRange(),
+    null, false, true, false
+);
 
 Template::render('manage.news.posts', [
     'news_posts' => $posts,

@@ -1,7 +1,7 @@
 <?php
 namespace Misuzu;
 
-class Base64 {
+final class Base64 {
     public static function encode(string $data, bool $url = false): string {
         $data = base64_encode($data);
 

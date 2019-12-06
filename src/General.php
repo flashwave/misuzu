@@ -1,7 +1,11 @@
 <?php
-define('MSZ_PERM_GENERAL_CAN_MANAGE', 1);
-define('MSZ_PERM_GENERAL_VIEW_LOGS', 1 << 1);
-define('MSZ_PERM_GENERAL_MANAGE_EMOTICONS', 1 << 2);
-define('MSZ_PERM_GENERAL_MANAGE_SETTINGS', 1 << 3);
-define('MSZ_PERM_GENERAL_TESTER', 1 << 4);
-define('MSZ_PERM_GENERAL_MANAGE_BLACKLIST', 1 << 5);
+namespace Misuzu;
+
+final class General {
+    public const PERM_CAN_MANAGE       = 0x00000001;
+    public const PERM_VIEW_LOGS        = 0x00000002;
+    public const PERM_MANAGE_EMOTES    = 0x00000004;
+    public const PERM_MANAGE_CONFIG    = 0x00000008;
+    public const PERM_IS_TESTER        = 0x00000010;
+    public const PERM_MANAGE_BLACKLIST = 0x00000020;
+}

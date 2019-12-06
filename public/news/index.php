@@ -5,17 +5,16 @@ require_once '../../misuzu.php';
 
 $categories = news_categories_get(0, 0, true);
 
-$newsPagination = pagination_create(news_posts_count(null, true), 5);
-$postsOffset = pagination_offset($newsPagination, pagination_param('page'));
+$newsPagination = new Pagination(news_posts_count(null, true), 5, 'page');
 
-if(!pagination_is_valid_offset($postsOffset)) {
+if(!$newsPagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
 
 $posts = news_posts_get(
-    $postsOffset,
-    $newsPagination['range'],
+    $newsPagination->getOffset(),
+    $newsPagination->getRange(),
     null,
     true
 );

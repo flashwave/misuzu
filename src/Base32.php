@@ -1,7 +1,7 @@
 <?php
 namespace Misuzu;
 
-class Base32 {
+final class Base32 {
     public const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
     public static function decode(string $str): string {

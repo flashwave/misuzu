@@ -322,17 +322,17 @@ switch($profileMode) {
     case 'following':
         $template = 'profile.relations';
         $followingCount = user_relation_count_from($profileUser->user_id, MSZ_USER_RELATION_FOLLOW);
-        $followingPagination = pagination_create($followingCount, MSZ_USER_RELATION_FOLLOW_PER_PAGE);
-        $followingOffset = pagination_offset($followingPagination, pagination_param());
+        $followingPagination = new Pagination($followingCount, MSZ_USER_RELATION_FOLLOW_PER_PAGE);
 
-        if(!pagination_is_valid_offset($followingOffset)) {
+        if(!$followingPagination->hasValidOffset()) {
             echo render_error(404);
             return;
         }
 
         $following = user_relation_users_from(
-            $profileUser->user_id, MSZ_USER_RELATION_FOLLOW, $followingPagination['range'],
-            $followingOffset, $currentUserId
+            $profileUser->user_id, MSZ_USER_RELATION_FOLLOW,
+            $followingPagination->getRange(), $followingPagination->getOffset(),
+            $currentUserId
         );
 
         Template::set([
@@ -346,15 +346,18 @@ switch($profileMode) {
     case 'followers':
         $template = 'profile.relations';
         $followerCount = user_relation_count_to($profileUser->user_id, MSZ_USER_RELATION_FOLLOW);
-        $followerPagination = pagination_create($followerCount, MSZ_USER_RELATION_FOLLOW_PER_PAGE);
-        $followerOffset = pagination_offset($followerPagination, pagination_param());
+        $followerPagination = new Pagination($followerCount, MSZ_USER_RELATION_FOLLOW_PER_PAGE);
 
-        if(!pagination_is_valid_offset($followerOffset)) {
+        if(!$followerPagination->hasValidOffset()) {
             echo render_error(404);
             return;
         }
 
-        $followers = user_relation_users_to($profileUser->user_id, MSZ_USER_RELATION_FOLLOW, $followerPagination['range'], $followerOffset, $currentUserId);
+        $followers = user_relation_users_to(
+            $profileUser->user_id, MSZ_USER_RELATION_FOLLOW,
+            $followerPagination->getRange(), $followerPagination->getOffset(),
+            $currentUserId
+        );
 
         Template::set([
             'title' => $profileUser->username . ' / followers',
@@ -367,19 +370,21 @@ switch($profileMode) {
     case 'forum-topics':
         $template = 'profile.topics';
         $topicsCount = forum_topic_count_user($profileUser->user_id, $currentUserId);
-        $topicsPagination = pagination_create($topicsCount, 20);
-        $topicsOffset = pagination_offset($topicsPagination, pagination_param());
+        $topicsPagination = new Pagination($topicsCount, 20);
 
-        if(!pagination_is_valid_offset($topicsOffset)) {
+        if(!$topicsPagination->hasValidOffset()) {
             echo render_error(404);
             return;
         }
 
-        $topics = forum_topic_listing_user($profileUser->user_id, $currentUserId, $topicsOffset, $topicsPagination['range']);
+        $topics = forum_topic_listing_user(
+            $profileUser->user_id, $currentUserId,
+            $topicsPagination->getOffset(), $topicsPagination->getRange()
+        );
 
         Template::set([
             'title' => $profileUser->username . ' / topics',
-            'canonical_url' => url('user-profile-forum-topics', ['user' => $profileUser->user_id, 'page' => pagination_param()]),
+            'canonical_url' => url('user-profile-forum-topics', ['user' => $profileUser->user_id, 'page' => Pagination::param()]),
             'profile_topics' => $topics,
             'profile_topics_pagination' => $topicsPagination,
         ]);
@@ -388,19 +393,24 @@ switch($profileMode) {
     case 'forum-posts':
         $template = 'profile.posts';
         $postsCount = forum_post_count_user($profileUser->user_id);
-        $postsPagination = pagination_create($postsCount, 20);
-        $postsOffset = pagination_offset($postsPagination, pagination_param());
+        $postsPagination = new Pagination($postsCount, 20);
 
-        if(!pagination_is_valid_offset($postsOffset)) {
+        if(!$postsPagination->hasValidOffset()) {
             echo render_error(404);
             return;
         }
 
-        $posts = forum_post_listing($profileUser->user_id, $postsOffset, $postsPagination['range'], false, true);
+        $posts = forum_post_listing(
+            $profileUser->user_id,
+            $postsPagination->getOffset(),
+            $postsPagination->getRange(),
+            false,
+            true
+        );
 
         Template::set([
             'title' => $profileUser->username . ' / posts',
-            'canonical_url' => url('user-profile-forum-posts', ['user' => $profileUser->user_id, 'page' => pagination_param()]),
+            'canonical_url' => url('user-profile-forum-posts', ['user' => $profileUser->user_id, 'page' => Pagination::param()]),
             'profile_posts' => $posts,
             'profile_posts_pagination' => $postsPagination,
         ]);

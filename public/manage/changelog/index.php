@@ -13,10 +13,9 @@ $changesCount = (int)DB::query('
     FROM `msz_changelog_changes`
 ')->fetchColumn();
 
-$changelogPagination = pagination_create($changesCount, 30);
-$changelogOffset = pagination_offset($changelogPagination, pagination_param());
+$changelogPagination = new Pagination($changesCount, 30);
 
-if(!pagination_is_valid_offset($changelogOffset)) {
+if(!$changelogPagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
@@ -36,8 +35,8 @@ $getChanges = DB::prepare('
     ORDER BY c.`change_id` DESC
     LIMIT :offset, :take
 ');
-$getChanges->bind('take', $changelogPagination['range']);
-$getChanges->bind('offset', $changelogOffset);
+$getChanges->bind('take', $changelogPagination->getRange());
+$getChanges->bind('offset', $changelogPagination->getOffset());
 $changes = $getChanges->fetchAll();
 
 $getTags = DB::prepare('

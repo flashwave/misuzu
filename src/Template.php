@@ -6,7 +6,7 @@ use Twig_Environment;
 use Twig_Extensions_Extension_Date;
 use Twig_Loader_Filesystem;
 
-class Template {
+final class Template {
     private const FILE_EXT = '.twig';
 
     private static $loader;

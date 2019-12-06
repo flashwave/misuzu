@@ -43,9 +43,9 @@ if(!empty($_POST['post']) && csrf_verify_request()) {
 
         if(!empty($twitterApiKey) && !empty($twitterApiSecret)
             && !empty($twitterToken) && !empty($twitterTokenSecret)) {
-            twitter_init($twitterApiKey, $twitterApiSecret, $twitterToken, $twitterTokenSecret);
+            Twitter::init($twitterApiKey, $twitterApiSecret, $twitterToken, $twitterTokenSecret);
             $url = url('news-post', ['post' => $postId]);
-            twitter_tweet_post("News :: {$title}\nhttps://{$_SERVER['HTTP_HOST']}{$url}");
+            Twitter::sendTweet("News :: {$title}\nhttps://{$_SERVER['HTTP_HOST']}{$url}");
         }
     }
 }

@@ -6,6 +6,7 @@ use PDO;
 
 define('MSZ_STARTUP', microtime(true));
 define('MSZ_ROOT', __DIR__);
+define('MSZ_CLI', PHP_SAPI === 'cli');
 define('MSZ_DEBUG', is_file(MSZ_ROOT . '/.debug'));
 define('MSZ_PHP_MIN_VER', '7.4.0');
 
@@ -16,15 +17,15 @@ if(version_compare(PHP_VERSION, MSZ_PHP_MIN_VER, '<')) {
 error_reporting(MSZ_DEBUG ? -1 : 0);
 ini_set('display_errors', MSZ_DEBUG ? 'On' : 'Off');
 
-date_default_timezone_set('UTC');
 mb_internal_encoding('UTF-8');
+date_default_timezone_set('UTC');
 set_include_path(get_include_path() . PATH_SEPARATOR . MSZ_ROOT);
 
 require_once 'vendor/autoload.php';
 
 $errorHandler = new \Whoops\Run;
 $errorHandler->pushHandler(
-    PHP_SAPI === 'cli'
+    MSZ_CLI
     ? new \Whoops\Handler\PlainTextHandler
     : (
         MSZ_DEBUG
@@ -40,16 +41,11 @@ require_once 'src/colour.php';
 require_once 'src/comments.php';
 require_once 'src/csrf.php';
 require_once 'src/emotes.php';
-require_once 'src/general.php';
-require_once 'src/git.php';
 require_once 'src/manage.php';
 require_once 'src/news.php';
 require_once 'src/otp.php';
-require_once 'src/pagination.php';
 require_once 'src/perms.php';
-require_once 'src/twitter.php';
 require_once 'src/url.php';
-require_once 'src/zalgo.php';
 require_once 'src/Forum/forum.php';
 require_once 'src/Forum/leaderboard.php';
 require_once 'src/Forum/perms.php';
@@ -117,7 +113,7 @@ if(!empty($errorReporter)) {
 define('MSZ_STORAGE', Config::get('storage.path', Config::TYPE_STR, MSZ_ROOT . '/store'));
 mkdirs(MSZ_STORAGE, true);
 
-if(PHP_SAPI === 'cli') {
+if(MSZ_CLI) {
     if(realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
         switch($argv[1] ?? null) {
             case 'cron':
@@ -347,10 +343,10 @@ MIG;
                     break;
                 }
 
-                twitter_init($apiKey, $apiSecret);
+                Twitter::init($apiKey, $apiSecret);
                 echo 'Twitter Authentication' . PHP_EOL;
 
-                $authPage = twitter_auth_create();
+                $authPage = Twitter::createAuth();
 
                 if(empty($authPage)) {
                     echo 'Request to begin authentication failed.' . PHP_EOL;
@@ -360,7 +356,7 @@ MIG;
                 echo 'Go to the page below and paste the pin code displayed.' . PHP_EOL . $authPage . PHP_EOL;
 
                 $pin = readline('Pin: ');
-                $authComplete = twitter_auth_complete($pin);
+                $authComplete = Twitter::completeAuth($pin);
 
                 if(empty($authComplete)) {
                     echo 'Invalid pin code.' . PHP_EOL;
@@ -497,7 +493,7 @@ MIG;
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
     $hasManageAccess = !empty($userDisplayInfo['user_id'])
         && !user_warning_check_restriction($userDisplayInfo['user_id'])
-        && perms_check_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'], MSZ_PERM_GENERAL_CAN_MANAGE);
+        && perms_check_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'], General::PERM_CAN_MANAGE);
     Template::set('has_manage_access', $hasManageAccess);
 
     if($inManageMode) {

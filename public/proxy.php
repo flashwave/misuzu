@@ -60,7 +60,7 @@ curl_setopt_array($curl, [
     CURLOPT_MAXREDIRS => 4,
     CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
     CURLOPT_TIMEOUT => 10,
-    CURLOPT_USERAGENT => 'Mozilla/5.0 (compatible) Misuzu/' . git_tag(),
+    CURLOPT_USERAGENT => 'Mozilla/5.0 (compatible) Misuzu/' . GitInfo::tag(),
 ]);
 $curlBody = curl_exec($curl);
 curl_close($curl);

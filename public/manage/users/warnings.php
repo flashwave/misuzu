@@ -111,15 +111,18 @@ if(empty($warningsUser)) {
     $warningsUser = max(0, (int)($_GET['u'] ?? 0));
 }
 
-$warningsPagination = pagination_create(user_warning_global_count($warningsUser), 50);
-$warningsOffset = $warningsPagination['count'] > 0 ? pagination_offset($warningsPagination, pagination_param()) : 0;
+$warningsPagination = new Pagination(user_warning_global_count($warningsUser), 50);
 
-if(!pagination_is_valid_offset($warningsOffset)) {
+if(!$warningsPagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
 
-$warningsList = user_warning_global_fetch($warningsOffset, $warningsPagination['range'], $warningsUser);
+$warningsList = user_warning_global_fetch(
+    $warningsPagination->getOffset(),
+    $warningsPagination->getRange(),
+    $warningsUser
+);
 
 // calling array_flip since the input_select macro wants value => display, but this looks cuter
 $warningDurations = array_flip([

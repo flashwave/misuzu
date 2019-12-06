@@ -11,17 +11,16 @@ if(empty($category)) {
     return;
 }
 
-$categoryPagination = pagination_create($category['posts_count'], 5);
-$postsOffset = pagination_offset($categoryPagination, pagination_param());
+$categoryPagination = new Pagination($category['posts_count'], 5);
 
-if(!pagination_is_valid_offset($postsOffset)) {
+if(!$categoryPagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
 
 $posts = news_posts_get(
-    $postsOffset,
-    $categoryPagination['range'],
+    $categoryPagination->getOffset(),
+    $categoryPagination->getRange(),
     $category['category_id']
 );
 

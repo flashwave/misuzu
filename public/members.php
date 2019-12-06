@@ -87,13 +87,7 @@ if(empty($role)) {
     return;
 }
 
-$usersPagination = pagination_create($role['role_user_count'], 15);
-$usersOffset = pagination_offset($usersPagination, pagination_param());
-
-if($usersOffset > 0 && !pagination_is_valid_offset($usersOffset)) {
-    echo render_error(404);
-    return;
-}
+$usersPagination = new Pagination($role['role_user_count'], 15);
 
 $roles = user_role_all();
 
@@ -155,8 +149,8 @@ $getUsers = DB::prepare(sprintf(
     $orderFields[$orderBy]['column'],
     $orderDir,
     MSZ_USER_RELATION_FOLLOW,
-    $usersOffset < 0 ? 0 : $usersOffset,
-    isset($usersPagination['range']) ? $usersPagination['range'] : 0
+    $usersPagination->getOffset(),
+    $usersPagination->getRange()
 ));
 $getUsers->bind('role_id', $role['role_id']);
 $getUsers->bind('current_user_id', user_session_current('user_id', 0));

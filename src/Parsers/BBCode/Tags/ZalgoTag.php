@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu\Parsers\BBCode\Tags;
 
+use Misuzu\Zalgo;
 use Misuzu\Parsers\BBCode\BBCodeTag;
 
 final class ZalgoTag extends BBCodeTag {
@@ -8,7 +9,7 @@ final class ZalgoTag extends BBCodeTag {
         return preg_replace_callback(
             '#\[zalgo\](.+?)\[\/zalgo\]#s',
             function ($matches) {
-                return zalgo_run($matches[1]);
+                return Zalgo::run($matches[1]);
             },
             $text
         );

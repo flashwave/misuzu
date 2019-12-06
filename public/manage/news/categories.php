@@ -8,15 +8,14 @@ if(!perms_check_user(MSZ_PERMS_NEWS, user_session_current('user_id'), MSZ_PERM_N
     return;
 }
 
-$categoriesPagination = pagination_create(news_categories_count(true), 15);
-$categoriesOffset = pagination_offset($categoriesPagination, pagination_param());
+$categoriesPagination = new Pagination(news_categories_count(true), 15);
 
-if(!pagination_is_valid_offset($categoriesOffset)) {
+if(!$categoriesPagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
 
-$categories = news_categories_get($categoriesOffset, $categoriesPagination['range'], true, false, true);
+$categories = news_categories_get($categoriesPagination->getOffset(), $categoriesPagination->getRange(), true, false, true);
 
 Template::render('manage.news.categories', [
     'news_categories' => $categories,

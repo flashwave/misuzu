@@ -32,9 +32,6 @@ final class TwigMisuzu extends Twig_Extension {
     public function getFunctions() {
         return [
             new Twig_Function('get_browser', 'get_browser'),
-            new Twig_Function('git_commit_hash', 'git_commit_hash'),
-            new Twig_Function('git_tag', 'git_tag'),
-            new Twig_Function('git_branch', 'git_branch'),
             new Twig_Function('csrf_token', 'csrf_token'),
             new Twig_Function('csrf_input', 'csrf_html'),
             new Twig_Function('url_construct', 'url_construct'),
@@ -47,12 +44,11 @@ final class TwigMisuzu extends Twig_Extension {
             new Twig_Function('forum_may_have_children', 'forum_may_have_children'),
             new Twig_Function('forum_may_have_topics', 'forum_may_have_topics'),
             new Twig_Function('forum_has_priority_voting', 'forum_has_priority_voting'),
-            new Twig_Function('startup_time', function(float $time = MSZ_STARTUP) {
-                return microtime(true) - $time;
-            }),
-            new Twig_Function('sql_query_count', function() {
-                return DB::queries();
-            }),
+            new Twig_Function('git_commit_hash', fn(bool $long = false) => GitInfo::hash($long)),
+            new Twig_Function('git_tag', fn() => GitInfo::tag()),
+            new Twig_Function('git_branch', fn() => GitInfo::branch()),
+            new Twig_Function('startup_time', fn(float $time = MSZ_STARTUP) => microtime(true) - $time),
+            new Twig_Function('sql_query_count', fn() => DB::queries()),
         ];
     }
 

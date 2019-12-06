@@ -3,20 +3,22 @@ namespace Misuzu;
 
 require_once '../../../misuzu.php';
 
-if(!perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), MSZ_PERM_GENERAL_VIEW_LOGS)) {
+if(!perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), General::PERM_VIEW_LOGS)) {
     echo render_error(403);
     return;
 }
 
-$logsPagination = pagination_create(audit_log_count(), 50);
-$logsOffset = pagination_offset($logsPagination, pagination_param());
+$logsPagination = new Pagination(audit_log_count(), 50);
 
-if(!pagination_is_valid_offset($logsOffset)) {
+if(!$logsPagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
 
-$logs = audit_log_list($logsOffset, $logsPagination['range']);
+$logs = audit_log_list(
+    $logsPagination->getOffset(),
+    $logsPagination->getRange()
+);
 
 Template::render('manage.general.logs', [
     'global_logs' => $logs,

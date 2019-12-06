@@ -25,6 +25,10 @@ function array_bit_or(array $array1, array $array2): array {
     return $array1;
 }
 
+function array_rand_value(array $array) {
+    return $array[array_rand($array)];
+}
+
 function clamp($num, int $min, int $max): int {
     return max($min, min($max, intval($num)));
 }
@@ -167,7 +171,7 @@ function render_info(?string $message, int $httpCode, string $template = 'errors
             $template = 'errors.master';
         }*/
 
-        return Template::renderRaw(sprintf($template, $httpCode));
+        return \Misuzu\Template::renderRaw(sprintf($template, $httpCode));
     } catch(Exception $ex) {
         echo $ex->getMessage();
         return $message ?? '';

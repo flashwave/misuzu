@@ -25,7 +25,7 @@ if($postId > 0) {
 }
 
 if($categoryId > 0) {
-    $location = url('news-category', ['category' => $categoryId, 'page' => pagination_param('page')]);
+    $location = url('news-category', ['category' => $categoryId, 'page' => Pagination::param('page')]);
 }
 
 redirect($location);

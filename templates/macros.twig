@@ -37,15 +37,13 @@
             </div>
 
             <div class="pagination__section pagination__section--pages">
-                {% set p_start = info.page - page_range %}
-                {% set p_stop = info.page + page_range %}
+                {% set p_start = max(info.page - page_range, 1) %}
+                {% set p_stop = min(info.page + page_range, info.pages) %}
 
                 {% for i in p_start..p_stop %}
-                    {% if i >= 1 and i <= info.pages %}
-                        <a href="{{ url_construct(path, i <= 1 ? params : params|merge({(page_param): i}), url_fragment) }}" class="pagination__link{{ info.page == i ? ' pagination__link--current' : '' }}">
-                            {{ i }}
-                        </a>
-                    {% endif %}
+                    <a href="{{ url_construct(path, i <= 1 ? params : params|merge({(page_param): i}), url_fragment) }}" class="pagination__link{{ info.page == i ? ' pagination__link--current' : '' }}">
+                        {{ i }}
+                    </a>
                 {% endfor %}
             </div>
 

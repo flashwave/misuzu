@@ -44,16 +44,11 @@ if(!empty($_POST['session']) && csrf_verify_request()) {
     }
 }
 
-$sessionPagination = pagination_create(user_session_count($currentUserId), 15);
-
-if(!pagination_is_valid_offset(pagination_offset($sessionPagination, pagination_param()))) {
-    $sessionPagination['offset'] = 0;
-    $sessionPagination['page'] = 1;
-}
+$sessionPagination = new Pagination(user_session_count($currentUserId), 15);
 
 $sessionList = user_session_list(
-    $sessionPagination['offset'],
-    $sessionPagination['range'],
+    $sessionPagination->getOffset(),
+    $sessionPagination->getRange(),
     $currentUserId
 );
 

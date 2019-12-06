@@ -4,7 +4,7 @@ namespace Misuzu;
 use PDO;
 use PDOException;
 
-class Config {
+final class Config {
     public const TYPE_ANY = '';
     public const TYPE_STR = 'string';
     public const TYPE_INT = 'integer';

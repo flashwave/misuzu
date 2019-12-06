@@ -38,10 +38,9 @@ if($forum['forum_type'] == MSZ_FORUM_TYPE_LINK) {
     return;
 }
 
-$forumPagination = pagination_create($forum['forum_topic_count'], 20);
-$topicsOffset = pagination_offset($forumPagination, pagination_param());
+$forumPagination = new Pagination($forum['forum_topic_count'], 20);
 
-if(!pagination_is_valid_offset($topicsOffset) && $forum['forum_topic_count'] > 0) {
+if(!$forumPagination->hasValidOffset() && $forum['forum_topic_count'] > 0) {
     echo render_error(404);
     return;
 }
@@ -51,8 +50,8 @@ $topics = $forumMayHaveTopics
     ? forum_topic_listing(
         $forum['forum_id'],
         $forumUserId,
-        $topicsOffset,
-        $forumPagination['range'],
+        $forumPagination->getOffset(),
+        $forumPagination->getRange(),
         perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST),
         forum_has_priority_voting($forum['forum_type'])
     )

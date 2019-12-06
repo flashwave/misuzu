@@ -13,10 +13,9 @@ $manageUsersCount = (int)DB::query('
     FROM `msz_users`
 ')->fetchColumn();
 
-$usersPagination = pagination_create($manageUsersCount, 30);
-$usersOffset = pagination_offset($usersPagination, pagination_param());
+$usersPagination = new Pagination($manageUsersCount, 30);
 
-if(!pagination_is_valid_offset($usersOffset)) {
+if(!$usersPagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
@@ -34,8 +33,8 @@ $getManageUsers = DB::prepare('
     ORDER BY `user_id`
     LIMIT :offset, :take
 ');
-$getManageUsers->bind('offset', $usersOffset);
-$getManageUsers->bind('take', $usersPagination['range']);
+$getManageUsers->bind('offset', $usersPagination->getOffset());
+$getManageUsers->bind('take', $usersPagination->getRange());
 $manageUsers = $getManageUsers->fetchAll();
 
 Template::render('manage.users.users', [

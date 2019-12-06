@@ -332,7 +332,7 @@ if($canDeleteAny) {
     $topicPosts += $topic['topic_count_posts_deleted'];
 }
 
-$topicPagination = pagination_create($topicPosts, MSZ_FORUM_POSTS_PER_PAGE);
+$topicPagination = new Pagination($topicPosts, MSZ_FORUM_POSTS_PER_PAGE, 'page');
 
 if(isset($postInfo['preceeding_post_count'])) {
     $preceedingPosts = $postInfo['preceeding_post_count'];
@@ -341,12 +341,10 @@ if(isset($postInfo['preceeding_post_count'])) {
         $preceedingPosts += $postInfo['preceeding_post_deleted_count'];
     }
 
-    $postsPage = floor($preceedingPosts / $topicPagination['range']) + 1;
+    $topicPagination->setPage(floor($preceedingPosts / $topicPagination->getRange()), true);
 }
 
-$postsOffset = pagination_offset($topicPagination, $postsPage ?? pagination_param('page'));
-
-if(!pagination_is_valid_offset($postsOffset)) {
+if(!$topicPagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
@@ -355,8 +353,8 @@ Template::set('topic_perms', $perms);
 
 $posts = forum_post_listing(
     $topic['topic_id'],
-    $postsOffset,
-    $topicPagination['range'],
+    $topicPagination->getOffset(),
+    $topicPagination->getRange(),
     perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST)
 );
 

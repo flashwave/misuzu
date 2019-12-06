@@ -6,7 +6,7 @@ use Swift_Message;
 use Swift_NullTransport;
 use Swift_SmtpTransport;
 
-class Mailer {
+final class Mailer {
     private const TEMPLATE_PATH = MSZ_ROOT . '/config/emails/%s.txt';
 
     private static $mailer = null;

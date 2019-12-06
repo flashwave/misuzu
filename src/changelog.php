@@ -26,25 +26,6 @@ function changelog_action_is_valid(int $action): bool {
     return array_key_exists($action, MSZ_CHANGELOG_ACTIONS);
 }
 
-function changelog_entry_create(int $userId, int $action, string $log, string $text = null): int {
-    if(!changelog_action_is_valid($action)) {
-        return -1;
-    }
-
-    $createChange = \Misuzu\DB::prepare('
-        INSERT INTO `msz_changelog_changes`
-            (`user_id`, `change_action`, `change_log`, `change_text`)
-        VALUES
-            (:user_id, :action, :change_log, :change_text)
-    ');
-    $createChange->bind('user_id', $userId);
-    $createChange->bind('action', $action);
-    $createChange->bind('change_log', $log);
-    $createChange->bind('change_text', $text);
-
-    return $createChange->execute() ? \Misuzu\DB::lastId() : 0;
-}
-
 define('MSZ_CHANGELOG_GET_QUERY', '
     SELECT
         c.`change_id`, c.`change_log`, c.`change_action`,

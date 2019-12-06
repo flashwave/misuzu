@@ -13,10 +13,9 @@ $manageRolesCount = (int)DB::query('
     FROM `msz_roles`
 ')->fetchColumn();
 
-$rolesPagination = pagination_create($manageRolesCount, 10);
-$rolesOffset = pagination_offset($rolesPagination, pagination_param());
+$rolesPagination = new Pagination($manageRolesCount, 10);
 
-if(!pagination_is_valid_offset($rolesOffset)) {
+if(!$rolesPagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
@@ -32,8 +31,8 @@ $getManageRoles = DB::prepare('
     FROM `msz_roles` as r
     LIMIT :offset, :take
 ');
-$getManageRoles->bind('offset', $rolesOffset);
-$getManageRoles->bind('take', $rolesPagination['range']);
+$getManageRoles->bind('offset', $rolesPagination->getOffset());
+$getManageRoles->bind('take', $rolesPagination->getRange());
 $manageRoles = $getManageRoles->fetchAll();
 
 Template::render('manage.users.roles', [
