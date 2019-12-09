@@ -1,6 +1,9 @@
 <?php
 namespace Misuzu;
 
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
+
 require_once '../../misuzu.php';
 
 if(!user_session_active()) {
@@ -39,19 +42,19 @@ if(!$isRestricted && $isVerifiedRequest && !empty($_POST['role'])) {
 
 if($isVerifiedRequest && isset($_POST['tfa']['enable']) && (bool)$twoFactorInfo['totp_enabled'] !== (bool)$_POST['tfa']['enable']) {
     if((bool)$_POST['tfa']['enable']) {
-        $tfaKey = totp_generate_key();
+        $tfaKey = TOTP::generateKey();
+        $tfaQrcode = (new QRCode(new QROptions([
+            'version'    => 5,
+            'outputType' => QRCode::OUTPUT_IMAGE_JPG,
+            'eccLevel'   => QRCode::ECC_L,
+        ])))->render(sprintf('otpauth://totp/Flashii:%s?%s', $twoFactorInfo['username'], http_build_query([
+            'secret' => $tfaKey,
+            'issuer' => 'Flashii',
+        ])));
 
         Template::set([
             'settings_2fa_code' => $tfaKey,
-            'settings_2fa_image' => totp_qrcode(totp_uri(
-                sprintf(
-                    '%s:%s',
-                    Config::get('site.name', Config::TYPE_STR, 'Misuzu'),
-                    $twoFactorInfo['username']
-                ),
-                $tfaKey,
-                $_SERVER['HTTP_HOST']
-            )),
+            'settings_2fa_image' => $tfaQrcode,
         ]);
 
         user_totp_update($currentUserId, $tfaKey);

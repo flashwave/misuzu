@@ -44,10 +44,14 @@ while(!empty($twofactor)) {
         break;
     }
 
-    $currentCode = totp_generate($tokenInfo['user_totp_key']);
-    $previousCode = totp_generate($tokenInfo['user_totp_key'], time() - 30);
+    $totp = new TOTP($tokenInfo['user_totp_key']);
+    $accepted = [
+        $totp->generate(time()),
+        $totp->generate(time() - 30),
+        $totp->generate(time() + 30),
+    ];
 
-    if($currentCode !== $twofactor['code'] && $previousCode !== $twofactor['code']) {
+    if(!in_array($twofactor['code'], $acceptedCodes)) {
         $notices[] = sprintf(
             "Invalid two factor code, %d attempt%s remaining",
             $remainingAttempts - 1,

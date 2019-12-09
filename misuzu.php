@@ -42,7 +42,6 @@ require_once 'src/comments.php';
 require_once 'src/csrf.php';
 require_once 'src/manage.php';
 require_once 'src/news.php';
-require_once 'src/otp.php';
 require_once 'src/perms.php';
 require_once 'src/url.php';
 require_once 'src/Forum/forum.php';
