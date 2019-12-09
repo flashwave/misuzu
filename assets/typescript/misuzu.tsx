@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     var d: Date = new Date;
 
-    if(d.getMonth() === 11 && d.getDay() >= 5 && d.getDay() <= 25)
+    if(d.getMonth() === 11 && d.getDate() > 5 && d.getDate() < 27)
         mszEventChristmas();
 });
 
