@@ -40,7 +40,6 @@ require_once 'src/changelog.php';
 require_once 'src/colour.php';
 require_once 'src/comments.php';
 require_once 'src/csrf.php';
-require_once 'src/emotes.php';
 require_once 'src/manage.php';
 require_once 'src/news.php';
 require_once 'src/otp.php';

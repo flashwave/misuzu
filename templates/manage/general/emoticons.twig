@@ -24,9 +24,6 @@
                 <div class="manage__emotes__entry__hierarchy">
                     Hier.
                 </div>
-                <div class="manage__emotes__entry__string">
-                    String
-                </div>
                 <div class="manage__emotes__entry__image">
                     Image
                 </div>
@@ -46,11 +43,8 @@
                     <div class="manage__emotes__entry__hierarchy">
                         {{ emote.emote_hierarchy }}
                     </div>
-                    <div class="manage__emotes__entry__string">
-                        {{ emote.emote_string }}
-                    </div>
                     <div class="manage__emotes__entry__image">
-                        <img src="{{ emote.emote_url }}" alt="{{ emote.emote_string }}" class="emoticon manage__emotes__emoticon">
+                        <img src="{{ emote.emote_url }}" alt="{{ emote.emote_url }}" class="emoticon manage__emotes__emoticon">
                     </div>
                     <div class="manage__emotes__entry__actions">
                         <button class="input__button input__button--autosize" title="Create Alias" onclick="createEmoteAlias({{ emote.emote_id }}, prompt('Enter an alias for this emoticon...'))"><i class="fas fa-copy fa-fw"></i></button>

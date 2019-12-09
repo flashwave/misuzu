@@ -2,7 +2,7 @@
 {% from 'macros.twig' import container_title %}
 {% from '_layout/input.twig' import input_csrf, input_text, input_checkbox, input_file, input_select, input_colour %}
 
-{% set title = emote_info is null ? 'Adding a new emoticon' : 'Editing ' ~ emote_info.emote_string %}
+{% set title = emote_info is null ? 'Adding a new emoticon' : 'Editing #' ~ emote_info.id %}
 
 {% block manage_content %}
     <div class="container manage__emotes">
@@ -22,13 +22,13 @@
             </label>
 
             <label class="manage__emote__field">
-                <div class="manage__emote__field__name">String</div>
-                {{ input_text('emote_string', 'manage__emote__field__value', emote_info.emote_string|default(), 'text', '', true) }}
+                <div class="manage__emote__field__name">URL</div>
+                {{ input_text('emote_url', 'manage__emote__field__value', emote_info.emote_url|default(), 'text', '', true) }}
             </label>
 
             <label class="manage__emote__field">
-                <div class="manage__emote__field__name">URL</div>
-                {{ input_text('emote_url', 'manage__emote__field__value', emote_info.emote_url|default(), 'text', '', true) }}
+                <div class="manage__emote__field__name">Strings</div>
+                {{ input_text('emote_strings', 'manage__emote__field__value', emote_info.strings|column('emote_string')|join(' '), 'text', '', true) }}
             </label>
 
             <div class="manage__emote__actions">

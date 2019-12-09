@@ -88,6 +88,37 @@ function byte_symbol(int $bytes, bool $decimal = false, array $symbols = ['', 'K
     return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
 }
 
+// For chat emote list, nuke this when Sharp Chat comms are in this project
+function emotes_list(int $hierarchy = PHP_INT_MAX, bool $unique = false, bool $order = true): array {
+    $getEmotes = \Misuzu\DB::prepare('
+        SELECT    e.`emote_id`, e.`emote_order`, e.`emote_hierarchy`, e.`emote_url`,
+                  s.`emote_string_order`, s.`emote_string`
+        FROM      `msz_emoticons_strings` AS s
+        LEFT JOIN `msz_emoticons` AS e
+        ON        e.`emote_id` = s.`emote_id`
+        WHERE     `emote_hierarchy` <= :hierarchy
+        ORDER BY  IF(:order, e.`emote_order`, e.`emote_id`), s.`emote_string_order`
+    ');
+    $getEmotes->bind('hierarchy', $hierarchy);
+    $getEmotes->bind('order', $order);
+    $emotes = $getEmotes->fetchAll();
+
+    // Removes aliases, emote with lowest ordering is considered the main
+    if($unique) {
+        $existing = [];
+
+        for($i = 0; $i < count($emotes); $i++) {
+            if(in_array($emotes[$i]['emote_url'], $existing)) {
+                unset($emotes[$i]);
+            } else {
+                $existing[] = $emotes[$i]['emote_url'];
+            }
+        }
+    }
+
+    return $emotes;
+}
+
 function safe_delete(string $path): void {
     $path = realpath($path);
 

@@ -9,31 +9,42 @@ if(!perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), General
 }
 
 $emoteId = !empty($_GET['e']) && is_string($_GET['e']) ? (int)$_GET['e'] : 0;
+$isNew = $emoteId <= 0;
+$emoteInfo = !$isNew ? Emoticon::byId($emoteId) : new Emoticon;
 
-if($emoteId > 0) {
-    $emoteInfo = emotes_get_by_id($emoteId);
-}
+if(csrf_verify_request() && isset($_POST['emote_order']) && isset($_POST['emote_hierarchy']) && !empty($_POST['emote_url']) && !empty($_POST['emote_strings'])) {
+    $emoteInfo->setUrl($_POST['emote_url'])
+        ->setHierarchy($_POST['emote_hierarchy'])
+        ->setOrder($_POST['emote_order'])
+        ->save();
 
-if(csrf_verify_request()
-    && isset($_POST['emote_order']) && isset($_POST['emote_hierarchy'])
-    && !empty($_POST['emote_string']) && !empty($_POST['emote_url'])) {
-    if(empty($emoteInfo)) {
-        $emoteId = emotes_add($_POST['emote_string'], $_POST['emote_url'], $_POST['emote_hierarchy'], $_POST['emote_order']);
+    if($isNew && !$emoteInfo->hasId())
+        throw new \Exception("SOMETHING HAPPENED");
 
-        if($emoteId > 0) {
-            // seems like an odd decision to redirect back to the emoticons index, but it'll probably be nicer in the long run
-            url_redirect('manage-general-emoticons');
-            return;
-        } else {
-            echo "SOMETHING HAPPENED {$emoteId}";
+    $setStrings = array_column($emoteInfo->getStrings(), 'emote_string');
+    $applyStrings = explode(' ', mb_strtolower($_POST['emote_strings']));
+    $removeStrings = [];
+
+    foreach($setStrings as $string) {
+        if(!in_array($string, $applyStrings)) {
+            $removeStrings[] = $string;
         }
-    } else {
-        emotes_update_url($emoteInfo['emote_url'], $_POST['emote_url'], $_POST['emote_hierarchy'], $_POST['emote_order']);
-        emotes_update_string($emoteId, $_POST['emote_string']);
-        $emoteInfo = emotes_get_by_id($emoteId);
     }
+
+    $setStrings = array_diff($setStrings, $removeStrings);
+
+    foreach($applyStrings as $string) {
+        if(!in_array($string, $setStrings)) {
+            $setStrings[] = $string;
+        }
+    }
+
+    foreach($removeStrings as $string)
+        $emoteInfo->removeString($string);
+    foreach($setStrings as $string)
+        $emoteInfo->addString($string);
 }
 
 Template::render('manage.general.emoticon', [
-    'emote_info' => $emoteInfo ?? null,
+    'emote_info' => $emoteInfo,
 ]);
