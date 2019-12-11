@@ -10,7 +10,7 @@ switch($indexMode) {
     case 'mark':
         $markEntireForum = $forumId === 0;
 
-        if(user_session_active() && csrf_verify_request()) {
+        if(user_session_active() && CSRF::validateRequest()) {
             forum_mark_read($markEntireForum ? null : $forumId, user_session_current('user_id', 0));
         }
 

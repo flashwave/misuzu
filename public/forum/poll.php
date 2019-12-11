@@ -13,7 +13,7 @@ if($isXHR) {
     return;
 }
 
-if(!csrf_verify_request()) {
+if(!CSRF::validateRequest()) {
     echo render_info_or_json($isXHR, "Couldn't verify this request, please refresh the page and try again.", 403);
     return;
 }
@@ -34,7 +34,7 @@ if(user_warning_check_expiration($currentUserId, MSZ_WARN_SILENCE) > 0) {
     return;
 }
 
-csrf_http_header();
+header(CSRF::header());
 
 if(empty($_POST['poll']['id']) || !ctype_digit($_POST['poll']['id'])) {
     echo render_info_or_json($isXHR, "Invalid request.", 400);

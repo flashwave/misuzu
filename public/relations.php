@@ -15,12 +15,12 @@ if($isXHR) {
     return;
 }
 
-if(!csrf_verify_request()) {
+if(!CSRF::validateRequest()) {
     echo render_info_or_json($isXHR, "Couldn't verify this request, please refresh the page and try again.", 403);
     return;
 }
 
-csrf_http_header();
+header(CSRF::header());
 
 if(!user_session_active()) {
     echo render_info_or_json($isXHR, 'You must be logged in to manage relations.', 401);

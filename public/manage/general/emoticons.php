@@ -8,7 +8,7 @@ if(!perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), General
     return;
 }
 
-if(csrf_verify_request() && !empty($_GET['emote']) && is_string($_GET['emote'])) {
+if(CSRF::validateRequest() && !empty($_GET['emote']) && is_string($_GET['emote'])) {
     $emoteId = (int)$_GET['emote'];
     $emoteInfo = Emoticon::byId($emoteId);
 

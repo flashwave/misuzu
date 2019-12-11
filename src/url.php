@@ -189,8 +189,8 @@ function url_variable(string $value, array $variables): string {
         return constant(trim($value, '[]'));
     }
 
-    if(starts_with($value, '{') && ends_with($value, '}') && csrf_is_ready()) {
-        return csrf_token();
+    if(starts_with($value, '{') && ends_with($value, '}')) {
+        return \Misuzu\CSRF::token();
     }
 
     return $value;

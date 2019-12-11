@@ -19,7 +19,7 @@ if($isXHR) {
     return;
 }
 
-$postRequestVerified = csrf_verify_request();
+$postRequestVerified = CSRF::validateRequest();
 
 if(!empty($postMode) && !user_session_active()) {
     echo render_info_or_json($isXHR, 'You must be logged in to manage posts.', 401);
@@ -47,7 +47,7 @@ if($isXHR) {
         return;
     }
 
-    csrf_http_header();
+    header(CSRF::header());
 }
 
 $postInfo = forum_post_get($postId, true);

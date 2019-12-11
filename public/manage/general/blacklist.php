@@ -11,10 +11,10 @@ if(!perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), General
 $notices = [];
 
 if(!empty($_POST)) {
-    if(!csrf_verify_request()) {
+    if(!CSRF::validateRequest()) {
         $notices[] = 'Verification failed.';
     } else {
-        csrf_http_header();
+        header(CSRF::header());
 
         if(!empty($_POST['blacklist']['remove']) && is_array($_POST['blacklist']['remove'])) {
             foreach($_POST['blacklist']['remove'] as $cidr) {

@@ -26,7 +26,7 @@ if(empty($tokenInfo['user_totp_key'])) {
 }
 
 while(!empty($twofactor)) {
-    if(!csrf_verify_request()) {
+    if(!CSRF::validateRequest()) {
         $notices[] = 'Was unable to verify the request, please try again!';
         break;
     }

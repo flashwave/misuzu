@@ -22,7 +22,7 @@ $canEdit = $isSuperUser || user_check_authority($currentUserId, $userId);
 $canEditPerms = $canEdit && perms_check_user(MSZ_PERMS_USER, $currentUserId, MSZ_PERM_USER_MANAGE_PERMS);
 $permissions = manage_perms_list(perms_get_user_raw($userId));
 
-if(csrf_verify_request() && $canEdit) {
+if(CSRF::validateRequest() && $canEdit) {
     if(!empty($_POST['roles']) && is_array($_POST['roles']) && array_test($_POST['roles'], 'ctype_digit')) {
         // Fetch existing roles
         $existingRoles = DB::prepare('

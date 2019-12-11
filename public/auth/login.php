@@ -24,7 +24,7 @@ $ipAddress = ip_remote_address();
 $remainingAttempts = user_login_attempts_remaining($ipAddress);
 
 while(!empty($_POST['login']) && is_array($_POST['login'])) {
-    if(!csrf_verify_request()) {
+    if(!CSRF::validateRequest()) {
         $notices[] = 'Was unable to verify the request, please try again!';
         break;
     }

@@ -32,8 +32,6 @@ final class TwigMisuzu extends Twig_Extension {
     public function getFunctions() {
         return [
             new Twig_Function('get_browser', 'get_browser'),
-            new Twig_Function('csrf_token', 'csrf_token'),
-            new Twig_Function('csrf_input', 'csrf_html'),
             new Twig_Function('url_construct', 'url_construct'),
             new Twig_Function('warning_has_duration', 'user_warning_has_duration'),
             new Twig_Function('url', 'url'),
@@ -44,6 +42,7 @@ final class TwigMisuzu extends Twig_Extension {
             new Twig_Function('forum_may_have_children', 'forum_may_have_children'),
             new Twig_Function('forum_may_have_topics', 'forum_may_have_topics'),
             new Twig_Function('forum_has_priority_voting', 'forum_has_priority_voting'),
+            new Twig_Function('csrf_token', fn() => CSRF::token()),
             new Twig_Function('git_commit_hash', fn(bool $long = false) => GitInfo::hash($long)),
             new Twig_Function('git_tag', fn() => GitInfo::tag()),
             new Twig_Function('git_branch', fn() => GitInfo::branch()),

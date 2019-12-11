@@ -133,7 +133,7 @@ if(!empty($_POST)) {
     $topicType = isset($_POST['post']['type']) ? (int)$_POST['post']['type'] : null;
     $postSignature = isset($_POST['post']['signature']);
 
-    if(!csrf_verify_request()) {
+    if(!CSRF::validateRequest()) {
         $notices[] = 'Could not verify request.';
     } else {
         $isEditingTopic = empty($topic) || ($mode === 'edit' && $post['is_opening_post']);

@@ -20,7 +20,7 @@ if($canEditPerms) {
     $permissions = manage_perms_list(perms_get_role_raw($roleId ?? 0));
 }
 
-if(!empty($_POST['role']) && is_array($_POST['role']) && csrf_verify_request()) {
+if(!empty($_POST['role']) && is_array($_POST['role']) && CSRF::validateRequest()) {
     $roleHierarchy = (int)($_POST['role']['hierarchy'] ?? -1);
 
     if(!user_check_super($currentUserId) && ($roleId === null

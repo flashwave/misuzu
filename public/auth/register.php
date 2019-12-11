@@ -18,7 +18,7 @@ $restricted = ip_blacklist_check(ip_remote_address()) ? 'blacklist'
     : (user_warning_check_ip(ip_remote_address()) ? 'ban' : '');
 
 while(!$restricted && !empty($register)) {
-    if(!csrf_verify_request()) {
+    if(!CSRF::validateRequest()) {
         $notices[] = 'Was unable to verify the request, please try again!';
         break;
     }

@@ -39,7 +39,6 @@ require_once 'src/audit_log.php';
 require_once 'src/changelog.php';
 require_once 'src/colour.php';
 require_once 'src/comments.php';
-require_once 'src/csrf.php';
 require_once 'src/manage.php';
 require_once 'src/news.php';
 require_once 'src/perms.php';
@@ -456,10 +455,8 @@ MIG;
         }
     }
 
-    csrf_settings(
-        Config::get('csrf.secret', Config::TYPE_STR, 'insecure'),
-        empty($userDisplayInfo) ? ip_remote_address() : $cookieData['session_token']
-    );
+    CSRF::setGlobalSecretKey(Config::get('csrf.secret', Config::TYPE_STR, 'soup'));
+    CSRF::setGlobalIdentity(empty($userDisplayInfo) ? ip_remote_address() : $cookieData['session_token']);
 
     if(Config::get('private.enabled', Config::TYPE_BOOL)) {
         $onLoginPage = $_SERVER['PHP_SELF'] === url('auth-login');

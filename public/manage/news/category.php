@@ -11,7 +11,7 @@ if(!perms_check_user(MSZ_PERMS_NEWS, user_session_current('user_id'), MSZ_PERM_N
 $category = [];
 $categoryId = (int)($_GET['c'] ?? null);
 
-if(!empty($_POST['category']) && csrf_verify_request()) {
+if(!empty($_POST['category']) && CSRF::validateRequest()) {
     $originalCategoryId = (int)($_POST['category']['id'] ?? null);
     $categoryId = news_category_create(
         $_POST['category']['name'] ?? null,

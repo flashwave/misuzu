@@ -12,7 +12,7 @@ $emoteId = !empty($_GET['e']) && is_string($_GET['e']) ? (int)$_GET['e'] : 0;
 $isNew = $emoteId <= 0;
 $emoteInfo = !$isNew ? Emoticon::byId($emoteId) : new Emoticon;
 
-if(csrf_verify_request() && isset($_POST['emote_order']) && isset($_POST['emote_hierarchy']) && !empty($_POST['emote_url']) && !empty($_POST['emote_strings'])) {
+if(CSRF::validateRequest() && isset($_POST['emote_order']) && isset($_POST['emote_hierarchy']) && !empty($_POST['emote_url']) && !empty($_POST['emote_strings'])) {
     $emoteInfo->setUrl($_POST['emote_url'])
         ->setHierarchy($_POST['emote_hierarchy'])
         ->setOrder($_POST['emote_order'])

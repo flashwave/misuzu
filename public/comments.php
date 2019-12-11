@@ -15,7 +15,7 @@ if($isXHR) {
     return;
 }
 
-if(!csrf_verify_request()) {
+if(!CSRF::validateRequest()) {
     echo render_info_or_json($isXHR, "Couldn't verify this request, please refresh the page and try again.", 403);
     return;
 }
@@ -36,7 +36,7 @@ if(user_warning_check_expiration($currentUserId, MSZ_WARN_SILENCE) > 0) {
     return;
 }
 
-csrf_http_header();
+header(CSRF::header());
 $commentPerms = comments_get_perms($currentUserId);
 
 $commentId = !empty($_GET['c']) && is_string($_GET['c']) ? (int)$_GET['c'] : 0;

@@ -10,7 +10,7 @@ if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_P
 
 $changeId = (int)($_GET['c'] ?? 0);
 
-if($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify_request()) {
+if($_SERVER['REQUEST_METHOD'] === 'POST' && CSRF::validateRequest()) {
     if(!empty($_POST['change']) && is_array($_POST['change'])) {
         if($changeId > 0) {
             $postChange = DB::prepare('

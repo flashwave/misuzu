@@ -4,9 +4,10 @@
 {% endspaceless %}
 {% endmacro %}
 
-{% macro input_csrf() %}{# so we don't have to specify |raw every time #}
+{% macro input_csrf() %}
+{% from _self import input_hidden %}
 {% spaceless %}
-    {{ csrf_input()|raw }}
+    {{ input_hidden('_csrf', csrf_token()) }}
 {% endspaceless %}
 {% endmacro %}
 
