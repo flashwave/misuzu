@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Net\IPAddress;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_USER, user_session_current('user_id'), MSZ_PERM_USER_MANAGE_WARNINGS)) {
@@ -77,7 +79,7 @@ if(!empty($_POST['warning']) && is_array($_POST['warning'])) {
                 $warningsUser,
                 user_get_last_ip($warningsUser),
                 $currentUserId,
-                ip_remote_address(),
+                IPAddress::remote(),
                 $warningType,
                 $_POST['warning']['note'],
                 $_POST['warning']['private'],

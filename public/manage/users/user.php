@@ -139,17 +139,19 @@ if(CSRF::validateRequest() && $canEdit) {
     }
 
     if(!empty($_POST['colour']) && is_array($_POST['colour'])) {
-        $userColour = null;
+        $setUserInfo['user_colour'] = null;
 
         if(!empty($_POST['colour']['enable'])) {
-            $userColour = colour_create();
+            $userColour = new Colour;
 
-            if(!colour_from_hex($userColour, (string)($_POST['colour']['hex'] ?? ''))) {
-                $notices[] = 'An invalid colour was supplied.';
+            try {
+                $userColour->setHex((string)($_POST['colour']['hex'] ?? ''));
+            } catch(\Exception $ex) {
+                $notices[] = $ex->getMessage();
             }
-        }
 
-        $setUserInfo['user_colour'] = $userColour;
+            $setUserInfo['user_colour'] = $userColour->getRaw();
+        }
     }
 
     if(!empty($_POST['password']) && is_array($_POST['password'])) {
@@ -241,6 +243,7 @@ $roles = $getRoles->fetchAll();
 
 Template::render('manage.users.user', [
     'manage_user' => $manageUser,
+    'user_colour' => empty($manageUser['user_colour']) ? Colour::none() : new Colour($manageUser['user_colour']),
     'manage_notices' => $notices,
     'manage_roles' => $roles,
     'can_edit_user' => $canEdit,

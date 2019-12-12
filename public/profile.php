@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Parsers\Parser;
 use Misuzu\Users\User;
 
 require_once '../misuzu.php';
@@ -88,7 +89,7 @@ if($isEditing) {
                     $setAboutError = user_set_about_page(
                         $profileUser->user_id,
                         $_POST['about']['text'] ?? '',
-                        (int)($_POST['about']['parser'] ?? MSZ_PARSER_PLAIN)
+                        (int)($_POST['about']['parser'] ?? Parser::PLAIN)
                     );
 
                     if($setAboutError !== MSZ_E_USER_ABOUT_OK) {
@@ -107,7 +108,7 @@ if($isEditing) {
                     $setSignatureError = user_set_signature(
                         $profileUser->user_id,
                         $_POST['signature']['text'] ?? '',
-                        (int)($_POST['signature']['parser'] ?? MSZ_PARSER_PLAIN)
+                        (int)($_POST['signature']['parser'] ?? Parser::PLAIN)
                     );
 
                     if($setSignatureError !== MSZ_E_USER_SIGNATURE_OK) {

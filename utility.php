@@ -245,7 +245,7 @@ function html_link(string $url, ?string $content = null, $attributes = []): stri
 }
 
 function html_colour(?int $colour, $attribs = '--user-colour'): string {
-    $colour = $colour ?? colour_none();
+    $colour = $colour == null ? \Misuzu\Colour::none() : new \Misuzu\Colour($colour);
 
     if(is_string($attribs)) {
         $attribs = [
@@ -261,7 +261,7 @@ function html_colour(?int $colour, $attribs = '--user-colour'): string {
     }
 
     $css = '';
-    $value = colour_get_css($colour);
+    $value = $colour->getCSS();
 
     foreach($attribs as $name => $format) {
         $css .= $name . ':' . sprintf($format, $value) . ';';

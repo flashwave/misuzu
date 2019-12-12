@@ -76,7 +76,7 @@ function audit_log(
     array $params = [],
     ?string $ipAddress = null
 ): void {
-    $ipAddress = $ipAddress ?? ip_remote_address();
+    $ipAddress = $ipAddress ?? \Misuzu\Net\IPAddress::remote();
 
     for($i = 0; $i < count($params); $i++) {
         if(preg_match('#^(-?[0-9]+)$#', $params[$i])) {
@@ -94,7 +94,7 @@ function audit_log(
     $addLog->bind('user', $userId < 1 ? null : $userId);
     $addLog->bind('params', json_encode($params));
     $addLog->bind('ip', $ipAddress);
-    $addLog->bind('country', ip_country_code($ipAddress));
+    $addLog->bind('country', \Misuzu\Net\IPAddress::country($ipAddress));
     $addLog->execute();
 }
 

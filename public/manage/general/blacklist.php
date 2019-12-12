@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Net\IPAddressBlacklist;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), General::PERM_MANAGE_BLACKLIST)) {
@@ -18,7 +20,7 @@ if(!empty($_POST)) {
 
         if(!empty($_POST['blacklist']['remove']) && is_array($_POST['blacklist']['remove'])) {
             foreach($_POST['blacklist']['remove'] as $cidr) {
-                if(!ip_blacklist_remove($cidr)) {
+                if(!IPAddressBlacklist::remove($cidr)) {
                     $notices[] = sprintf('Failed to remove "%s" from the blacklist.', $cidr);
                 }
             }
@@ -34,7 +36,7 @@ if(!empty($_POST)) {
                     continue;
                 }
 
-                if(!ip_blacklist_add($cidr)) {
+                if(!IPAddressBlacklist::add($cidr)) {
                     $notices[] = sprintf('Failed to add "%s" to the blacklist.', $cidr);
                 }
             }
@@ -44,5 +46,5 @@ if(!empty($_POST)) {
 
 Template::render('manage.general.blacklist', [
     'notices' => $notices,
-    'blacklist' => ip_blacklist_list(),
+    'blacklist' => IPAddressBlacklist::list(),
 ]);

@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Net\IPAddress;
+
 require_once '../../misuzu.php';
 
 if(user_session_active()) {
@@ -10,7 +12,7 @@ if(user_session_active()) {
 
 $twofactor = !empty($_POST['twofactor']) && is_array($_POST['twofactor']) ? $_POST['twofactor'] : [];
 $notices = [];
-$ipAddress = ip_remote_address();
+$ipAddress = IPAddress::remote();
 $remainingAttempts = user_login_attempts_remaining($ipAddress);
 $tokenInfo = user_auth_tfa_token_info(
     !empty($_GET['token']) && is_string($_GET['token']) ? $_GET['token'] : (

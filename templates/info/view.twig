@@ -8,7 +8,7 @@
         {{ container_title(document.title) }}
 
         <div class="container__content markdown">
-            {{ document.content|parse_text(constant('MSZ_PARSER_MARKDOWN'))|raw }}
+            {{ document.content|parse_text(constant('\\Misuzu\\Parsers\\Parser::MARKDOWN'))|raw }}
         </div>
     </div>
 {% endblock %}

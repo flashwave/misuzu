@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
 
 require_once '../../misuzu.php';
@@ -20,7 +21,7 @@ $notices = [];
 $siteIsPrivate = Config::get('private.enable', Config::TYPE_BOOL);
 $loginPermCat = $siteIsPrivate ? Config::get('private.perm.cat', Config::TYPE_STR) : '';
 $loginPermVal = $siteIsPrivate ? Config::get('private.perm.val', Config::TYPE_INT) : 0;
-$ipAddress = ip_remote_address();
+$ipAddress = IPAddress::remote();
 $remainingAttempts = user_login_attempts_remaining($ipAddress);
 
 while(!empty($_POST['login']) && is_array($_POST['login'])) {

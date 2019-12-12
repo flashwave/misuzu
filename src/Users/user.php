@@ -171,7 +171,7 @@ function user_bump_last_active(int $userId, string $ipAddress = null): void {
             `last_ip` = INET6_ATON(:last_ip)
         WHERE `user_id` = :user_id
     ');
-    $bumpUserLast->bind('last_ip', $ipAddress ?? ip_remote_address());
+    $bumpUserLast->bind('last_ip', $ipAddress ?? \Misuzu\Net\IPAddress::remote());
     $bumpUserLast->bind('user_id', $userId);
     $bumpUserLast->execute();
 }
@@ -306,12 +306,12 @@ define('MSZ_E_USER_ABOUT_INVALID_PARSER', 2);
 define('MSZ_E_USER_ABOUT_TOO_LONG', 3);
 define('MSZ_E_USER_ABOUT_UPDATE_FAILED', 4);
 
-function user_set_about_page(int $userId, string $content, int $parser = MSZ_PARSER_PLAIN): int {
+function user_set_about_page(int $userId, string $content, int $parser = \Misuzu\Parsers\Parser::PLAIN): int {
     if($userId < 1) {
         return MSZ_E_USER_ABOUT_INVALID_USER;
     }
 
-    if(!parser_is_valid($parser)) {
+    if(!\Misuzu\Parsers\Parser::isValid($parser)) {
         return MSZ_E_USER_ABOUT_INVALID_PARSER;
     }
 
@@ -344,12 +344,12 @@ define('MSZ_E_USER_SIGNATURE_INVALID_PARSER', 2);
 define('MSZ_E_USER_SIGNATURE_TOO_LONG', 3);
 define('MSZ_E_USER_SIGNATURE_UPDATE_FAILED', 4);
 
-function user_set_signature(int $userId, string $content, int $parser = MSZ_PARSER_PLAIN): int {
+function user_set_signature(int $userId, string $content, int $parser = \Misuzu\Parsers\Parser::PLAIN): int {
     if($userId < 1) {
         return MSZ_E_USER_SIGNATURE_INVALID_USER;
     }
 
-    if(!parser_is_valid($parser)) {
+    if(!\Misuzu\Parsers\Parser::isValid($parser)) {
         return MSZ_E_USER_SIGNATURE_INVALID_PARSER;
     }
 

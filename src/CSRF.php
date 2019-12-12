@@ -48,8 +48,8 @@ final class CSRF {
     public static function validateRequest(?string $identity = null, ?string $secretKey = null): bool {
         if(isset($_SERVER['HTTP_X_MISUZU_CSRF'])) {
             $token = $_SERVER['HTTP_X_MISUZU_CSRF'];
-        } elseif(isset($_POST['_csrf']) && is_string($_POST['_csrf'])) {
-            $token = $_POST['_csrf'];
+        } elseif(isset($_REQUEST['_csrf']) && is_string($_REQUEST['_csrf'])) { // Change this to $_POST later, it should never appear in urls
+            $token = $_REQUEST['_csrf'];
         } elseif(isset($_REQUEST['csrf']) && is_string($_REQUEST['csrf'])) {
             $token = $_REQUEST['csrf'];
         } else {

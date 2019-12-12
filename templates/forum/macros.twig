@@ -440,7 +440,7 @@
                 </a>
             </div>
 
-            <div class="forum__post__text{% if post.post_parse == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
+            <div class="forum__post__text{% if post.post_parse == constant('\\Misuzu\\Parsers\\Parser::MARKDOWN') %} markdown{% endif %}">
                 {{ post.post_text|escape|parse_text(post.post_parse)|raw }}
             </div>
 
@@ -464,7 +464,7 @@
             {% endif %}
 
             {% if post.post_display_signature and post.poster_signature_content|length > 0 %}
-                <div class="forum__post__signature{% if post.poster_signature_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
+                <div class="forum__post__signature{% if post.poster_signature_parser == constant('\\Misuzu\\Parsers\\Parser::MARKDOWN') %} markdown{% endif %}">
                     {{ post.poster_signature_content|escape|parse_text(post.poster_signature_parser)|raw }}
                 </div>
             {% endif %}

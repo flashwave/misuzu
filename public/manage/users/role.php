@@ -45,21 +45,20 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && CSRF::validateRequest()
         return;
     }
 
-    $roleColour = colour_create();
+    $roleColour = new Colour;
 
     if(!empty($_POST['role']['colour']['inherit'])) {
-        colour_set_inherit($roleColour);
+        $roleColour->setInherit(true);
     } else {
         foreach(['red', 'green', 'blue'] as $key) {
             $value = (int)($_POST['role']['colour'][$key] ?? -1);
-            $func = 'colour_set_' . ucfirst($key);
 
-            if($value < 0 || $value > 0xFF) {
-                echo 'invalid colour value';
+            try {
+               $roleColour->{'set' . ucfirst($key)}($value);
+            } catch(\Exception $ex){
+                echo $ex->getMessage();
                 return;
             }
-
-            $func($roleColour, $value);
         }
     }
 
@@ -118,7 +117,7 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && CSRF::validateRequest()
     $updateRole->bind('role_name', $roleName);
     $updateRole->bind('role_hierarchy', $roleHierarchy);
     $updateRole->bind('role_hidden', $roleSecret ? 1 : 0);
-    $updateRole->bind('role_colour', $roleColour);
+    $updateRole->bind('role_colour', $roleColour->getRaw());
     $updateRole->bind('role_description', $roleDescription);
     $updateRole->bind('role_title', $roleTitle);
     $updateRole->execute();
@@ -179,7 +178,10 @@ if($roleId !== null) {
         return;
     }
 
-    Template::set(['edit_role' => $editRole]);
+    Template::set([
+        'edit_role' => $editRole,
+        'role_colour' => new Colour($editRole['role_colour']),
+    ]);
 }
 
 Template::render('manage.users.role', [

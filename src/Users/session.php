@@ -22,7 +22,7 @@ function user_session_create(
     ');
     $createSession->bind('user_id', $userId);
     $createSession->bind('session_ip', $ipAddress);
-    $createSession->bind('session_country', ip_country_code($ipAddress));
+    $createSession->bind('session_country', \Misuzu\Net\IPAddress::country($ipAddress));
     $createSession->bind('session_user_agent', $userAgent);
     $createSession->bind('session_key', $sessionKey);
 
@@ -123,7 +123,7 @@ function user_session_bump_active(int $sessionId, string $ipAddress = null): voi
         WHERE `session_id` = :session_id
     ');
     $bump->bind('session_id', $sessionId);
-    $bump->bind('last_ip', $ipAddress ?? ip_remote_address());
+    $bump->bind('last_ip', $ipAddress ?? \Misuzu\Net\IPAddress::remote());
     $bump->execute();
 }
 

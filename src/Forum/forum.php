@@ -226,7 +226,7 @@ function forum_get_colour(int $forumId): int {
         $forumId = $colourInfo['forum_parent'];
     }
 
-    return colour_none();
+    return 0x40000000;
 }
 
 function forum_increment_clicks(int $forumId): void {

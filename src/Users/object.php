@@ -2,6 +2,7 @@
 namespace Misuzu\Users;
 
 use Misuzu\DB;
+use Misuzu\Net\IPAddress;
 
 class User {
     private const USER_SELECT = '
@@ -42,7 +43,7 @@ class User {
         ')  ->bind('username', $username)->bind('email', $email)
             ->bind('register_ip', $ipAddress)->bind('last_ip', $ipAddress)
             ->bind('password', user_password_hash($password))
-            ->bind('user_country', ip_country_code($ipAddress))
+            ->bind('user_country', IPAddress::country($ipAddress))
             ->executeGetId();
 
         if($createUser < 1)

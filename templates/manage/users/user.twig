@@ -99,11 +99,11 @@
                 <label class="form__label">
                     <div class="form__label__text">Custom Colour</div>
                     <div class="form__label__input">
-                        {{ input_checkbox('colour[enable]', '', manage_user.user_colour is not null and not manage_user.user_colour|colour_inherit, '', '', false, null, not can_edit_user) }}
+                        {{ input_checkbox('colour[enable]', '', not user_colour.inherit, '', '', false, null, not can_edit_user) }}
                     </div>
                 </label>
 
-                {{ input_colour(can_edit_user ? 'colour[hex]' : '', '', manage_user.user_colour|default(0)|colour_hex) }}
+                {{ input_colour(can_edit_user ? 'colour[hex]' : '', '', '#%s'|format(user_colour.hex)) }}
             </div>
 
             {# TODO: if the hierarchy of the current user is too low to touch the role then opacity should be lowered and input disabled #}

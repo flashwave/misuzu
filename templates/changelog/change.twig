@@ -76,7 +76,7 @@
             <h1>{{ title }}</h1>
 
             {% if change.change_text|length >= 1 %}
-                {{ change.change_text|parse_text(constant('MSZ_PARSER_MARKDOWN'))|raw }}
+                {{ change.change_text|parse_text(constant('\\Misuzu\\Parsers\\Parser::MARKDOWN'))|raw }}
             {% else %}
                 <p>This change has no additional notes.</p>
             {% endif %}

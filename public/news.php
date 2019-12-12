@@ -16,7 +16,7 @@ $feedMode = trim($_SERVER['PATH_INFO'] ?? '', '/');
 $categoryId = !empty($_GET['c']) && is_string($_GET['c']) ? (int)$_GET['c'] : 0;
 $postId = !empty($_GET['p']) && is_string($_GET['p']) ? (int)$_GET['p'] : 0;
 
-if(!empty($feedMode) && news_feed_supported($feedMode)) {
+if(!empty($feedMode) && in_array($feedMode, ['rss', 'atom'])) {
     $location = empty($categoryId) ? url("news-feed-{$feedMode}") : url("news-category-feed-{$feedMode}", ['category' => $categoryId]);
 }
 

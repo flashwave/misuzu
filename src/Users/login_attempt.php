@@ -9,7 +9,7 @@ function user_login_attempt_record(bool $success, ?int $userId, string $ipAddres
 
     $storeAttempt->bind('attempt_success', $success ? 1 : 0);
     $storeAttempt->bind('attempt_ip', $ipAddress);
-    $storeAttempt->bind('attempt_country', ip_country_code($ipAddress));
+    $storeAttempt->bind('attempt_country', \Misuzu\Net\IPAddress::country($ipAddress));
     $storeAttempt->bind('attempt_user_agent', $userAgent);
     $storeAttempt->bind('user_id', $userId, $userId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
     $storeAttempt->execute();

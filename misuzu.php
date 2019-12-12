@@ -1,8 +1,11 @@
 <?php
 namespace Misuzu;
 
-use Misuzu\Database\{ Database, DatabaseMigrationManager };
 use PDO;
+use Misuzu\Database\Database;
+use Misuzu\Database\DatabaseMigrationManager;
+use Misuzu\Net\GeoIP;
+use Misuzu\Net\IPAddress;
 
 define('MSZ_STARTUP', microtime(true));
 define('MSZ_ROOT', __DIR__);
@@ -37,7 +40,6 @@ $errorHandler->register();
 
 require_once 'src/audit_log.php';
 require_once 'src/changelog.php';
-require_once 'src/colour.php';
 require_once 'src/comments.php';
 require_once 'src/manage.php';
 require_once 'src/news.php';
@@ -50,9 +52,6 @@ require_once 'src/Forum/poll.php';
 require_once 'src/Forum/post.php';
 require_once 'src/Forum/topic.php';
 require_once 'src/Forum/validate.php';
-require_once 'src/Net/geoip.php';
-require_once 'src/Net/ip.php';
-require_once 'src/Parsers/parse.php';
 require_once 'src/Users/auth.php';
 require_once 'src/Users/avatar.php';
 require_once 'src/Users/background.php';
@@ -384,7 +383,7 @@ MIG;
         exit;
     }
 
-    geoip_init(Config::get('geoip.database', Config::TYPE_STR, '/var/lib/GeoIP/GeoLite2-Country.mmdb'));
+    GeoIP::init(Config::get('geoip.database', Config::TYPE_STR, '/var/lib/GeoIP/GeoLite2-Country.mmdb'));
 
     if(!MSZ_DEBUG) {
         $twigCache = sys_get_temp_dir() . '/msz-tpl-cache-' . md5(MSZ_ROOT);
@@ -456,7 +455,7 @@ MIG;
     }
 
     CSRF::setGlobalSecretKey(Config::get('csrf.secret', Config::TYPE_STR, 'soup'));
-    CSRF::setGlobalIdentity(empty($userDisplayInfo) ? ip_remote_address() : $cookieData['session_token']);
+    CSRF::setGlobalIdentity(empty($userDisplayInfo) ? IPAddress::remote() : $cookieData['session_token']);
 
     if(Config::get('private.enabled', Config::TYPE_BOOL)) {
         $onLoginPage = $_SERVER['PHP_SELF'] === url('auth-login');

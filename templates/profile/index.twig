@@ -181,11 +181,11 @@
 
                                 {% if profile_is_editing %}
                                     <div class="profile__signature__editor">
-                                        {{ input_select('about[parser]', constant('MSZ_PARSERS_NAMES'), profile_user.user_about_parser, '', '', false, 'profile__about__select') }}
+                                        {{ input_select('about[parser]', constant('\\Misuzu\\Parsers\\Parser::NAMES'), profile_user.user_about_parser, '', '', false, 'profile__about__select') }}
                                         <textarea name="about[text]" class="input__textarea profile__about__text" id="about-textarea">{{ profile_user.user_about_content|escape }}</textarea>
                                     </div>
                                 {% else %}
-                                    <div class="profile__about__content{% if profile_is_editing %} profile__about__content--edit{% elseif profile_user.user_about_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
+                                    <div class="profile__about__content{% if profile_is_editing %} profile__about__content--edit{% elseif profile_user.user_about_parser == constant('\\Misuzu\\Parsers\\Parser::MARKDOWN') %} markdown{% endif %}">
                                         {{ profile_user.user_about_content|escape|parse_text(profile_user.user_about_parser)|raw }}
                                     </div>
                                 {% endif %}
@@ -198,11 +198,11 @@
 
                                 {% if profile_is_editing %}
                                     <div class="profile__signature__editor">
-                                        {{ input_select('signature[parser]', constant('MSZ_PARSERS_NAMES'), profile_user.user_signature_parser, '', '', false, 'profile__signature__select') }}
+                                        {{ input_select('signature[parser]', constant('\\Misuzu\\Parsers\\Parser::NAMES'), profile_user.user_signature_parser, '', '', false, 'profile__signature__select') }}
                                         <textarea name="signature[text]" class="input__textarea profile__signature__text" id="signature-textarea">{{ profile_user.user_signature_content|escape }}</textarea>
                                     </div>
                                 {% else %}
-                                    <div class="profile__signature__content{% if profile_is_editing %} profile__signature__content--edit{% elseif profile_user.user_signature_parser == constant('MSZ_PARSER_MARKDOWN') %} markdown{% endif %}">
+                                    <div class="profile__signature__content{% if profile_is_editing %} profile__signature__content--edit{% elseif profile_user.user_signature_parser == constant('\\Misuzu\\Parsers\\Parser::MARKDOWN') %} markdown{% endif %}">
                                     {{ profile_user.user_signature_content|escape|parse_text(profile_user.user_signature_parser)|raw }}
                                     </div>
                                 {% endif %}

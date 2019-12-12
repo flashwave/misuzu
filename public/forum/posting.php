@@ -1,6 +1,9 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Net\IPAddress;
+use Misuzu\Parsers\Parser;
+
 require_once '../../misuzu.php';
 
 if(!user_session_active()) {
@@ -40,13 +43,13 @@ if($mode === 'preview') {
     $postText = (string)($_POST['post']['text']);
     $postParser = (int)($_POST['post']['parser']);
 
-    if(!parser_is_valid($postParser)) {
+    if(!Parser::isValid($postParser)) {
         http_response_code(400);
         return;
     }
 
     http_response_code(200);
-    echo parse_text(htmlspecialchars($postText), $postParser);
+    echo Parser::instance($postParser)->parseText(htmlspecialchars($postText));
     return;
 }
 
@@ -129,7 +132,7 @@ $notices = [];
 if(!empty($_POST)) {
     $topicTitle = $_POST['post']['title'] ?? '';
     $postText = $_POST['post']['text'] ?? '';
-    $postParser = (int)($_POST['post']['parser'] ?? MSZ_PARSER_BBCODE);
+    $postParser = (int)($_POST['post']['parser'] ?? Parser::BBCODE);
     $topicType = isset($_POST['post']['type']) ? (int)$_POST['post']['type'] : null;
     $postSignature = isset($_POST['post']['signature']);
 
@@ -170,7 +173,7 @@ if(!empty($_POST)) {
             }
         }
 
-        if(!parser_is_valid($postParser)) {
+        if(!Parser::isValid($postParser)) {
             $notices[] = 'Invalid parser selected.';
         }
 
@@ -202,7 +205,7 @@ if(!empty($_POST)) {
                         $topicId,
                         $forum['forum_id'],
                         user_session_current('user_id', 0),
-                        ip_remote_address(),
+                        IPAddress::remote(),
                         $postText,
                         $postParser,
                         $postSignature
@@ -212,7 +215,7 @@ if(!empty($_POST)) {
                     break;
 
                 case 'edit':
-                    if(!forum_post_update($postId, ip_remote_address(), $postText, $postParser, $postSignature, $postText !== $post['post_text'])) {
+                    if(!forum_post_update($postId, IPAddress::remote(), $postText, $postParser, $postSignature, $postText !== $post['post_text'])) {
                         $notices[] = 'Post edit failed.';
                     }
 

@@ -7,7 +7,7 @@ function forum_post_create(
     int $userId,
     string $ipAddress,
     string $text,
-    int $parser = MSZ_PARSER_PLAIN,
+    int $parser = \Misuzu\Parsers\Parser::PLAIN,
     bool $displaySignature = true
 ): int {
     $createPost = \Misuzu\DB::prepare('
@@ -31,7 +31,7 @@ function forum_post_update(
     int $postId,
     string $ipAddress,
     string $text,
-    int $parser = MSZ_PARSER_PLAIN,
+    int $parser = \Misuzu\Parsers\Parser::PLAIN,
     bool $displaySignature = true,
     bool $bumpUpdate = true
 ): bool {

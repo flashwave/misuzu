@@ -4,6 +4,7 @@ namespace Misuzu;
 use Twig_Extension;
 use Twig_Filter;
 use Twig_Function;
+use Misuzu\Parsers\Parser;
 
 final class TwigMisuzu extends Twig_Extension {
     public function getFilters() {
@@ -13,19 +14,13 @@ final class TwigMisuzu extends Twig_Extension {
             new Twig_Filter('first_paragraph', 'first_paragraph'),
             new Twig_Filter('byte_symbol', 'byte_symbol'),
             new Twig_Filter('html_link', 'html_link'),
-            new Twig_Filter('parse_line', 'parse_line'),
-            new Twig_Filter('parse_text', 'parse_text'),
+            // deprecate this call, convert to html in php
+            new Twig_Filter('parse_text', fn(string $text, int $parser): string => Parser::instance($parser)->parseText($text)),
             new Twig_Filter('asset_url', [static::class, 'assetUrl']),
             new Twig_Filter('perms_check', 'perms_check'),
             new Twig_Filter('bg_settings', 'user_background_settings_strings'),
-            new Twig_Filter('colour_contrast', 'colour_get_css_contrast'),
-            new Twig_Filter('colour_props', 'colour_get_properties'),
-            new Twig_Filter('colour_hex', 'colour_get_hex'),
-            new Twig_Filter('colour_inherit', 'colour_get_inherit'),
             new Twig_Filter('clamp', 'clamp'),
-            new Twig_Filter('log_format', function (string $text, string $json): string {
-                return vsprintf($text, json_decode($json));
-            }),
+            new Twig_Filter('log_format', fn(string $text, string $json) => vsprintf($text, json_decode($json))),
         ];
     }
 
