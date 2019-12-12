@@ -1,21 +1,3 @@
-const MSZ_COLOUR_INHERIT = 0x40000000;
-
-function colourGetInherit(colour: number): boolean {
-    return colour === null || (colour & MSZ_COLOUR_INHERIT) > 0;
-}
-
-function colourGetHex(colour: number): string {
-    return '#' + (colour & 0xFFFFFF).toString(16);
-}
-
-function colourGetCSS(colour: number): string {
-    if(colourGetInherit(colour)) {
-        return 'inherit';
-    }
-
-    return colourGetHex(colour);
-}
-
 class Colour {
     private static readonly FLAG_INHERIT: number = 0x40000000;
 
