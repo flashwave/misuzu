@@ -200,7 +200,8 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
             href="javascript:void(0);" onClick={commentVoteEventHandler}>Dislike</a>);
     }
 
-    const commentText: HTMLDivElement = <div class="comment__text"></div>;
+    const commentText: HTMLDivElement = <div class="comment__text"></div>,
+        commentColour: Colour = new Colour(comment.user_colour);
 
     if(comment.comment_html)
         commentText.innerHTML = comment.comment_html;
@@ -218,7 +219,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
             <div class="comment__content">
                 <div class="comment__info">
                     <a class="comment__user comment__user--link" href={urlFormat('user-profile', [{name:'user',value:comment.user_id}])}
-                        style={"--user-colour: " + colourGetCSS(comment.user_colour)}>{comment.username}</a>
+                        style={"--user-colour: " + commentColour.GetCSS()}>{comment.username}</a>
                     <a class="comment__link" href={"#comment-" + comment.comment_id}>{commentTime}</a>
                 </div>
                 {commentText}

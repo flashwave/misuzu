@@ -22,7 +22,7 @@ class Colour {
     }
 
     public static function fromRgb(int $red, int $green, int $blue): self {
-        return (new static)->setRed($red)->getGreen($green)->setBlue($blue);
+        return (new static)->setRed($red)->setGreen($green)->setBlue($blue);
     }
     public static function fromHex(string $hex): self {
         return (new static)->setHex($hex);
@@ -133,12 +133,12 @@ class Colour {
         return '#' . $this->getHex();
     }
 
-    public static function extractCSSContract(
+    public function extractCSSContract(
         string $dark = 'dark', string $light = 'light', bool $inheritIsDark = true
     ): string {
         if($this->getInherit())
             return $inheritIsDark ? $dark : $light;
 
-        return $this->getLuminance($colour) > self::READABILITY_THRESHOLD ? $dark : $light;
+        return $this->getLuminance() > self::READABILITY_THRESHOLD ? $dark : $light;
     }
 }

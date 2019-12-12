@@ -37,5 +37,6 @@ function getCurrentUser(attribute: string = null) {
 
 function userInit(): void {
     refreshCurrentUserInfo();
-    console.log(`You are ${getCurrentUser('username')} with user id ${getCurrentUser('user_id')} and colour ${colourGetCSS(getCurrentUser('user_colour'))}.`);
+    let colour: Colour = new Colour(getCurrentUser('user_colour'));
+    console.log(`You are ${getCurrentUser('username')} with user id ${getCurrentUser('user_id')} and colour ${colour.GetCSS()}.`);
 }
