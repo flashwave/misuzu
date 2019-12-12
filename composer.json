@@ -7,9 +7,14 @@
         "issues": "https://github.com/flashwave/misuzu/issues"
     },
     "require": {
-        "php": "^7.2",
-        "ext-bcmath": "*",
+        "php": "^7.4",
+        "ext-curl": "*",
+        "ext-intl": "*",
+        "ext-json": "*",
         "ext-mbstring": "*",
+        "ext-pdo": "*",
+        "ext-xml": "*",
+        "ext-zip": "*",
         "twig/twig": "^2.0",
         "swiftmailer/swiftmailer": "~6.0",
         "erusev/parsedown": "~1.6",
