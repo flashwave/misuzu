@@ -9,7 +9,7 @@
 // text surrounded by { and } will be replaced by a CSRF token with the given text as its realm, this will have no effect in a sessionless environment
 define('MSZ_URLS', [
     'index'                             => ['/'],
-    'info'                              => ['/info.php/<title>'],
+    'info'                              => ['/info/<title>'],
     'media-proxy'                       => ['/proxy.php/<hash>/<url>'],
 
     'search-index'                      => ['/search.php'],

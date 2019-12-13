@@ -26,6 +26,9 @@ set_include_path(get_include_path() . PATH_SEPARATOR . MSZ_ROOT);
 
 require_once 'vendor/autoload.php';
 
+class_alias(\Misuzu\Http\HttpServerRequestMessage::class, '\Misuzu\Http\Handlers\Request');
+class_alias(\Misuzu\Http\Routing\RouterResponseMessage::class, '\Misuzu\Http\Handlers\Response');
+
 $errorHandler = new \Whoops\Run;
 $errorHandler->pushHandler(
     MSZ_CLI
@@ -74,18 +77,7 @@ if(empty($dbConfig)) {
 
 $dbConfig = $dbConfig['Database'] ?? $dbConfig['Database.mysql-main'] ?? [];
 
-DB::init(DB::buildDSN($dbConfig), $dbConfig['username'] ?? '', $dbConfig['password'] ?? '', [
-    PDO::ATTR_CASE => PDO::CASE_NATURAL,
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
-    PDO::ATTR_STRINGIFY_FETCHES => false,
-    PDO::ATTR_EMULATE_PREPARES => false,
-    PDO::MYSQL_ATTR_INIT_COMMAND => "
-        SET SESSION
-            sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION',
-            time_zone = '+00:00';
-    ",
-]);
+DB::init(DB::buildDSN($dbConfig), $dbConfig['username'] ?? '', $dbConfig['password'] ?? '', DB::ATTRS);
 
 Config::init();
 Mailer::init(Config::get('mail.method', Config::TYPE_STR), [
@@ -407,7 +399,6 @@ MIG;
         exit;
     }
 
-    // Remove this block at the start of April, 2 months is plenty for this to propagate
     if(!empty($_COOKIE['msz_uid']) && !empty($_COOKIE['msz_sid'])
         && ctype_digit($_COOKIE['msz_uid']) && ctype_xdigit($_COOKIE['msz_sid'])
         && strlen($_COOKIE['msz_sid']) === 64) {
