@@ -209,7 +209,8 @@ final class SockChatHandler extends Handler {
             if(user_password_verify_db($authInfo->user_id, mb_substr($authInfo->token, 5)))
                 $userId = $authInfo->user_id;
         } elseif($authMethod === 'SESS:') { // IMPROVE THIS
-            user_session_start($authInfo->user_id, mb_substr($authInfo->token, 5));
+            $tokenData = user_session_cookie_unpack(mb_substr($authInfo->token, 5), true));
+            user_session_start($authInfo->user_id, $tokenData['token']);
 
             if(user_session_active())
                 $userId = user_session_current('user_id');
