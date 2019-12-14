@@ -177,6 +177,15 @@ if(MSZ_CLI) {
                         ",
                     ],
                     [
+                        'name' => 'Remove old chat login tokens.',
+                        'type' => 'sql',
+                        'run' => true,
+                        'command' => "
+                            DELETE FROM `msz_user_chat_tokens`
+                            WHERE `token_created` < NOW() - INTERVAL 1 WEEK
+                        ",
+                    ],
+                    [
                         'name' => 'Clean up login history.',
                         'type' => 'sql',
                         'run' => true,
