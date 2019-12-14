@@ -200,15 +200,19 @@ final class SockChatHandler extends Handler {
         if(!hash_equals($realHash, $userHash))
             return ['success' => false, 'reason' => 'hash'];
 
-        $authMethod = substr($authInfo->token, 0, 5);
+        $authMethod = mb_substr($authInfo->token, 0, 5);
 
-        if($authMethod === 'PASS:')
-            return ['success' => false, 'reason' => 'unsupported'];
-        elseif($authMethod === 'SESS:') {
-            $sessionKey = substr($authInfo->token, 5);
+        if($authMethod === 'PASS:') { // DEPRECATE THIS
+            if(time() > 1577750400)
+                return ['success' => false, 'reason' => 'unsupported'];
 
-            // use session token to log in
-            return ['success' => false, 'reason' => 'unimplemented'];
+            if(user_password_verify_db($authInfo->user_id, mb_substr($authInfo->token, 5)))
+                $userId = $authInfo->user_id;
+        } elseif($authMethod === 'SESS:') { // IMPROVE THIS
+            user_session_start($authInfo->user_id, mb_substr($authInfo->token, 5));
+
+            if(user_session_active())
+                $userId = user_session_current('user_id');
         } else {
             try {
                 $token = ChatToken::get($authInfo->user_id, $authInfo->token);
