@@ -2,6 +2,7 @@
 namespace Misuzu\Http\Handlers;
 
 use Exception;
+use Misuzu\Base64;
 use Misuzu\Config;
 use Misuzu\DB;
 use Misuzu\Emoticon;
@@ -202,15 +203,23 @@ final class SockChatHandler extends Handler {
 
         $authMethod = mb_substr($authInfo->token, 0, 5);
 
-        if($authMethod === 'PASS:') { // DEPRECATE THIS
+        if($authMethod === 'PASS:') {
             if(time() > 1577750400)
                 return ['success' => false, 'reason' => 'unsupported'];
 
             if(user_password_verify_db($authInfo->user_id, mb_substr($authInfo->token, 5)))
                 $userId = $authInfo->user_id;
-        } elseif($authMethod === 'SESS:') { // IMPROVE THIS
-            $tokenData = user_session_cookie_unpack(mb_substr($authInfo->token, 5), true);
-            user_session_start($authInfo->user_id, $tokenData['token']);
+        } elseif($authMethod === 'SESS:') {
+            $sessionToken = mb_substr($authInfo->token, 5);
+            $tokenData = user_session_cookie_unpack(
+                Base64::decode($sessionToken, true),
+                true
+            );
+
+            if(isset($tokenData['session_token']))
+                $sessionToken = $tokenData['session_token'];
+
+            user_session_start($authInfo->user_id, $sessionToken);
 
             if(user_session_active())
                 $userId = user_session_current('user_id');
