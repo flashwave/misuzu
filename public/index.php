@@ -2,6 +2,7 @@
 namespace Misuzu;
 
 use Misuzu\Http\HttpServerRequestMessage;
+use Misuzu\Http\Filters\Filter;
 use Misuzu\Http\Handlers\Handler;
 use Misuzu\Http\Routing\Router;
 use Misuzu\Http\Routing\Route;
@@ -19,6 +20,9 @@ $router->addRoutes(
     // Info
     Route::get('/info', Handler::call('index@InfoHandler')),
     Route::get('/info/([A-Za-z0-9_/]+)', true, Handler::call('page@InfoHandler')),
+
+    // Forum
+    Route::create(['GET', 'POST'], '/forum/mark-as-read', Handler::call('markAsRead@ForumHandler')),
 
     // Sock Chat
     Route::create(['GET', 'POST'], '/_sockchat.php', Handler::call('phpFile@SockChatHandler')),

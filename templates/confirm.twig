@@ -1,0 +1,22 @@
+{% extends 'master.twig' %}
+{% from 'macros.twig' import container_title %}
+{% from '_layout/input.twig' import input_csrf %}
+
+{% set title = title|default('Confirm your action') %}
+
+{% block content %}
+    <form action="{{ action|default('') }}" method="{{ method|default('post') }}" class="container confirm">
+        {{ container_title('<i class="' ~ class|default('fas fa-exclamation-circle') ~ ' fa-fw"></i> ' ~ title) }}
+        {{ input_csrf() }}
+        {% for name, value in params|default([]) %}
+            <input type="hidden" name="{{ name }}" value="{{ value }}">
+        {% endfor %}
+        <div class="confirm__message">
+            {{ message|default('Are you sure you w') }}
+        </div>
+        <div class="confirm__buttons">
+            <button class="input__button confirm__button">Yes</button>
+            <a href="{{ return|default('/') }}" class="input__button confirm__button">No</a>
+        </div>
+    </form>
+{% endblock %}
