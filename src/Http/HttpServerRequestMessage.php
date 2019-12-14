@@ -86,12 +86,6 @@ class HttpServerRequestMessage extends HttpRequestMessage implements ServerReque
     public function withParsedBody($data) {
         return (clone $this)->setParsedBody($data);
     }
-    public function getBodyParam(string $name, ?string $default = null): ?string {
-        if(!is_array($this->parsedBody))
-            return $default;
-
-        return $this->parsedBody[$name] ?? $default;
-    }
 
     public function getAttributes() {
         return $this->attributes;

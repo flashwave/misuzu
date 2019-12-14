@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu\Users;
 
+use Misuzu\Colour;
 use Misuzu\DB;
 use Misuzu\Net\IPAddress;
 
@@ -73,6 +74,30 @@ class User {
 
     public function hasUserId(): bool {
         return isset($this->user_id) && $this->user_id > 0;
+    }
+    public function getUserId(): int {
+        return $this->user_id ?? 0;
+    }
+
+    public function hasUsername(): bool {
+        return isset($this->username);
+    }
+    public function getUsername(): string {
+        return $this->username ?? '';
+    }
+
+    public function hasColour(): bool {
+        return isset($this->user_colour);
+    }
+    public function getColour(): Colour {
+        return new Colour($this->getColourRaw());
+    }
+    public function getColourRaw(): int {
+        return $this->user_colour ?? 0x40000000;
+    }
+
+    public function getHierarchy(): int {
+        return $this->hasUserId() ? user_get_hierarchy($this->getUserId()) : 0;
     }
 
     public function hasPassword(): bool {

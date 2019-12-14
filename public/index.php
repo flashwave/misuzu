@@ -20,6 +20,14 @@ $router->addRoutes(
     Route::get('/info', Handler::call('index@InfoHandler')),
     Route::get('/info/([A-Za-z0-9_/]+)', true, Handler::call('page@InfoHandler')),
 
+    // Sock Chat
+    Route::create(['GET', 'POST'], '/_sockchat.php', Handler::call('phpFile@SockChatHandler')),
+    Route::get('/_sockchat/emotes', Handler::call('emotes@SockChatHandler')),
+    Route::get('/_sockchat/bans', Handler::call('bans@SockChatHandler')),
+    Route::get('/_sockchat/login', Handler::call('login@SockChatHandler')),
+    Route::post('/_sockchat/bump', Handler::call('bump@SockChatHandler')),
+    Route::post('/_sockchat/verify', Handler::call('verify@SockChatHandler')),
+
     // Redirects
     Route::get('/index.php', Handler::redirect(url('index'), true)),
     Route::get('/info.php', Handler::redirect(url('info'), true)),

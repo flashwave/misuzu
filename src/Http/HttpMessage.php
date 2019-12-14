@@ -48,7 +48,7 @@ abstract class HttpMessage implements MessageInterface {
         $lowerName = strtolower($name);
 
         foreach($this->headers as $headerName => $_)
-            if(strtolower($headerName) === $name)
+            if(strtolower($headerName) === $lowerName)
                 return $headerName;
 
         return $nullOnNone ? null : $name;
