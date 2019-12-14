@@ -221,8 +221,11 @@ final class SockChatHandler extends Handler {
 
             user_session_start($authInfo->user_id, $sessionToken);
 
-            if(user_session_active())
+            if(user_session_active()) {
                 $userId = user_session_current('user_id');
+                user_bump_last_active($userId);
+                user_session_bump_active(user_session_current('session_id'));
+            }
         } else {
             try {
                 $token = ChatToken::get($authInfo->user_id, $authInfo->token);
