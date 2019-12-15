@@ -5,10 +5,10 @@ use Misuzu\Http\HttpResponseMessage;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class EnforceLoggedInFilter implements FilterInterface {
+class EnforceLogOutFilter implements FilterInterface {
     public function process(ServerRequestInterface $request): ?ResponseInterface {
-        if(!user_session_active())
-            return new HttpResponseMessage(403);
+        if(user_session_active())
+            return new HttpResponseMessage(404);
 
         return null;
     }

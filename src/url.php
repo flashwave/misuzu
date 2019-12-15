@@ -40,8 +40,8 @@ define('MSZ_URLS', [
 
     'forum-index'                       => ['/forum'],
     'forum-leaderboard'                 => ['/forum/leaderboard.php',           ['id' => '<id>', 'mode' => '<mode>']],
-    'forum-mark-global'                 => ['/forum/index.php',                 ['m' => 'mark', 'csrf' => '{csrf}']],
-    'forum-mark-single'                 => ['/forum/index.php',                 ['m' => 'mark', 'csrf' => '{csrf}', 'f' => '<forum>']],
+    'forum-mark-global'                 => ['/forum/mark-as-read'],
+    'forum-mark-single'                 => ['/forum/mark-as-read',              ['forum' => '<forum>']],
     'forum-topic-new'                   => ['/forum/posting.php',               ['f' => '<forum>']],
     'forum-reply-new'                   => ['/forum/posting.php',               ['t' => '<topic>']],
     'forum-category'                    => ['/forum/forum.php',                 ['f' => '<forum>', 'p' => '<page>']],

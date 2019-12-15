@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     urlRegistryInit();
     userInit();
     userRelationsInit();
+    initDataRequestMethod();
 
     const changelogChangeAction: HTMLDivElement = document.querySelector('.changelog__change__action') as HTMLDivElement;
 

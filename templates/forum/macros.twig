@@ -55,7 +55,7 @@
             <div class="forum__header__actions">
                 {% for action in actions %}
                     {% if action.display is not defined or action.display %}
-                        <a class="forum__header__action{% if action.class is defined %}{{ action.class }}{% endif %}" href="{{ action.url }}">
+                        <a class="forum__header__action{% if action.class is defined %}{{ action.class }}{% endif %}" href="{{ action.url }}"{% if action.method is defined %} data-msz-method="{{ action.method }}"{% endif %}>
                             {{ action.html|raw }}
                         </a>
                     {% endif %}

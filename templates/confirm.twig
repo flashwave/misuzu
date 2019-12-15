@@ -9,13 +9,15 @@
         {{ container_title('<i class="' ~ class|default('fas fa-exclamation-circle') ~ ' fa-fw"></i> ' ~ title) }}
         {{ input_csrf() }}
         {% for name, value in params|default([]) %}
-            <input type="hidden" name="{{ name }}" value="{{ value }}">
+            {% if value is not empty %}
+                <input type="hidden" name="{{ name }}" value="{{ value }}"/>
+            {% endif %}
         {% endfor %}
         <div class="confirm__message">
             {{ message|default('Are you sure you w') }}
         </div>
         <div class="confirm__buttons">
-            <button class="input__button confirm__button">Yes</button>
+            <input type="submit" class="input__button confirm__button" value="Yes"/>
             <a href="{{ return|default('/') }}" class="input__button confirm__button">No</a>
         </div>
     </form>

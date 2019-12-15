@@ -68,3 +68,51 @@ function updateCSRF(token: string): void {
         elements[i].value = token;
     }
 }
+
+function handleDataRequestMethod(elem: HTMLAnchorElement, method: string, url: string): void {
+    const split: string[] = url.split('?', 2),
+        target: string = split[0],
+        query: string = split[1] || null;
+
+    if(elem.getAttribute('disabled'))
+        return;
+    elem.setAttribute('disabled', 'disabled');
+
+    const xhr: XMLHttpRequest = new XMLHttpRequest;
+    xhr.onreadystatechange = function(ev) {
+        if(xhr.readyState !== 4)
+            return;
+        elem.removeAttribute('disabled');
+
+        if(xhr.status === 301 || xhr.status === 302 || xhr.status === 307 || xhr.status === 308) {
+            location.assign(xhr.getResponseHeader('X-Misuzu-Location'));
+            return;
+        }
+
+        if(xhr.status >= 400 && xhr.status <= 599) {
+            alert(xhr.responseText);
+            return;
+        }
+    };
+    xhr.open(method, target);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader('X-Misuzu-CSRF', getCSRFToken());
+    xhr.setRequestHeader('X-Misuzu-XHR', '1');
+    xhr.send(query);
+}
+
+function initDataRequestMethod(): void {
+    const links: HTMLCollection = document.links;
+
+    for(let i = 0; i < links.length; i++) {
+        let elem: HTMLAnchorElement = links[i] as HTMLAnchorElement;
+
+        if(!elem.href || !elem.dataset || !elem.dataset.mszMethod)
+            continue;
+
+        elem.onclick = function(ev) {
+            ev.preventDefault();
+            handleDataRequestMethod(elem, elem.dataset.mszMethod, elem.href);
+        };
+    }
+}

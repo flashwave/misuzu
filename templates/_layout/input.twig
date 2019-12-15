@@ -1,6 +1,6 @@
 {% macro input_hidden(name, value) %}
 {% spaceless %}
-    <input type="hidden" name="{{ name }}" value="{{ value }}">
+    <input type="hidden" name="{{ name }}" value="{{ value }}"/>
 {% endspaceless %}
 {% endmacro %}
 
@@ -20,7 +20,7 @@
         {% if tabindex > 0 %}tabindex="{{ tabindex }}"{% endif %} {% if autofocus|default(false) %}autofocus{% endif %}
         {% for name, value in attributes|default([]) %}
             {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
-        {% endfor %}>
+        {% endfor %}/>
 {% endspaceless %}
 {% endmacro %}
 
@@ -33,7 +33,7 @@
         {% if value|length > 0 %}value="{{ value }}"{% endif %}
         {% for name, value in attributes|default([]) %}
             {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
-        {% endfor %}>
+        {% endfor %}/>
 {% endspaceless %}
 {% endmacro %}
 
@@ -61,7 +61,7 @@
         {% if accepts|length > 0 %}accept="{{ accepts|join(',') }}"{% endif %}
         {% for name, value in attributes|default([]) %}
             {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
-        {% endfor %}>
+        {% endfor %}/>
 {% endspaceless %}
 {% endmacro %}
 
@@ -113,7 +113,7 @@
     <label class="input__colour{% if class %} {{ class }}{% endif %}">
         <div class="input__colour__overlay"></div>
         <input type="color" {% if name|length > 0 %}name="{{ name }}"{% else %}readonly onclick="return false"{% endif %}
-        value="{{ value }}" class="input__colour__control">
+        value="{{ value }}" class="input__colour__control"/>
     </label>
 {% endspaceless %}
 {% endmacro %}

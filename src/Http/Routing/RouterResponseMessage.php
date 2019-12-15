@@ -46,9 +46,9 @@ class RouterResponseMessage extends HttpResponseMessage {
         return $this;
     }
 
-    public function redirect(string $path, bool $permanent = false): self {
+    public function redirect(string $path, bool $permanent = false, bool $xhr = false): self {
         $this->setStatusCode($permanent ? 301 : 302);
-        $this->setHeader('Location', $path);
+        $this->setHeader($xhr ? 'X-Misuzu-Location' : 'Location', $path);
         return $this;
     }
 

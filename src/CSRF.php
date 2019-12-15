@@ -45,7 +45,7 @@ final class CSRF {
     public static function header(...$args): string {
         return 'X-Misuzu-CSRF: ' . self::token(...$args);
     }
-    public static function validateRequest(?string $identity = null, ?string $secretKey = null): bool {
+    public static function validateRequest($identity = null, ?string $secretKey = null): bool {
         if(isset($_SERVER['HTTP_X_MISUZU_CSRF'])) {
             $token = $_SERVER['HTTP_X_MISUZU_CSRF'];
         } elseif(isset($_REQUEST['_csrf']) && is_string($_REQUEST['_csrf'])) { // Change this to $_POST later, it should never appear in urls

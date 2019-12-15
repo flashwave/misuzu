@@ -13,6 +13,7 @@
             'html': '<i class="far fa-check-circle"></i> Mark as Read',
             'url': url('forum-mark-single', {'forum': forum_info.forum_id}),
             'display': current_user is defined,
+            'method': 'POST',
         }
     ]) }}
 

@@ -8,13 +8,7 @@ $forumId = !empty($_GET['f']) && is_string($_GET['f']) ? (int)$_GET['f'] : 0;
 
 switch($indexMode) {
     case 'mark':
-        $markEntireForum = $forumId === 0;
-
-        if(user_session_active() && CSRF::validateRequest()) {
-            forum_mark_read($markEntireForum ? null : $forumId, user_session_current('user_id', 0));
-        }
-
-        url_redirect($markEntireForum ? 'forum-index' : 'forum-category', ['forum' => $forumId]);
+        url_redirect($forumId < 1 ? 'forum-mark-global' : 'forum-mark-single', ['forum' => $forumId]);
         break;
 
     default:

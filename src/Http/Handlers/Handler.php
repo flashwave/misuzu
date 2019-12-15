@@ -4,7 +4,7 @@ namespace Misuzu\Http\Handlers;
 abstract class Handler {
     public static function call(string $name): array {
         [$funcName, $className] = explode('@', $name, 2);
-        return [__NAMESPACE__ . '\\' . $className, $funcName];
+        return [__NAMESPACE__ . '\\' . $className . 'Handler', $funcName];
     }
 
     public static function redirect(string $location, bool $permanent = false): callable {

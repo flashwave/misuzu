@@ -66,6 +66,7 @@
         text-decoration: none;
         transition: color .2s;
         padding: 2px 5px;
+        transition: opacity .2s;
 
         &:hover,
         &:focus {
@@ -75,6 +76,10 @@
 
         &:not(:last-child) {
             margin-right: 5px;
+        }
+
+        &[disabled] {
+            opacity: .4;
         }
     }
 }
