@@ -37,7 +37,7 @@ $router->addRoutes(
     Route::get('/index.php', Handler::redirect(url('index'), true)),
     Route::get('/info.php', Handler::redirect(url('info'), true)),
     Route::get('/info.php/([A-Za-z0-9_/]+)', true, Handler::call('redir@Info')),
-    Route::get('/auth.php', Handler::call('legacy@AuthHandler'))
+    Route::get('/auth.php', Handler::call('legacy@Auth'))
 );
 
 $response = $router->handle($request);
