@@ -53,7 +53,7 @@ while(!empty($twofactor)) {
         $totp->generate(time() + 30),
     ];
 
-    if(!in_array($twofactor['code'], $acceptedCodes)) {
+    if(!in_array($twofactor['code'], $accepted)) {
         $notices[] = sprintf(
             "Invalid two factor code, %d attempt%s remaining",
             $remainingAttempts - 1,
