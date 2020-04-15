@@ -9,6 +9,7 @@ if(!user_session_active()) {
 }
 
 if(CSRF::validateRequest()) {
+    setcookie('msz_auth', '', -9001, '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
     setcookie('msz_auth', '', -9001, '/', '', !empty($_SERVER['HTTPS']), true);
     user_session_stop(true);
     url_redirect('index');
