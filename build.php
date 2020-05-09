@@ -7,25 +7,25 @@
  * NPM module files to be imported into /js/libraries.js
  */
 define('NODE_IMPORT_JS', [
-    'highlightjs/highlight.pack.min.js',
-    'timeago.js/dist/timeago.min.js',
-    'timeago.js/dist/timeago.locales.min.js',
+    //'highlightjs/highlight.pack.min.js',
+    //'timeago.js/dist/timeago.min.js',
+    //'timeago.js/dist/timeago.locales.min.js',
 ]);
 
 /**
  * NPM module files to be imported into /css/libraries.css
  */
 define('NODE_IMPORT_CSS', [
-    'highlightjs/styles/default.css',
-    'highlightjs/styles/tomorrow-night.css',
-    '@fortawesome/fontawesome-free/css/all.min.css',
+    //'highlightjs/styles/default.css',
+    //'highlightjs/styles/tomorrow-night.css',
+    //'@fortawesome/fontawesome-free/css/all.min.css',
 ]);
 
 /**
  * Directories to copy to the public folder
  */
 define('NODE_COPY_DIRECTORY', [
-    '@fortawesome/fontawesome-free/webfonts' => 'webfonts',
+    //'@fortawesome/fontawesome-free/webfonts' => 'webfonts',
 ]);
 
 /**
