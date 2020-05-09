@@ -3,6 +3,7 @@ namespace Misuzu\Net;
 
 use Exception;
 use InvalidArgumentException;
+use GeoIp2\Exception\AddressNotFoundException;
 
 final class IPAddress {
     public const VERSION_UNKNOWN = 0;
@@ -24,9 +25,9 @@ final class IPAddress {
     public static function country(string $address, string $fallback = 'XX'): string {
         try {
             return GeoIP::resolveCountry($address)->country->isoCode ?? $fallback;
-        } catch(Exception $e) {}
-
-        return $fallback;
+        } catch(AddressNotFoundException $e) {
+            return $fallback;
+        }
     }
 
     public static function rawWidth(int $version): int {
