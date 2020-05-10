@@ -1,0 +1,139 @@
+.profile__warning {
+    margin: 2px;
+    border-radius: 2px;
+    border: 1px solid var(--accent-colour);
+}
+.profile__warning__container {
+    margin: 2px 0;
+}
+
+.profile__warning--warning {
+    --accent-colour: #666;
+}
+
+.profile__warning--silence {
+    --accent-colour: #f70;
+}
+
+.profile__warning--ban {
+    --accent-colour: #c33;
+}
+
+.profile__warning--extendo {
+    margin: 4px;
+}
+
+.profile__warning__background {
+    background-color: var(--accent-colour);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.profile__warning__content {
+    background-color: var(--background-colour-translucent-9);
+    display: flex;
+    padding: 1px;
+}
+
+.profile__warning__type,
+.profile__warning__created,
+.profile__warning__duration {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile__warning__type {
+    min-width: 80px;
+    background-color: var(--accent-colour);
+    border-radius: 1px;
+    padding: 0 4px;
+}
+
+.profile__warning__created,
+.profile__warning__duration {
+    min-width: 100px;
+    padding: 0 4px;
+}
+
+.profile__warning__note {
+    padding: 1px 4px;
+    flex: 1 1 auto;
+}
+
+.profile__warning__private {
+    border-top: 1px solid var(--accent-colour);
+    margin-top: 1px;
+    width: 100%;
+    opacity: .5;
+    transition: opacity .2s;
+}
+.profile__warning__private:hover,
+.profile__warning__private:active,
+.profile__warning__private:focus {
+    opacity: 1;
+}
+
+.profile__warning__tools {
+    display: flex;
+    padding-bottom: 1px;
+}
+
+.profile__warning__options {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.profile__warning__option {
+    padding: 2px 5px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.profile__warning__user {
+    display: flex;
+    padding: 2px;
+    min-width: 300px;
+}
+
+.profile__warning__user__avatar {
+    width: 20px;
+    height: 20px;
+}
+
+.profile__warning__user__username {
+    padding: 0 5px;
+    min-width: 60px;
+    color: inherit;
+    text-decoration: none;
+}
+.profile__warning__user__username:hover,
+.profile__warning__user__username:focus,
+.profile__warning__user__username:active {
+    text-decoration: underline;
+}
+
+.profile__warning__user__ip {
+    display: inline-flex;
+    padding: 0 5px;
+}
+.profile__warning__user__ip:before { content: "("; }
+.profile__warning__user__ip:after { content: ")"; }
+
+
+@media (max-width: 800px) {
+    .profile__warning__content {
+        flex-wrap: wrap;
+    }
+    .profile__warning__tools {
+        flex-direction: column;
+    }
+    .profile__warning__options {
+        justify-content: flex-start;
+    }
+}

@@ -1,0 +1,64 @@
+.settings__role {
+    border: 1px solid var(--accent-colour);
+    background-color: var(--accent-colour);
+    border-radius: 2px;
+    margin: 2px;
+    overflow: hidden;
+    width: 200px;
+}
+
+.settings__role__collection {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 2px;
+}
+
+.settings__role__content {
+    background-color: var(--background-colour-translucent-9);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.settings__role__name {
+    font-size: 1.2em;
+    line-height: 1.7em;
+    border-bottom: 1px solid var(--accent-colour);
+    padding: 0 5px;
+}
+
+.settings__role__description {
+    font-size: .9em;
+    line-height: 1.8em;
+    padding: 0 2px;
+    margin: 0 2px;
+    flex: 1 1 auto;
+}
+
+.settings__role__options {
+    flex: 0 0 auto;
+    display: flex;
+    font-size: 1.5em;
+    justify-content: space-evenly;
+}
+
+.settings__role__option {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-shadow: inherit;
+    transition: color .2s;
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+}
+.settings__role__option:not(.settings__role__option--disabled):hover {
+    color: var(--accent-colour);
+    cursor: pointer;
+}
+.settings__role__option--disabled {
+    opacity: .2;
+}

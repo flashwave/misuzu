@@ -1,0 +1,14 @@
+.auth__login--disabled {
+    --accent-colour: #555;
+    opacity: .5;
+}
+.auth__login__header {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+.auth__login__avatar {
+    width: 100px;
+    height: 100px;
+    margin: 10px;
+}

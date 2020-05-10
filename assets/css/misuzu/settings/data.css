@@ -1,0 +1,11 @@
+.settings__data__content {
+    padding: 5px;
+}
+.settings__data__password {
+    display: block;
+    width: 100%;
+}
+.settings__data__actions {
+    margin-top: 5px;
+    text-align: center;
+}

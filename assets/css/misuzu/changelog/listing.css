@@ -1,0 +1,17 @@
+.changelog__listing__none {
+    margin: 1px 4px;
+}
+.changelog__listing__date {
+    display: block;
+    text-decoration: none;
+    padding: 1px 3px;
+    color: var(--accent-colour);
+    font-size: 1.2em;
+    line-height: 1.5em;
+}
+.changelog__listing__date:hover {
+    text-decoration: underline;
+}
+.changelog__listing__date:not(:first-child) {
+    margin-top: 4px;
+}

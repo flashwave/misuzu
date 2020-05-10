@@ -1,0 +1,15 @@
+.forum__confirm {
+    max-width: 400px;
+    margin: 0 auto;
+}
+.forum__confirm__message {
+    padding: 2px 5px;
+}
+.forum__confirm__buttons {
+    display: flex;
+    padding: 5px;
+    justify-content: center;
+}
+.forum__confirm__button {
+    margin-right: 5px;
+}

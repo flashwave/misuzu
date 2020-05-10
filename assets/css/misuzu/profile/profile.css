@@ -1,0 +1,38 @@
+.profile__container {
+    margin-bottom: 2px;
+}
+
+.profile__content {
+    display: flex;
+}
+.profile__content__main {
+    flex: 1 1 auto;
+    word-wrap: break-word;
+    overflow: hidden;
+}
+.profile__content__side {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 300px;
+    margin-right: 2px;
+}
+
+.profile__hidden {
+    display: none;
+}
+
+.profile__pagination {
+    margin: 2px 0;
+    padding: 5px;
+}
+
+.profile__background-settings__content {
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+}
+
+@media (max-width: 800px) {
+    .profile__content { flex-direction: column; }
+    .profile__content__side { max-width: 100%; }
+}

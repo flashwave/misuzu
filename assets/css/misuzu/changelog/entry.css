@@ -1,0 +1,99 @@
+.changelog__entry {
+    display: flex;
+    margin: 5px;
+}
+.changelog__entry__info { display: flex; }
+
+.changelog__entry__datetime,
+.changelog__entry__user,
+.changelog__entry__action {
+    --action-colour: inherit;
+
+    background-color: var(--action-colour);
+    color: var(--user-colour);
+    flex: 0 0 auto;
+    margin-right: 1px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+.changelog__entry__datetime:hover,
+.changelog__entry__datetime:focus,
+.changelog__entry__user:hover,
+.changelog__entry__user:focus,
+.changelog__entry__action:hover,
+.changelog__entry__action:focus {
+    text-decoration: underline;
+}
+.changelog__entry__datetime__text,
+.changelog__entry__user__text,
+.changelog__entry__action__text {
+    width: 100%;
+}
+.changelog__action--add     { --action-colour: #159635; }
+.changelog__action--remove  { --action-colour: #e33743; }
+.changelog__action--update  { --action-colour: #297b8a; }
+.changelog__action--fix     { --action-colour: #2d5e96; }
+.changelog__action--import  { --action-colour: #2b9678; }
+.changelog__action--revert  { --action-colour: #e38245; }
+
+.changelog__entry__datetime {
+    min-width: 100px;
+    text-align: center;
+}
+
+.changelog__entry__user {
+    min-width: 100px;
+    padding-left: 4px;
+}
+
+.changelog__entry__action {
+    border-radius: 2px;
+    min-width: 5px;
+}
+.changelog__entry__action__text {
+    text-align: right;
+    min-width: 80px;
+    padding-right: 4px;
+}
+
+.changelog__entry__log {
+    word-wrap: break-word;
+    overflow: hidden;
+    flex: 1 1 auto;
+    margin-left: 2px;
+}
+.changelog__entry__log--link {
+    color: inherit;
+    text-decoration: underline dotted;
+}
+.changelog__entry__log--link:hover {
+    text-decoration: underline solid;
+}
+
+.changelog__entry__tags {
+    display: flex;
+    flex-wrap: wrap;
+    font-size: .9em;
+    line-height: 1.5em;
+}
+
+.changelog__entry__tag {
+    border: 1px solid var(--accent-colour);
+    margin-right: 1px;
+    border-radius: 2px;
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    padding: 0 5px;
+}
+.changelog__entry__tag:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 800px) {
+    .changelog__entry { flex-wrap: wrap; }
+    .changelog__entry__user { flex-grow: 1; }
+    .changelog__entry__action { margin-right: 0; }
+    .changelog__entry__log { width: 100%; }
+}

@@ -1,0 +1,21 @@
+.search__none {
+    display: flex;
+}
+.search__none__icon {
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    text-align: center;
+    font-size: 3em;
+    flex: 0 0 auto;
+}
+.search__none__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1 1 auto;
+}
+.search__none__title {
+    font-size: 1.5em;
+    line-height: 1.5em;
+}

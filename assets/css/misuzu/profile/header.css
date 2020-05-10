@@ -1,0 +1,202 @@
+.profile__header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2px;
+    color: #fff;
+    background-color: var(--background-colour);
+
+    --profile-header-overlay-start: transparent;
+    --profile-header-overlay-stop: var(--background-colour-translucent-9);
+}
+
+.profile__header__background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--accent-colour) var(--background-pattern);
+    background-blend-mode: multiply;
+}
+
+.profile__header--has-header {
+    --profile-header-overlay-start: var(--background-colour-translucent-3);
+}
+
+.profile__header--has-header .profile__header__background {
+    background: var(--user-header) center / cover no-repeat;
+    background-blend-mode: unset;
+}
+
+.profile__header__avatar {
+    display: flex;
+}
+.profile__header__avatar__image {
+    width: 120px;
+    height: 120px;
+    z-index: 20;
+}
+.profile__header__avatar__image--edit {
+    cursor: pointer;
+}
+
+.profile__header__avatar__check {
+    display: none;
+}
+
+.profile__header__avatar__check:checked ~ .profile__header__avatar__option {
+    color: #111;
+    background-color: var(--accent-colour);
+    border-color: var(--accent-colour);
+}
+
+.profile__header__avatar__options {
+    z-index: 10;
+    margin-left: 2px;
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+}
+
+.profile__header__avatar__option {
+    display: inline-block;
+    margin-top: 2px;
+}
+.profile__header__avatar__option--delete {
+    --accent-colour: #c00;
+}
+
+.profile__header__details {
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    padding: 20px;
+    background-image: linear-gradient(0deg, var(--profile-header-overlay-stop), var(--profile-header-overlay-start));
+}
+.profile__header__details__content {
+    margin: 5px 10px;
+    flex: 1 1 auto;
+}
+
+.profile__header__details__relation {
+    font-variant: all-small-caps;
+    background: var(--profile-header-overlay-stop);
+    border-radius: 2px;
+    line-height: 1.2em;
+    padding: 1px 5px 4px;
+    cursor: default;
+}
+
+.profile__header__options {
+    min-height: 62px;
+    background-color: var(--profile-header-overlay-stop);
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.profile__header__actions {
+    display: flex;
+    align-items: center;
+}
+
+.profile__header__action {
+    margin-right: 5px;
+}
+
+.profile__header__stats {
+    display: flex;
+}
+
+.profile__header__stat {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    padding: 10px;
+    cursor: default;
+}
+.profile__header__stat--date {
+    min-width: 130px;
+}
+.profile__header__stat__name {
+    font-size: .9em;
+    font-variant: small-caps;
+    cursor: inherit;
+}
+.profile__header__stat__value {
+    font-size: 1.3em;
+    text-align: right;
+    cursor: inherit;
+    display: block;
+}
+.profile__header__stat--date .profile__header__stat__value {
+    text-align: left;
+}
+.profile__header__stat--link {
+    cursor: pointer;
+}
+
+.profile__header__stat--link:hover,
+.profile__header__stat--link:focus,
+.profile__header__stat--link:active,
+.profile__header__stat--active {
+    border-bottom: 2px solid var(--accent-colour);
+}
+
+.profile__header__username {
+    color: var(--user-colour);
+    font-size: 2em;
+    line-height: 1.5em;
+}
+
+.profile__header__title {
+    font-size: .9em;
+    line-height: 1.2em;
+}
+
+.profile__header__country {
+    display: inline-flex;
+    align-items: center;
+}
+.profile__header__country__name {
+    font-size: .9em;
+    margin-left: 4px;
+    line-height: 1.2em;
+}
+
+@media (max-width: 800px) {
+    .profile__header {
+        height: auto;
+        background-size: 800px auto;
+        background-position: center top;
+    }
+    .profile__header__avatar__image {
+        width: 80px;
+        height: 80px;
+    }
+    .profile__header__details {
+        flex-direction: column;
+        align-items: center;
+    }
+    .profile__header__details__content {
+        text-align: center;
+    }
+    .profile__header__options {
+        flex-direction: column;
+    }
+    .profile__header__actions {
+        flex-direction: column;
+    }
+    .profile__header__action {
+        margin-right: 0;
+        margin-bottom: 5px;
+        width: 100%;
+    }
+    .profile__header__stats {
+        flex-direction: column;
+        flex-wrap: wrap;
+    }
+    .profile__header__stat--date .profile__header__stat__value {
+        text-align: right;
+    }
+}

@@ -1,0 +1,46 @@
+.settings__account {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.settings__account__section {
+    margin: 5px;
+}
+.settings__account__section--confirm {
+    grid-column: 1 / span 2;
+}
+
+.settings__account__item {
+    padding-bottom: 5px;
+}
+.settings__account__item:not(:last-child) {
+    border-bottom: 1px solid #222;
+}
+
+.settings__account__title {
+    font-size: .9em;
+    line-height: 1.8em;
+}
+
+.settings__account__input {
+    width: 100%;
+}
+
+.settings__account__buttons {
+    display: flex;
+    margin-top: 5px;
+    justify-content: center;
+}
+
+.settings__account__button {
+    margin: 0 2px;
+}
+
+@media (max-width: 800px) {
+    .settings__account {
+        grid-template-columns: 1fr;
+    }
+    .settings__account__section {
+        grid-column: 1 / 1;
+    }
+}

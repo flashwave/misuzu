@@ -1,0 +1,13 @@
+.profile__birthdate__content {
+    padding: 2px 5px;
+}
+.profile__birthdate__select {
+    min-width: auto;
+}
+.profile__birthdate__label {
+    display: inline-block;
+}
+.profile__birthdate__title {
+    font-size: .9em;
+    line-height: 1.8em;
+}

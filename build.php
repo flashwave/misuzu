@@ -7,21 +7,11 @@
  * BEYOND THIS POINT YOU WON'T HAVE TO EDIT THE CONFIG PRETTY MUCH EVER
  */
 
-define('LESS_CMD', 'lessc --verbose %s %s');
-
 define('ASSETS_DIR', __DIR__ . '/assets');
-define('LESS_DIR', ASSETS_DIR . '/less');
 define('TS_DIR', ASSETS_DIR . '/typescript');
 
-define('LESS_ENTRY_POINT', '/main.less');
-
 define('PUBLIC_DIR', __DIR__ . '/public');
-define('CSS_DIR', PUBLIC_DIR . '/css');
 define('JS_DIR', PUBLIC_DIR . '/js');
-
-define('LESS_DEST', CSS_DIR . '/style.css');
-define('TS_DEST', JS_DIR . '/misuzu.js');
-define('TS_SRC', JS_DIR . '/misuzu');
 
 define('TWIG_DIRECTORY', sys_get_temp_dir() . '/msz-tpl-cache-' . md5(__DIR__));
 
@@ -60,7 +50,6 @@ function purge_dir(string $dir, string $pattern): void {
 }
 
 $doAll = empty($argv[1]) || $argv[1] === 'all';
-$doCss = $doAll || $argv[1] === 'css';
 $doJs = $doAll || $argv[1] === 'js';
 
 // Make sure we're running from the misuzu root directory.
@@ -68,29 +57,11 @@ chdir(__DIR__);
 
 build_log('Cleanup');
 
-if($doCss) {
-    create_dir(CSS_DIR);
-    purge_dir(CSS_DIR, '*.css');
-}
-
 if($doJs) {
     create_dir(JS_DIR);
     purge_dir(JS_DIR, '*.js');
     purge_dir(TS_DIR, '*.d.ts');
-}
 
-if($doCss) {
-    build_log();
-    build_log('Compiling LESS');
-
-    if(!is_file(LESS_DIR . LESS_ENTRY_POINT)) {
-        build_log('==> ERR: Entry point for this style does not exist (' . basename(LESS_ENTRY_POINT) . ')');
-    } else {
-        system(sprintf(LESS_CMD, escapeshellarg(LESS_DIR . LESS_ENTRY_POINT), LESS_DEST));
-    }
-}
-
-if($doJs) {
     build_log();
     build_log('Compiling TypeScript');
     build_log(shell_exec('tsc --extendedDiagnostics -p tsconfig.json'));

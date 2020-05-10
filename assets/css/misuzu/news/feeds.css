@@ -1,0 +1,29 @@
+.news__feeds {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 2px;
+    padding: 2px;
+}
+
+.news__feed {
+    display: flex;
+    color: inherit;
+    text-decoration: none;
+    font-size: 1.5em;
+    line-height: 32px;
+    height: 32px;
+    transition: background-color .2s;
+    border-radius: 4px;
+}
+.news__feed:hover,
+.news__feed:focus {
+    background-color: rgba(255, 255, 255, .2);
+}
+.news__feed:active {
+    background-color: rgba(255, 255, 255, .1);
+}
+.news__feed__icon {
+    width: 32px;
+    height: 32px;
+    text-align: center;
+}

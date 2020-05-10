@@ -1,0 +1,42 @@
+.profile__accounts__content {
+    display: flex;
+    flex-direction: column;
+    padding: 2px 5px;
+}
+
+.profile__accounts__item {
+    padding-bottom: 5px;
+}
+.profile__accounts__item:not(:last-child) {
+    border-bottom: 1px solid #222;
+}
+
+.profile__accounts__notice {
+    font-size: 1.2em;
+    line-height: 1.5em;
+    text-align: center;
+    padding: 10px;
+}
+
+.profile__accounts__title {
+    font-size: .9em;
+    line-height: 1.8em;
+}
+.profile__accounts__value {
+    font-size: 1.2em;
+    line-height: 1.2em;
+    color: inherit;
+    text-decoration: none;
+}
+
+.profile__accounts__input {
+    width: 100%;
+}
+
+.profile__accounts__link {
+    color: inherit;
+    text-decoration: underline dotted;
+}
+.profile__accounts__link:hover {
+    text-decoration: underline;
+}

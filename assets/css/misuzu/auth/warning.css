@@ -1,0 +1,10 @@
+.auth__warning {
+    margin: 5px;
+}
+.auth__warning--welcome {
+    --start-colour: var(--accent-colour);
+    --end-colour: #222;
+}
+.auth__warning__paragraph {
+    line-height: 2em;
+}

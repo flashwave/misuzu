@@ -1,0 +1,42 @@
+.settings__two-factor {
+    display: flex;
+    margin: 5px;
+}
+
+.settings__two-factor__code {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #fff;
+    flex: 0 0 auto;
+}
+.settings__two-factor__code__image {
+    vertical-align: middle;
+    flex: 0 0 auto;
+}
+.settings__two-factor__code__text {
+    color: #000;
+    flex: 0 0 auto;
+    font-size: 1.2em;
+    line-height: 1.5em;
+    font-family: var(--font-monospace);
+}
+
+.settings__two-factor__settings {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: 1 1 auto;
+}
+.settings__two-factor__settings__status {
+    font-size: 1.5em;
+    line-height: 2em;
+}
+
+@media (max-width: 800px) {
+    .settings__two-factor {
+        flex-direction: column;
+        align-items: center;
+    }
+}

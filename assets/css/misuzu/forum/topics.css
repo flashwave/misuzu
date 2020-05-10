@@ -1,0 +1,288 @@
+.forum__topics {
+    margin-bottom: 2px;
+    box-sizing: content-box;
+    overflow: auto;
+}
+.forum__topics__empty {
+    font-size: 1.2em;
+    line-height: 1.5em;
+    text-align: center;
+    padding: 10px;
+}
+.forum__topics__list {
+    display: flex;
+    flex-direction: column;
+    margin: 5px;
+    overflow: hidden;
+}
+
+.forum__topic {
+    border-radius: 2px;
+    background-color: rgba(17, 17, 17, .6);
+    transition: background-color .2s, box-shadow .2s, opacity .2s;
+}
+.forum__topic:nth-child(even) {
+    background-color: rgba(25, 25, 25, .6);
+}
+.forum__topic:hover,
+.forum__topic:focus {
+    background-color: rgba(34, 34, 34, .6);
+    box-shadow: 0 1px 4px #222;
+}
+.forum__topic:not(:last-child) {
+    margin-bottom: 4px;
+}
+.forum__topic--deleted {
+    opacity: .4;
+}
+.forum__topic--deleted .forum__topic:hover,
+.forum__topic--deleted .forum__topic:focus {
+    opacity: .8;
+}
+.forum__topic--locked {
+    opacity: .6;
+}
+.forum__topic--locked .forum__topic:hover,
+.forum__topic--locked .forum__topic:focus {
+    opacity: 1;
+}
+
+.forum__topic__link {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+}
+
+.forum__topic__container {
+    display: flex;
+    padding: 5px;
+    align-items: center;
+    min-height: 40px;
+    pointer-events: none;
+}
+
+.forum__topic__icon {
+    flex: 0 0 auto;
+    border-radius: 2px;
+    width: 30px;
+    height: 30px;
+    margin-right: 4px;
+    background-color: #333;
+    background-size: 60px 60px;
+    background-image: radial-gradient(ellipse at center, rgba(255, 255, 255, .2) 0%, rgba(0, 0, 0, .4) 100%);
+    box-shadow: 0 1px 4px #111;
+    font-size: 1.5em;
+    line-height: 1.5em;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1px 1px 0 2px;
+}
+.forum__topic__icon--wide {
+    width: 60px;
+}
+
+.forum__topic__icon--unread {
+    background-color: var(--accent-colour);
+}
+.forum__topic__icon--faded {
+    opacity: .3;
+}
+.forum__topic__icon__participated {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 4px;
+    height: 4px;
+    background-color: #fff;
+    border-radius: 100%;
+    box-shadow: 0 1px 2px #111;
+    pointer-events: initial;
+}
+.forum__topic__icon__priority {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    line-height: 30px;
+    font-size: .9em;
+    text-align: center;
+}
+
+.forum__topic__details {
+    margin: 0 4px;
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    line-height: 1.5em;
+    overflow: hidden;
+}
+
+.forum__topic__title {
+    font-size: 1.3em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.forum__topic__info {
+    font-size: .9em;
+}
+
+.forum__topic__stats,
+.forum__topic__activity {
+    display: flex;
+    flex: 0 0 auto;
+}
+
+.forum__topic__stats {
+    text-align: center;
+    min-width: 80px;
+    flex-direction: column;
+}
+
+.forum__topic__stat {
+    font-size: .9em;
+    line-height: 1.3em;
+    opacity: .7;
+    pointer-events: auto;
+    cursor: default;
+}
+.forum__topic__stat:first-child {
+    font-size: 1.4em;
+    opacity: 1;
+}
+
+.forum__topic__activity {
+    display: flex;
+    align-items: center;
+    text-align: right;
+    min-width: 200px;
+    line-height: 1.5em;
+}
+.forum__topic__activity__details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin: 0 8px;
+    flex: 1 1 auto;
+}
+.forum__topic__activity__post {
+    color: var(--accent-colour);
+    text-decoration: none;
+    pointer-events: initial;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+.forum__topic__activity__post:hover,
+.forum__topic__activity__post:focus {
+    text-decoration: underline;
+}
+
+.forum__topic__username {
+    color: var(--user-colour);
+    text-decoration: none;
+    pointer-events: initial;
+}
+.forum__topic__username:hover {
+    text-decoration: underline;
+}
+
+.forum__topic__avatar {
+    display: block;
+    flex: 0 0 auto;
+    text-decoration: none;
+    color: inherit;
+    width: 30px;
+    height: 30px;
+    pointer-events: initial;
+}
+
+.forum__topic__pagination {
+    display: flex;
+    align-items: center;
+    font-size: .9em;
+    line-height: 1.2em;
+}
+.forum__topic__pagination__separator {
+    margin: 0 8px;
+}
+.forum__topic__pagination__item {
+    color: inherit;
+    text-decoration: none;
+    pointer-events: initial;
+    margin: 0 1px;
+    padding: 2px 4px;
+    border-radius: 2px;
+    min-width: 25px;
+    height: 25px;
+    line-height: 20px;
+    text-align: center;
+    background-color: rgba(0, 0, 0, .2);
+    box-shadow: 0 1px 1px #111;
+    border-radius: 2px;
+    transition: background-color .2s, box-shadow .2s;
+}
+.forum__topic__pagination__item:hover,
+.forum__topic__pagination__item:focus {
+    background-color: rgba(0, 0, 0, .4);
+    box-shadow: 0 1px 4px #111;
+}
+
+
+@media (max-width: 800px) {
+    .forum__topic__container {
+        flex-wrap: wrap;
+    }
+    .forum__topic__details {
+        max-width: 70%;
+    }
+    .forum__topic__stats {
+        min-width: initial;
+        border-left-width: 0;
+        align-self: flex-start;
+        align-items: flex-end;
+        flex: 1 1 auto;
+    }
+    .forum__topic__stat {
+        font-size: 1em;
+        margin: 0 4px;
+    }
+    .forum__topic__activity {
+        min-width: 100%;
+    }
+    .forum__topic__activity__details {
+        margin: 1px 4px 0;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    .forum__topic__avatar {
+        display: none;
+    }
+    .forum__topic__pagination__separator {
+        display: none;
+    }
+    .forum__topic__pagination__item {
+        min-width: 30px;
+        height: 30px;
+        line-height: 26px;
+        font-size: 1.2em;
+    }
+}
+
+@media (min-width: 800px) {
+    .forum__topic__pagination {
+        position: absolute;
+        right: 0;
+    }
+}

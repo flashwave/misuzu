@@ -1,0 +1,88 @@
+.settings__login-attempts__pagination {
+    margin: 4px;
+}
+.settings__login-attempts__none {
+    padding: 2px 5px;
+    text-align: center;
+}
+
+.settings__login-attempt {
+    border: 1px solid var(--accent-colour);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 4px;
+}
+
+.settings__login-attempt--failed {
+    --accent-colour: #a00;
+    background-color: var(--accent-colour);
+}
+
+.settings__login-attempt--failed .settings__login-attempt__container {
+    background-color: rgba(17, 17, 17, .8);
+}
+
+.settings__login-attempt__container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.settings__login-attempt__important {
+    display: flex;
+    align-items: center;
+    font-size: 1.4em;
+    z-index: 2;
+}
+
+.settings__login-attempt__flag {
+    flex: 0 0 auto;
+    margin: 10px;
+    margin-right: 0;
+}
+
+.settings__login-attempt__description {
+    flex: 1 1 auto;
+    margin: 10px;
+}
+
+.settings__login-attempt__actions {
+    flex: 0 0 auto;
+    display: flex;
+}
+
+.settings__login-attempt__action {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-shadow: inherit;
+    padding: 10px;
+    cursor: pointer;
+    transition: color .2s;
+}
+.settings__login-attempt__action:hover {
+    color: var(--accent-colour);
+}
+
+.settings__login-attempt__details {
+    z-index: 1;
+    margin: 10px;
+    margin-top: -5px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.settings__login-attempt__detail {
+    display: inline-block;
+    margin-right: 2px;
+    min-width: 120px;
+}
+.settings__login-attempt__detail__title {
+    border-bottom: 1px solid var(--accent-colour);
+    font-weight: 700;
+    padding: 1px 5px;
+}
+.settings__login-attempt__detail__value {
+    padding: 1px 5px;
+}

@@ -1,0 +1,32 @@
+.forum__actions {
+    margin: 2px 0;
+    padding: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+}
+
+.forum__actions__pagination {
+    max-width: 500px;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+}
+
+.forum__actions__buttons {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: stretch;
+}
+.forum__actions__button {
+    margin-right: 5px;
+}
+
+@media (max-width: 800px) {
+    .forum__actions__pagination {
+        max-width: 100%;
+        flex-grow: 0;
+    }
+}

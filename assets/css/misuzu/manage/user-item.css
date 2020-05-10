@@ -100,9 +100,9 @@
 }
 .manage__user-item__action:hover,
 .manage__user-item__action:focus {
-    background-color: fade(#fff, 20%);
+    background-color: rgba(255, 255, 255, .2);
 }
 
 .manage__user-item__action:active {
-    background-color: fade(#fff, 10%);
+    background-color: rgba(255, 255, 255, .1);
 }

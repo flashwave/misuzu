@@ -1,0 +1,113 @@
+.forum__leaderboard__categories {
+    display: block;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    margin: 2px 0;
+    scrollbar-width: thin;
+}
+
+.forum__leaderboard__category {
+    display: inline-block;
+    color: inherit;
+    text-decoration: none;
+    margin: 2px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: background-color .2s;
+}
+.forum__leaderboard__category:hover,
+.forum__leaderboard__category:focus {
+    background-color: rgba(255, 255, 255, .2);
+}
+.forum__leaderboard__category--active,
+.forum__leaderboard__category:active {
+    background-color: rgba(255, 255, 255, .1);
+}
+
+.forum__leaderboard__markdown {
+    display: block;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    min-height: 500px;
+    margin: 2px auto;
+}
+
+.forum__leaderboard__user {
+    margin: 2px 0;
+    font-size: 1.2em;
+}
+.forum__leaderboard__user--rank-1 {
+    font-size: 1.6em;
+}
+.forum__leaderboard__user--rank-2,
+.forum__leaderboard__user--rank-3 {
+    font-size: 1.4em;
+}
+
+.forum__leaderboard__user__background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+}
+
+.forum__leaderboard__user__content {
+    display: flex;
+    pointer-events: none;
+}
+
+.forum__leaderboard__user__rank {
+    height: 40px;
+    min-width: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex: 0 0 auto;
+}
+.forum__leaderboard__user__rank:before {
+    content: "#";
+}
+.forum__leaderboard__user--rank-1 .forum__leaderboard__user__rank {
+    height: 50px;
+}
+
+.forum__leaderboard__user__avatar {
+    width: 40px;
+    height: 40px;
+    margin: 2px 7px;
+    flex: 0 0 auto;
+}
+.forum__leaderboard__user--rank-1 .forum__leaderboard__user__avatar {
+    width: 50px;
+    height: 50px;
+    margin: 2px;
+}
+
+.forum__leaderboard__user__username {
+    flex: 1 1 auto;
+    line-height: 30px;
+    padding: 5px;
+    margin: 2px;
+}
+.forum__leaderboard__user--rank-1 .forum__leaderboard__user__username {
+    line-height: 40px;
+}
+
+.forum__leaderboard__user__posts {
+    flex: 0 0 auto;
+    min-width: 150px;
+    border-left: 1px solid rgba(255, 255, 255, .2);
+    line-height: 30px;
+    padding: 5px;
+    margin: 2px;
+}
+
+.forum__leaderboard__user--rank-1 .forum__leaderboard__user__posts {
+    line-height: 40px;
+}

@@ -1,0 +1,11 @@
+.auth__buttons {
+    margin: 5px;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+}
+.auth__buttons__button--minor {
+    background-color: transparent;
+    border-color: transparent;
+    color: inherit;
+}
