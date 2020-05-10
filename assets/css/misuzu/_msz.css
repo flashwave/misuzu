@@ -1,0 +1,96 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    position: relative;
+    outline-style: none;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+}
+
+[hidden],
+.hidden {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+:root {
+    --font-size: 12px;
+    --line-height: 20px;
+    --font-regular: Tahoma, Geneva, 'Dejavu Sans', Arial, Helvetica, sans-serif;
+    --font-monospace: Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+    --site-max-width: 1200px;
+    --site-mobile-width: 800px;
+    --site-logo: url('/images/logos/imouto-default.png');
+
+    --header-height-desktop: 70px;
+    --header-height-mobile: 50px;
+
+    --background-image: initial;
+    --background-colour: #111;
+    --background-colour-translucent-1: rgba(17, 17, 17, 0.1);
+    --background-colour-translucent-2: rgba(17, 17, 17, 0.2);
+    --background-colour-translucent-3: rgba(17, 17, 17, 0.3);
+    --background-colour-translucent-4: rgba(17, 17, 17, 0.4);
+    --background-colour-translucent-5: rgba(17, 17, 17, 0.5);
+    --background-colour-translucent-6: rgba(17, 17, 17, 0.6);
+    --background-colour-translucent-7: rgba(17, 17, 17, 0.7);
+    --background-colour-translucent-8: rgba(17, 17, 17, 0.8);
+    --background-colour-translucent-9: rgba(17, 17, 17, 0.9);
+    --background-pattern: url('/images/clouds.png') fixed;
+
+    --container-colour: #161616;
+
+    --text-colour: #fff;
+    --text-colour-inverted: #000;
+
+    --user-colour: inherit;
+    --user-header: url('/images/pixel.png');
+    --accent-colour: #8559a5;
+    --header-accent-colour: var(--accent-colour);
+}
+
+html {
+    scrollbar-color: var(--accent-colour) var(--background-colour);
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    background-image: var(--background-image);
+    background-color: var(--background-colour);
+    font-size: var(--font-size);
+    line-height: var(--line-height);
+    font-family: var(--font-regular);
+    color: var(--text-colour);
+    background-attachment: fixed;
+    background-position: center center;
+}
+.main__wrapper {
+    max-width: var(--site-max-width);
+    width: 100%;
+    margin: 0 auto;
+    flex: 1 0 auto;
+}
+
+.main--bg-blend {
+    background-color: var(--accent-colour);
+    background-blend-mode: multiply;
+}
+.main--bg-slide   { animation: background-slide infinite linear 2s; }
+.main--bg-cover   { background-size: cover; }
+.main--bg-contain { background-size: contain; }
+.main--bg-stretch { background-size: 100% 100%; }
+.main--bg-tile    { background-size: auto; }
+
+.link {
+    color: var(--accent-colour);
+    text-decoration: none;
+}
+.link:hover, .link:focus { text-decoration: underline; }
+

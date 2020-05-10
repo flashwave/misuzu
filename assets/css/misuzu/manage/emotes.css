@@ -1,0 +1,50 @@
+.manage__emotes__actions {
+    margin: 2px;
+}
+
+.manage__emotes__emoticon {
+    max-width: 100px;
+    max-height: 100px;
+}
+
+.manage__emotes__list {
+    width: 100%;
+}
+
+.manage__emotes__entry {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2px;
+    text-align: center;
+}
+
+.manage__emotes__entry--header {
+    border-bottom: 1px solid var(--accent-colour);
+    padding-bottom: 2px;
+}
+
+.manage__emotes__entry__id,
+.manage__emotes__entry__order,
+.manage__emotes__entry__hierarchy {
+    min-width: 40px;
+}
+
+.manage__emotes__entry__string {
+    min-width: 150px;
+}
+
+.manage__emotes__entry__image {
+    flex: 1 1 auto;
+}
+
+.manage__emotes__entry__actions {
+    min-width: 170px;
+    display: flex;
+    justify-content: center;
+}
+.manage__emotes__entry__actions .input__button {
+    margin: 1px;
+    padding: 6px;
+}
+

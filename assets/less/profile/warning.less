@@ -1,7 +1,6 @@
 .profile__warning {
     margin: 2px;
     border-radius: 2px;
-    border: 1px solid @accent-colour;
     border: 1px solid var(--accent-colour);
 
     &__container {
@@ -25,7 +24,6 @@
     }
 
     &__background {
-        background-color: @accent-colour;
         background-color: var(--accent-colour);
         position: absolute;
         top: 0;
@@ -35,12 +33,11 @@
     }
 
     &__content {
-        background-color: @background-colour-translucent-9;
         background-color: var(--background-colour-translucent-9);
         display: flex;
         padding: 1px;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             flex-wrap: wrap;
         }
     }
@@ -55,7 +52,6 @@
 
     &__type {
         min-width: 80px;
-        background-color: @accent-colour;
         background-color: var(--accent-colour);
         border-radius: 1px;
         padding: 0 4px;
@@ -73,7 +69,6 @@
     }
 
     &__private {
-        border-top: 1px solid @accent-colour;
         border-top: 1px solid var(--accent-colour);
         margin-top: 1px;
         width: 100%;
@@ -91,7 +86,7 @@
         display: flex;
         padding-bottom: 1px;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             flex-direction: column;
         }
     }
@@ -102,7 +97,7 @@
         justify-content: flex-end;
         align-items: center;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             justify-content: flex-start;
         }
     }

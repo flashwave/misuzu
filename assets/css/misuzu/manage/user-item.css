@@ -1,0 +1,108 @@
+.manage__user-item {
+    display: flex;
+    text-shadow: 0 1px 4px #000;
+    box-shadow: 0 1px 4px #000A;
+    margin-bottom: 4px;
+}
+.manage__user-item:last-child {
+    margin-bottom: 0;
+}
+.manage__user-item--deleted {
+    opacity: .5;
+    transition: opacity .2s;
+}
+.manage__user-item--deleted:hover,
+.manage__user-item--deleted:focus,
+.manage__user-item--deleted:focus-within {
+    opacity: .8;
+}
+
+.manage__user-item__background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--accent-colour);
+}
+
+.manage__user-item__container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    background-color: var(--background-colour-translucent-9);
+    width: 100%;
+    height: 100%;
+    margin-left: 5px;
+    pointer-events: none;
+    transition: background-color .2s;
+}
+.manage__user-item:hover .manage__user-item__container,
+.manage__user-item:focus .manage__user-item__container,
+.manage__user-item:focus-within .manage__user-item__container {
+    background-color: var(--background-colour-translucent-8);
+}
+
+.manage__user-item__avatar {
+    width: 40px;
+    height: 40px;
+    margin: 10px;
+    flex: 0 0 auto;
+    overflow: hidden;
+}
+
+.manage__user-item__info {
+    display: inline-flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+}
+
+.manage__user-item__name {
+    font-size: 1.4em;
+    line-height: 1.4em;
+}
+
+.manage__user-item__details {
+    font-size: .9em;
+    line-height: 1.3em;
+    display: inline-flex;
+    align-items: center;
+}
+
+.manage__user-item__detail {
+    border-radius: 10px;
+    background-color: var(--accent-colour);
+    box-shadow: 0 1px 4px #111;
+    padding: 3px 8px;
+    pointer-events: initial;
+    margin: 2px;
+}
+
+.manage__user-item__actions {
+    display: flex;
+    flex: 0 0 auto;
+    margin: 10px;
+}
+
+.manage__user-item__action {
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    font-size: 1.5em;
+    border-radius: 2px;
+    margin: 5px;
+    margin-right: 0;
+    color: #fff;
+    cursor: pointer;
+    pointer-events: initial;
+    transition: background-color .2s;
+    text-align: center;
+}
+.manage__user-item__action:hover,
+.manage__user-item__action:focus {
+    background-color: fade(#fff, 20%);
+}
+
+.manage__user-item__action:active {
+    background-color: fade(#fff, 10%);
+}

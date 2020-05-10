@@ -1,0 +1,14 @@
+.manage__statistic {
+    border: 1px solid var(--accent-colour);
+    border-radius: 2px;
+    padding: 2px 5px;
+}
+.manage__statistic__name {
+    font-size: 1.1em;
+    line-height: 1.5em;
+}
+.manage__statistic__value {
+    text-align: right;
+    font-size: 1.5em;
+    line-height: 2em;
+}

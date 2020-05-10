@@ -1,0 +1,305 @@
+.flag {
+    display: inline-block;
+    width: 16px;
+    height: 11px;
+    background-image: url('/images/flag-sprite.png');
+    background-repeat: no-repeat;
+    font-size: 0;
+    background-position: top -276px left -368px;
+}
+.flag__container {
+    min-width: 16px;
+    min-height: 11px;
+    display: block;
+}
+
+/* Ax */
+.flag--ad { background-position: top 0 left  -48px; }
+.flag--ae { background-position: top 0 left  -64px; }
+.flag--af { background-position: top 0 left  -80px; }
+.flag--ag { background-position: top 0 left  -96px; }
+.flag--ai { background-position: top 0 left -128px; }
+.flag--al { background-position: top 0 left -176px; }
+.flag--am { background-position: top 0 left -192px; }
+.flag--an { background-position: top 0 left -208px; }
+.flag--ao { background-position: top 0 left -224px; }
+.flag--ar { background-position: top 0 left -272px; }
+.flag--as { background-position: top 0 left -288px; }
+.flag--at { background-position: top 0 left -304px; }
+.flag--au { background-position: top 0 left -320px; }
+.flag--aw { background-position: top 0 left -352px; }
+.flag--ax { background-position: top 0 left -368px; }
+.flag--az { background-position: top 0 left -400px; }
+
+/* Bx */
+.flag--ba { background-position: top -12px left      0; }
+.flag--bb { background-position: top -12px left  -16px; }
+.flag--bd { background-position: top -12px left  -48px; }
+.flag--be { background-position: top -12px left  -64px; }
+.flag--bf { background-position: top -12px left  -80px; }
+.flag--bg { background-position: top -12px left  -96px; }
+.flag--bh { background-position: top -12px left -112px; }
+.flag--bi { background-position: top -12px left -128px; }
+.flag--bj { background-position: top -12px left -144px; }
+.flag--bm { background-position: top -12px left -192px; }
+.flag--bn { background-position: top -12px left -208px; }
+.flag--bo { background-position: top -12px left -224px; }
+.flag--br { background-position: top -12px left -272px; }
+.flag--bs { background-position: top -12px left -288px; }
+.flag--bt { background-position: top -12px left -304px; }
+.flag--bv { background-position: top -12px left -336px; }
+.flag--bw { background-position: top -12px left -352px; }
+.flag--by { background-position: top -12px left -384px; }
+.flag--bz { background-position: top -12px left -400px; }
+
+/* Cx */
+.flag--ca { background-position: top -24px left      0; }
+.flag--cc { background-position: top -24px left  -32px; }
+.flag--cd { background-position: top -24px left  -48px; }
+.flag--cf { background-position: top -24px left  -80px; }
+.flag--cg { background-position: top -24px left  -96px; }
+.flag--ch { background-position: top -24px left -112px; width: 11px; }
+.flag--ci { background-position: top -24px left -128px; }
+.flag--ck { background-position: top -24px left -160px; }
+.flag--cl { background-position: top -24px left -176px; }
+.flag--cm { background-position: top -24px left -192px; }
+.flag--cn { background-position: top -24px left -208px; }
+.flag--co { background-position: top -24px left -224px; }
+.flag--cr { background-position: top -24px left -272px; }
+.flag--cs { background-position: top -24px left -288px; }
+.flag--cu { background-position: top -24px left -320px; }
+.flag--cv { background-position: top -24px left -336px; }
+.flag--cx { background-position: top -24px left -368px; }
+.flag--cy { background-position: top -24px left -384px; }
+.flag--cz { background-position: top -24px left -400px; }
+
+/* Dx */
+.flag--de { background-position: top -36px left  -64px; }
+.flag--dj { background-position: top -36px left -144px; }
+.flag--dk { background-position: top -36px left -160px; }
+.flag--dm { background-position: top -36px left -192px; }
+.flag--do { background-position: top -36px left -224px; }
+.flag--dz { background-position: top -36px left -400px; }
+
+/* Ex */
+.flag--ec { background-position: top -48px left  -32px; }
+.flag--ee { background-position: top -48px left  -64px; }
+.flag--eg { background-position: top -48px left  -96px; }
+.flag--eh { background-position: top -48px left -112px; }
+.flag--er { background-position: top -48px left -272px; }
+.flag--es { background-position: top -48px left -288px; }
+.flag--et { background-position: top -48px left -304px; }
+
+/* Fx */
+.flag--fi { background-position: top -60px left -128px; }
+.flag--fj { background-position: top -60px left -144px; }
+.flag--fk { background-position: top -60px left -160px; }
+.flag--fm { background-position: top -60px left -192px; }
+.flag--fo { background-position: top -60px left -224px; }
+.flag--fr { background-position: top -60px left -272px; }
+
+/* Gx */
+.flag--ga { background-position: top -72px left      0; }
+.flag--gb { background-position: top -72px left  -16px; }
+.flag--gd { background-position: top -72px left  -48px; }
+.flag--ge { background-position: top -72px left  -64px; }
+.flag--gf { background-position: top -72px left  -80px; }
+.flag--gh { background-position: top -72px left -112px; }
+.flag--gi { background-position: top -72px left -128px; }
+.flag--gl { background-position: top -72px left -176px; }
+.flag--gm { background-position: top -72px left -192px; }
+.flag--gn { background-position: top -72px left -208px; }
+.flag--gp { background-position: top -72px left -240px; }
+.flag--gq { background-position: top -72px left -256px; }
+.flag--gr { background-position: top -72px left -272px; }
+.flag--gs { background-position: top -72px left -288px; }
+.flag--gt { background-position: top -72px left -304px; }
+.flag--gu { background-position: top -72px left -320px; }
+.flag--gw { background-position: top -72px left -352px; }
+.flag--gy { background-position: top -72px left -384px; }
+
+/* Hx */
+.flag--hk { background-position: top -84px left -160px; }
+.flag--hm { background-position: top -84px left -192px; }
+.flag--hn { background-position: top -84px left -208px; }
+.flag--hr { background-position: top -84px left -272px; }
+.flag--ht { background-position: top -84px left -304px; }
+.flag--hu { background-position: top -84px left -320px; }
+
+/* Ix */
+.flag--id { background-position: top -96px left  -48px; }
+.flag--ie { background-position: top -96px left  -64px; }
+.flag--il { background-position: top -96px left -176px; }
+.flag--in { background-position: top -96px left -208px; }
+.flag--io { background-position: top -96px left -224px; }
+.flag--iq { background-position: top -96px left -256px; }
+.flag--ir { background-position: top -96px left -272px; }
+.flag--is { background-position: top -96px left -288px; }
+.flag--it { background-position: top -96px left -304px; }
+
+/* Jx */
+.flag--jm { background-position: top -108px left -192px; }
+.flag--jo { background-position: top -108px left -224px; }
+.flag--jp { background-position: top -108px left -240px; }
+
+/* Kx */
+.flag--ke { background-position: top -120px left  -64px; }
+.flag--kg { background-position: top -120px left  -96px; }
+.flag--kh { background-position: top -120px left -112px; }
+.flag--ki { background-position: top -120px left -128px; }
+.flag--km { background-position: top -120px left -192px; }
+.flag--kn { background-position: top -120px left -208px; }
+.flag--kp { background-position: top -120px left -240px; }
+.flag--kr { background-position: top -120px left -272px; }
+.flag--kw { background-position: top -120px left -352px; }
+.flag--ky { background-position: top -120px left -384px; }
+.flag--kz { background-position: top -120px left -400px; }
+
+/* Lx */
+.flag--la { background-position: top -132px left      0; }
+.flag--lb { background-position: top -132px left  -16px; }
+.flag--lc { background-position: top -132px left  -32px; }
+.flag--li { background-position: top -132px left -128px; }
+.flag--lk { background-position: top -132px left -160px; }
+.flag--lr { background-position: top -132px left -272px; }
+.flag--ls { background-position: top -132px left -288px; }
+.flag--lt { background-position: top -132px left -304px; }
+.flag--lu { background-position: top -132px left -320px; }
+.flag--lv { background-position: top -132px left -336px; }
+.flag--ly { background-position: top -132px left -384px; }
+
+/* Mx */
+.flag--ma { background-position: top -144px left      0; }
+.flag--mc { background-position: top -144px left  -32px; }
+.flag--md { background-position: top -144px left  -48px; }
+.flag--me { background-position: top -144px left  -64px; height: 12px; }
+.flag--mg { background-position: top -144px left  -96px; }
+.flag--mh { background-position: top -144px left -112px; }
+.flag--mk { background-position: top -144px left -160px; }
+.flag--ml { background-position: top -144px left -176px; }
+.flag--mm { background-position: top -144px left -192px; }
+.flag--mn { background-position: top -144px left -208px; }
+.flag--mo { background-position: top -144px left -224px; }
+.flag--mp { background-position: top -144px left -240px; }
+.flag--mq { background-position: top -144px left -256px; }
+.flag--mr { background-position: top -144px left -272px; }
+.flag--ms { background-position: top -144px left -288px; }
+.flag--mt { background-position: top -144px left -304px; }
+.flag--mu { background-position: top -144px left -320px; }
+.flag--mv { background-position: top -144px left -336px; }
+.flag--mw { background-position: top -144px left -352px; }
+.flag--mx { background-position: top -144px left -368px; }
+.flag--my { background-position: top -144px left -384px; }
+.flag--mz { background-position: top -144px left -400px; }
+
+/* Nx */
+.flag--na { background-position: top -156px left      0; }
+.flag--nc { background-position: top -156px left  -32px; }
+.flag--ne { background-position: top -156px left  -64px; }
+.flag--nf { background-position: top -156px left  -80px; }
+.flag--ng { background-position: top -156px left  -96px; }
+.flag--ni { background-position: top -156px left -128px; }
+.flag--nl { background-position: top -156px left -176px; }
+.flag--no { background-position: top -156px left -224px; }
+.flag--np { background-position: top -156px left -240px; width: 9px; }
+.flag--nr { background-position: top -156px left -272px; }
+.flag--nu { background-position: top -156px left -320px; }
+.flag--nz { background-position: top -156px left -400px; }
+
+/* Ox */
+.flag--ok { background-position: top -168px left -160px; }
+
+/* Px */
+.flag--pa { background-position: top -180px left      0; }
+.flag--pe { background-position: top -180px left  -64px; }
+.flag--pf { background-position: top -180px left  -80px; }
+.flag--pg { background-position: top -180px left  -96px; }
+.flag--ph { background-position: top -180px left -112px; }
+.flag--pk { background-position: top -180px left -160px; }
+.flag--pl { background-position: top -180px left -176px; }
+.flag--pm { background-position: top -180px left -192px; }
+.flag--pn { background-position: top -180px left -208px; }
+.flag--pr { background-position: top -180px left -272px; }
+.flag--ps { background-position: top -180px left -288px; }
+.flag--pt { background-position: top -180px left -304px; }
+.flag--pw { background-position: top -180px left -352px; }
+.flag--py { background-position: top -180px left -384px; }
+
+/* Qx */
+.flag--qa { background-position: top -192px left      0; }
+
+/* Rx */
+.flag--re { background-position: top -204px left  -64px; }
+.flag--ro { background-position: top -204px left -224px; }
+.flag--rs { background-position: top -204px left -288px; }
+.flag--ru { background-position: top -204px left -320px; }
+.flag--rw { background-position: top -204px left -352px; }
+
+/* Sx */
+.flag--sa { background-position: top -216px left      0; }
+.flag--sb { background-position: top -216px left  -16px; }
+.flag--sc { background-position: top -216px left  -32px; }
+.flag--sd { background-position: top -216px left  -48px; }
+.flag--se { background-position: top -216px left  -64px; }
+.flag--sg { background-position: top -216px left  -96px; }
+.flag--sh { background-position: top -216px left -112px; }
+.flag--si { background-position: top -216px left -128px; }
+.flag--sj { background-position: top -216px left -144px; }
+.flag--sk { background-position: top -216px left -160px; }
+.flag--sl { background-position: top -216px left -176px; }
+.flag--sm { background-position: top -216px left -192px; }
+.flag--sn { background-position: top -216px left -208px; }
+.flag--so { background-position: top -216px left -224px; }
+.flag--sr { background-position: top -216px left -272px; }
+.flag--st { background-position: top -216px left -304px; }
+.flag--sv { background-position: top -216px left -336px; }
+.flag--sy { background-position: top -216px left -384px; }
+.flag--sz { background-position: top -216px left -400px; }
+
+/* Tx */
+.flag--tc { background-position: top -228px left  -32px; }
+.flag--td { background-position: top -228px left  -48px; }
+.flag--tf { background-position: top -228px left  -80px; }
+.flag--tg { background-position: top -228px left  -96px; }
+.flag--th { background-position: top -228px left -112px; }
+.flag--tj { background-position: top -228px left -144px; }
+.flag--tk { background-position: top -228px left -160px; }
+.flag--tl { background-position: top -228px left -176px; }
+.flag--tm { background-position: top -228px left -192px; }
+.flag--tn { background-position: top -228px left -208px; }
+.flag--to { background-position: top -228px left -224px; }
+.flag--tr { background-position: top -228px left -272px; }
+.flag--tt { background-position: top -228px left -304px; }
+.flag--tv { background-position: top -228px left -336px; }
+.flag--tw { background-position: top -228px left -352px; }
+.flag--tz { background-position: top -228px left -400px; }
+
+/* Ux */
+.flag--ua { background-position: top -240px left      0; }
+.flag--ug { background-position: top -240px left  -96px; }
+.flag--um { background-position: top -240px left -192px; }
+.flag--us { background-position: top -240px left -288px; }
+.flag--uy { background-position: top -240px left -384px; }
+.flag--uz { background-position: top -240px left -400px; }
+
+/* Vx */
+.flag--va { background-position: top -252px left      0; }
+.flag--vc { background-position: top -252px left  -32px; }
+.flag--ve { background-position: top -252px left  -64px; }
+.flag--vg { background-position: top -252px left  -96px; }
+.flag--vi { background-position: top -252px left -128px; }
+.flag--vn { background-position: top -252px left -208px; }
+.flag--vu { background-position: top -252px left -320px; }
+
+/* Wx */
+.flag--wf { background-position: top -264px left  -80px; }
+.flag--ws { background-position: top -264px left -288px; }
+
+/* Yx */
+.flag--ye { background-position: top -288px left  -64px; }
+.flag--yt { background-position: top -288px left -304px; }
+
+/* Zx */
+.flag--za { background-position: top -300px left      0; }
+.flag--zm { background-position: top -300px left -192px; }
+.flag--zw { background-position: top -300px left -352px; }

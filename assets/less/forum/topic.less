@@ -50,7 +50,7 @@
         min-height: 40px;
         pointer-events: none;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             flex-wrap: wrap;
         }
     }
@@ -78,7 +78,6 @@
         }
 
         &--unread {
-            background-color: @accent-colour;
             background-color: var(--accent-colour);
         }
 
@@ -119,7 +118,7 @@
         line-height: 1.5em;
         overflow: hidden;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             max-width: 70%;
         }
     }
@@ -146,7 +145,7 @@
         min-width: 80px;
         flex-direction: column;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             min-width: initial;
             border-left-width: 0;
             align-self: flex-start;
@@ -167,7 +166,7 @@
             opacity: 1;
         }
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             font-size: 1em;
             margin: 0 4px;
         }
@@ -180,7 +179,7 @@
         min-width: 200px;
         line-height: 1.5em;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             min-width: 100%;
         }
 
@@ -191,7 +190,7 @@
             margin: 0 8px;
             flex: 1 1 auto;
 
-            @media (max-width: @site-mobile-width) {
+            @media (max-width: 800px) {
                 margin: 1px 4px 0;
                 flex-direction: row;
                 justify-content: space-between;
@@ -199,7 +198,6 @@
         }
 
         &__post {
-            color: @accent-colour;
             color: var(--accent-colour);
             text-decoration: none;
             pointer-events: initial;
@@ -215,7 +213,6 @@
     }
 
     &__username {
-        color: @user-colour;
         color: var(--user-colour);
         text-decoration: none;
         pointer-events: initial;
@@ -234,7 +231,7 @@
         height: 30px;
         pointer-events: initial;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             display: none;
         }
     }
@@ -245,7 +242,7 @@
         font-size: .9em;
         line-height: 1.2em;
 
-        @media (min-width: @site-mobile-width) {
+        @media (min-width: 800px) {
             position: absolute;
             right: 0;
         }
@@ -253,7 +250,7 @@
         &__separator {
             margin: 0 8px;
 
-            @media (max-width: @site-mobile-width) {
+            @media (max-width: 800px) {
                 display: none;
             }
         }
@@ -274,7 +271,7 @@
             border-radius: 2px;
             transition: background-color .2s, box-shadow .2s;
 
-            @media (max-width: @site-mobile-width) {
+            @media (max-width: 800px) {
                 min-width: 30px;
                 height: 30px;
                 font-size: 1.2em;

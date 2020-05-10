@@ -1,0 +1,25 @@
+.manage {
+    display: flex;
+}
+.manage__sidebar {
+    flex: 0 0 auto;
+    width: 280px;
+}
+.manage__content {
+    flex: 1 1 auto;
+}
+.manage__description {
+    font-size: .9em;
+    margin: 1px 2px;
+    border-bottom: 1px solid var(--accent-colour);
+    padding: 2px 5px;
+}
+
+@media (max-width: 800px) {
+    .manage {
+        flex-direction: column;
+    }
+    .manage__sidebar {
+        width: 100%;
+    }
+}

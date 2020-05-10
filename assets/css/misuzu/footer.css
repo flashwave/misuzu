@@ -1,0 +1,30 @@
+.footer {
+    flex: 0 0 auto;
+}
+.footer__link {
+    color: inherit;
+    text-decoration: none;
+}
+.footer__link:hover {
+    text-decoration: underline;
+}
+.footer__wrapper {
+    max-width: var(--site-max-width);
+    margin: 0 auto;
+    text-align: center;
+    font-size: .9em;
+    line-height: 1.5em;
+    padding: 1em 0;
+}
+.footer__background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    mask-image: linear-gradient(180deg, transparent 10%, var(--background-colour) 100%);
+    -webkit-mask-image: linear-gradient(180deg, transparent 10%, var(--background-colour) 100%);
+    background: var(--background-pattern);
+    background-color: var(--header-accent-colour);
+    background-blend-mode: multiply;
+}

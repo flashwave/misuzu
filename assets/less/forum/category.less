@@ -34,7 +34,7 @@
         min-height: 50px;
         pointer-events: none;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             flex-wrap: wrap;
         }
     }
@@ -58,7 +58,6 @@
         padding-bottom: 1px; // fixes centering
 
         &--unread {
-            background-color: @accent-colour;
             background-color: var(--accent-colour);
         }
     }
@@ -71,7 +70,7 @@
         flex-direction: column;
         line-height: 1.5em;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             flex-basis: calc(100% - 100px);
         }
     }
@@ -92,7 +91,6 @@
     &__subforum {
         padding: 2px;
         pointer-events: initial;
-        color: @accent-colour;
         color: var(--accent-colour);
         text-decoration: none;
 
@@ -116,7 +114,7 @@
         min-width: 100px;
         flex-direction: column;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             min-width: initial;
             border-left-width: 0;
             align-self: flex-start;
@@ -135,7 +133,7 @@
             opacity: 1;
         }
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             font-size: 1em;
             margin: 0 4px;
         }
@@ -146,7 +144,7 @@
         min-width: 270px;
         line-height: 1.5em;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             min-width: 100%;
 
             &--empty {
@@ -159,7 +157,7 @@
             margin: 0 8px;
             flex: 1 1 auto;
 
-            @media (max-width: @site-mobile-width) {
+            @media (max-width: 800px) {
                 margin: 1px 4px 0;
             }
         }
@@ -169,13 +167,12 @@
             flex-direction: column;
             align-items: flex-end;
 
-            @media (max-width: @site-mobile-width) {
+            @media (max-width: 800px) {
                 flex-direction: row;
             }
         }
 
         &__post {
-            color: @accent-colour;
             color: var(--accent-colour);
             text-decoration: none;
             pointer-events: initial;
@@ -188,7 +185,7 @@
                 text-decoration: underline;
             }
 
-            @media (max-width: @site-mobile-width) {
+            @media (max-width: 800px) {
                 flex: 1 0 auto;
                 text-align: left;
                 max-width: 120px;
@@ -196,14 +193,13 @@
         }
 
         &__info {
-            @media (max-width: @site-mobile-width) {
+            @media (max-width: 800px) {
                 width: 100%;
             }
         }
     }
 
     &__username {
-        color: @user-colour;
         color: var(--user-colour);
         text-decoration: none;
         pointer-events: initial;
@@ -222,7 +218,7 @@
         height: 40px;
         pointer-events: initial;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             display: none;
         }
     }

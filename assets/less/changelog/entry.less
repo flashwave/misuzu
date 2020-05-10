@@ -2,7 +2,7 @@
     display: flex;
     margin: 5px;
 
-    @media (max-width: @site-mobile-width) {
+    @media (max-width: 800px) {
         flex-wrap: wrap;
     }
 
@@ -15,8 +15,6 @@
     &__action {
         --action-colour: inherit;
 
-        background-color: @accent-colour;
-        color: @user-colour;
         background-color: var(--action-colour);
         color: var(--user-colour);
         flex: 0 0 auto;
@@ -43,7 +41,7 @@
         min-width: 100px;
         padding-left: 4px;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             flex-grow: 1;
         }
     }
@@ -58,7 +56,7 @@
             padding-right: 4px;
         }
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             margin-right: 0;
         }
     }
@@ -69,7 +67,7 @@
         flex: 1 1 auto;
         margin-left: 2px;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             width: 100%;
         }
 
@@ -91,7 +89,6 @@
     }
 
     &__tag {
-        border: 1px solid @accent-colour;
         border: 1px solid var(--accent-colour);
         margin-right: 1px;
         border-radius: 2px;

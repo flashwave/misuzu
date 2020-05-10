@@ -1,14 +1,14 @@
 .settings__wrapper {
     display: flex;
 
-    @media (max-width: @site-mobile-width) {
+    @media (max-width: 800px) {
         flex-direction: column;
     }
 
     &__sidebar {
         flex: 0 0 auto;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             width: 100%;
         }
     }
@@ -21,7 +21,7 @@
         width: 280px;
         margin-right: 2px;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             width: 100%;
         }
     }
@@ -38,11 +38,10 @@
         transition: background-color .2s;
 
         &:hover {
-            background-color: @background-colour-translucent-9;
             background-color: var(--background-colour-translucent-9);
         }
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             display: inline-block;
             padding: 4px 10px;
         }

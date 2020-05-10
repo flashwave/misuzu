@@ -1,0 +1,170 @@
+.usercard {
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow .5s;
+    z-index: 1;
+    color: #fff;
+    background-color: var(--background-colour);
+    box-shadow: 0 1px 2px #000A;
+    text-shadow: 0 1px 4px #000;
+    overflow: hidden;
+    flex: 1 1 auto;
+
+    --usercard-header-overlay-start: transparent;
+    --usercard-header-overlay-stop: var(--background-colour-translucent-9);
+}
+.usercard:hover {
+    box-shadow: 0 1px 4px #000;
+    z-index: 2;
+}
+.usercard__background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--accent-colour) var(--background-pattern);
+    background-blend-mode: multiply;
+}
+
+.usercard__header {
+    flex: 0 0 auto;
+}
+.usercard__header__link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.usercard__header__avatar {
+    width: 60px;
+    height: 60px;
+    z-index: 20;
+}
+
+.usercard__header__container {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-image: linear-gradient(0deg, var(--usercard-header-overlay-stop), var(--usercard-header-overlay-start));
+    pointer-events: none;
+}
+
+.usercard__header__details {
+    margin: 0 10px;
+    flex: 1 1 auto;
+}
+
+.usercard__header__relation {
+    font-variant: all-small-caps;
+    background: var(--usercard-header-overlay-stop);
+    border-radius: 2px;
+    line-height: 1.2em;
+    padding: 1px 5px 4px;
+    cursor: default;
+}
+
+.usercard__header__username {
+    font-size: 1.5em;
+    line-height: 1.3em;
+}
+
+.usercard__header__title {
+    font-size: .9em;
+    line-height: 1.2em;
+}
+
+.usercard__header__country {
+    display: inline-flex;
+    align-items: center;
+}
+.usercard__header__country__name {
+    font-size: .9em;
+    margin-left: 4px;
+    line-height: 1.2em;
+}
+
+.usercard__container {
+    flex: 1 1 auto;
+    background-color: var(--usercard-header-overlay-stop);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.usercard__dates {
+    font-size: .9em;
+    line-height: 1em;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex: 0 0 auto;
+    margin-bottom: 4px;
+}
+.usercard__date {
+    padding: 4px;
+}
+
+.usercard__stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+}
+.usercard__stat {
+    display: flex;
+    flex-direction: column-reverse;
+    color: inherit;
+    text-decoration: none;
+    padding: 5px 10px;
+    cursor: default;
+    flex: 0 0 auto;
+    text-align: right;
+}
+.usercard__stat[href] {
+    cursor: pointer;
+}
+.usercard__stat[href]:hover,
+.usercard__stat[href]:focus {
+    border-bottom: 2px solid var(--accent-colour);
+    padding-bottom: 3px;
+}
+.usercard__stat__name {
+    font-size: .9em;
+    font-variant: small-caps;
+    cursor: inherit;
+}
+.usercard__stat__value {
+    font-size: 1.3em;
+    cursor: inherit;
+    display: block;
+}
+
+.usercard__actions {
+    flex: 0 0 auto;
+    display: flex;
+    height: 38px;
+}
+.usercard__action {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: inherit;
+    text-decoration: none;
+    font-size: 1.5em;
+    transition: background-color .2s;
+    text-align: center;
+    cursor: pointer;
+}
+.usercard__action:hover,
+.usercard__action:focus { background-color: rgba(255, 255, 255, .2); }
+.usercard__action:active { background-color: rgba(255, 255, 255, .1); }
+
+@media (max-width: 800px) {
+    .usercard__header__details {
+        text-align: center;
+    }
+}

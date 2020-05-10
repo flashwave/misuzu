@@ -1,0 +1,17 @@
+.manage__emote__field {
+    display: flex;
+    margin: 2px;
+    align-items: center;
+}
+.manage__emote__field__name {
+    min-width: 100px;
+    padding: 5px;
+}
+.manage__emote__field__value {
+    flex: 1 1 auto;
+}
+
+.manage__emote__actions {
+    text-align: center;
+    margin: 5px;
+}

@@ -1,0 +1,17 @@
+.manage__user__container {
+    margin-bottom: 2px;
+}
+.manage__user__buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.manage__user__button {
+    margin: 5px 2px;
+}
+.manage__user__details {
+    margin: 5px;
+}
+.manage__user__input {
+    width: 100%;
+}

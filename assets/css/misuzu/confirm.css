@@ -1,0 +1,11 @@
+.confirm {
+    max-width: 400px;
+    margin: 0 auto;
+}
+.confirm__buttons {
+    display: flex;
+    padding: 5px;
+    justify-content: center;
+}
+.confirm__message { padding: 2px 5px; }
+.confirm__button { margin-right: 5px; }

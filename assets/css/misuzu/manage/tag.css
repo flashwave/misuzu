@@ -1,0 +1,33 @@
+.manage__tag {
+    border-radius: 2px;
+    border: 1px solid var(--accent-colour);
+    background-color: var(--accent-colour);
+    display: inline-block;
+}
+.manage__tag__background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--background-colour-translucent-9);
+    transition: background-color .2s;
+}
+.manage__tag:hover .manage__tag__background,
+.manage__tag:focus .manage__tag__background,
+.manage__tag:focus-within .manage__tag__background {
+    background-color: var(--background-colour-translucent-8);
+}
+.manage__tag__content {
+    margin: 4px;
+    display: flex;
+}
+.manage__tag__checkbox {
+    vertical-align: middle;
+    margin: 0;
+    flex: 0 0 auto;
+}
+.manage__tag__title {
+    flex: 1 1 auto;
+    margin: 0 4px;
+}

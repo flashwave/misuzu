@@ -1,0 +1,16 @@
+.manage__statistics {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 5px;
+    grid-gap: 5px;
+}
+@media (max-width: 900px) {
+    .manage__statistics {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 500px) {
+    .manage__statistics {
+        grid-template-columns: 1fr;
+    }
+}

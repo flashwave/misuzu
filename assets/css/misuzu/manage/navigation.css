@@ -1,0 +1,17 @@
+.manage__navigation {
+    margin: 0 2px 2px;
+}
+.manage__navigation__links {
+    display: flex;
+    flex-direction: column;
+    font-size: 1.2em;
+}
+.manage__navigation__link {
+    color: inherit;
+    text-decoration: none;
+    padding: 2px 5px;
+    margin-bottom: 2px;
+}
+.manage__navigation__link:hover {
+    text-decoration: underline;
+}

@@ -1,0 +1,28 @@
+.input__upload {
+    display: inline-block;
+    cursor: pointer;
+    margin: 1px 0;
+}
+.input__upload__input {
+    display: inline-block;
+    position: absolute;
+    z-index: -1000;
+}
+.input__upload__selection {
+    text-align: center;
+    font-size: 1.2em;
+    border: 1px solid #222;
+    padding: 5px 10px;
+    background: #222;
+    color: #fff;
+    border-radius: 2px;
+    box-shadow: inset 0 0 4px #111;
+    transition: border-color .2s;
+    overflow: hidden;
+    word-wrap: break-word;
+}
+.input__upload:focus-within .input__upload__selection,
+.input__upload__input:focus ~ .input__upload__selection,
+.input__upload__input:active ~ .input__upload__selection {
+    border-color: var(--accent-colour);
+}

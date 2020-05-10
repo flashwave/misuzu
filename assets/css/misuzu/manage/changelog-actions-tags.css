@@ -1,0 +1,39 @@
+.changelog-actions-tags {
+    display: flex;
+}
+
+.changelog-actions-tags__panel--actions {
+    flex: 0 0 auto;
+}
+.changelog-actions-tags__panel--tags {
+    flex: 1 1 auto;
+}
+
+.changelog-actions-tags__list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.changelog-actions-tags__entry {
+    color: var(--user-colour);
+    text-decoration: none;
+    width: 200px;
+    border: 1px solid var(--accent-colour);
+    border-radius: 2px;
+    margin: 2px;
+    padding: 0 2px;
+}
+.changelog-actions-tags__entry:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 800px) {
+    .changelog-actions-tags {
+        flex-direction: column;
+    }
+    .changelog-actions-tags__panel--actions {
+        margin-left: 2px;
+        width: 210px;
+    }
+}

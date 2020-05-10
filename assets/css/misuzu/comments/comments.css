@@ -1,0 +1,36 @@
+.comments {
+    --comments-max-height: 600px;
+    margin: 1px;
+    overflow: hidden;
+    word-wrap: break-word;
+}
+.comments__listing {
+    overflow-y: auto;
+}
+.comments__listing--limit {
+    max-height: var(--comments-max-height);
+}
+
+/*.comments__input,*/
+.comments__javascript,
+.comments__notice--staff {
+    border-bottom: 1px solid var(--accent-colour);
+    padding-bottom: 1px;
+    margin-bottom: 1px;
+}
+
+.comments__none,
+.comments__javascript,
+.comments__notice {
+    padding: 10px;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+.comments__notice__link {
+    color: var(--accent-colour);
+    text-decoration: none;
+}
+.comments__notice__link:hover {
+    text-decoration: underline;
+}

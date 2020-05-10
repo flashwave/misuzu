@@ -3,17 +3,14 @@
     flex-direction: column;
     margin-bottom: 2px;
     color: #fff;
-    background-color: @background-colour;
     background-color: var(--background-colour);
 
-    @profile-header-overlay-start: transparent;
-    --profile-header-overlay-start: @profile-header-overlay-start;
-    @profile-header-overlay-stop: @background-colour-translucent-9;
+    --profile-header-overlay-start: transparent;
     --profile-header-overlay-stop: var(--background-colour-translucent-9);
 
-    @media (max-width: @site-mobile-width) {
+    @media (max-width: 800px) {
         height: auto;
-        background-size: @site-mobile-width auto;
+        background-size: 800px auto;
         background-position: center top;
     }
 
@@ -23,7 +20,6 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: @accent-colour @background-pattern;
         background: var(--accent-colour) var(--background-pattern);
         background-blend-mode: multiply;
     }
@@ -33,7 +29,6 @@
     }
 
     &--has-header &__background {
-        background: @user-header center / cover no-repeat;
         background: var(--user-header) center / cover no-repeat;
         background-blend-mode: unset;
     }
@@ -50,7 +45,7 @@
                 cursor: pointer;
             }
 
-            @media (max-width: @site-mobile-width) {
+            @media (max-width: 800px) {
                 width: 80px;
                 height: 80px;
             }
@@ -62,8 +57,6 @@
 
         &__check:checked ~ &__option {
             color: #111;
-            background-color: @accent-colour;
-            border-color: @accent-colour;
             background-color: var(--accent-colour);
             border-color: var(--accent-colour);
         }
@@ -91,21 +84,19 @@
         display: flex;
         align-items: flex-end;
         padding: 20px;
-        background-image: linear-gradient(0deg, @profile-header-overlay-stop, @profile-header-overlay-start);
         background-image: linear-gradient(0deg, var(--profile-header-overlay-stop), var(--profile-header-overlay-start));
 
         &__content {
             margin: 5px 10px;
             flex: 1 1 auto;
 
-            @media (max-width: @site-mobile-width) {
+            @media (max-width: 800px) {
                 text-align: center;
             }
         }
 
         &__relation {
             font-variant: all-small-caps;
-            background: @profile-header-overlay-stop;
             background: var(--profile-header-overlay-stop);
             border-radius: 2px;
             line-height: 1.2em;
@@ -113,7 +104,7 @@
             cursor: default;
         }
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             flex-direction: column;
             align-items: center;
         }
@@ -121,13 +112,12 @@
 
     &__options {
         min-height: 62px;
-        background-color: @profile-header-overlay-stop;
         background-color: var(--profile-header-overlay-stop);
         padding: 0 20px;
         display: flex;
         justify-content: space-between;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             flex-direction: column;
         }
     }
@@ -136,7 +126,7 @@
         display: flex;
         align-items: center;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             flex-direction: column;
         }
     }
@@ -144,7 +134,7 @@
     &__action {
         margin-right: 5px;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             margin-right: 0;
             margin-bottom: 5px;
             width: 100%;
@@ -154,7 +144,7 @@
     &__stats {
         display: flex;
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             flex-direction: column;
             flex-wrap: wrap;
         }
@@ -192,7 +182,7 @@
             cursor: pointer;
         }
 
-        @media (max-width: @site-mobile-width) {
+        @media (max-width: 800px) {
             &--date &__value {
                 text-align: right;
             }
@@ -202,13 +192,11 @@
         &--link:focus,
         &--link:active,
         &--active {
-            border-bottom: 2px solid @accent-colour;
             border-bottom: 2px solid var(--accent-colour);
         }
     }
 
     &__username {
-        color: @user-colour;
         color: var(--user-colour);
         font-size: 2em;
         line-height: 1.5em;

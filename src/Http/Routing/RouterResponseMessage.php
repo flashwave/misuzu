@@ -33,7 +33,8 @@ class RouterResponseMessage extends HttpResponseMessage {
         return $this;
     }
     public function setHtml(string $content, bool $html = true): self {
-        $this->setContentType('text/html; charset=utf-8');
+        if(empty($this->getContentType()))
+            $this->setContentType('text/html; charset=utf-8');
         $this->setText($content);
         return $this;
     }

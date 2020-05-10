@@ -1,0 +1,111 @@
+.landing {
+    display: flex;
+    flex-direction: row;
+}
+.landing__container {
+    margin: 2px 0;
+}
+
+.landing__sidebar {
+    width: 300px;
+    margin-right: 2px;
+    flex: 0 0 auto;
+}
+.landing__main {
+    flex: 1 1 auto;
+}
+
+.landing__stats__emphasis {
+    font-weight: 700;
+}
+.landing__stats__link {
+    color: var(--user-colour);
+    text-decoration: none;
+}
+.landing__stats__link:hover {
+    text-decoration: underline;
+}
+
+.landing__online {
+    display: flex;
+    flex-wrap: wrap;
+    overflow: hidden;
+    margin: 6px;
+}
+.landing__online__user {
+    color: var(--user-colour);
+    text-decoration: none;
+    font-size: 0;
+    width: 30px;
+    height: 30px;
+    margin: 2px;
+    transition: box-shadow .2s;
+}
+.landing__online__user:hover {
+    box-shadow: 0 0 2px var(--user-colour);
+}
+
+.landing__statistics {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.landing__statistic {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 45%;
+    padding: 4px 0;
+}
+.landing__statistic__name {
+    font-size: 1.3em;
+    line-height: 2em;
+}
+.landing__statistic__value {
+    font-size: 1.5em;
+    line-height: 1.5em;
+}
+
+.landing__latest {
+    display: flex;
+    padding: 4px;
+    margin: 4px;
+    color: inherit;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: background-color .2s, box-shadow .2s;
+}
+.landing__latest:focus,
+.landing__latest:hover {
+    background-color: rgba(34, 34, 34, .6);
+    box-shadow: 0 1px 4px #222;
+}
+.landing__latest__avatar {
+    width: 50px;
+    height: 50px;
+}
+.landing__latest__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 8px;
+}
+.landing__latest__username {
+    font-size: 1.5em;
+    line-height: 1.4em;
+    color: var(--user-colour);
+}
+.landing__latest__joined {
+    font-size: .9em;
+    line-height: 1.2em;
+}
+
+@media (max-width: 800px) {
+    .landing {
+        flex-direction: column;
+    }
+    .landing__sidebar {
+        width: 100%;
+        margin-right: 0;
+    }
+}

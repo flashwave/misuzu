@@ -1,0 +1,34 @@
+.input__button {
+    background-color: var(--background-colour);
+    font-family: var(--font-regular);
+    font-size: 1.2em;
+    line-height: 1.4em;
+    padding: 5px 10px;
+    min-width: 80px;
+    text-align: center;
+    cursor: pointer;
+    transition: color .2s, background-color .2s, opacity .2s, border-color .2s;
+    color: var(--accent-colour);
+    border: 1px solid var(--accent-colour);
+    border-radius: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+.input__button:hover, .input__button:active,
+.input__button:focus, .input__button:checked,
+.input__button--active, .input__button--checked {
+    color: #111;
+    background-color: var(--accent-colour);
+    border-color: var(--accent-colour);
+}
+.input__button[disabled], 
+.input__button--busy {
+    opacity: .4;
+}
+.input__button--autosize { min-width: auto; }
+.input__button--disabled { --accent-colour: #333; }
+.input__button--destroy { --accent-colour: #c00; }
+.input__button--save { --accent-colour: #080; }
+.input__button--blue { --accent-colour: #09f; }

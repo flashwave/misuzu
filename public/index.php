@@ -17,6 +17,9 @@ $router->addRoutes(
     // Home
     Route::get('/', Handler::call('index@Home')),
 
+    // Assets
+    Route::get('/assets/([a-zA-Z0-9\-]+)\.(css|js)', true, Handler::call('view@Assets')),
+
     // Info
     Route::get('/info', Handler::call('index@Info')),
     Route::get('/info/([A-Za-z0-9_/]+)', true, Handler::call('page@Info')),
