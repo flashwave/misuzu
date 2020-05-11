@@ -1,17 +1,10 @@
-/// <reference path="User.ts" />
-/// <reference path="Colour.ts" />
 /// <reference path="Support.ts" />
-/// <reference path="Permissions.ts" />
 /// <reference path="Comments.tsx" />
-/// <reference path="Common.ts" />
 /// <reference path="FormUtilities.ts" />
 /// <reference path="UserRelations.ts" />
 /// <reference path="Forum/Posting.ts" />
 /// <reference path="UrlRegistry.ts" />
 /// <reference path="Forum/Polls.ts" />
-
-declare const timeago: any;
-declare const hljs: any;
 
 let loginFormAvatarTimeout: number = 0;
 
@@ -62,20 +55,16 @@ function mszCreateElement(type: string, properties: {} = {}, children: any[] = [
 document.addEventListener('DOMContentLoaded', () => {
     console.log("%c     __  ____\n   /  |/  (_)______  ______  __  __\n  / /|_/ / / ___/ / / /_  / / / / /\n / /  / / (__  ) /_/ / / /_/ /_/ /\n/_/  /_/_/____/\\__,_/ /___/\\__,_/\nhttps://github.com/flashwave/misuzu", 'color: #8559a5');
 
-    timeago.render(document.querySelectorAll('time'));
-    hljs.initHighlighting();
-
     initCSRF();
     urlRegistryInit();
-    userInit();
+    //userInit();
     userRelationsInit();
     initDataRequestMethod();
 
-    const changelogChangeAction: HTMLDivElement = document.querySelector('.changelog__change__action') as HTMLDivElement;
+    const changelogChangeAction: HTMLDivElement = document.querySelector('.changelog__log__action') as HTMLDivElement;
 
-    if(changelogChangeAction && !Support.sidewaysText) {
+    if(changelogChangeAction && !Misuzu.supportsSidewaysText())
         changelogChangeAction.title = "This is supposed to be sideways, but your browser doesn't support that.";
-    }
 
     const loginForms: HTMLCollectionOf<HTMLFormElement> = document.getElementsByClassName('js-login-form') as HTMLCollectionOf<HTMLFormElement>;
 

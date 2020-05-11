@@ -56,6 +56,9 @@
         <script type="application/json" id="js-urls-list">
             {{ url_list()|json_encode|raw }}
         </script>
+        <script type="text/javascript">
+            window.addEventListener('DOMContentLoaded', function() { Misuzu(); });
+        </script>
         <script src="/vendor/timeago/timeago.min.js" type="text/javascript"></script>
         <script src="/vendor/timeago/timeago.locales.min.js" type="text/javascript"></script>
         <script src="/vendor/highlightjs/highlight.pack.js" type="text/javascript"></script>

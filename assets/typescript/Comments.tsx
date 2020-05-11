@@ -54,7 +54,8 @@ function commentDeleteEventHandler(ev: Event): void {
 
 function commentDelete(commentId: number, onSuccess: (info: CommentDeletionInfo) => void = null, onFail: (message: string) => void = null): void
 {
-    if(!checkUserPerm('comments', CommentPermission.Delete)) {
+    if(!Misuzu.User.isLoggedIn()
+        || !Misuzu.User.localUser.perms.canDeleteOwnComment()) {
         if(onFail)
             onFail("You aren't allowed to delete comments.");
         return;
@@ -99,7 +100,8 @@ function commentPostEventHandler(ev: Event): void
 
 function commentPost(formData: FormData, onSuccess: (comment: CommentPostInfo) => void = null, onFail: (message: string) => void = null): void
 {
-    if(!checkUserPerm('comments', CommentPermission.Create)) {
+    if(!Misuzu.User.isLoggedIn()
+        || !Misuzu.User.localUser.perms.canCreateComment()) {
         if(onFail)
             onFail("You aren't allowed to post comments.");
         return;
@@ -191,7 +193,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
         commentTime: HTMLElement = <time class="comment__date" title={commentDate.toLocaleString()} dateTime={commentDate.toISOString()}>{timeago.format(commentDate)}</time>;
     let actions: HTMLElement[] = [];
 
-    if(checkUserPerm('comments', CommentPermission.Vote)) {
+    if(Misuzu.User.isLoggedIn() && Misuzu.User.localUser.perms.canVoteOnComment()) {
         actions.push(<a class="comment__action comment__action--link comment__action--vote comment__action--like"
             data-comment-id={comment.comment_id} data-comment-vote={CommentVoteType.Like}
             href="javascript:void(0);" onClick={commentVoteEventHandler}>Like</a>);
@@ -201,7 +203,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
     }
 
     const commentText: HTMLDivElement = <div class="comment__text"></div>,
-        commentColour: Colour = new Colour(comment.user_colour);
+        commentColour = new Misuzu.Colour(comment.user_colour);
 
     if(comment.comment_html)
         commentText.innerHTML = comment.comment_html;
@@ -219,7 +221,7 @@ function commentConstruct(comment: CommentPostInfo, layer: number = 0): HTMLElem
             <div class="comment__content">
                 <div class="comment__info">
                     <a class="comment__user comment__user--link" href={urlFormat('user-profile', [{name:'user',value:comment.user_id}])}
-                        style={"--user-colour: " + commentColour.GetCSS()}>{comment.username}</a>
+                        style={"--user-colour: " + commentColour.getCSS()}>{comment.username}</a>
                     <a class="comment__link" href={"#comment-" + comment.comment_id}>{commentTime}</a>
                 </div>
                 {commentText}
@@ -332,7 +334,8 @@ function commentVote(
     onSuccess: (voteInfo: CommentVotesInfo) => void = null,
     onFail: (message: string) => void = null
 ): void {
-    if(!checkUserPerm('comments', CommentPermission.Vote)) {
+    if(!Misuzu.User.isLoggedIn()
+        || !Misuzu.User.localUser.perms.canVoteOnComment()) {
         if(onFail)
             onFail("You aren't allowed to vote on comments.");
         return;
@@ -407,7 +410,8 @@ function commentPin(
     onSuccess: (commentInfo: CommentPostInfo) => void = null,
     onFail: (message: string) => void = null
 ): void {
-    if(!checkUserPerm('comments', CommentPermission.Pin)) {
+    if(!Misuzu.User.isLoggedIn()
+        || !Misuzu.User.localUser.perms.canPinComment()) {
         if(onFail)
             onFail("You aren't allowed to pin comments.");
         return;
