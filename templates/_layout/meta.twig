@@ -1,4 +1,4 @@
-{% spaceless %}
+{% apply spaceless %}
     {% set description = description|default(globals.site_description) %}
     {% set site_twitter = site_twitter|default(globals.site_twitter) %}
 
@@ -62,4 +62,4 @@
             <link rel="alternate" type="application/{{ feed.type }}+xml" title="{{ feed.title|default(feed.type) }}" href="{{ feed.url }}">
         {% endfor %}
     {% endif %}
-{% endspaceless %}
+{% endapply %}

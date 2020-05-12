@@ -2,9 +2,9 @@
 namespace Misuzu;
 
 use InvalidArgumentException;
-use Twig_Environment;
+use Twig\Environment as Twig_Environment;
 use Twig_Extensions_Extension_Date;
-use Twig_Loader_Filesystem;
+use Twig\Loader\FilesystemLoader as Twig_Loader_Filesystem;
 
 final class Template {
     private const FILE_EXT = '.twig';

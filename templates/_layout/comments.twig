@@ -75,7 +75,7 @@
                             </time>
                         </a>
                         {% if is_pinned %}
-                            <span class="comment__pin">{% spaceless %}
+                            <span class="comment__pin">{% apply spaceless %}
                                 Pinned
                                 {% if comment.comment_pinned != comment.comment_created %}
                                     <time title="{{ comment.comment_pinned|date('r') }}"
@@ -83,7 +83,7 @@
                                         {{ comment.comment_pinned|time_diff }}
                                     </time>
                                 {% endif %}
-                            {% endspaceless %}</span>
+                            {% endapply %}</span>
                         {% endif %}
                     </div>
                     <div class="comment__text">

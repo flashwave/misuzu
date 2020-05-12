@@ -13,34 +13,54 @@ define('MSZ_CLI', PHP_SAPI === 'cli');
 define('MSZ_DEBUG', is_file(MSZ_ROOT . '/.debug'));
 define('MSZ_PHP_MIN_VER', '7.4.0');
 
-if(version_compare(PHP_VERSION, MSZ_PHP_MIN_VER, '<')) {
-    die('Misuzu requires <i>at least</i> PHP <b>' . MSZ_PHP_MIN_VER . '</b> to run.');
-}
+if(version_compare(PHP_VERSION, MSZ_PHP_MIN_VER, '<'))
+    die("Misuzu requires <i>at least</i> PHP <b>" . MSZ_PHP_MIN_VER . "</b> to run.\r\n");
+if(!extension_loaded('curl') || !extension_loaded('intl') || !extension_loaded('json')
+    || !extension_loaded('mbstring') || !extension_loaded('pdo') || !extension_loaded('readline')
+    || !extension_loaded('xml') || !extension_loaded('zip'))
+    die("An extension required by Misuzu hasn't been installed.\r\n");
 
 error_reporting(MSZ_DEBUG ? -1 : 0);
 ini_set('display_errors', MSZ_DEBUG ? 'On' : 'Off');
 
-mb_internal_encoding('UTF-8');
-date_default_timezone_set('UTC');
+mb_internal_encoding('utf-8');
+date_default_timezone_set('utc');
 set_include_path(get_include_path() . PATH_SEPARATOR . MSZ_ROOT);
 
+set_exception_handler(function(\Throwable $ex) {
+    http_response_code(500);
+
+    if(MSZ_CLI || MSZ_DEBUG) {
+        header('Content-Type: text/plain; charset=utf-8');
+        echo (string)$ex;
+    } else {
+        header('Content-Type: text/html; charset-utf-8');
+        echo file_get_contents(MSZ_ROOT . '/templates/500.html');
+    }
+    exit;
+});
+
+set_error_handler(function(int $errno, string $errstr, string $errfile, int $errline) {
+    throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+    return true;
+}, -1);
+
 require_once 'vendor/autoload.php';
+
+spl_autoload_register(function(string $className) {
+    $parts = explode('\\', trim($className, '\\'), 2);
+    if($parts[0] !== 'Misuzu')
+        return;
+
+    $classPath = MSZ_ROOT . '/src/' . str_replace('\\', '/', $parts[1]) . '.php';
+    if(is_file($classPath))
+        require_once $classPath;
+});
 
 class_alias(\Misuzu\Http\HttpServerRequestMessage::class, '\Misuzu\Http\Handlers\Request');
 class_alias(\Misuzu\Http\Routing\RouterResponseMessage::class, '\Misuzu\Http\Handlers\Response');
 
-$errorHandler = new \Whoops\Run;
-$errorHandler->pushHandler(
-    MSZ_CLI
-    ? new \Whoops\Handler\PlainTextHandler
-    : (
-        MSZ_DEBUG
-        ? new \Whoops\Handler\PrettyPageHandler
-        : ($errorReporter = new WhoopsReporter)
-    )
-);
-$errorHandler->register();
-
+require_once 'utility.php';
 require_once 'src/audit_log.php';
 require_once 'src/changelog.php';
 require_once 'src/comments.php';
@@ -89,13 +109,6 @@ Mailer::init(Config::get('mail.method', Config::TYPE_STR), [
     'sender_name' => Config::get('mail.sender.name',    Config::TYPE_STR),
     'sender_addr' => Config::get('mail.sender.address', Config::TYPE_STR),
 ]);
-
-if(!empty($errorReporter)) {
-    $errorReporter->setReportInfo(
-        Config::get('error_report.url', Config::TYPE_STR),
-        Config::get('error_report.secret', Config::TYPE_STR)
-    );
-}
 
 // replace this with a better storage mechanism
 define('MSZ_STORAGE', Config::get('storage.path', Config::TYPE_STR, MSZ_ROOT . '/store'));

@@ -1,27 +1,10 @@
 {
-    "name": "flashwave/misuzu",
-    "description": "Community System",
-    "homepage": "https://flashii.net",
-    "support": {
-        "email": "me@flash.moe",
-        "issues": "https://github.com/flashwave/misuzu/issues"
-    },
     "require": {
-        "php": "^7.4",
-        "ext-curl": "*",
-        "ext-intl": "*",
-        "ext-json": "*",
-        "ext-mbstring": "*",
-        "ext-pdo": "*",
-        "ext-readline": "*",
-        "ext-xml": "*",
-        "ext-zip": "*",
         "twig/twig": "^2.0",
         "swiftmailer/swiftmailer": "~6.0",
         "erusev/parsedown": "~1.6",
         "geoip2/geoip2": "~2.0",
         "twig/extensions": "^1.5",
-        "filp/whoops": "^2.2",
         "jublonet/codebird-php": "^3.1",
         "chillerlan/php-qrcode": "^3.0",
         "psr/http-message": "^1.0",
@@ -30,12 +13,6 @@
     "autoload": {
         "classmap": [
             "database"
-        ],
-        "psr-4": {
-            "Misuzu\\": "src/"
-        },
-        "files": [
-            "utility.php"
         ]
     },
     "scripts": {

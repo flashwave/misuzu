@@ -1,18 +1,18 @@
 {% macro input_hidden(name, value) %}
-{% spaceless %}
+{% apply spaceless %}
     <input type="hidden" name="{{ name }}" value="{{ value }}"/>
-{% endspaceless %}
+{% endapply %}
 {% endmacro %}
 
 {% macro input_csrf() %}
 {% from _self import input_hidden %}
-{% spaceless %}
+{% apply spaceless %}
     {{ input_hidden('_csrf', csrf_token()) }}
-{% endspaceless %}
+{% endapply %}
 {% endmacro %}
 
 {% macro input_text(name, class, value, type, placeholder, required, attributes, tabindex, autofocus, raw) %}
-{% spaceless %}
+{% apply spaceless %}
     <input type="{{ type|default('text') }}" {% if name|length > 0 %}name="{{ name }}"{% else %}readonly{% endif %}
         class="{% if not raw|default(false) %}input__text{% if name|length < 1 %} input__text--readonly{% endif %}{% endif %}{{ class|length > 0 ? ' ' ~ class : '' }}"
         {% if placeholder|length > 0 %}placeholder="{{ placeholder }}"{% endif %}
@@ -21,11 +21,11 @@
         {% for name, value in attributes|default([]) %}
             {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
         {% endfor %}/>
-{% endspaceless %}
+{% endapply %}
 {% endmacro %}
 
 {% macro input_checkbox_raw(name, checked, class, value, radio, attributes, disabled) %}
-{% spaceless %}
+{% apply spaceless %}
     <input type="{{ radio ? 'radio' : 'checkbox' }}" class="{{ class|length > 0 ? class : 'input__checkbox__input' }}"
         {% if name|length > 0 %}name="{{ name }}"{% endif %}
         {% if checked %}checked{% endif %}
@@ -34,12 +34,12 @@
         {% for name, value in attributes|default([]) %}
             {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
         {% endfor %}/>
-{% endspaceless %}
+{% endapply %}
 {% endmacro %}
 
 {% macro input_checkbox(name, text, checked, class, value, radio, attributes, disabled) %}
 {% from _self import input_checkbox_raw %}
-{% spaceless %}
+{% apply spaceless %}
     <label class="input__checkbox{% if radio %} input__checkbox--radio{% endif %}{% if disabled %} input__checkbox--disabled{% endif %}{{ class|length > 0 ? ' ' ~ class : '' }}">
         {{ input_checkbox_raw(name, checked, '', value, radio, attributes, disabled) }}
         <div class="input__checkbox__display">
@@ -51,23 +51,23 @@
             </div>
         {% endif %}
     </label>
-{% endspaceless %}
+{% endapply %}
 {% endmacro %}
 
 {% macro input_file_raw(name, class, accepts, attributes) %}
-{% spaceless %}
+{% apply spaceless %}
     <input type="file" {% if name|length > 0 %}name="{{ name }}"{% endif %}
         class="{{ class|length > 0 ? class : 'input__upload__input' }}"
         {% if accepts|length > 0 %}accept="{{ accepts|join(',') }}"{% endif %}
         {% for name, value in attributes|default([]) %}
             {{ name }}{% if value|length > 0 %}="{{ value }}"{% endif %}
         {% endfor %}/>
-{% endspaceless %}
+{% endapply %}
 {% endmacro %}
 
 {% macro input_file(name, class, accepts, attributes) %}
 {% from _self import input_file_raw %}
-{% spaceless %}
+{% apply spaceless %}
     <label class="input__upload">
         {{ input_file_raw(name, class, accepts, attributes) }}
         <div class="input__upload__selection">
@@ -80,20 +80,20 @@
             input.addEventListener('change', ev => display.textContent = Array.from(ev.target.files).map(f => f.name).join(', '));
         </script>
     </label>
-{% endspaceless %}
+{% endapply %}
 {% endmacro %}
 
 {% macro input_select_option(value, key, selected) %}
-{% spaceless %}
+{% apply spaceless %}
     <option{% if key|length > 0 %} value="{{ key }}"{% endif %}{% if selected %} selected{% endif %}>
         {{ value }}
     </option>
-{% endspaceless %}
+{% endapply %}
 {% endmacro %}
 
 {% macro input_select(name, options, selected, value_name, key_name, only_values, class, attributes) %}
 {% from _self import input_select_option %}
-{% spaceless %}
+{% apply spaceless %}
     <select class="input__select{{ class|length > 0 ? ' ' ~ class : '' }}"
         {% if name|length > 0 %}name="{{ name }}"{% endif %}
         {% for name, value in attributes|default([]) %}
@@ -105,15 +105,15 @@
             {{ input_select_option(option_value, option_key, option_key|default(option_value) == selected) }}
         {% endfor %}
     </select>
-{% endspaceless %}
+{% endapply %}
 {% endmacro %}
 
 {% macro input_colour(name, class, value) %}
-{% spaceless %}
+{% apply spaceless %}
     <label class="input__colour{% if class %} {{ class }}{% endif %}">
         <div class="input__colour__overlay"></div>
         <input type="color" {% if name|length > 0 %}name="{{ name }}"{% else %}readonly onclick="return false"{% endif %}
         value="{{ value }}" class="input__colour__control"/>
     </label>
-{% endspaceless %}
+{% endapply %}
 {% endmacro %}
