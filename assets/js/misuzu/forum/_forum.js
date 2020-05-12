@@ -1,0 +1,1 @@
+Misuzu.Forum = {};

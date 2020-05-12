@@ -16,7 +16,6 @@ final class TwigMisuzu extends Twig_Extension {
             new Twig_Filter('html_link', 'html_link'),
             // deprecate this call, convert to html in php
             new Twig_Filter('parse_text', fn(string $text, int $parser): string => Parser::instance($parser)->parseText($text)),
-            new Twig_Filter('asset_url', [static::class, 'assetUrl']),
             new Twig_Filter('perms_check', 'perms_check'),
             new Twig_Filter('bg_settings', 'user_background_settings_strings'),
             new Twig_Filter('clamp', 'clamp'),
@@ -44,15 +43,5 @@ final class TwigMisuzu extends Twig_Extension {
             new Twig_Function('startup_time', fn(float $time = MSZ_STARTUP) => microtime(true) - $time),
             new Twig_Function('sql_query_count', fn() => DB::queries()),
         ];
-    }
-
-    public static function assetUrl(string $path): string {
-        $realPath = realpath(MSZ_ROOT . '/public/' . $path);
-
-        if($realPath === false || !file_exists($realPath)) {
-            return $path;
-        }
-
-        return $path . '?' . filemtime($realPath);
     }
 }

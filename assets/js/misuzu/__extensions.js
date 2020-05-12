@@ -15,6 +15,40 @@ Array.prototype.removeFind = function(predicate) {
     return this;
 };
 
+HTMLCollection.prototype.toArray = function() {
+    return Array.prototype.slice.call(this);
+};
+
+HTMLTextAreaElement.prototype.insertTags = function(tagOpen, tagClose) {
+    tagOpen = tagOpen || '';
+    tagClose = tagClose || '';
+
+    if(document.selection) {
+        this.focus();
+        var selected = document.selection.createRange();
+        selected.text = tagOpen + selected.text + tagClose;
+        this.focus();
+    } else if(this.selectionStart || this.selectionStart === 0) {
+        var startPos = this.selectionStart,
+            endPos = this.selectionEnd,
+            scrollTop = this.scrollTop;
+
+        this.value = this.value.substring(0, startPos)
+            + tagOpen
+            + this.value.substring(startPos, endPos)
+            + tagClose
+            + this.value.substring(endPos, this.value.length);
+
+        this.focus();
+        this.selectionStart = startPos + tagOpen.length;
+        this.selectionEnd = endPos + tagOpen.length;
+        this.scrollTop + scrollTop;
+    } else {
+        this.value += tagOpen + tagClose;
+        this.focus();
+    }
+};
+
 var CreateElement = function(elemInfo) {
     elemInfo = elemInfo || {};
     var elem = document.createElement(elemInfo.tag || 'div');
