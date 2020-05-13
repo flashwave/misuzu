@@ -79,12 +79,11 @@ require_once 'src/Users/auth.php';
 require_once 'src/Users/avatar.php';
 require_once 'src/Users/background.php';
 require_once 'src/Users/login_attempt.php';
-require_once 'src/Users/object.php';
 require_once 'src/Users/recovery.php';
 require_once 'src/Users/relations.php';
 require_once 'src/Users/role.php';
 require_once 'src/Users/session.php';
-require_once 'src/Users/user.php';
+require_once 'src/Users/user_legacy.php';
 require_once 'src/Users/validation.php';
 require_once 'src/Users/warning.php';
 
