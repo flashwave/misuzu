@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Users\User;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 
@@ -13,6 +14,7 @@ if(!user_session_active()) {
 
 $errors = [];
 $currentUserId = user_session_current('user_id');
+$currentUser = User::get($currentUserId);
 $currentEmail = user_email_get($currentUserId);
 $isRestricted = user_warning_check_restriction($currentUserId);
 $twoFactorInfo = user_totp_info($currentUserId);
@@ -66,7 +68,7 @@ if($isVerifiedRequest && isset($_POST['tfa']['enable']) && (bool)$twoFactorInfo[
 }
 
 if($isVerifiedRequest && !empty($_POST['current_password'])) {
-    if(!user_password_verify_db($currentUserId, $_POST['current_password'] ?? '')) {
+    if(!$currentUser->checkPassword($_POST['current_password'] ?? '')) {
         $errors[] = 'Your password was incorrect.';
     } else {
         // Changing e-mail

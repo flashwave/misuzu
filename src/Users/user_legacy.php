@@ -113,45 +113,6 @@ function user_email_set(int $userId, string $email): bool {
     return $updateMail->execute();
 }
 
-function user_password_verify_db(int $userId, string $password): bool {
-    if($userId < 1) {
-        return false;
-    }
-
-    $fetchPassword = \Misuzu\DB::prepare('
-        SELECT `password`
-        FROM `msz_users`
-        WHERE `user_id` = :user_id
-    ');
-    $fetchPassword->bind('user_id', $userId);
-    $currentPassword = $fetchPassword->fetchColumn(0, '');
-
-    return !empty($currentPassword) && password_verify($password, $currentPassword);
-}
-
-// function of the century, only use this if it doesn't make sense to grab data otherwise
-function user_exists(int $userId): bool {
-    if($userId < 1) {
-        return false;
-    }
-
-    static $exists = [];
-
-    if(isset($exists[$userId])) {
-        return $exists[$userId];
-    }
-
-    $check = \Misuzu\DB::prepare('
-        SELECT COUNT(`user_id`) > 0
-        FROM `msz_users`
-        WHERE `user_id` = :user_id
-    ');
-
-    $check->bind('user_id', $userId);
-
-    return $exists[$userId] = (bool)$check->fetchColumn(0, false);
-}
-
 function user_id_from_username(string $username): int {
     $getId = \Misuzu\DB::prepare('SELECT `user_id` FROM `msz_users` WHERE LOWER(`username`) = LOWER(:username)');
     $getId->bind('username', $username);

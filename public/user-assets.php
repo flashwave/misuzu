@@ -2,14 +2,16 @@
 namespace Misuzu;
 
 use Misuzu\Imaging\Image;
+use Misuzu\Users\User;
 
 $userAssetsMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
 $misuzuBypassLockdown = $userAssetsMode === 'avatar';
 
 require_once '../misuzu.php';
 
-$userId = !empty($_GET['u']) && is_string($_GET['u']) ? (int)$_GET['u'] : 0;
-$userExists = user_exists($userId);
+$userInfo = User::get((int)filter_input(INPUT_GET, 'u', FILTER_SANITIZE_NUMBER_INT));
+$userExists = empty($userExists);
+$userId = $userExists ? $userInfo->getUserId() : 0;
 
 $canViewImages = !$userExists
     || !user_warning_check_expiration($userId, MSZ_WARN_BAN)

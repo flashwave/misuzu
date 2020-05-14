@@ -209,8 +209,8 @@ final class SockChatHandler extends Handler {
             if(time() > 1577750400)
                 return ['success' => false, 'reason' => 'unsupported'];
 
-            if(user_password_verify_db($authInfo->user_id, mb_substr($authInfo->token, 5)))
-                $userId = $authInfo->user_id;
+            //if(user_password_verify_db($authInfo->user_id, mb_substr($authInfo->token, 5)))
+            //    $userId = $authInfo->user_id;
         } elseif($authMethod === 'SESS:') {
             $sessionToken = mb_substr($authInfo->token, 5);
             $tokenData = user_session_cookie_unpack(
