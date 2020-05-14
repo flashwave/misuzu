@@ -1,12 +1,11 @@
 <?php
-namespace Misuzu\Http;
+namespace Misuzu;
 
 use Exception;
 use InvalidArgumentException;
 use RuntimeException;
-use Psr\Http\Message\StreamInterface;
 
-class Stream implements StreamInterface {
+class Stream {
     private $stream = null;
     private $metaData = [];
     private $seekable = false;
@@ -44,13 +43,13 @@ class Stream implements StreamInterface {
         $this->seekable = $metaData['seekable'] && fseek($this->stream, 0, SEEK_CUR) === 0;
     }
 
-    public static function create($contents = ''): StreamInterface {
-        if($contents instanceof StreamInterface)
+    public static function create($contents = ''): Stream {
+        if($contents instanceof Stream)
             return $contents;
 
         return new static($contents);
     }
-    public static function createFromFile(string $filename, string $mode = 'rb'): StreamInterface {
+    public static function createFromFile(string $filename, string $mode = 'rb'): Stream {
         if(!in_array($mode[0], ['r', 'w', 'a', 'x', 'c']))
             throw new InvalidArgumentException("Provided mode ({$mode}) is invalid.");
 
@@ -76,18 +75,18 @@ class Stream implements StreamInterface {
         return $metaData[$key] ?? null;
     }
 
-    public function isReadable() {
+    public function isReadable(): bool {
         return $this->readable;
     }
 
-    public function read($length) {
+    public function read($length): int {
         if(!$this->isReadable())
             throw RuntimeException('Can\'t read from this stream.');
 
         return fread($this->stream, $length);
     }
 
-    public function getContents() {
+    public function getContents(): string {
         if(!isset($this->stream))
             throw new RuntimeException('Can\'t read contents of stream.');
 
@@ -97,11 +96,11 @@ class Stream implements StreamInterface {
         return $contents;
     }
 
-    public function isWritable() {
+    public function isWritable(): bool {
         return $this->writable;
     }
 
-    public function write($string) {
+    public function write($string): int {
         if(!$this->isWritable())
             throw new RuntimeException('Can\'t write to this stream.');
 
@@ -113,11 +112,11 @@ class Stream implements StreamInterface {
         return $count;
     }
 
-    public function isSeekable() {
+    public function isSeekable(): bool {
         return $this->seekable;
     }
 
-    public function seek($offset, $whence = SEEK_SET) {
+    public function seek($offset, $whence = SEEK_SET): void {
         if(!$this->isSeekable())
             throw new RuntimeException('Can\'t seek in this stream.');
 
@@ -125,11 +124,11 @@ class Stream implements StreamInterface {
             throw new RuntimeException("Failed to seek to position {$offset} ({$whence}).");
     }
 
-    public function rewind() {
+    public function rewind(): void {
         $this->seek(0);
     }
 
-    public function tell() {
+    public function tell(): int {
         if(!isset($this->stream))
             throw new RuntimeException('Can\'t determine the position of a detached stream.');
         if(($pos = ftell($this->stream)) === false)
@@ -138,11 +137,11 @@ class Stream implements StreamInterface {
         return $pos;
     }
 
-    public function eof() {
+    public function eof(): bool {
         return !isset($this->stream) || feof($this->stream);
     }
 
-    public function getSize() {
+    public function getSize(): ?int {
         if($this->size !== null)
             return $this->size;
 
@@ -170,7 +169,7 @@ class Stream implements StreamInterface {
         return $stream;
     }
 
-    public function close() {
+    public function close(): void {
         $stream = $this->detach();
 
         if(is_resource($stream))

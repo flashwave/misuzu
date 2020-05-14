@@ -1,10 +1,9 @@
 <?php
-namespace Misuzu\Http;
+namespace Misuzu;
 
 use InvalidArgumentException;
-use Psr\Http\Message\UriInterface;
 
-class Uri implements UriInterface {
+class Uri {
     private $scheme = '';
     private $user = '';
     private $password = '';
@@ -45,12 +44,6 @@ class Uri implements UriInterface {
         $this->scheme = $scheme;
         return $this;
     }
-    public function withScheme($scheme) {
-        if(!is_string($scheme))
-            throw new InvalidArgumentException('Scheme must be a string.');
-
-        return (clone $this)->setScheme($scheme);
-    }
 
     public function getAuthority() {
         $authority = '';
@@ -79,9 +72,6 @@ class Uri implements UriInterface {
         $this->password = $password;
         return $this;
     }
-    public function withUserInfo($user, $password = null) {
-        return (clone $this)->setUserInfo($user, $password);
-    }
 
     public function getHost() {
         return $this->host;
@@ -89,12 +79,6 @@ class Uri implements UriInterface {
     public function setHost(string $host): self {
         $this->host = $host;
         return $this;
-    }
-    public function withHost($host) {
-        if(!is_string($host))
-            throw new InvalidArgumentException('Hostname must be a string.');
-
-        return (clone $this)->setHost($host);
     }
 
     public function getPort() {
@@ -107,9 +91,6 @@ class Uri implements UriInterface {
         $this->port = $port;
         return $this;
     }
-    public function withPort($port) {
-        return (clone $this)->setPort($port);
-    }
 
     public function getPath() {
         return $this->path;
@@ -117,12 +98,6 @@ class Uri implements UriInterface {
     public function setPath(string $path): self {
         $this->path = $path;
         return $this;
-    }
-    public function withPath($path) {
-        if(!is_string($path))
-            throw new InvalidArgumentException('Path must be a string.');
-
-        return (clone $this)->setPath($path);
     }
 
     public function getQuery() {
@@ -132,12 +107,6 @@ class Uri implements UriInterface {
         $this->query = $query;
         return $this;
     }
-    public function withQuery($query) {
-        if(!is_string($query))
-            throw new InvalidArgumentException('Query string must be a string.');
-
-        return (clone $this)->setQuery($query);
-    }
 
     public function getFragment() {
         return $this->fragment;
@@ -145,9 +114,6 @@ class Uri implements UriInterface {
     public function setFragment(string $fragment): self {
         $this->fragment = $fragment;
         return $this;
-    }
-    public function withFragment($fragment) {
-        return (clone $this)->setFragment($fragment);
     }
 
     public function __toString() {

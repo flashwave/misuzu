@@ -2,11 +2,10 @@
 namespace Misuzu\Http\Filters;
 
 use Misuzu\Http\HttpResponseMessage;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Misuzu\Http\HttpRequestMessage;
 
 class EnforceLogOutFilter implements FilterInterface {
-    public function process(ServerRequestInterface $request): ?ResponseInterface {
+    public function process(HttpRequestMessage $request): ?HttpResponseMessage {
         if(user_session_active())
             return new HttpResponseMessage(404);
 

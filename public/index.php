@@ -1,49 +1,51 @@
 <?php
 namespace Misuzu;
 
-use Misuzu\Http\HttpServerRequestMessage;
-use Misuzu\Http\Filters\Filter;
-use Misuzu\Http\Handlers\Handler;
+use Misuzu\Http\HttpRequestMessage;
 use Misuzu\Http\Routing\Router;
 use Misuzu\Http\Routing\Route;
 
 require_once '../misuzu.php';
 
-$request = HttpServerRequestMessage::fromGlobals();
+$request = HttpRequestMessage::fromGlobals();
 
-$router = new Router;
-$router->setInstance();
-$router->addRoutes(
+Router::setHandlerFormat('\Misuzu\Http\Handlers\%sHandler');
+Router::setFilterFormat('\Misuzu\Http\Filters\%sFilter');
+Router::addRoutes(
     // Home
-    Route::get('/', Handler::call('index@Home')),
+    Route::get('/', 'index', 'Home'),
 
     // Assets
-    Route::get('/assets/([a-zA-Z0-9\-]+)\.(css|js)', true, Handler::call('view@Assets')),
+    Route::get('/assets/([a-zA-Z0-9\-]+)\.(css|js)', 'view', 'Assets'),
 
     // Info
-    Route::get('/info', Handler::call('index@Info')),
-    Route::get('/info/([A-Za-z0-9_/]+)', true, Handler::call('page@Info')),
+    Route::get('/info', 'index', 'Info'),
+    Route::get('/info/([A-Za-z0-9_/]+)', 'page', 'Info'),
 
     // Forum
-    Route::get('/forum/mark-as-read', Handler::call('markAsReadGET@Forum'))->addFilters(Filter::call('EnforceLogIn')),
-    Route::post('/forum/mark-as-read', Handler::call('markAsReadPOST@Forum'))->addFilters(Filter::call('EnforceLogIn'), Filter::call('ValidateCsrf')),
+    Route::group('/forum', 'Forum')->addChildren(
+        Route::get('/mark-as-read', 'markAsReadGET')->addFilters('EnforceLogIn'),
+        Route::post('/mark-as-read', 'markAsReadPOST')->addFilters('EnforceLogIn', 'ValidateCsrf'),
+    ),
 
     // Sock Chat
-    Route::create(['GET', 'POST'], '/_sockchat.php', Handler::call('phpFile@SockChat')),
-    Route::get('/_sockchat/emotes', Handler::call('emotes@SockChat')),
-    Route::get('/_sockchat/bans', Handler::call('bans@SockChat')),
-    Route::get('/_sockchat/login', Handler::call('login@SockChat')),
-    Route::post('/_sockchat/bump', Handler::call('bump@SockChat')),
-    Route::post('/_sockchat/verify', Handler::call('verify@SockChat')),
+    Route::create(['GET', 'POST'], '/_sockchat.php', 'phpFile', 'SockChat'),
+    Route::group('/_sockchat', 'SockChat')->addChildren(
+        Route::get('/emotes',  'emotes'),
+        Route::get('/bans',    'bans'),
+        Route::get('/login',   'login'),
+        Route::post('/bump',   'bump'),
+        Route::post('/verify', 'verify'),
+    ),
 
     // Redirects
-    Route::get('/index.php', Handler::redirect(url('index'), true)),
-    Route::get('/info.php', Handler::redirect(url('info'), true)),
-    Route::get('/info.php/([A-Za-z0-9_/]+)', true, Handler::call('redir@Info')),
-    Route::get('/auth.php', Handler::call('legacy@Auth'))
+    Route::get('/index.php', url('index')),
+    Route::get('/info.php', url('info')),
+    Route::get('/info.php/([A-Za-z0-9_/]+)', 'redir', 'Info'),
+    Route::get('/auth.php', 'legacy', 'Auth'),
 );
 
-$response = $router->handle($request);
+$response = Router::handle($request);
 $response->setHeader('X-Powered-By', 'Misuzu');
 
 $responseStatus = $response->getStatusCode();

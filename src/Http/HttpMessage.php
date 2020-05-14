@@ -2,10 +2,9 @@
 namespace Misuzu\Http;
 
 use InvalidArgumentException;
-use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\StreamInterface;
+use Misuzu\Stream;
 
-abstract class HttpMessage implements MessageInterface {
+abstract class HttpMessage {
     protected $version = '';
     protected $headers = [];
     protected $body = null;
@@ -28,11 +27,11 @@ abstract class HttpMessage implements MessageInterface {
     public function getBody() {
         return $this->body;
     }
-    public function setBody(StreamInterface $body): self {
+    public function setBody(Stream $body): self {
         $this->body = $body;
         return $this;
     }
-    public function withBody(StreamInterface $stream) {
+    public function withBody(Stream $stream) {
         return (clone $this)->setBody($stream);
     }
 

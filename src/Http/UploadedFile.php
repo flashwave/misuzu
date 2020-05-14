@@ -3,9 +3,9 @@ namespace Misuzu\Http;
 
 use InvalidArgumentException;
 use RuntimeException;
-use Psr\Http\Message\UploadedFileInterface;
+use Misuzu\Stream;
 
-class UploadedFile implements UploadedFileInterface {
+class UploadedFile {
     private $stream = null;
     private $fileName = null;
     private $size = null;
@@ -34,7 +34,7 @@ class UploadedFile implements UploadedFileInterface {
                 $this->fileName = $fileNameOrStream;
             elseif(is_resource($fileNameOrStream))
                 $this->stream = Stream::create($fileNameOrStream);
-            elseif($fileNameOrStream instanceof StreamInterface)
+            elseif($fileNameOrStream instanceof Stream)
                 $this->stream = $fileNameOrStream;
 
             if($size === null && $this->stream !== null)

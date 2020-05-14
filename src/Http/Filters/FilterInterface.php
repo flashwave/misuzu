@@ -1,9 +1,9 @@
 <?php
 namespace Misuzu\Http\Filters;
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Misuzu\Http\HttpResponseMessage;
+use Misuzu\Http\HttpRequestMessage;
 
 interface FilterInterface {
-    public function process(ServerRequestInterface $request): ?ResponseInterface;
+    public function process(HttpRequestMessage $request): ?HttpResponseMessage;
 }

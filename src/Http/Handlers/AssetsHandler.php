@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu\Http\Handlers;
 
+use HttpResponse;
+use HttpRequest;
 use Misuzu\GitInfo;
 
 final class AssetsHandler extends Handler {
@@ -38,12 +40,12 @@ final class AssetsHandler extends Handler {
         return $str;
     }
 
-    public static function view(Response $response, Request $request, string $name, string $type) {
+    public static function view(HttpResponse $response, HttpRequest $request, string $name, string $type) {
         $entityTag = sprintf('W/"%s.%s/%s"', $name, $type, GitInfo::hash());
 
         if(!MSZ_DEBUG && $name === 'debug')
             return 404;
-        if(!MSZ_DEBUG && filter_input(INPUT_SERVER, 'HTTP_IF_NONE_MATCH') === $entityTag)
+        if(!MSZ_DEBUG && $request->getHeaderLine('If-None-Match') === $entityTag)
             return 304;
 
         if(array_key_exists($type, self::TYPES)) {

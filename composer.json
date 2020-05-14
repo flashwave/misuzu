@@ -6,9 +6,7 @@
         "geoip2/geoip2": "~2.0",
         "twig/extensions": "^1.5",
         "jublonet/codebird-php": "^3.1",
-        "chillerlan/php-qrcode": "^3.0",
-        "psr/http-message": "^1.0",
-        "psr/http-server-handler": "^1.0"
+        "chillerlan/php-qrcode": "^3.0"
     },
     "autoload": {
         "classmap": [

@@ -1,11 +1,13 @@
 <?php
 namespace Misuzu\Http\Handlers;
 
+use HttpResponse;
+use HttpRequest;
 use Misuzu\Config;
 use Misuzu\DB;
 
 final class HomeHandler extends Handler {
-    public function index(Response $response, Request $request): void {
+    public function index(HttpResponse $response, HttpRequest $request): void {
         if(Config::get('social.embed_linked', Config::TYPE_BOOL)) {
             $linkedData = [
                 'name' => Config::get('site.name', Config::TYPE_STR, 'Misuzu'),

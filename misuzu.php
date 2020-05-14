@@ -57,8 +57,8 @@ spl_autoload_register(function(string $className) {
         require_once $classPath;
 });
 
-class_alias(\Misuzu\Http\HttpServerRequestMessage::class, '\Misuzu\Http\Handlers\Request');
-class_alias(\Misuzu\Http\Routing\RouterResponseMessage::class, '\Misuzu\Http\Handlers\Response');
+class_alias(\Misuzu\Http\HttpResponseMessage::class, '\HttpResponse');
+class_alias(\Misuzu\Http\HttpRequestMessage::class,  '\HttpRequest');
 
 require_once 'utility.php';
 require_once 'src/audit_log.php';

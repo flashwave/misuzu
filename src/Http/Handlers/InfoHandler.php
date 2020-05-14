@@ -1,16 +1,19 @@
 <?php
 namespace Misuzu\Http\Handlers;
 
+use HttpResponse;
+use HttpRequest;
+
 final class InfoHandler extends Handler {
-    public function index(Response $response): void {
+    public function index(HttpResponse $response): void {
         $response->setTemplate('info.index');
     }
 
-    public function redir(Response $response, Request $request, string $name = ''): void {
+    public function redir(HttpResponse $response, HttpRequest $request, string $name = ''): void {
         $response->redirect(url('info', ['title' => $name]), true);
     }
 
-    public function page(Response $response, Request $request, string $name) {
+    public function page(HttpResponse $response, HttpRequest $request, string $name) {
         $document = [
             'content' => '',
             'title' => '',

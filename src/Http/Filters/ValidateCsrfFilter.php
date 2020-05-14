@@ -3,18 +3,15 @@ namespace Misuzu\Http\Filters;
 
 use Misuzu\CSRF;
 use Misuzu\Http\HttpResponseMessage;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Misuzu\Http\HttpRequestMessage;
 
 class ValidateCsrfFilter implements FilterInterface {
-    public function process(ServerRequestInterface $request): ?ResponseInterface {
+    public function process(HttpRequestMessage $request): ?HttpResponseMessage {
         if($request->getMethod() !== 'GET' && $request->getMethod() !== 'DELETE') {
             $token = $request->getHeaderLine('X-Misuzu-CSRF');
 
-            if(empty($token)) {
-                $body = $request->getParsedBody();
-                $token = isset($body['_csrf']) && is_string($body['_csrf']) ? $body['_csrf'] : null;
-            }
+            if(empty($token))
+                $token = $request->getBodyParam('_csrf', FILTER_SANITIZE_STRING);
 
             if(empty($token) || !CSRF::validate($token))
                 return new HttpResponseMessage(400);

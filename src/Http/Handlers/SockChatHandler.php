@@ -2,11 +2,13 @@
 namespace Misuzu\Http\Handlers;
 
 use Exception;
+use HttpResponse;
+use HttpRequest;
 use Misuzu\Base64;
 use Misuzu\Config;
 use Misuzu\DB;
 use Misuzu\Emoticon;
-use Misuzu\Http\Stream;
+use Misuzu\Stream;
 use Misuzu\Users\ChatToken;
 use Misuzu\Users\User;
 
@@ -47,22 +49,22 @@ final class SockChatHandler extends Handler {
             $this->hashKey = file_get_contents($hashKeyPath);
     }
 
-    public function phpFile(Response $response, Request $request) {
+    public function phpFile(HttpResponse $response, HttpRequest $request) {
         $query = $request->getQueryParams();
 
         if(isset($query['emotes']))
             return $this->emotes($response, $request);
 
         if(isset($query['bans']) && is_string($query['bans']))
-            return $this->bans($response, $request->withHeader('X-SharpChat-Signature', $query['bans']));
+            return $this->bans($response, $request->setHeader('X-SharpChat-Signature', $query['bans']));
 
         $body = $request->getParsedBody();
 
         if(isset($body['bump'], $body['hash']) && is_string($body['bump']) && is_string($body['hash']))
             return $this->bump(
                 $response,
-                $request->withHeader('X-SharpChat-Signature', $body['hash'])
-                    ->withBody(Stream::create($body['bump']))
+                $request->setHeader('X-SharpChat-Signature', $body['hash'])
+                    ->setBody(Stream::create($body['bump']))
             );
 
         $source = isset($body['user_id']) ? $body : $query;
@@ -72,8 +74,8 @@ final class SockChatHandler extends Handler {
             && is_string($source['ip']) && is_string($source['hash']))
             return $this->verify(
                 $response,
-                $request->withHeader('X-SharpChat-Signature', $source['hash'])
-                    ->withBody(Stream::create(json_encode([
+                $request->setHeader('X-SharpChat-Signature', $source['hash'])
+                    ->setBody(Stream::create(json_encode([
                         'user_id' => $source['user_id'],
                         'token' => $source['token'],
                         'ip' => $source['ip'],
@@ -83,7 +85,7 @@ final class SockChatHandler extends Handler {
         return $this->login($response, $request);
     }
 
-    public function emotes(Response $response, Request $request): array {
+    public function emotes(HttpResponse $response, HttpRequest $request): array {
         $response->setHeader('Access-Control-Allow-Origin', '*')
             ->setHeader('Access-Control-Allow-Methods', 'GET');
 
@@ -107,7 +109,7 @@ final class SockChatHandler extends Handler {
         return $out;
     }
 
-    public function bans(Response $response, Request $request): array {
+    public function bans(HttpResponse $response, HttpRequest $request): array {
         $userHash = $request->getHeaderLine('X-SharpChat-Signature');
         $realHash = hash_hmac('sha256', 'givemethebeans', $this->hashKey);
 
@@ -124,7 +126,7 @@ final class SockChatHandler extends Handler {
         ')->fetchAll();
     }
 
-    public function login(Response $response, Request $request) {
+    public function login(HttpResponse $response, HttpRequest $request) {
         if(!user_session_active()) {
             $response->redirect(url('auth-login'));
             return;
@@ -140,7 +142,7 @@ final class SockChatHandler extends Handler {
         }
 
         if(MSZ_DEBUG && isset($params['dump'])) {
-            $ipAddr = $request->getServerParams()['REMOTE_ADDR'];
+            $ipAddr = $request->getRemoteAddress();
             $hash = hash_hmac('sha256', implode('#', [$token->getUserId(), $token->getToken(), $ipAddr]), $this->hashKey);
 
             $response->setText(sprintf(
@@ -168,7 +170,7 @@ final class SockChatHandler extends Handler {
         }
     }
 
-    public function bump(Response $response, Request $request): void {
+    public function bump(HttpResponse $response, HttpRequest $request): void {
         $userHash = $request->getHeaderLine('X-SharpChat-Signature');
         $bumpString = (string)$request->getBody();
         $realHash = hash_hmac('sha256', $bumpString, $this->hashKey);
@@ -185,7 +187,7 @@ final class SockChatHandler extends Handler {
             user_bump_last_active($bumpUser->id, $bumpUser->ip);
     }
 
-    public function verify(Response $response, Request $request): array {
+    public function verify(HttpResponse $response, HttpRequest $request): array {
         $userHash = $request->getHeaderLine('X-SharpChat-Signature');
 
         if(strlen($userHash) !== 64)

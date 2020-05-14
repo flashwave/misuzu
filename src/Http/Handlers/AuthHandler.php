@@ -1,10 +1,12 @@
 <?php
 namespace Misuzu\Http\Handlers;
 
+use HttpResponse;
+use HttpRequest;
+
 final class AuthHandler extends Handler {
-    public static function legacy(Response $response, Request $request): void {
-        $query = $request->getQueryParams();
-        $mode = isset($query['m']) && is_string($query['m']) ? $query['m'] : '';
+    public static function legacy(HttpResponse $response, HttpRequest $request): void {
+        $mode = $request->getQueryParam('m', FILTER_SANITIZE_STRING);
         $destination = [
             'logout' => 'auth-logout',
             'reset' => 'auth-reset',
