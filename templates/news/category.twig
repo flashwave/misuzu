@@ -2,10 +2,10 @@
 {% from 'macros.twig' import pagination, container_title %}
 {% from 'news/macros.twig' import news_preview %}
 
-{% set title = category.category_name ~ ' :: News' %}
-{% set manage_link = url('manage-news-category', {'category': category.category_id}) %}
+{% set title = category_info.name ~ ' :: News' %}
+{% set manage_link = url('manage-news-category', {'category': category_info.id}) %}
 {% set canonical_url = url('news-category', {
-    'category': category.category_id,
+    'category': category_info.id,
     'page': news_pagination.page > 2 ? news_pagination.page : 0,
 }) %}
 
@@ -13,12 +13,12 @@
     {
         'type': 'rss',
         'title': '',
-        'url': url('news-category-feed-rss', {'category': category.category_id}),
+        'url': url('news-category-feed-rss', {'category': category_info.id}),
     },
     {
         'type': 'atom',
         'title': '',
-        'url': url('news-category-feed-atom', {'category': category.category_id}),
+        'url': url('news-category-feed-atom', {'category': category_info.id}),
     },
 ] %}
 
@@ -30,36 +30,24 @@
             {% endfor %}
 
             <div class="container" style="padding: 4px; display: {{ news_pagination.pages > 1 ? 'block' : 'none' }}">
-                {{ pagination(news_pagination, url('news-category'), null, {'c':category.category_id}) }}
+                {{ pagination(news_pagination, url('news-category', {'category':category_info.id})) }}
             </div>
         </div>
 
         <div class="news__sidebar">
             <div class="container news__list">
-                {{ container_title('News » ' ~ category.category_name) }}
+                {{ container_title('News » ' ~ category_info.name) }}
 
                 <div class="container__content">
-                    {{ category.category_description|length > 0 ? category.category_description : '' }}
+                    {{ category_info.description }}
                 </div>
             </div>
-
-            {% if featured|length > 0 %}
-                <div class="container news__list">
-                    {{ container_title('Featured Posts') }}
-
-                    <div class="container__content">
-                        {% for featured_post in featured %}
-                            <a class="news__list__item" href="{{ url('news-post', {'post': featured_post.post_id}) }}">{{ featured_post.post_title }}</a>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
 
             <div class="container">
                 {{ container_title('Feeds') }}
 
                 <div class="news__feeds">
-                    <a href="{{ url('news-category-feed-atom', {'category': category.category_id}) }}" class="news__feed">
+                    <a href="{{ url('news-category-feed-atom', {'category': category_info.id}) }}" class="news__feed">
                         <div class="news__feed__icon">
                             <i class="fas fa-rss"></i>
                         </div>
@@ -67,7 +55,7 @@
                             Atom
                         </div>
                     </a>
-                    <a href="{{ url('news-category-feed-rss', {'category': category.category_id}) }}" class="news__feed">
+                    <a href="{{ url('news-category-feed-rss', {'category': category_info.id}) }}" class="news__feed">
                         <div class="news__feed__icon">
                             <i class="fas fa-rss"></i>
                         </div>

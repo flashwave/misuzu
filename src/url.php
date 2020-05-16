@@ -29,14 +29,14 @@ define('MSZ_URLS', [
     'changelog-date'                    => ['/changelog.php',                   ['d' => '<date>']],
     'changelog-tag'                     => ['/changelog.php',                   ['t' => '<tag>']],
 
-    'news-index'                        => ['/news',                            ['page' => '<page>']],
-    'news-post'                         => ['/news/post.php',                   ['p' => '<post>']],
-    'news-post-comments'                => ['/news/post.php',                   ['p' => '<post>'], 'comments'],
-    'news-category'                     => ['/news/category.php',               ['c' => '<category>', 'p' => '<page>']],
-    'news-feed-rss'                     => ['/news/feed.php/rss'],
-    'news-category-feed-rss'            => ['/news/feed.php/rss',               ['c' => '<category>']],
-    'news-feed-atom'                    => ['/news/feed.php/atom'],
-    'news-category-feed-atom'           => ['/news/feed.php/atom',              ['c' => '<category>']],
+    'news-index'                        => ['/news',                            ['p' => '<page>']],
+    'news-category'                     => ['/news/<category>',                 ['p' => '<page>']],
+    'news-post'                         => ['/news/post/<post>'],
+    'news-post-comments'                => ['/news/post/<post>',                [], 'comments'],
+    'news-feed-rss'                     => ['/news.rss'],
+    'news-category-feed-rss'            => ['/news/<category>.rss'],
+    'news-feed-atom'                    => ['/news.atom'],
+    'news-category-feed-atom'           => ['/news/<category>.atom'],
 
     'forum-index'                       => ['/forum'],
     'forum-leaderboard'                 => ['/forum/leaderboard.php',           ['id' => '<id>', 'mode' => '<mode>']],
@@ -155,9 +155,8 @@ function url(string $name, array $variables = []): string {
         foreach($info[1] as $key => $value) {
             $value = url_variable($value, $variables);
 
-            if(empty($value) || ($key === 'page' && $value < 2)) {
+            if(empty($value) || ($key === 'page' && $value < 2))
                 continue;
-            }
 
             $url .= sprintf('%s=%s&', $key, $value);
         }
@@ -181,16 +180,21 @@ function url_redirect(string $name, array $variables = []): void {
 }
 
 function url_variable(string $value, array $variables): string {
-    if(starts_with($value, '<') && ends_with($value, '>')) {
+    if(starts_with($value, '<') && ends_with($value, '>'))
         return $variables[trim($value, '<>')] ?? '';
-    }
 
-    if(starts_with($value, '[') && ends_with($value, ']')) {
+    if(starts_with($value, '[') && ends_with($value, ']'))
         return constant(trim($value, '[]'));
-    }
 
-    if(starts_with($value, '{') && ends_with($value, '}')) {
+    if(starts_with($value, '{') && ends_with($value, '}'))
         return \Misuzu\CSRF::token();
+
+    // Hack that allows variables with file extensions
+    $pathInfo = pathinfo($value);
+    if($value !== $pathInfo['filename']) {
+        $fallback = url_variable($pathInfo['filename'], $variables);
+        if($fallback !== $pathInfo['filename'])
+            return $fallback . '.' . $pathInfo['extension'];
     }
 
     return $value;

@@ -9,10 +9,10 @@
 
         {% for cat in news_categories %}
             <p>
-                <a href="{{ url('manage-news-category', {'category': cat.category_id}) }}" class="input__button">{{ cat.category_id }}</a>
-                {{ cat.category_name }},
-                {{ cat.category_is_hidden }},
-                {{ cat.category_created }}
+                <a href="{{ url('manage-news-category', {'category': cat.id}) }}" class="input__button">{{ cat.id }}</a>
+                {{ cat.name }},
+                {{ cat.isHidden }},
+                {{ cat.createdTime|date('r') }}
             </p>
         {% endfor %}
 

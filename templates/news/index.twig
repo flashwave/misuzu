@@ -29,7 +29,7 @@
             {% endfor %}
 
             <div class="container" style="padding: 4px; display: {{ news_pagination.pages > 1 ? 'block' : 'none' }}">
-                {{ pagination(news_pagination, url('news-index'), null, null, 'page') }}
+                {{ pagination(news_pagination, url('news-index')) }}
             </div>
         </div>
 
@@ -39,12 +39,12 @@
 
                 <div class="container__content">
                     {% for category in categories %}
-                        <a class="news__list__item news__list__item--kvp" href="{{ url('news-category', {'category': category.category_id}) }}">
+                        <a class="news__list__item news__list__item--kvp" href="{{ url('news-category', {'category': category.id}) }}">
                             <div class="news__list__name">
-                                {{ category.category_name }}
+                                {{ category.name }}
                             </div>
                             <div class="news__list__value">
-                                {{ category.posts_count }} post{{ category.posts_count == 1 ? '' : 's' }}
+                                {{ category.postCount }} post{{ category.postCount == 1 ? '' : 's' }}
                             </div>
                         </a>
                     {% endfor %}

@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\News\NewsPost;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_NEWS, user_session_current('user_id'), MSZ_PERM_NEWS_MANAGE_POSTS)) {
@@ -8,18 +10,14 @@ if(!perms_check_user(MSZ_PERMS_NEWS, user_session_current('user_id'), MSZ_PERM_N
     return;
 }
 
-$postsPagination = new Pagination(news_posts_count(null, false, true, false), 15);
+$postsPagination = new Pagination(NewsPost::countAll(false, true, true), 15);
 
 if(!$postsPagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
 
-$posts = news_posts_get(
-    $postsPagination->getOffset(),
-    $postsPagination->getRange(),
-    null, false, true, false
-);
+$posts = NewsPost::all($postsPagination, false, true, true);
 
 Template::render('manage.news.posts', [
     'news_posts' => $posts,

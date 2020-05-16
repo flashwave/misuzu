@@ -2,29 +2,29 @@
 {% from 'macros.twig' import container_title %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox %}
 
-{% set is_new = category|length < 1 %}
+{% set is_new = category is not defined %}
 
 {% block manage_content %}
-    <form method="post" action="{{ url('manage-news-category', {'category': category.category_id|default(0)}) }}" class="container">
-        {{ container_title(is_new ? 'New Category' : 'Editing ' ~ category.category_name) }}
+    <form method="post" action="{{ url('manage-news-category', {'category': category_info.id|default(0)}) }}" class="container">
+        {{ container_title(is_new ? 'New Category' : 'Editing ' ~ category_info.name) }}
 
         {{ input_csrf() }}
-        {{ input_hidden('category[id]', category.category_id|default(0)) }}
+        {{ input_hidden('category[id]', category_info.id|default(0)) }}
 
         <table style="color:inherit">
             <tr>
                 <td>Name</td>
-                <td>{{ input_text('category[name]', '', category.category_name|default(), 'text', '', true) }}</td>
+                <td>{{ input_text('category[name]', '', category_info.name|default(), 'text', '', true) }}</td>
             </tr>
 
             <tr>
                 <td>Description</td>
-                <td><textarea name="category[description]" required class="input__textarea">{{ category.category_description|default() }}</textarea></td>
+                <td><textarea name="category[description]" required class="input__textarea">{{ category_info.description|default() }}</textarea></td>
             </tr>
 
             <tr>
                 <td>Is Hidden</td>
-                <td>{{ input_checkbox('category[hidden]', '', category.category_is_hidden|default(false)) }}</td>
+                <td>{{ input_checkbox('category[hidden]', '', category_info.isHidden|default(false)) }}</td>
             </tr>
         </table>
 

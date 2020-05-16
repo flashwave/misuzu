@@ -53,7 +53,8 @@ class User {
         return static::get($createUser);
     }
 
-    public static function get(int $userId): ?User {
+    public static function get(int $userId): ?User { return self::byId($userId); }
+    public static function byId(int $userId): ?User {
         return DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id')
             ->bind('user_id', $userId)
             ->fetchObject(User::class);
@@ -72,10 +73,12 @@ class User {
             ->fetchObject(User::class);
     }
 
-    public function hasUserId(): bool {
+    public function hasUserId(): bool { return $this->hasId(); }
+    public function getUserId(): int { return $this->getId(); }
+    public function hasId(): bool {
         return isset($this->user_id) && $this->user_id > 0;
     }
-    public function getUserId(): int {
+    public function getId(): int {
         return $this->user_id ?? 0;
     }
 

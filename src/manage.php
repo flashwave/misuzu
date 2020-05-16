@@ -1,6 +1,6 @@
 <?php
 function manage_get_menu(int $userId): array {
-    if(!perms_check_user(MSZ_PERMS_GENERAL, $userId, \Misuzu\General::PERM_CAN_MANAGE)) {
+    if(!perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_CAN_MANAGE)) {
         return [];
     }
 
@@ -10,19 +10,19 @@ function manage_get_menu(int $userId): array {
         ],
     ];
 
-    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, \Misuzu\General::PERM_VIEW_LOGS)) {
+    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_VIEW_LOGS)) {
         $menu['General']['Logs'] = url('manage-general-logs');
     }
 
-    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, \Misuzu\General::PERM_MANAGE_EMOTES)) {
+    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_MANAGE_EMOTES)) {
         $menu['General']['Emoticons'] = url('manage-general-emoticons');
     }
 
-    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, \Misuzu\General::PERM_MANAGE_CONFIG)) {
+    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_MANAGE_CONFIG)) {
         $menu['General']['Settings'] = url('manage-general-settings');
     }
 
-    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, \Misuzu\General::PERM_MANAGE_BLACKLIST)) {
+    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_MANAGE_BLACKLIST)) {
         $menu['General']['IP Blacklist'] = url('manage-general-blacklist');
     }
 
@@ -155,32 +155,32 @@ function manage_perms_list(array $rawPerms): array {
                 [
                     'section' => 'can-manage',
                     'title' => 'Can access the management panel.',
-                    'perm' => \Misuzu\General::PERM_CAN_MANAGE,
+                    'perm' => MSZ_PERM_GENERAL_CAN_MANAGE,
                 ],
                 [
                     'section' => 'view-logs',
                     'title' => 'Can view audit logs.',
-                    'perm' => \Misuzu\General::PERM_VIEW_LOGS,
+                    'perm' => MSZ_PERM_GENERAL_VIEW_LOGS,
                 ],
                 [
                     'section' => 'manage-emotes',
                     'title' => 'Can manage emoticons.',
-                    'perm' => \Misuzu\General::PERM_MANAGE_EMOTES,
+                    'perm' => MSZ_PERM_GENERAL_MANAGE_EMOTES,
                 ],
                 [
                     'section' => 'manage-settings',
                     'title' => 'Can manage general Misuzu settings.',
-                    'perm' => \Misuzu\General::PERM_MANAGE_CONFIG,
+                    'perm' => MSZ_PERM_GENERAL_MANAGE_CONFIG,
                 ],
                 [
                     'section' => 'tester',
                     'title' => 'Can use experimental features.',
-                    'perm' => \Misuzu\General::PERM_IS_TESTER,
+                    'perm' => MSZ_PERM_GENERAL_IS_TESTER,
                 ],
                 [
                     'section' => 'manage-blacklist',
                     'title' => 'Can manage blacklistings.',
-                    'perm' => \Misuzu\General::PERM_MANAGE_BLACKLIST,
+                    'perm' => MSZ_PERM_GENERAL_MANAGE_BLACKLIST,
                 ],
             ],
         ],

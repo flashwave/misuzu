@@ -1,6 +1,10 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\News\NewsCategory;
+use Misuzu\News\NewsPost;
+use Misuzu\News\NewsPostNotFoundException;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_NEWS, user_session_current('user_id'), MSZ_PERM_NEWS_MANAGE_POSTS)) {
@@ -8,50 +12,63 @@ if(!perms_check_user(MSZ_PERMS_NEWS, user_session_current('user_id'), MSZ_PERM_N
     return;
 }
 
-$post = [];
-$postId = (int)($_GET['p'] ?? null);
-$categories = news_categories_get(0, 0, false, false, true);
+$postId = (int)filter_input(INPUT_GET, 'p', FILTER_SANITIZE_NUMBER_INT);
+if($postId > 0)
+    try {
+        $postInfo = NewsPost::byId($postId);
+        Template::set('post_info', $postInfo);
+    } catch(NewsPostNotFoundException $ex) {
+        echo render_error(404);
+        return;
+    }
+
+$categories = NewsCategory::all(null, true);
 
 if(!empty($_POST['post']) && CSRF::validateRequest()) {
-    $originalPostId = (int)($_POST['post']['id'] ?? null);
+    if(!isset($postInfo)) {
+        $postInfo = new NewsPost;
+        $isNew = true;
+    }
+
     $currentUserId = user_session_current('user_id');
-    $title = $_POST['post']['title'] ?? null;
-    $isFeatured = !empty($_POST['post']['featured']);
-    $postId = news_post_create(
-        $title,
-        $_POST['post']['text'] ?? null,
-        (int)($_POST['post']['category'] ?? null),
-        user_session_current('user_id'),
-        $isFeatured,
-        null,
-        $originalPostId
-    );
+    $postInfo->setTitle( $_POST['post']['title'])
+        ->setText($_POST['post']['text'])
+        ->setCategoryId($_POST['post']['category'])
+        ->setFeatured(!empty($_POST['post']['featured']));
+
+    if(!empty($isNew))
+        $postInfo->setUserId($currentUserId);
+
+    $postInfo->save();
 
     audit_log(
-        $originalPostId === $postId
+        empty($isNew)
             ? MSZ_AUDIT_NEWS_POST_EDIT
             : MSZ_AUDIT_NEWS_POST_CREATE,
         $currentUserId,
-        [$postId]
+        [$postInfo->getId()]
     );
 
-    if(!$originalPostId && $isFeatured) {
-        $twitterApiKey = Config::get('twitter.api.key', Config::TYPE_STR);
-        $twitterApiSecret = Config::get('twitter.api.secret', Config::TYPE_STR);
-        $twitterToken = Config::get('twitter.token.key', Config::TYPE_STR);
-        $twitterTokenSecret = Config::get('twitter.token.secret', Config::TYPE_STR);
+    if(!empty($isNew)) {
+        if($postInfo->isFeatured()) {
+            $twitterApiKey = Config::get('twitter.api.key', Config::TYPE_STR);
+            $twitterApiSecret = Config::get('twitter.api.secret', Config::TYPE_STR);
+            $twitterToken = Config::get('twitter.token.key', Config::TYPE_STR);
+            $twitterTokenSecret = Config::get('twitter.token.secret', Config::TYPE_STR);
 
-        if(!empty($twitterApiKey) && !empty($twitterApiSecret)
-            && !empty($twitterToken) && !empty($twitterTokenSecret)) {
-            Twitter::init($twitterApiKey, $twitterApiSecret, $twitterToken, $twitterTokenSecret);
-            $url = url('news-post', ['post' => $postId]);
-            Twitter::sendTweet("News :: {$title}\nhttps://{$_SERVER['HTTP_HOST']}{$url}");
+            if(!empty($twitterApiKey) && !empty($twitterApiSecret)
+                && !empty($twitterToken) && !empty($twitterTokenSecret)) {
+                Twitter::init($twitterApiKey, $twitterApiSecret, $twitterToken, $twitterTokenSecret);
+                $url = url('news-post', ['post' => $postInfo->getId()]);
+                Twitter::sendTweet("News :: {$postInfo->getTitle()}\nhttps://{$_SERVER['HTTP_HOST']}{$url}");
+            }
         }
+
+        header('Location: ' . url('manage-news-post', ['post' => $postInfo->getId()]));
+        return;
     }
 }
 
-if($postId > 0) {
-    $post = news_post_get($postId);
-}
-
-Template::render('manage.news.post', compact('post', 'categories'));
+Template::render('manage.news.post', [
+    'categories' => $categories,
+]);

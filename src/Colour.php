@@ -129,7 +129,6 @@ class Colour {
     public function getCSS(): string {
         if($this->getInherit())
             return 'inherit';
-
         return '#' . $this->getHex();
     }
 
@@ -140,5 +139,9 @@ class Colour {
             return $inheritIsDark ? $dark : $light;
 
         return $this->getLuminance() > self::READABILITY_THRESHOLD ? $dark : $light;
+    }
+
+    public function __toString() {
+        return $this->getCSS();
     }
 }

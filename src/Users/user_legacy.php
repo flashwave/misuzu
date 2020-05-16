@@ -3,20 +3,6 @@
 // Never ever EVER use it for ANYTHING other than determining display colours, there's a small chance that it might not be accurate.
 // And even if it were, roles properties are aggregated and thus must all be accounted for.
 
-define('MSZ_PERM_USER_EDIT_PROFILE', 1);
-define('MSZ_PERM_USER_CHANGE_AVATAR', 1 << 1);
-define('MSZ_PERM_USER_CHANGE_BACKGROUND', 1 << 2);
-define('MSZ_PERM_USER_EDIT_ABOUT', 1 << 3);
-define('MSZ_PERM_USER_EDIT_BIRTHDATE', 1 << 4);
-define('MSZ_PERM_USER_EDIT_SIGNATURE', 1 << 5);
-
-define('MSZ_PERM_USER_MANAGE_USERS', 1 << 20);
-define('MSZ_PERM_USER_MANAGE_ROLES', 1 << 21);
-define('MSZ_PERM_USER_MANAGE_PERMS', 1 << 22);
-define('MSZ_PERM_USER_MANAGE_REPORTS', 1 << 23);
-define('MSZ_PERM_USER_MANAGE_WARNINGS', 1 << 24);
-//define('MSZ_PERM_USER_MANAGE_BLACKLISTS', 1 << 25); // Replaced with General::PERM_MANAGE_BLACKLIST
-
 define(
     'MSZ_USERS_PASSWORD_HASH_ALGO',
     defined('PASSWORD_ARGON2ID')

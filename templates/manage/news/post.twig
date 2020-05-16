@@ -2,33 +2,33 @@
 {% from 'macros.twig' import container_title %}
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox, input_select %}
 
-{% set is_new = post|length < 1 %}
+{% set is_new = post_info is not defined %}
 
 {% block manage_content %}
-    <form method="post" action="{{ url('manage-news-post', {'post': post.post_id|default(0)}) }}" class="container">
-        {{ container_title(is_new ? 'New Post' : 'Editing ' ~ post.post_title) }}
+    <form method="post" action="{{ url('manage-news-post', {'post': post_info.id|default(0)}) }}" class="container">
+        {{ container_title(is_new ? 'New Post' : 'Editing ' ~ post_info.title) }}
 
         {{ input_csrf() }}
-        {{ input_hidden('post[id]', post.post_id|default(0)) }}
+        {{ input_hidden('post[id]', post_info.id|default(0)) }}
 
         <table style="color:inherit">
             <tr>
                 <td>Name</td>
-                <td>{{ input_text('post[title]', '', post.post_title|default(), 'text', '', true) }}</td>
+                <td>{{ input_text('post[title]', '', post_info.title|default(), 'text', '', true) }}</td>
             </tr>
 
             <tr>
                 <td>Category</td>
-                <td>{{ input_select('post[category]', categories, post.category_id|default(0), 'category_name', 'category_id') }}</td>
+                <td>{{ input_select('post[category]', categories, post_info.categoryId|default(0), 'name', 'id') }}</td>
             </tr>
 
             <tr>
                 <td>Is Featured</td>
-                <td>{{ input_checkbox('post[featured]', '', post.post_is_featured|default(false)) }}</td>
+                <td>{{ input_checkbox('post[featured]', '', post_info.isFeatured|default(false)) }}</td>
             </tr>
 
             <tr>
-                <td colspan="2"><textarea name="post[text]" required class="input__textarea">{{ post.post_text|default() }}</textarea></td>
+                <td colspan="2"><textarea name="post[text]" required class="input__textarea">{{ post_info.text|default() }}</textarea></td>
             </tr>
         </table>
 

@@ -1,44 +1,44 @@
 {% macro news_preview(post) %}
     {% from 'macros.twig' import container_title, avatar %}
 
-    <div class="container news__preview" style="{% if post.user_colour is not null %}{{ post.user_colour|html_colour }}{% endif %}">
+    <div class="container news__preview" style="{% if post.user is not null %}--user-colour: {{ post.user.colour }}{% endif %}">
         <div class="news__preview__info">
             <div class="news__preview__info__background"></div>
             <div class="news__preview__info__content">
-                {% if post.user_id is not null %}
+                {% if post.user.id is not null %}
                     <div class="news__preview__user">
-                        <a class="news__preview__avatar" href="{{ url('user-profile', {'user': post.user_id}) }}">
-                            {{ avatar(post.user_id, 60, post.username) }}
+                        <a class="news__preview__avatar" href="{{ url('user-profile', {'user': post.user.id}) }}">
+                            {{ avatar(post.user.id, 60, post.user.username) }}
                         </a>
 
                         <div class="news__preview__user__details">
-                            <a class="news__preview__username" href="{{ url('user-profile', {'user': post.user_id}) }}">{{ post.username }}</a>
+                            <a class="news__preview__username" href="{{ url('user-profile', {'user': post.user.id}) }}">{{ post.user.username }}</a>
                         </div>
                     </div>
                 {% endif %}
 
-                <a class="news__preview__category" href="{{ url('news-category', {'category': post.category_id}) }}">
-                    {{ post.category_name }}
+                <a class="news__preview__category" href="{{ url('news-category', {'category': post.category.id}) }}">
+                    {{ post.category.name }}
                 </a>
 
                 <div class="news__preview__date">
                     Posted
-                    <time datetime="{{ post.post_created|date('c') }}" title="{{ post.post_created|date('r') }}">
-                        {{ post.post_created|time_diff }}
+                    <time datetime="{{ post.createdTime|date('c') }}" title="{{ post.createdTime|date('r') }}">
+                        {{ post.createdTime|time_diff }}
                     </time>
                 </div>
             </div>
         </div>
 
         <div class="news__preview__content markdown">
-            <h1>{{ post.post_title }}</h1>
+            <h1>{{ post.title }}</h1>
             <div class="news__preview__text">
-                {{ post.post_text|first_paragraph|parse_text(constant('\\Misuzu\\Parsers\\Parser::MARKDOWN'))|raw }}
+                {{ post.text|first_paragraph|parse_text(constant('\\Misuzu\\Parsers\\Parser::MARKDOWN'))|raw }}
             </div>
             <div class="news__preview__links">
-                <a href="{{ url('news-post', {'post': post.post_id}) }}" class="news__preview__link">Continue reading</a>
-                <a href="{{ url('news-post-comments', {'post': post.post_id}) }}" class="news__preview__link">
-                    {{ post.post_comments < 1 ? 'No' : post.post_comments|number_format }} comment{{ post.post_comments != 1 ? 's' : '' }}
+                <a href="{{ url('news-post', {'post': post.id}) }}" class="news__preview__link">Continue reading</a>
+                <a href="{{ url('news-post-comments', {'post': post.id}) }}" class="news__preview__link">
+                    {{ post.commentCount < 1 ? 'No' : post.commentCount|number_format }} comment{{ post.commentCount != 1 ? 's' : '' }}
                 </a>
             </div>
         </div>
@@ -48,38 +48,38 @@
 {% macro news_post(post) %}
     {% from 'macros.twig' import avatar %}
 
-    <div class="container news__post" style="{% if post.user_colour is not null %}{{ post.user_colour|html_colour('--accent-colour') }}{% endif %}">
+    <div class="container news__post" style="{% if post.user is not null %}--accent-colour: {{ post.user.colour }}{% endif %}">
         <div class="news__post__info">
             <div class="news__post__info__background"></div>
             <div class="news__post__info__content">
-                {% if post.user_id is not null %}
+                {% if post.user is not null %}
                     <div class="news__post__user">
-                        <a class="news__post__avatar" href="{{ url('user-profile', {'user': post.user_id}) }}">
-                            {{ avatar(post.user_id, 60, post.username) }}
+                        <a class="news__post__avatar" href="{{ url('user-profile', {'user': post.user.id}) }}">
+                            {{ avatar(post.user.id, 60, post.user.username) }}
                         </a>
 
                         <div class="news__post__user__details">
-                            <a class="news__post__username" href="{{ url('user-profile', {'user': post.user_id}) }}">{{ post.username }}</a>
+                            <a class="news__post__username" href="{{ url('user-profile', {'user': post.user.id}) }}">{{ post.user.username }}</a>
                         </div>
                     </div>
                 {% endif %}
 
-                <a class="news__post__category" href="{{ url('news-category', {'category': post.category_id}) }}">
-                    {{ post.category_name }}
+                <a class="news__post__category" href="{{ url('news-category', {'category': post.category.id}) }}">
+                    {{ post.category.name }}
                 </a>
 
                 <div class="news__post__date">
                     Posted
-                    <time datetime="{{ post.post_created|date('c') }}" title="{{ post.post_created|date('r') }}">
-                        {{ post.post_created|time_diff }}
+                    <time datetime="{{ post.createdTime|date('c') }}" title="{{ post.createdTime|date('r') }}">
+                        {{ post.createdTime|time_diff }}
                     </time>
                 </div>
 
-                {% if post.post_updated|date('U') > post.post_created|date('U') %}
+                {% if post.isEdited %}
                     <div class="news__post__date">
                         Updated
-                        <time datetime="{{ post.post_updated|date('c') }}" title="{{ post.post_updated|date('r') }}">
-                            {{ post.post_updated|time_diff }}
+                        <time datetime="{{ post.updatedTime|date('c') }}" title="{{ post.updatedTime|date('r') }}">
+                            {{ post.updatedTime|time_diff }}
                         </time>
                     </div>
                 {% endif %}
@@ -87,8 +87,8 @@
         </div>
 
         <div class="news__post__text markdown">
-            <h1>{{ post.post_title }}</h1>
-            {{ post.post_text|parse_text(constant('\\Misuzu\\Parsers\\Parser::MARKDOWN'))|raw }}
+            <h1>{{ post.title }}</h1>
+            {{ post.text|parse_text(constant('\\Misuzu\\Parsers\\Parser::MARKDOWN'))|raw }}
         </div>
     </div>
 {% endmacro %}

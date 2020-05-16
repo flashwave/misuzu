@@ -5,6 +5,8 @@ use HttpResponse;
 use HttpRequest;
 use Misuzu\Config;
 use Misuzu\DB;
+use Misuzu\Pagination;
+use Misuzu\News\NewsPost;
 
 final class HomeHandler extends Handler {
     public function index(HttpResponse $response, HttpRequest $request): void {
@@ -17,7 +19,7 @@ final class HomeHandler extends Handler {
             ];
         }
 
-        $news = news_posts_get(0, 5, null, true);
+        $featuredNews = NewsPost::all(new Pagination(5), true);
 
         $stats = DB::query('
             SELECT
@@ -95,7 +97,7 @@ final class HomeHandler extends Handler {
             'online_users' => $onlineUsers,
             'birthdays' => $birthdays,
             'featured_changelog' => $changelog,
-            'featured_news' => $news,
+            'featured_news' => $featuredNews,
             'linked_data' => $linkedData ?? null,
         ]);
     }

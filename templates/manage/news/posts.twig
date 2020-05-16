@@ -9,16 +9,16 @@
 
         {% for post in news_posts %}
             <p>
-                <a href="{{ url('manage-news-post', {'post': post.post_id}) }}" class="input__button">{{ post.post_id }}</a>
-                <a href="{{ url('manage-news-category', {'category': post.category_id}) }}" class="input__button">Cat: {{ post.category_id }}</a>
-                {{ post.post_is_featured }},
-                {{ post.user_id }},
-                {{ post.post_title }},
-                {{ post.post_scheduled }},
-                {{ post.post_created }},
-                {{ post.post_updated }},
-                {{ post.post_deleted }},
-                {{ post.comment_section_id }}
+                <a href="{{ url('manage-news-post', {'post': post.id}) }}" class="input__button">{{ post.id }}</a>
+                <a href="{{ url('manage-news-category', {'category': post.categoryId}) }}" class="input__button">Cat: {{ post.categoryId }}</a>
+                {{ post.isFeatured }},
+                {{ post.user.id }},
+                {{ post.title }},
+                {{ post.scheduledTime|date('r') }},
+                {{ post.createdTime|date('r') }},
+                {{ post.updatedTime|date('r') }},
+                {{ post.deletedTime|date('r') }},
+                {{ post.commentSectionId }}
             </p>
         {% endfor %}
 

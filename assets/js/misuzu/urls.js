@@ -13,6 +13,17 @@ Misuzu.Urls.handleVariable = function(value, vars) {
         return ''; // not sure if there's a proper substitute for this, should probably resolve these in url_list
     if(value[0] === '{' && value.slice(-1) === '}')
         return Misuzu.CSRF.getToken();
+
+    // Allow file extensions
+    var split = value.split('.'),
+        extension = split[split.length - 1],
+        fileName = split.slice(0, -1).join('.');
+    if(value !== fileName) {
+        var fallback = Misuzu.Urls.handleVariable(fileName, vars);
+        if(fallback !== fileName)
+            return fallback + '.' + extension;
+    }
+
     return value;
 };
 Misuzu.Urls.v = function(name, value) {

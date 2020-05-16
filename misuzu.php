@@ -61,16 +61,15 @@ class_alias(\Misuzu\Http\HttpResponseMessage::class, '\HttpResponse');
 class_alias(\Misuzu\Http\HttpRequestMessage::class,  '\HttpRequest');
 
 require_once 'utility.php';
+require_once 'src/perms.php';
 require_once 'src/audit_log.php';
 require_once 'src/changelog.php';
 require_once 'src/comments.php';
 require_once 'src/manage.php';
-require_once 'src/news.php';
-require_once 'src/perms.php';
 require_once 'src/url.php';
+require_once 'src/Forum/perms.php';
 require_once 'src/Forum/forum.php';
 require_once 'src/Forum/leaderboard.php';
-require_once 'src/Forum/perms.php';
 require_once 'src/Forum/poll.php';
 require_once 'src/Forum/post.php';
 require_once 'src/Forum/topic.php';
@@ -500,7 +499,7 @@ MIG;
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
     $hasManageAccess = !empty($userDisplayInfo['user_id'])
         && !user_warning_check_restriction($userDisplayInfo['user_id'])
-        && perms_check_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'], General::PERM_CAN_MANAGE);
+        && perms_check_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'], MSZ_PERM_GENERAL_CAN_MANAGE);
     Template::set('has_manage_access', $hasManageAccess);
 
     if($inManageMode) {

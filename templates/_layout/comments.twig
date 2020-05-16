@@ -152,7 +152,7 @@
 {% endmacro %}
 
 {% macro comments_section(comments, category, user, perms) %}
-    <div class="comments">
+    <div class="comments" id="comments">
         <div class="comments__input">
             {% if user|default(null) is null %}
                 <div class="comments__notice">

@@ -1,15 +1,6 @@
 <?php
 require_once 'Users/validation.php';
 
-define('MSZ_PERM_COMMENTS_CREATE', 1);
-//define('MSZ_PERM_COMMENTS_EDIT_OWN', 1 << 1);
-//define('MSZ_PERM_COMMENTS_EDIT_ANY', 1 << 2);
-define('MSZ_PERM_COMMENTS_DELETE_OWN', 1 << 3);
-define('MSZ_PERM_COMMENTS_DELETE_ANY', 1 << 4);
-define('MSZ_PERM_COMMENTS_PIN', 1 << 5);
-define('MSZ_PERM_COMMENTS_LOCK', 1 << 6);
-define('MSZ_PERM_COMMENTS_VOTE', 1 << 7);
-
 define('MSZ_COMMENTS_VOTE_INDIFFERENT', 0);
 define('MSZ_COMMENTS_VOTE_LIKE', 1);
 define('MSZ_COMMENTS_VOTE_DISLIKE', -1);

@@ -10,9 +10,9 @@ final class Pagination {
     private int $range = 0;
     private int $offset = 0;
 
-    public function __construct(int $count, int $range, ?string $readParam = self::DEFAULT_PARAM) {
-        $this->count = $count;
-        $this->range = $range;
+    public function __construct(int $count, int $range = -1, ?string $readParam = self::DEFAULT_PARAM) {
+        $this->count = max(0, $count);
+        $this->range = $range < 0 ? $count : $range;
 
         if(!empty($readParam))
             $this->readPage($readParam);

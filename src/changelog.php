@@ -1,8 +1,4 @@
 <?php
-define('MSZ_PERM_CHANGELOG_MANAGE_CHANGES', 1);
-define('MSZ_PERM_CHANGELOG_MANAGE_TAGS', 1 << 1);
-//define('MSZ_PERM_CHANGELOG_MANAGE_ACTIONS', 1 << 2); Deprecated, actions are hardcoded now
-
 define('MSZ_CHANGELOG_ACTION_ADD', 1);
 define('MSZ_CHANGELOG_ACTION_REMOVE', 2);
 define('MSZ_CHANGELOG_ACTION_UPDATE', 3);

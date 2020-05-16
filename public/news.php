@@ -1,5 +1,7 @@
 <?php
-namespace Misuzu;
+require_once __DIR__ . '/index.php';
+return;
+//namespace Misuzu;
 
 require_once '../misuzu.php';
 
@@ -20,12 +22,9 @@ if(!empty($feedMode) && in_array($feedMode, ['rss', 'atom'])) {
     $location = empty($categoryId) ? url("news-feed-{$feedMode}") : url("news-category-feed-{$feedMode}", ['category' => $categoryId]);
 }
 
-if($postId > 0) {
+if($postId > 0)
     $location = url('news-post', ['post' => $postId]);
-}
-
-if($categoryId > 0) {
+if($categoryId > 0)
     $location = url('news-category', ['category' => $categoryId, 'page' => Pagination::param('page')]);
-}
 
 redirect($location);

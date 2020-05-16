@@ -7,6 +7,9 @@ use Misuzu\Database\Database;
 final class DB {
     private static $instance;
 
+    public const PREFIX = 'msz_';
+    public const QUERY_SELECT = 'SELECT %2$s FROM `' . self::PREFIX . '%1$s` AS %1$s';
+
     public const ATTRS = [
         PDO::ATTR_CASE => PDO::CASE_NATURAL,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

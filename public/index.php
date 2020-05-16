@@ -5,7 +5,7 @@ use Misuzu\Http\HttpRequestMessage;
 use Misuzu\Http\Routing\Router;
 use Misuzu\Http\Routing\Route;
 
-require_once '../misuzu.php';
+require_once __DIR__ . '/../misuzu.php';
 
 $request = HttpRequestMessage::fromGlobals();
 
@@ -21,6 +21,16 @@ Router::addRoutes(
     // Info
     Route::get('/info', 'index', 'Info'),
     Route::get('/info/([A-Za-z0-9_/]+)', 'page', 'Info'),
+
+    // News
+    Route::get('/news', 'index', 'News')->addChildren(
+        Route::get('.atom', 'feedIndexAtom'),
+        Route::get('.rss', 'feedIndexRss'),
+        Route::get('/([0-9]+)', 'viewCategory'),
+        Route::get('/([0-9]+).atom', 'feedCategoryAtom'),
+        Route::get('/([0-9]+).rss', 'feedCategoryRss'),
+        Route::get('/post/([0-9]+)', 'viewPost')
+    ),
 
     // Forum
     Route::group('/forum', 'Forum')->addChildren(
@@ -43,6 +53,15 @@ Router::addRoutes(
     Route::get('/info.php', url('info')),
     Route::get('/info.php/([A-Za-z0-9_/]+)', 'redir', 'Info'),
     Route::get('/auth.php', 'legacy', 'Auth'),
+    Route::get('/news.php', 'legacy', 'News'),
+    Route::get('/news.php/rss', 'legacy', 'News'),
+    Route::get('/news.php/atom', 'legacy', 'News'),
+    Route::get('/news/index.php', 'legacy', 'News'),
+    Route::get('/news/category.php', 'legacy', 'News'),
+    Route::get('/news/post.php', 'legacy', 'News'),
+    Route::get('/news/feed.php', 'legacy', 'News'),
+    Route::get('/news/feed.php/rss', 'legacy', 'News'),
+    Route::get('/news/feed.php/atom', 'legacy', 'News'),
 );
 
 $response = Router::handle($request);

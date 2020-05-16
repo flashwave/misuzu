@@ -3,12 +3,12 @@
 {% from '_layout/comments.twig' import comments_section %}
 {% from 'news/macros.twig' import news_post %}
 
-{% set title = post.post_title ~ ' :: News' %}
-{% set canonical_url = url('news-post', {'post': post.post_id}) %}
-{% set manage_link = url('manage-news-post', {'post': post.post_id}) %}
+{% set title = post_info.title ~ ' :: News' %}
+{% set canonical_url = url('news-post', {'post': post_info.id}) %}
+{% set manage_link = url('manage-news-post', {'post': post_info.id}) %}
 
 {% block content %}
-    {{ news_post(post) }}
+    {{ news_post(post_info) }}
 
     {% if comments is defined %}
         <div class="container">

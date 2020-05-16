@@ -59,7 +59,7 @@ class Route implements Serializable {
     public function getPath(): string {
         $path = $this->path;
         if($this->parentRoute !== null)
-            $path = $this->parentRoute->getPath() . '/' . trim($path, '/');
+            $path = $this->parentRoute->getPath() . ($path[0] !== '.' ? '/' : '') . trim($path, '/');
         return $path;
     }
     public function setPath(string $path): self {
@@ -91,7 +91,7 @@ class Route implements Serializable {
         $matches = [];
         if(!in_array($request->getMethod(), $this->methods))
             return false;
-        return preg_match('#^' . $this->getPath() . '$#', $request->getUri()->getPath(), $matches) === 1;
+        return preg_match('#^' . $this->getPath() . '$#', '/' . trim($request->getUri()->getPath(), '/'), $matches) === 1;
     }
 
     public function serialize() {
