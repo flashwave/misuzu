@@ -51,6 +51,7 @@ Router::addRoutes(
     // Redirects
     Route::get('/index.php', url('index')),
     Route::get('/info.php', url('info')),
+    Route::get('/settings.php', url('settings-index')),
     Route::get('/info.php/([A-Za-z0-9_/]+)', 'redir', 'Info'),
     Route::get('/auth.php', 'legacy', 'Auth'),
     Route::get('/news.php', 'legacy', 'News'),
@@ -77,9 +78,7 @@ foreach($response->getHeaders() as $headerName => $headerSet)
 
 $responseBody = $response->getBody();
 
-if($responseStatus >= 400 && $responseStatus <= 599 && ($responseBody === null || $responseBody->getSize() < 1)) {
+if($responseStatus >= 400 && $responseStatus <= 599 && ($responseBody === null || $responseBody->getSize() < 1))
     echo render_error($responseStatus);
-} else {
+else
     echo (string)$responseBody;
-}
-

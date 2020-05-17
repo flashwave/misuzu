@@ -1,6 +1,2 @@
 <?php
-namespace Misuzu;
-
-require_once '../misuzu.php';
-
-url_redirect('settings-index');
+require_once __DIR__ . '/index.php';
