@@ -3,7 +3,10 @@ namespace Misuzu\News;
 
 use Misuzu\DB;
 use Misuzu\Pagination;
+use Misuzu\Comments\CommentsCategory;
+use Misuzu\Comments\CommentsCategoryNotFoundException;
 use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
 
 class NewsPostException extends NewsException {};
 class NewsPostNotFoundException extends NewsPostException {};
@@ -24,10 +27,11 @@ class NewsPost {
 
     private $category = null;
     private $user = null;
+    private $userLookedUp = false;
     private $comments = null;
-    private $commentCount = -1;
 
-    private const TABLE = 'news_posts';
+    public const TABLE = 'news_posts';
+    private const QUERY_SELECT = 'SELECT %1$s FROM `' . DB::PREFIX . self::TABLE . '` AS '. self::TABLE;
     private const SELECT = '%1$s.`post_id`, %1$s.`category_id`, %1$s.`user_id`, %1$s.`comment_section_id`'
         . ', %1$s.`post_is_featured`, %1$s.`post_title`, %1$s.`post_text`'
         . ', UNIX_TIMESTAMP(%1$s.`post_scheduled`) AS `post_scheduled`'
@@ -46,15 +50,17 @@ class NewsPost {
     }
     public function setCategoryId(int $categoryId): self {
         $this->category_id = max(1, $categoryId);
+        $this->category = null;
         return $this;
     }
     public function getCategory(): NewsCategory {
-        if($this->category === null && ($catId = $this->getCategoryId()) > 0)
-            $this->category = NewsCategory::byId($catId);
+        if($this->category === null)
+            $this->category = NewsCategory::byId($this->getCategoryId());
         return $this->category;
     }
     public function setCategory(NewsCategory $category): self {
         $this->category_id = $category->getId();
+        $this->category = $category;
         return $this;
     }
 
@@ -63,40 +69,34 @@ class NewsPost {
     }
     public function setUserId(int $userId): self {
         $this->user_id = $userId < 1 ? null : $userId;
+        $this->user = null;
         return $this;
     }
     public function getUser(): ?User {
-        if($this->user === null && ($userId = $this->getUserId()) > 0)
-            $this->user = User::byId($userId);
+        if(!$this->userLookedUp && ($userId = $this->getUserId()) > 0) {
+            $this->userLookedUp = true;
+            try {
+                $this->user = User::byId($userId);
+            } catch(UserNotFoundException $ex) {}
+        }
         return $this->user;
     }
     public function setUser(?User $user): self {
         $this->user_id = $user === null ? null : $user->getId();
+        $this->user = $user;
         return $this;
     }
 
     public function getCommentSectionId(): int {
         return $this->comment_section_id < 1 ? -1 : $this->comment_section_id;
     }
-    public function hasCommentsSection(): bool {
+    public function hasCommentSection(): bool {
         return $this->getCommentSectionId() > 0;
     }
-    public function getCommentSection() {
-        if($this->comments === null && ($sectionId = $this->getCommentSectionId()) > 0)
-            $this->comments = comments_category_info($sectionId);
+    public function getCommentSection(): CommentsCategory {
+        if($this->comments === null)
+            $this->comments = CommentsCategory::byId($this->getCommentSectionId());
         return $this->comments;
-    }
-    // Temporary solution, should be a method of whatever getCommentSection returns
-    public function getCommentCount(): int {
-        if($this->commentCount < 0)
-            $this->commentCount = (int)DB::prepare('
-                SELECT COUNT(`comment_id`)
-                FROM `msz_comments_posts`
-                WHERE `category_id` = :cat_id
-                AND `comment_deleted` IS NULL
-            ')->bind('cat_id', $this->getCommentSectionId())->fetchColumn();
-
-        return $this->commentCount;
     }
 
     public function isFeatured(): bool {
@@ -153,24 +153,25 @@ class NewsPost {
         return $this->getDeletedTime() >= 0;
     }
     public function setDeleted(bool $isDeleted): self {
-        $this->post_deleted = $isDeleted ? time() : null;
+        if($this->isDeleted() !== $isDeleted)
+            $this->post_deleted = $isDeleted ? time() : null;
         return $this;
     }
 
     public function ensureCommentsSection(): void {
-        if($this->hasCommentsSection())
+        if($this->hasCommentSection())
             return;
 
-        $this->comments = comments_category_create("news-{$this->getId()}");
+        $this->comments = (new CommentsCategory)
+            ->setName("news-{$this->getId()}");
+        $this->comments->save();
 
-        if($this->comments !== null) {
-            $this->comment_section_id = (int)$this->comments['category_id'];
-            DB::prepare('UPDATE `msz_news_posts` SET `comment_section_id` = :comment_section_id WHERE `post_id` = :post_id')
-                ->execute([
-                    'comment_section_id' => $this->getCommentSectionId(),
-                    'post_id' => $this->getId(),
-                ]);
-        }
+        $this->comment_section_id = $this->comments->getId();
+        DB::prepare('UPDATE `msz_news_posts` SET `comment_section_id` = :comment_section_id WHERE `post_id` = :post_id')
+            ->execute([
+                'comment_section_id' => $this->getCommentSectionId(),
+                'post_id' => $this->getId(),
+            ]);
     }
 
     public function save(): void {
@@ -206,7 +207,7 @@ class NewsPost {
     }
 
     private static function countQueryBase(): string {
-        return sprintf(DB::QUERY_SELECT, self::TABLE, sprintf('COUNT(%s.`post_id`)', self::TABLE));
+        return sprintf(self::QUERY_SELECT, sprintf('COUNT(%s.`post_id`)', self::TABLE));
     }
     public static function countAll(bool $onlyFeatured = false, bool $includeScheduled = false, bool $includeDeleted = false): int {
         return (int)DB::prepare(self::countQueryBase()
@@ -226,7 +227,7 @@ class NewsPost {
     }
 
     private static function byQueryBase(): string {
-        return sprintf(DB::QUERY_SELECT, self::TABLE, sprintf(self::SELECT, self::TABLE));
+        return sprintf(self::QUERY_SELECT, sprintf(self::SELECT, self::TABLE));
     }
     public static function byId(int $postId): self {
         $post = DB::prepare(self::byQueryBase() . ' WHERE `post_id` = :post_id')

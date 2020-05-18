@@ -15,6 +15,8 @@ use Misuzu\News\NewsPost;
 use Misuzu\News\NewsCategoryNotFoundException;
 use Misuzu\News\NewsPostNotException;
 use Misuzu\Parsers\Parser;
+use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
 
 final class NewsHandler extends Handler {
     public function index(HttpResponse $response, HttpRequest $request) {
@@ -42,11 +44,9 @@ final class NewsHandler extends Handler {
         if(!$categoryPagination->hasValidOffset())
             return 404;
 
-        $posts = NewsPost::byCategory($categoryInfo, $categoryPagination);
-
         $response->setTemplate('news.category', [
             'category_info' => $categoryInfo,
-            'posts' => $posts,
+            'posts' => $categoryInfo->posts($categoryPagination),
             'news_pagination' => $categoryPagination,
         ]);
     }
@@ -63,12 +63,16 @@ final class NewsHandler extends Handler {
 
         $postInfo->ensureCommentsSection();
         $commentsInfo = $postInfo->getCommentSection();
+        try {
+            $commentsUser = User::byId(user_session_current('user_id', 0));
+        } catch(UserNotFoundException $ex) {
+            $commentsUser = null;
+        }
 
         $response->setTemplate('news.post', [
             'post_info' => $postInfo,
-            'comments_perms' => comments_get_perms(user_session_current('user_id', 0)),
-            'comments_category' => $commentsInfo,
-            'comments' => comments_category_get($commentsInfo['category_id'], user_session_current('user_id', 0)),
+            'comments_info'  => $commentsInfo,
+            'comments_user'  => $commentsUser,
         ]);
 
     }
@@ -76,7 +80,7 @@ final class NewsHandler extends Handler {
     private function createFeed(string $feedMode, ?NewsCategory $categoryInfo, array $posts): Feed {
         $hasCategory = !empty($categoryInfo);
         $pagination = new Pagination(10);
-        $posts = $hasCategory ? NewsPost::byCategory($categoryInfo, $pagination) : NewsPost::all($pagination, true);
+        $posts = $hasCategory ? $categoryInfo->posts($pagination) : NewsPost::all($pagination, true);
 
         $feed = (new Feed)
             ->setTitle(Config::get('site.name', Config::TYPE_STR, 'Misuzu') . ' » ' . ($hasCategory ? $categoryInfo->getName() : 'Featured News'))
@@ -132,7 +136,7 @@ final class NewsHandler extends Handler {
 
         $response->setContentType('application/atom+xml; charset=utf-8');
         return (new AtomFeedSerializer)->serializeFeed(
-            self::createFeed('atom', $categoryInfo, NewsPost::byCategory($categoryInfo, new Pagination(10)))
+            self::createFeed('atom', $categoryInfo, $categoryInfo->posts(new Pagination(10)))
         );
     }
 
@@ -145,7 +149,7 @@ final class NewsHandler extends Handler {
 
         $response->setContentType('application/rss+xml; charset=utf-8');
         return (new RssFeedSerializer)->serializeFeed(
-            self::createFeed('rss', $categoryInfo, NewsPost::byCategory($categoryInfo, new Pagination(10)))
+            self::createFeed('rss', $categoryInfo, $categoryInfo->posts(new Pagination(10)))
         );
     }
 

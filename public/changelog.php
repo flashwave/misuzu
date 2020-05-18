@@ -1,14 +1,17 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Comments\CommentsCategory;
+use Misuzu\Comments\CommentsCategoryNotFoundException;
+use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
+
 require_once '../misuzu.php';
 
-$changelogChange = !empty($_GET['c']) && is_string($_GET['c']) ? (int)$_GET['c'] : 0;
-$changelogDate = !empty($_GET['d']) && is_string($_GET['d']) ? (string)$_GET['d'] : '';
-$changelogUser = !empty($_GET['u']) && is_string($_GET['u']) ? (int)$_GET['u'] : 0;
-$changelogTags = !empty($_GET['t']) && is_string($_GET['t']) ? (string)$_GET['t'] : '';
-
-Template::set('comments_perms', $commentPerms = comments_get_perms(user_session_current('user_id', 0)));
+$changelogChange = !empty($_GET['c']) && is_string($_GET['c']) ?    (int)$_GET['c'] :  0;
+$changelogDate   = !empty($_GET['d']) && is_string($_GET['d']) ? (string)$_GET['d'] : '';
+$changelogUser   = !empty($_GET['u']) && is_string($_GET['u']) ?    (int)$_GET['u'] :  0;
+$changelogTags   = !empty($_GET['t']) && is_string($_GET['t']) ? (string)$_GET['t'] : '';
 
 if($changelogChange > 0) {
     $change = changelog_change_get($changelogChange);
@@ -18,14 +21,25 @@ if($changelogChange > 0) {
         return;
     }
 
+    $commentsCategoryName = "changelog-date-{$change['change_date']}";
+    try {
+        $commentsCategory = CommentsCategory::byName($commentsCategoryName);
+    } catch(CommentsCategoryNotFoundException $ex) {
+        $commentsCategory = new CommentsCategory($commentsCategoryName);
+        $commentsCategory->save();
+    }
+
+    try {
+        $commentsUser = User::byId(user_session_current('user_id', 0));
+    } catch(UserNotFoundException $ex) {
+        $commentsUser = null;
+    }
+
     Template::render('changelog.change', [
         'change' => $change,
         'tags' => changelog_change_tags_get($change['change_id']),
-        'comments_category' => $commentsCategory = comments_category_info(
-            "changelog-date-{$change['change_date']}",
-            true
-        ),
-        'comments' => comments_category_get($commentsCategory['category_id'], user_session_current('user_id', 0)),
+        'comments_category' => $commentsCategory,
+        'comments_user' => $commentsUser,
     ]);
     return;
 }
@@ -52,9 +66,23 @@ if(!$changes) {
 }
 
 if(!empty($changelogDate) && count($changes) > 0) {
+    $commentsCategoryName = "changelog-date-{$changelogDate}";
+    try {
+        $commentsCategory = CommentsCategory::byName($commentsCategoryName);
+    } catch(CommentsCategoryNotFoundException $ex) {
+        $commentsCategory = new CommentsCategory($commentsCategoryName);
+        $commentsCategory->save();
+    }
+
+    try {
+        $commentsUser = User::byId(user_session_current('user_id', 0));
+    } catch(UserNotFoundException $ex) {
+        $commentsUser = null;
+    }
+
     Template::set([
-        'comments_category' => $commentsCategory = comments_category_info("changelog-date-{$changelogDate}", true),
-        'comments' => comments_category_get($commentsCategory['category_id'], user_session_current('user_id', 0)),
+        'comments_category' => $commentsCategory,
+        'comments_user' => $commentsUser,
     ]);
 }
 

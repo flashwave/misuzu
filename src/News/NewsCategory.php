@@ -18,7 +18,8 @@ class NewsCategory implements ArrayAccess {
 
     private $postCount = -1;
 
-    private const TABLE = 'news_categories';
+    public const TABLE = 'news_categories';
+    private const QUERY_SELECT = 'SELECT %1$s FROM `' . DB::PREFIX . self::TABLE . '` AS '. self::TABLE;
     private const SELECT = '%1$s.`category_id`, %1$s.`category_name`, %1$s.`category_description`, %1$s.`category_is_hidden`'
         . ', UNIX_TIMESTAMP(%1$s.`category_created`) AS `category_created`';
 
@@ -94,8 +95,12 @@ class NewsCategory implements ArrayAccess {
         }
     }
 
+    public function posts(?Pagination $pagination = null, bool $includeScheduled = false, bool $includeDeleted = false): array {
+        return NewsPost::byCategory($this, $pagination, $includeScheduled, $includeDeleted);
+    }
+
     private static function countQueryBase(): string {
-        return sprintf(DB::QUERY_SELECT, self::TABLE, sprintf('COUNT(%s.`category_id`)', self::TABLE));
+        return sprintf(self::QUERY_SELECT, sprintf('COUNT(%s.`category_id`)', self::TABLE));
     }
     public static function countAll(bool $showHidden = false): int {
         return (int)DB::prepare(self::countQueryBase()
@@ -104,7 +109,7 @@ class NewsCategory implements ArrayAccess {
     }
 
     private static function byQueryBase(): string {
-        return sprintf(DB::QUERY_SELECT, self::TABLE, sprintf(self::SELECT, self::TABLE));
+        return sprintf(self::QUERY_SELECT, sprintf(self::SELECT, self::TABLE));
     }
     public static function byId(int $categoryId): self {
         $getCat = DB::prepare(self::byQueryBase() . ' WHERE `category_id` = :cat_id');

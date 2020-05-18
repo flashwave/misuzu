@@ -10,10 +10,10 @@
 {% block content %}
     {{ news_post(post_info) }}
 
-    {% if comments is defined %}
+    {% if comments_info is defined %}
         <div class="container">
             {{ container_title('<i class="fas fa-comments fa-fw"></i> Comments') }}
-            {{ comments_section(comments, comments_category, current_user|default(null), comments_perms) }}
+            {{ comments_section(comments_info, comments_user) }}
         </div>
     {% endif %}
 {% endblock %}

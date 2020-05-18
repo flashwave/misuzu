@@ -30,12 +30,6 @@
 .changelog__entry__action__text {
     width: 100%;
 }
-.changelog__action--add     { --action-colour: #159635; }
-.changelog__action--remove  { --action-colour: #e33743; }
-.changelog__action--update  { --action-colour: #297b8a; }
-.changelog__action--fix     { --action-colour: #2d5e96; }
-.changelog__action--import  { --action-colour: #2b9678; }
-.changelog__action--revert  { --action-colour: #e38245; }
 
 .changelog__entry__datetime {
     min-width: 100px;

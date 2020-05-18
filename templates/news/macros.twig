@@ -38,7 +38,7 @@
             <div class="news__preview__links">
                 <a href="{{ url('news-post', {'post': post.id}) }}" class="news__preview__link">Continue reading</a>
                 <a href="{{ url('news-post-comments', {'post': post.id}) }}" class="news__preview__link">
-                    {{ post.commentCount < 1 ? 'No' : post.commentCount|number_format }} comment{{ post.commentCount != 1 ? 's' : '' }}
+                    {{ not post.hasCommentSection or post.commentSection.postCount < 1 ? 'No' : post.commentSection.postCount|number_format }} comment{{ not post.hasCommentSection or post.commentSection.postCount != 1 ? 's' : '' }}
                 </a>
             </div>
         </div>

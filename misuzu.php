@@ -64,7 +64,6 @@ require_once 'utility.php';
 require_once 'src/perms.php';
 require_once 'src/audit_log.php';
 require_once 'src/changelog.php';
-require_once 'src/comments.php';
 require_once 'src/manage.php';
 require_once 'src/url.php';
 require_once 'src/Forum/perms.php';

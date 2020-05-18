@@ -3,9 +3,37 @@ namespace Misuzu\Users;
 
 use Misuzu\Colour;
 use Misuzu\DB;
+use Misuzu\Memoizer;
 use Misuzu\Net\IPAddress;
 
+class UserException extends UsersException {} // this naming definitely won't lead to confusion down the line!
+class UserNotFoundException extends UserException {}
+
 class User {
+    // Database fields
+    // TODO: update all references to use getters and setters and mark all of these as private
+    public $user_id = -1;
+    public $username = '';
+    public $password = '';
+    public $email = '';
+    public $register_ip = '::1';
+    public $last_ip = '::1';
+    public $user_super = 0;
+    public $user_country = 'XX';
+    public $user_colour = null;
+    public $user_created = null;
+    public $user_active = null;
+    public $user_deleted = null;
+    public $display_role = 1;
+    public $user_totp_key = null;
+    public $user_about_content = null;
+    public $user_about_parser = 0;
+    public $user_signature_content = null;
+    public $user_signature_parser = 0;
+    public $user_birthdate = '';
+    public $user_background_settings = 0;
+    public $user_title = null;
+
     private const USER_SELECT = '
         SELECT u.`user_id`, u.`username`, u.`password`, u.`email`, u.`user_super`, u.`user_title`,
                u.`user_country`, u.`user_colour`, u.`display_role`, u.`user_totp_key`,
@@ -50,48 +78,17 @@ class User {
         if($createUser < 1)
             return null;
 
-        return static::get($createUser);
+        return static::byId($createUser);
     }
 
-    public static function get(int $userId): ?User { return self::byId($userId); }
-    public static function byId(int $userId): ?User {
-        return DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id')
-            ->bind('user_id', $userId)
-            ->fetchObject(User::class);
-    }
-
-    public static function findForLogin(string $usernameOrEmail): ?User {
-        return DB::prepare(self::USER_SELECT . 'WHERE LOWER(`email`) = LOWER(:email) OR LOWER(`username`) = LOWER(:username)')
-            ->bind('email', $usernameOrEmail)
-            ->bind('username', $usernameOrEmail)
-            ->fetchObject(User::class);
-    }
-    public static function findForProfile($userId): ?User {
-        return DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id OR LOWER(`username`) = LOWER(:username)')
-            ->bind('user_id', (int)$userId)
-            ->bind('username', (string)$userId)
-            ->fetchObject(User::class);
-    }
-
-    public function hasUserId(): bool { return $this->hasId(); }
-    public function getUserId(): int { return $this->getId(); }
-    public function hasId(): bool {
-        return isset($this->user_id) && $this->user_id > 0;
-    }
     public function getId(): int {
-        return $this->user_id ?? 0;
+        return $this->user_id < 1 ? -1 : $this->user_id;
     }
 
-    public function hasUsername(): bool {
-        return isset($this->username);
-    }
     public function getUsername(): string {
-        return $this->username ?? '';
+        return $this->username;
     }
 
-    public function hasColour(): bool {
-        return isset($this->user_colour);
-    }
     public function getColour(): Colour {
         return new Colour($this->getColourRaw());
     }
@@ -99,8 +96,12 @@ class User {
         return $this->user_colour ?? 0x40000000;
     }
 
+    public function getEmailAddress(): string {
+        return $this->email;
+    }
+
     public function getHierarchy(): int {
-        return $this->hasUserId() ? user_get_hierarchy($this->getUserId()) : 0;
+        return ($userId = $this->getId()) < 1 ? 0 : user_get_hierarchy($userId);
     }
 
     public function hasPassword(): bool {
@@ -113,12 +114,12 @@ class User {
         return password_needs_rehash($this->password, MSZ_USERS_PASSWORD_HASH_ALGO);
     }
     public function setPassword(string $password): void {
-        if(!$this->hasUserId())
+        if(($userId = $this->getId()) < 1)
             return;
 
         DB::prepare('UPDATE `msz_users` SET `password` = :password WHERE `user_id` = :user_id')
             ->bind('password', password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO))
-            ->bind('user_id', $this->user_id)
+            ->bind('user_id', $userId)
             ->execute();
     }
 
@@ -130,6 +131,9 @@ class User {
         return !empty($this->user_totp_key);
     }
 
+    public function getBackgroundSettings(): int { // Use the below methods instead
+        return $this->user_background_settings;
+    }
     public function getBackgroundAttachment(): int {
         return $this->user_background_settings & 0x0F;
     }
@@ -141,9 +145,70 @@ class User {
     }
 
     public function profileFields(bool $filterEmpty = true): array {
-        if(!$this->hasUserId())
+        if(($userId = $this->getId()) < 1)
             return [];
+        return ProfileField::user($userId, $filterEmpty);
+    }
 
-        return ProfileField::user($this->user_id, $filterEmpty);
+    // TODO: Is this the proper location/implementation for this? (no)
+    private $commentPermsArray = null;
+    public function commentPerms(): array {
+        if($this->commentPermsArray === null)
+            $this->commentPermsArray = perms_check_user_bulk(MSZ_PERMS_COMMENTS, $this->getId(), [
+                'can_comment' => MSZ_PERM_COMMENTS_CREATE,
+                'can_delete' => MSZ_PERM_COMMENTS_DELETE_OWN | MSZ_PERM_COMMENTS_DELETE_ANY,
+                'can_delete_any' => MSZ_PERM_COMMENTS_DELETE_ANY,
+                'can_pin' => MSZ_PERM_COMMENTS_PIN,
+                'can_lock' => MSZ_PERM_COMMENTS_LOCK,
+                'can_vote' => MSZ_PERM_COMMENTS_VOTE,
+            ]);
+        return $this->commentPermsArray;
+    }
+
+    private static function getMemoizer() {
+        static $memoizer = null;
+        if($memoizer === null)
+            $memoizer = new Memoizer;
+        return $memoizer;
+    }
+
+    public static function byId(int $userId): ?User {
+        return self::getMemoizer()->find($userId, function() use ($userId) {
+            $user = DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id')
+                ->bind('user_id', $userId)
+                ->fetchObject(User::class);
+            if(!$user)
+                throw new UserNotFoundException;
+            return $user;
+        });
+    }
+    public static function findForLogin(string $usernameOrEmail): ?User {
+        $usernameOrEmailLower = mb_strtolower($usernameOrEmail);
+        return self::getMemoizer()->find(function() use ($usernameOrEmailLower) {
+            return mb_strtolower($user->getUsername())     === $usernameOrEmailLower
+                || mb_strtolower($user->getEmailAddress()) === $usernameOrEmailLower;
+        }, function() use ($usernameOrEmail) {
+            $user = DB::prepare(self::USER_SELECT . 'WHERE LOWER(`email`) = LOWER(:email) OR LOWER(`username`) = LOWER(:username)')
+                ->bind('email', $usernameOrEmail)
+                ->bind('username', $usernameOrEmail)
+                ->fetchObject(User::class);
+            if(!$user)
+                throw new UserNotFoundException;
+            return $user;
+        });
+    }
+    public static function findForProfile($userIdOrName): ?User {
+        $userIdOrNameLower = mb_strtolower($userIdOrName);
+        return self::getMemoizer()->find(function() use ($userIdOrNameLower) {
+            return $user->getId() == $userIdOrNameLower || mb_strtolower($user->getUsername()) === $userIdOrNameLower;
+        }, function() use ($userIdOrName) {
+            $user = DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id OR LOWER(`username`) = LOWER(:username)')
+                ->bind('user_id', (int)$userIdOrName)
+                ->bind('username', (string)$userIdOrName)
+                ->fetchObject(User::class);
+            if(!$user)
+                throw new UserNotFoundException;
+            return $user;
+        });
     }
 }

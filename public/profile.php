@@ -3,6 +3,7 @@ namespace Misuzu;
 
 use Misuzu\Parsers\Parser;
 use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
 
 require_once '../misuzu.php';
 
@@ -10,9 +11,9 @@ $userId = !empty($_GET['u']) && is_string($_GET['u']) ? $_GET['u'] : 0;
 $profileMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
 $isEditing = !empty($_GET['edit']) && is_string($_GET['edit']) ? (bool)$_GET['edit'] : !empty($_POST) && is_array($_POST);
 
-$profileUser = User::findForProfile($userId);
-
-if(empty($profileUser)) {
+try {
+    $profileUser = User::findForProfile($userId);
+} catch(UserNotFoundException $ex) {
     http_response_code(404);
     Template::render('profile.index');
     return;
@@ -22,9 +23,9 @@ $notices = [];
 
 $currentUserId = user_session_current('user_id', 0);
 $viewingAsGuest = $currentUserId === 0;
-$viewingOwnProfile = $currentUserId === $profileUser->user_id;
+$viewingOwnProfile = $currentUserId === $profileUser->getId();
 
-$isBanned = user_warning_check_restriction($profileUser->user_id);
+$isBanned = user_warning_check_restriction($profileUser->getId());
 $userPerms = perms_get_user($currentUserId)[MSZ_PERMS_USER];
 $canManageWarnings = perms_check($userPerms, MSZ_PERM_USER_MANAGE_WARNINGS);
 $canEdit = !$isBanned
@@ -34,7 +35,7 @@ $canEdit = !$isBanned
         || user_check_super($currentUserId)
         || (
             perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS)
-            && user_check_authority($currentUserId, $profileUser->user_id)
+            && user_check_authority($currentUserId, $profileUser->getId())
         )
     );
 
@@ -87,7 +88,7 @@ if($isEditing) {
                     $notices[] = MSZ_TMP_USER_ERROR_STRINGS['about']['not-allowed'];
                 } else {
                     $setAboutError = user_set_about_page(
-                        $profileUser->user_id,
+                        $profileUser->getId(),
                         $_POST['about']['text'] ?? '',
                         (int)($_POST['about']['parser'] ?? Parser::PLAIN)
                     );
@@ -106,7 +107,7 @@ if($isEditing) {
                     $notices[] = MSZ_TMP_USER_ERROR_STRINGS['signature']['not-allowed'];
                 } else {
                     $setSignatureError = user_set_signature(
-                        $profileUser->user_id,
+                        $profileUser->getId(),
                         $_POST['signature']['text'] ?? '',
                         (int)($_POST['signature']['parser'] ?? Parser::PLAIN)
                     );
@@ -125,7 +126,7 @@ if($isEditing) {
                     $notices[] = "You aren't allow to change your birthdate.";
                 } else {
                     $setBirthdate = user_set_birthdate(
-                        $profileUser->user_id,
+                        $profileUser->getId(),
                         (int)($_POST['birthdate']['day'] ?? 0),
                         (int)($_POST['birthdate']['month'] ?? 0),
                         (int)($_POST['birthdate']['year'] ?? 0)
@@ -154,7 +155,7 @@ if($isEditing) {
 
             if(!empty($_FILES['avatar'])) {
                 if(!empty($_POST['avatar']['delete'])) {
-                    user_avatar_delete($profileUser->user_id);
+                    user_avatar_delete($profileUser->getId());
                 } else {
                     if(!$perms['edit_avatar']) {
                         $notices[] = MSZ_TMP_USER_ERROR_STRINGS['avatar']['not-allowed'];
@@ -172,7 +173,7 @@ if($isEditing) {
                             );
                         } else {
                             $setAvatar = user_avatar_set_from_path(
-                                $profileUser->user_id,
+                                $profileUser->getId(),
                                 $_FILES['avatar']['tmp_name']['file'],
                                 $avatarProps
                             );
@@ -194,8 +195,8 @@ if($isEditing) {
 
             if(!empty($_FILES['background'])) {
                 if((int)($_POST['background']['attach'] ?? -1) === 0) {
-                    user_background_delete($profileUser->user_id);
-                    user_background_set_settings($profileUser->user_id, MSZ_USER_BACKGROUND_ATTACHMENT_NONE);
+                    user_background_delete($profileUser->getId());
+                    user_background_set_settings($profileUser->getId(), MSZ_USER_BACKGROUND_ATTACHMENT_NONE);
                 } else {
                     if(!$perms['edit_background']) {
                         $notices[] = MSZ_TMP_USER_ERROR_STRINGS['background']['not-allowed'];
@@ -213,7 +214,7 @@ if($isEditing) {
                                 );
                             } else {
                                 $setBackground = user_background_set_from_path(
-                                    $profileUser->user_id,
+                                    $profileUser->getId(),
                                     $_FILES['background']['tmp_name']['file'],
                                     $backgroundProps
                                 );
@@ -243,7 +244,7 @@ if($isEditing) {
                             $backgroundSettings |= MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE;
                         }
 
-                        user_background_set_settings($profileUser->user_id, $backgroundSettings);
+                        user_background_set_settings($profileUser->getId(), $backgroundSettings);
                     }
                 }
             }
@@ -294,23 +295,23 @@ $profileStats = DB::prepare(sprintf('
     ) AS `following_count`
     FROM `msz_users` AS u
     WHERE `user_id` = :user_id
-', MSZ_USER_RELATION_FOLLOW))->bind('user_id', $profileUser->user_id)->fetch();
+', MSZ_USER_RELATION_FOLLOW))->bind('user_id', $profileUser->getId())->fetch();
 
 $relationInfo = user_session_active()
-    ? user_relation_info($currentUserId, $profileUser->user_id)
+    ? user_relation_info($currentUserId, $profileUser->getId())
     : [];
 
-$backgroundPath = sprintf('%s/backgrounds/original/%d.msz', MSZ_STORAGE, $profileUser->user_id);
+$backgroundPath = sprintf('%s/backgrounds/original/%d.msz', MSZ_STORAGE, $profileUser->getId());
 
 if(is_file($backgroundPath)) {
     $backgroundInfo = getimagesize($backgroundPath);
 
     if($backgroundInfo) {
         Template::set('site_background', [
-            'url' => url('user-background', ['user' => $profileUser->user_id]),
+            'url' => url('user-background', ['user' => $profileUser->getId()]),
             'width' => $backgroundInfo[0],
             'height' => $backgroundInfo[1],
-            'settings' => $profileUser->user_background_settings,
+            'settings' => $profileUser->getBackgroundSettings(),
         ]);
     }
 }
@@ -322,7 +323,7 @@ switch($profileMode) {
 
     case 'following':
         $template = 'profile.relations';
-        $followingCount = user_relation_count_from($profileUser->user_id, MSZ_USER_RELATION_FOLLOW);
+        $followingCount = user_relation_count_from($profileUser->getId(), MSZ_USER_RELATION_FOLLOW);
         $followingPagination = new Pagination($followingCount, MSZ_USER_RELATION_FOLLOW_PER_PAGE);
 
         if(!$followingPagination->hasValidOffset()) {
@@ -331,14 +332,14 @@ switch($profileMode) {
         }
 
         $following = user_relation_users_from(
-            $profileUser->user_id, MSZ_USER_RELATION_FOLLOW,
+            $profileUser->getId(), MSZ_USER_RELATION_FOLLOW,
             $followingPagination->getRange(), $followingPagination->getOffset(),
             $currentUserId
         );
 
         Template::set([
-            'title' => $profileUser->username . ' / following',
-            'canonical_url' => url('user-profile-following', ['user' => $profileUser->user_id]),
+            'title' => $profileUser->getUsername() . ' / following',
+            'canonical_url' => url('user-profile-following', ['user' => $profileUser->getId()]),
             'profile_users' => $following,
             'profile_relation_pagination' => $followingPagination,
         ]);
@@ -346,7 +347,7 @@ switch($profileMode) {
 
     case 'followers':
         $template = 'profile.relations';
-        $followerCount = user_relation_count_to($profileUser->user_id, MSZ_USER_RELATION_FOLLOW);
+        $followerCount = user_relation_count_to($profileUser->getId(), MSZ_USER_RELATION_FOLLOW);
         $followerPagination = new Pagination($followerCount, MSZ_USER_RELATION_FOLLOW_PER_PAGE);
 
         if(!$followerPagination->hasValidOffset()) {
@@ -355,14 +356,14 @@ switch($profileMode) {
         }
 
         $followers = user_relation_users_to(
-            $profileUser->user_id, MSZ_USER_RELATION_FOLLOW,
+            $profileUser->getId(), MSZ_USER_RELATION_FOLLOW,
             $followerPagination->getRange(), $followerPagination->getOffset(),
             $currentUserId
         );
 
         Template::set([
-            'title' => $profileUser->username . ' / followers',
-            'canonical_url' => url('user-profile-followers', ['user' => $profileUser->user_id]),
+            'title' => $profileUser->getUsername() . ' / followers',
+            'canonical_url' => url('user-profile-followers', ['user' => $profileUser->getId()]),
             'profile_users' => $followers,
             'profile_relation_pagination' => $followerPagination,
         ]);
@@ -370,7 +371,7 @@ switch($profileMode) {
 
     case 'forum-topics':
         $template = 'profile.topics';
-        $topicsCount = forum_topic_count_user($profileUser->user_id, $currentUserId);
+        $topicsCount = forum_topic_count_user($profileUser->getId(), $currentUserId);
         $topicsPagination = new Pagination($topicsCount, 20);
 
         if(!$topicsPagination->hasValidOffset()) {
@@ -379,13 +380,13 @@ switch($profileMode) {
         }
 
         $topics = forum_topic_listing_user(
-            $profileUser->user_id, $currentUserId,
+            $profileUser->getId(), $currentUserId,
             $topicsPagination->getOffset(), $topicsPagination->getRange()
         );
 
         Template::set([
-            'title' => $profileUser->username . ' / topics',
-            'canonical_url' => url('user-profile-forum-topics', ['user' => $profileUser->user_id, 'page' => Pagination::param()]),
+            'title' => $profileUser->getUsername() . ' / topics',
+            'canonical_url' => url('user-profile-forum-topics', ['user' => $profileUser->getId(), 'page' => Pagination::param()]),
             'profile_topics' => $topics,
             'profile_topics_pagination' => $topicsPagination,
         ]);
@@ -393,7 +394,7 @@ switch($profileMode) {
 
     case 'forum-posts':
         $template = 'profile.posts';
-        $postsCount = forum_post_count_user($profileUser->user_id);
+        $postsCount = forum_post_count_user($profileUser->getId());
         $postsPagination = new Pagination($postsCount, 20);
 
         if(!$postsPagination->hasValidOffset()) {
@@ -402,7 +403,7 @@ switch($profileMode) {
         }
 
         $posts = forum_post_listing(
-            $profileUser->user_id,
+            $profileUser->getId(),
             $postsPagination->getOffset(),
             $postsPagination->getRange(),
             false,
@@ -410,8 +411,8 @@ switch($profileMode) {
         );
 
         Template::set([
-            'title' => $profileUser->username . ' / posts',
-            'canonical_url' => url('user-profile-forum-posts', ['user' => $profileUser->user_id, 'page' => Pagination::param()]),
+            'title' => $profileUser->getUsername() . ' / posts',
+            'canonical_url' => url('user-profile-forum-posts', ['user' => $profileUser->getId(), 'page' => Pagination::param()]),
             'profile_posts' => $posts,
             'profile_posts_pagination' => $postsPagination,
         ]);
@@ -422,7 +423,7 @@ switch($profileMode) {
         $warnings = $viewingAsGuest
             ? []
             : user_warning_fetch(
-                $profileUser->user_id,
+                $profileUser->getId(),
                 90,
                 $canManageWarnings
                     ? MSZ_WARN_TYPES_VISIBLE_TO_STAFF

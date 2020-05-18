@@ -1,32 +1,32 @@
 <?php
 function array_test(array $array, callable $func): bool {
-    foreach($array as $value) {
-        if(!$func($value)) {
+    foreach($array as $value)
+        if(!$func($value))
             return false;
-        }
-    }
-
     return true;
 }
 
 function array_apply(array $array, callable $func): array {
-    for($i = 0; $i < count($array); $i++) {
+    for($i = 0; $i < count($array); ++$i)
         $array[$i] = $func($array[$i]);
-    }
-
     return $array;
 }
 
 function array_bit_or(array $array1, array $array2): array {
-    foreach($array1 as $key => $value) {
+    foreach($array1 as $key => $value)
         $array1[$key] |= $array2[$key] ?? 0;
-    }
-
     return $array1;
 }
 
 function array_rand_value(array $array) {
-    return $array[array_rand($array)];
+    return $array[mt_rand(0, count($array) - 1)];
+}
+
+function array_find(array $array, callable $callback) {
+    foreach($array as $item)
+        if($callback($item))
+            return $item;
+    return null;
 }
 
 function clamp($num, int $min, int $max): int {
@@ -76,72 +76,35 @@ function unique_chars(string $input, bool $multibyte = true): int {
 }
 
 function byte_symbol(int $bytes, bool $decimal = false, array $symbols = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']): string {
-    if($bytes < 1) {
+    if($bytes < 1)
         return '0 B';
-    }
 
     $divider = $decimal ? 1000 : 1024;
     $exp = floor(log($bytes) / log($divider));
-    $bytes = $bytes / pow($divider, floor($exp));
+    $bytes = $bytes / pow($divider, $exp);
     $symbol = $symbols[$exp];
 
     return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
 }
 
-// For chat emote list, nuke this when Sharp Chat comms are in this project
-function emotes_list(int $hierarchy = PHP_INT_MAX, bool $unique = false, bool $order = true): array {
-    $getEmotes = \Misuzu\DB::prepare('
-        SELECT    e.`emote_id`, e.`emote_order`, e.`emote_hierarchy`, e.`emote_url`,
-                  s.`emote_string_order`, s.`emote_string`
-        FROM      `msz_emoticons_strings` AS s
-        LEFT JOIN `msz_emoticons` AS e
-        ON        e.`emote_id` = s.`emote_id`
-        WHERE     `emote_hierarchy` <= :hierarchy
-        ORDER BY  IF(:order, e.`emote_order`, e.`emote_id`), s.`emote_string_order`
-    ');
-    $getEmotes->bind('hierarchy', $hierarchy);
-    $getEmotes->bind('order', $order);
-    $emotes = $getEmotes->fetchAll();
-
-    // Removes aliases, emote with lowest ordering is considered the main
-    if($unique) {
-        $existing = [];
-
-        for($i = 0; $i < count($emotes); $i++) {
-            if(in_array($emotes[$i]['emote_url'], $existing)) {
-                unset($emotes[$i]);
-            } else {
-                $existing[] = $emotes[$i]['emote_url'];
-            }
-        }
-    }
-
-    return $emotes;
-}
-
 function safe_delete(string $path): void {
     $path = realpath($path);
-
-    if(empty($path)) {
+    if(empty($path))
         return;
-    }
 
     if(is_dir($path)) {
         rmdir($path);
         return;
     }
 
-    if(is_file($path)) {
+    if(is_file($path))
         unlink($path);
-    }
 }
 
 // mkdir but it fails silently
 function mkdirs(string $path, bool $recursive = false, int $mode = 0777): bool {
-    if(file_exists($path)) {
+    if(file_exists($path))
         return true;
-    }
-
     return mkdir($path, $mode, $recursive);
 }
 
@@ -270,8 +233,8 @@ function html_colour(?int $colour, $attribs = '--user-colour'): string {
     return $css;
 }
 
-function html_avatar(int $userId, int $resolution, string $altText = '', array $attributes = []): string {
-    $attributes['src'] = url('user-avatar', ['user' => $userId, 'res' => $resolution * 2]);
+function html_avatar(?int $userId, int $resolution, string $altText = '', array $attributes = []): string {
+    $attributes['src'] = url('user-avatar', ['user' => $userId ?? 0, 'res' => $resolution * 2]);
     $attributes['alt'] = $altText;
     $attributes['class'] = trim('avatar ' . ($attributes['class'] ?? ''));
 

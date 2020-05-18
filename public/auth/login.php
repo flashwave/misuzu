@@ -3,6 +3,7 @@ namespace Misuzu;
 
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
 
 require_once '../../misuzu.php';
 
@@ -44,7 +45,6 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
         break;
     }
 
-    $userData = User::findForLogin($_POST['login']['username']);
     $attemptsRemainingError = sprintf(
         "%d attempt%s remaining",
         $remainingAttempts - 1,
@@ -52,7 +52,9 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
     );
     $loginFailedError = "Invalid username or password, {$attemptsRemainingError}.";
 
-    if(empty($userData)) {
+    try {
+        $userData = User::findForLogin($_POST['login']['username']);
+    } catch(UserNotFoundException $ex) {
         user_login_attempt_record(false, null, $ipAddress, $userAgent);
         $notices[] = $loginFailedError;
         break;
@@ -64,7 +66,7 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
     }
 
     if($userData->isDeleted() || !$userData->checkPassword($_POST['login']['password'])) {
-        user_login_attempt_record(false, $userData->user_id, $ipAddress, $userAgent);
+        user_login_attempt_record(false, $userData->getId(), $ipAddress, $userAgent);
         $notices[] = $loginFailedError;
         break;
     }
@@ -73,31 +75,31 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
         $userData->setPassword($_POST['login']['password']);
     }
 
-    if(!empty($loginPermCat) && $loginPermVal > 0 && !perms_check_user($loginPermCat, $userData['user_id'], $loginPermVal)) {
+    if(!empty($loginPermCat) && $loginPermVal > 0 && !perms_check_user($loginPermCat, $userData->getId(), $loginPermVal)) {
         $notices[] = "Login succeeded, but you're not allowed to browse the site right now.";
-        user_login_attempt_record(true, $userData->user_id, $ipAddress, $userAgent);
+        user_login_attempt_record(true, $userData->getId(), $ipAddress, $userAgent);
         break;
     }
 
     if($userData->hasTOTP()) {
         url_redirect('auth-two-factor', [
-            'token' => user_auth_tfa_token_create($userData->user_id),
+            'token' => user_auth_tfa_token_create($userData->getId()),
         ]);
         return;
     }
 
-    user_login_attempt_record(true, $userData->user_id, $ipAddress, $userAgent);
-    $sessionKey = user_session_create($userData->user_id, $ipAddress, $userAgent);
+    user_login_attempt_record(true, $userData->getId(), $ipAddress, $userAgent);
+    $sessionKey = user_session_create($userData->getId(), $ipAddress, $userAgent);
 
     if(empty($sessionKey)) {
         $notices[] = "Something broke while creating a session for you, please tell an administrator or developer about this!";
         break;
     }
 
-    user_session_start($userData->user_id, $sessionKey);
+    user_session_start($userData->getId(), $sessionKey);
 
     $cookieLife = strtotime(user_session_current('session_expires'));
-    $cookieValue = Base64::encode(user_session_cookie_pack($userData->user_id, $sessionKey), true);
+    $cookieValue = Base64::encode(user_session_cookie_pack($userData->getId(), $sessionKey), true);
     setcookie('msz_auth', $cookieValue, $cookieLife, '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
 
     if(!is_local_url($loginRedirect)) {

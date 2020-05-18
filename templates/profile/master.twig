@@ -1,8 +1,8 @@
 {% extends 'master.twig' %}
 
 {% if profile_user is defined %}
-    {% set image = url('user-avatar', {'user': profile_user.user_id, 'res': 200}) %}
-    {% set manage_link = url('manage-user', {'user': profile_user.user_id}) %}
+    {% set image = url('user-avatar', {'user': profile_user.id, 'res': 200}) %}
+    {% set manage_link = url('manage-user', {'user': profile_user.id}) %}
     {% set stats = [
         {
             'title': 'Joined',
@@ -17,25 +17,25 @@
         {
             'title': 'Following',
             'value': profile_stats.following_count,
-            'url': url('user-profile-following', {'user': profile_user.user_id}),
+            'url': url('user-profile-following', {'user': profile_user.id}),
             'active': profile_mode == 'following',
         },
         {
             'title': 'Followers',
             'value': profile_stats.followers_count,
-            'url': url('user-profile-followers', {'user': profile_user.user_id}),
+            'url': url('user-profile-followers', {'user': profile_user.id}),
             'active': profile_mode == 'followers',
         },
         {
             'title': 'Topics',
             'value': profile_stats.forum_topic_count,
-            'url': url('user-profile-forum-topics', {'user': profile_user.user_id}),
+            'url': url('user-profile-forum-topics', {'user': profile_user.id}),
             'active': profile_mode == 'forum-topics',
         },
         {
             'title': 'Posts',
             'value': profile_stats.forum_post_count,
-            'url': url('user-profile-forum-posts', {'user': profile_user.user_id}),
+            'url': url('user-profile-forum-posts', {'user': profile_user.id}),
             'active': profile_mode == 'forum-posts',
         },
         {

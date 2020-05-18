@@ -82,8 +82,8 @@ while(!$restricted && !empty($register)) {
         break;
     }
 
-    user_role_add($createUser->user_id, MSZ_ROLE_MAIN);
-    url_redirect('auth-login-welcome', ['username' => $createUser->username]);
+    user_role_add($createUser->getId(), MSZ_ROLE_MAIN);
+    url_redirect('auth-login-welcome', ['username' => $createUser->getUsername()]);
     return;
 }
 

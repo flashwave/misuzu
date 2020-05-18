@@ -2,7 +2,7 @@
     --action-colour: var(--accent-colour);
 
     border: 1px solid var(--action-colour);
-    background-color: var(--action-colour);
+    background-color: var(--background-colour);
     display: flex;
     align-items: stretch;
     flex: 1 0 auto;

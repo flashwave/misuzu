@@ -1,0 +1,6 @@
+.changelog__action--add     { --action-colour: #159635 !important; }
+.changelog__action--remove  { --action-colour: #e33743 !important; }
+.changelog__action--update  { --action-colour: #297b8a !important; }
+.changelog__action--fix     { --action-colour: #2d5e96 !important; }
+.changelog__action--import  { --action-colour: #2b9678 !important; }
+.changelog__action--revert  { --action-colour: #e38245 !important; }

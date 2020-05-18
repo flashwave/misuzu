@@ -72,9 +72,13 @@ $responseStatus = $response->getStatusCode();
 
 header('HTTP/' . $response->getProtocolVersion() . ' ' . $responseStatus . ' ' . $response->getReasonPhrase());
 
-foreach($response->getHeaders() as $headerName => $headerSet)
-    foreach($headerSet as $headerLine)
-        header("{$headerName}: {$headerLine}");
+foreach($response->getHeaders() as $name => $lines) {
+    $firstLine = true;
+    foreach($lines as $line) {
+        header("{$name}: {$line}", $firstLine);
+        $firstLine = false;
+    }
+}
 
 $responseBody = $response->getBody();
 

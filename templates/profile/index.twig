@@ -4,7 +4,7 @@
 {% from '_layout/input.twig' import input_hidden, input_csrf, input_text, input_checkbox, input_file, input_file_raw, input_select %}
 
 {% if profile_user is defined %}
-    {% set canonical_url = url('user-profile', {'user': profile_user.user_id}) %}
+    {% set canonical_url = url('user-profile', {'user': profile_user.id}) %}
     {% set title = profile_user.username %}
 {% else %}
     {% set title = 'User not found!' %}
@@ -12,7 +12,7 @@
 
 {% block content %}
     {% if profile_is_editing %}
-        <form class="profile" method="post" action="{{ url('user-profile', {'user': profile_user.user_id}) }}" enctype="multipart/form-data">
+        <form class="profile" method="post" action="{{ url('user-profile', {'user': profile_user.id}) }}" enctype="multipart/form-data">
             {{ input_csrf('profile') }}
 
             {% if perms.edit_avatar %}
@@ -20,7 +20,7 @@
 
                 <script>
                     function updateAvatarPreview(name, url, preview) {
-                        url = url || "{{ url('user-avatar', {'user': profile_user.user_id, 'res': 240})|raw }}";
+                        url = url || "{{ url('user-avatar', {'user': profile_user.id, 'res': 240})|raw }}";
                         preview = preview || document.getElementById('avatar-preview');
                         preview.src = url;
                         preview.title = name;
@@ -211,7 +211,7 @@
 
                         {% if profile_warnings|length > 0 or profile_warnings_can_manage %}
                             <div class="container profile__container profile__warning__container" id="account-standing">
-                                {{ container_title('Account Standing', false, profile_warnings_can_manage ? url('manage-users-warnings', {'user': profile_user.user_id}) : '') }}
+                                {{ container_title('Account Standing', false, profile_warnings_can_manage ? url('manage-users-warnings', {'user': profile_user.id}) : '') }}
 
                                 <div class="profile__warning">
                                     <div class="profile__warning__background"></div>

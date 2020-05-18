@@ -246,29 +246,29 @@ final class SockChatHandler extends Handler {
         if(!isset($userId) || $userId < 1)
             return ['success' => false, 'reason' => 'unknown'];
 
-        $userInfo = User::get($userId);
+        $userInfo = User::byId($userId);
 
-        if($userInfo === null || !$userInfo->hasUserId())
+        if($userInfo === null)
             return ['success' => false, 'reason' => 'user'];
 
         $perms = self::PERMS_DEFAULT;
 
-        if(perms_check_user(MSZ_PERMS_USER, $userInfo->user_id, MSZ_PERM_USER_MANAGE_USERS))
+        if(perms_check_user(MSZ_PERMS_USER, $userInfo->getId(), MSZ_PERM_USER_MANAGE_USERS))
             $perms |= self::PERMS_MANAGE_USERS;
-        if(perms_check_user(MSZ_PERMS_USER, $userInfo->user_id, MSZ_PERM_USER_MANAGE_WARNINGS))
+        if(perms_check_user(MSZ_PERMS_USER, $userInfo->getId(), MSZ_PERM_USER_MANAGE_WARNINGS))
             $perms |= self::PERMS_MANAGE_WARNS;
-        if(perms_check_user(MSZ_PERMS_USER, $userInfo->user_id, MSZ_PERM_USER_CHANGE_BACKGROUND))
+        if(perms_check_user(MSZ_PERMS_USER, $userInfo->getId(), MSZ_PERM_USER_CHANGE_BACKGROUND))
             $perms |= self::PERMS_CHANGE_BACKG;
-        if(perms_check_user(MSZ_PERMS_FORUM, $userInfo->user_id, MSZ_PERM_FORUM_MANAGE_FORUMS))
+        if(perms_check_user(MSZ_PERMS_FORUM, $userInfo->getId(), MSZ_PERM_FORUM_MANAGE_FORUMS))
             $perms |= self::PERMS_MANAGE_FORUM;
 
         return [
             'success' => true,
-            'user_id' => $userInfo->getUserId(),
+            'user_id' => $userInfo->getId(),
             'username' => $userInfo->getUsername(),
             'colour_raw' => $userInfo->getColourRaw(),
             'hierarchy' => $userInfo->getHierarchy(),
-            'is_silenced' => date('c', user_warning_check_expiration($userInfo->getUserId(), MSZ_WARN_SILENCE)),
+            'is_silenced' => date('c', user_warning_check_expiration($userInfo->getId(), MSZ_WARN_SILENCE)),
             'perms' => $perms,
         ];
     }

@@ -34,10 +34,10 @@
         {% endif %}
     </div>
 
-    {% if comments is defined %}
+    {% if comments_category is defined %}
         <div class="container">
             {{ container_title('<i class="fas fa-comments fa-fw"></i> Comments') }}
-            {{ comments_section(comments, comments_category, current_user|default(null), comments_perms) }}
+            {{ comments_section(comments_category, comments_user) }}
         </div>
     {% endif %}
 {% endblock %}

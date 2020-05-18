@@ -1,6 +1,15 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Comments\CommentsCategory;
+use Misuzu\Comments\CommentsCategoryNotFoundException;
+use Misuzu\Comments\CommentsPost;
+use Misuzu\Comments\CommentsPostNotFoundException;
+use Misuzu\Comments\CommentsPostSaveFailedException;
+use Misuzu\Comments\CommentsVote;
+use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
+
 require_once '../misuzu.php';
 
 // basing whether or not this is an xhr request on whether a referrer header is present
@@ -20,28 +29,36 @@ if(!CSRF::validateRequest()) {
     return;
 }
 
-if(!user_session_active()) {
+try {
+    $currentUserInfo = User::byId(user_session_current('user_id', 0));
+} catch(UserNotFoundException $ex) {
     echo render_info_or_json($isXHR, 'You must be logged in to manage comments.', 401);
     return;
 }
 
-$currentUserId = user_session_current('user_id', 0);
-
-if(user_warning_check_expiration($currentUserId, MSZ_WARN_BAN) > 0) {
+if(user_warning_check_expiration($currentUserInfo->getId(), MSZ_WARN_BAN) > 0) {
     echo render_info_or_json($isXHR, 'You have been banned, check your profile for more information.', 403);
     return;
 }
-if(user_warning_check_expiration($currentUserId, MSZ_WARN_SILENCE) > 0) {
+if(user_warning_check_expiration($currentUserInfo->getId(), MSZ_WARN_SILENCE) > 0) {
     echo render_info_or_json($isXHR, 'You have been silenced, check your profile for more information.', 403);
     return;
 }
 
 header(CSRF::header());
-$commentPerms = comments_get_perms($currentUserId);
+$commentPerms = $currentUserInfo->commentPerms();
 
-$commentId = !empty($_GET['c']) && is_string($_GET['c']) ? (int)$_GET['c'] : 0;
-$commentMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
-$commentVote = !empty($_GET['v']) && is_string($_GET['v']) ? (int)$_GET['v'] : MSZ_COMMENTS_VOTE_INDIFFERENT;
+$commentId   = (int)filter_input(INPUT_GET, 'c', FILTER_SANITIZE_NUMBER_INT);
+$commentMode =      filter_input(INPUT_GET, 'm');
+$commentVote = (int)filter_input(INPUT_GET, 'v', FILTER_SANITIZE_NUMBER_INT);
+
+if($commentId > 0)
+    try {
+        $commentInfo2 = CommentsPost::byId($commentId);
+    } catch(CommentsPostNotFoundException $ex) {
+        echo render_info_or_json($isXHR, 'Post not found.', 404);
+        return;
+    }
 
 switch($commentMode) {
     case 'pin':
@@ -51,38 +68,37 @@ switch($commentMode) {
             break;
         }
 
-        $commentInfo = comments_post_get($commentId, false);
-
-        if(!$commentInfo || $commentInfo['comment_deleted'] !== null) {
+        if($commentInfo2->isDeleted()) {
             echo render_info_or_json($isXHR, "This comment doesn't exist!", 400);
             break;
         }
 
-        if($commentInfo['comment_reply_to'] !== null) {
+        if($commentInfo2->hasParent()) {
             echo render_info_or_json($isXHR, "You can't pin replies!", 400);
             break;
         }
 
         $isPinning = $commentMode === 'pin';
 
-        if($isPinning && !empty($commentInfo['comment_pinned'])) {
+        if($isPinning && $commentInfo2->isPinned()) {
             echo render_info_or_json($isXHR, 'This comment is already pinned.', 400);
             break;
-        } elseif(!$isPinning && empty($commentInfo['comment_pinned'])) {
+        } elseif(!$isPinning && !$commentInfo2->isPinned()) {
             echo render_info_or_json($isXHR, "This comment isn't pinned yet.", 400);
             break;
         }
 
-        $commentPinned = comments_pin_status($commentInfo['comment_id'], $isPinning);
+        $commentInfo2->setPinned($isPinning);
+        $commentInfo2->save();
 
         if(!$isXHR) {
-            redirect($redirect . '#comment-' . $commentInfo['comment_id']);
+            redirect($redirect . '#comment-' . $commentInfo2->getId());
             break;
         }
 
         echo json_encode([
-            'comment_id' => $commentInfo['comment_id'],
-            'comment_pinned' => $commentPinned,
+            'comment_id'     => $commentInfo2->getId(),
+            'comment_pinned' => ($time = $commentInfo2->getPinnedTime()) < 0 ? null : date('Y-m-d H:i:s', $time),
         ]);
         break;
 
@@ -92,30 +108,24 @@ switch($commentMode) {
             break;
         }
 
-        if(!comments_vote_type_valid($commentVote)) {
-            echo render_info_or_json($isXHR, 'Invalid vote action.', 400);
-            break;
-        }
-
-        $commentInfo = comments_post_get($commentId, false);
-
-        if(!$commentInfo || $commentInfo['comment_deleted'] !== null) {
+        if($commentInfo2->isDeleted()) {
             echo render_info_or_json($isXHR, "This comment doesn't exist!", 400);
             break;
         }
 
-        $voteResult = comments_vote_add(
-            $commentInfo['comment_id'],
-            user_session_current('user_id', 0),
-            $commentVote
-        );
+        if($commentVote > 0)
+            $commentInfo2->addPositiveVote($currentUserInfo);
+        elseif($commentVote < 0)
+            $commentInfo2->addNegativeVote($currentUserInfo);
+        else
+            $commentInfo2->removeVote($currentUserInfo);
 
         if(!$isXHR) {
-            redirect($redirect . '#comment-' . $commentInfo['comment_id']);
+            redirect($redirect . '#comment-' . $commentInfo2->getId());
             break;
         }
 
-        echo json_encode(comments_votes_get($commentInfo['comment_id']));
+        echo json_encode($commentInfo2->votes());
         break;
 
     case 'delete':
@@ -124,17 +134,7 @@ switch($commentMode) {
             break;
         }
 
-        $commentInfo = comments_post_get($commentId, false);
-
-        if(!$commentInfo) {
-            echo render_info_or_json($isXHR, "This comment doesn't exist.", 400);
-            break;
-        }
-
-        $isOwnComment = (int)$commentInfo['user_id'] === $currentUserId;
-        $isModAction = $commentPerms['can_delete_any'] && !$isOwnComment;
-
-        if($commentInfo['comment_deleted'] !== null) {
+        if($commentInfo2->isDeleted()) {
             echo render_info_or_json(
                 $isXHR,
                 $commentPerms['can_delete_any'] ? 'This comment is already marked for deletion.' : "This comment doesn't exist.",
@@ -143,24 +143,25 @@ switch($commentMode) {
             break;
         }
 
+        $isOwnComment = $commentInfo2->getUserId() === $currentUserInfo->getId();
+        $isModAction  = $commentPerms['can_delete_any'] && !$isOwnComment;
+
         if(!$isModAction && !$isOwnComment) {
             echo render_info_or_json($isXHR, "You're not allowed to delete comments made by others.", 403);
             break;
         }
 
-        if(!comments_post_delete($commentInfo['comment_id'])) {
-            echo render_info_or_json($isXHR, 'Failed to delete comment.', 500);
-            break;
-        }
+        $commentInfo2->setDeleted(true);
+        $commentInfo2->save();
 
         if($isModAction) {
-            audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE_MOD, $currentUserId, [
-                $commentInfo['comment_id'],
-                (int)($commentInfo['user_id'] ?? 0),
-                $commentInfo['username'] ?? '(Deleted User)',
+            audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE_MOD, $currentUserInfo->getId(), [
+                $commentInfo2->getId(),
+                $commentUserId = $commentInfo2->getUserId(),
+                ($commentUserId < 1 ? '(Deleted User)' : $commentInfo2->getUser()->getUsername()),
             ]);
         } else {
-            audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE, $currentUserId, [$commentInfo['comment_id']]);
+            audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE, $currentUserInfo->getId(), [$commentInfo2->getId()]);
         }
 
         if($redirect) {
@@ -169,7 +170,7 @@ switch($commentMode) {
         }
 
         echo json_encode([
-            'id' => $commentInfo['comment_id'],
+            'id' => $commentInfo2->getId(),
         ]);
         break;
 
@@ -179,36 +180,27 @@ switch($commentMode) {
             break;
         }
 
-        $commentInfo = comments_post_get($commentId, false);
-
-        if(!$commentInfo) {
-            echo render_info_or_json($isXHR, "This comment doesn't exist.", 400);
-            break;
-        }
-
-        if($commentInfo['comment_deleted'] === null) {
+        if(!$commentInfo2->isDeleted()) {
             echo render_info_or_json($isXHR, "This comment isn't in a deleted state.", 400);
             break;
         }
 
-        if(!comments_post_delete($commentInfo['comment_id'], false)) {
-            echo render_info_or_json($isXHR, 'Failed to restore comment.', 500);
-            break;
-        }
+        $commentInfo2->setDeleted(false);
+        $commentInfo2->save();
 
-        audit_log(MSZ_AUDIT_COMMENT_ENTRY_RESTORE, $currentUserId, [
-            $commentInfo['comment_id'],
-            (int)($commentInfo['user_id'] ?? 0),
-            $commentInfo['username'] ?? '(Deleted User)',
+        audit_log(MSZ_AUDIT_COMMENT_ENTRY_RESTORE, $currentUserInfo->getId(), [
+            $commentInfo2->getId(),
+            $commentUserId = $commentInfo2->getUserId(),
+            ($commentUserId < 1 ? '(Deleted User)' : $commentInfo2->getUser()->getUsername()),
         ]);
 
         if($redirect) {
-            redirect($redirect . '#comment-' . $commentInfo['comment_id']);
+            redirect($redirect . '#comment-' . $commentInfo2->getId());
             break;
         }
 
         echo json_encode([
-            'id' => $commentInfo['comment_id'],
+            'id' => $commentInfo2->getId(),
         ]);
         break;
 
@@ -223,26 +215,30 @@ switch($commentMode) {
             break;
         }
 
-        $categoryId = !empty($_POST['comment']['category']) && is_string($_POST['comment']['category']) ? (int)$_POST['comment']['category'] : 0;
-        $category = comments_category_info($categoryId);
-
-        if(!$category) {
+        try {
+            $categoryInfo = CommentsCategory::byId(
+                isset($_POST['comment']['category']) && is_string($_POST['comment']['category'])
+                    ? (int)$_POST['comment']['category']
+                    : 0
+            );
+        } catch(CommentsCategoryNotFoundException $ex) {
             echo render_info_or_json($isXHR, 'This comment category doesn\'t exist.', 404);
             break;
         }
 
-        if(!is_null($category['category_locked']) && !$commentPerms['can_lock']) {
+        if($categoryInfo->isLocked() && !$commentPerms['can_lock']) {
             echo render_info_or_json($isXHR, 'This comment category has been locked.', 403);
             break;
         }
 
-        $commentText = !empty($_POST['comment']['text']) && is_string($_POST['comment']['text']) ? $_POST['comment']['text'] : '';
-        $commentLock = !empty($_POST['comment']['lock']) && $commentPerms['can_lock'];
-        $commentPin = !empty($_POST['comment']['pin']) && $commentPerms['can_pin'];
+        $commentText  = !empty($_POST['comment']['text'])  && is_string($_POST['comment']['text'])  ?      $_POST['comment']['text']  : '';
         $commentReply = !empty($_POST['comment']['reply']) && is_string($_POST['comment']['reply']) ? (int)$_POST['comment']['reply'] : 0;
+        $commentLock  = !empty($_POST['comment']['lock'])  && $commentPerms['can_lock'];
+        $commentPin   = !empty($_POST['comment']['pin'])   && $commentPerms['can_pin'];
 
         if($commentLock) {
-            comments_category_lock($categoryId, is_null($category['category_locked']));
+            $categoryInfo->setLocked(!$categoryInfo->isLocked());
+            $categoryInfo->save();
         }
 
         if(strlen($commentText) > 0) {
@@ -261,30 +257,53 @@ switch($commentMode) {
             break;
         }
 
-        if($commentReply > 0 && !comments_post_exists($commentReply)) {
-            echo render_info_or_json($isXHR, 'The comment you tried to reply to does not exist.', 404);
-            break;
+        if($commentReply > 0) {
+            try {
+                $parentCommentInfo = CommentsPost::byId($commentReply);
+            } catch(CommentsPostNotFoundException $ex) {
+                unset($parentCommentInfo);
+            }
+
+            if(!isset($parentCommentInfo) || $parentCommentInfo->isDeleted()) {
+                echo render_info_or_json($isXHR, 'The comment you tried to reply to does not exist.', 404);
+                break;
+            }
         }
 
-        $commentId = comments_post_create(
-            user_session_current('user_id', 0),
-            $categoryId,
-            $commentText,
-            $commentPin,
-            $commentReply
-        );
+        $commentInfo2 = (new CommentsPost)
+            ->setUser($currentUserInfo)
+            ->setCategory($categoryInfo)
+            ->setParsedText($commentText)
+            ->setPinned($commentPin);
 
-        if($commentId < 1) {
+        if(isset($parentCommentInfo))
+            $commentInfo2->setParent($parentCommentInfo);
+
+        try {
+            $commentInfo2->save();
+        } catch(CommentsPostSaveFailedException $ex) {
             echo render_info_or_json($isXHR, 'Something went horribly wrong.', 500);
             break;
         }
 
         if($redirect) {
-            redirect($redirect . '#comment-' . $commentId);
+            redirect($redirect . '#comment-' . $commentInfo2->getId());
             break;
         }
 
-        echo json_encode(comments_post_get($commentId));
+        echo json_encode([
+            'comment_id'       => $commentInfo2->getId(),
+            'category_id'      => $commentInfo2->getCategoryId(),
+            'comment_text'     => $commentInfo2->getText(),
+            'comment_created'  => ($time = $commentInfo2->getCreatedTime()) < 0 ? null : date('Y-m-d H:i:s', $time),
+            'comment_edited'   => ($time = $commentInfo2->getEditedTime())  < 0 ? null : date('Y-m-d H:i:s', $time),
+            'comment_deleted'  => ($time = $commentInfo2->getDeletedTime()) < 0 ? null : date('Y-m-d H:i:s', $time),
+            'comment_pinned'   => ($time = $commentInfo2->getPinnedTime())  < 0 ? null : date('Y-m-d H:i:s', $time),
+            'comment_reply_to' => ($parent = $commentInfo2->getParentId())  < 1 ? null : $parent,
+            'user_id'          => ($commentInfo2->getUserId() < 1 ? null       : $commentInfo2->getUser()->getId()),
+            'username'         => ($commentInfo2->getUserId() < 1 ? null       : $commentInfo2->getUser()->getUsername()),
+            'user_colour'      => ($commentInfo2->getUserId() < 1 ? 0x40000000 : $commentInfo2->getUser()->getColour()->getRaw()),
+        ]);
         break;
 
     default:
