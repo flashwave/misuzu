@@ -110,7 +110,7 @@
                             {% if user.commentPerms.can_comment|default(false) %}
                                 <label class="comment__action comment__action--link" for="comment-reply-toggle-{{ comment.id }}">Reply</label>
                             {% endif %}
-                            {% if user.commentPerms.can_delete_any|default(false) or (comment.user.id == user.id and user.commentPerms.can_delete|default(false)) %}
+                            {% if user.commentPerms.can_delete_any|default(false) or (comment.user.id|default(0) == user.id and user.commentPerms.can_delete|default(false)) %}
                                 <a class="comment__action comment__action--link comment__action--hide comment__action--delete" data-comment-id="{{ comment.id }}" href="{{ url('comment-delete', {'comment':comment.id}) }}">Delete</a>
                             {% endif %}
                             {# if user is not null %}
