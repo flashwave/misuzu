@@ -16,7 +16,7 @@ class ChangelogChangeException extends ChangelogException {}
 class ChangelogChangeNotFoundException extends ChangelogChangeException {}
 
 class ChangelogChange implements JsonSerializable {
-    public const ACTION_UNKNOWN = 1;
+    public const ACTION_UNKNOWN = 0;
     public const ACTION_ADD     = 1;
     public const ACTION_REMOVE  = 2;
     public const ACTION_UPDATE  = 3;
