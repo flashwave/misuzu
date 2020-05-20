@@ -110,7 +110,7 @@ class CommentsCategory implements JsonSerializable {
         return CommentsVote::byCategory($this, $user, $rootOnly, $pagination);
     }
 
-    private static function getMemoizer() {
+    private static function memoizer() {
         static $memoizer = null;
         if($memoizer === null)
             $memoizer = new Memoizer;
@@ -121,7 +121,7 @@ class CommentsCategory implements JsonSerializable {
         return sprintf(self::QUERY_SELECT, sprintf(self::SELECT, self::TABLE));
     }
     public static function byId(int $categoryId): self {
-        return self::getMemoizer()->find($categoryId, function() use ($categoryId) {
+        return self::memoizer()->find($categoryId, function() use ($categoryId) {
             $cat = DB::prepare(self::byQueryBase() . ' WHERE `category_id` = :cat_id')
                 ->bind('cat_id', $categoryId)
                 ->fetchObject(self::class);
@@ -131,7 +131,7 @@ class CommentsCategory implements JsonSerializable {
         });
     }
     public static function byName(string $categoryName): self {
-        return self::getMemoizer()->find(function($category) use ($categoryName) {
+        return self::memoizer()->find(function($category) use ($categoryName) {
             return $category->getName() === $categoryName;
         }, function() use ($categoryName) {
             $cat = DB::prepare(self::byQueryBase() . ' WHERE `category_name` = :name')

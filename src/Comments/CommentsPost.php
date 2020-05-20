@@ -73,6 +73,7 @@ class CommentsPost implements JsonSerializable {
     }
     public function setUserId(int $userId): self {
         $this->user_id = $userId < 1 ? null : $userId;
+        $this->userLookedUp = false;
         $this->user = null;
         return $this;
     }
@@ -87,6 +88,7 @@ class CommentsPost implements JsonSerializable {
     }
     public function setUser(?User $user): self {
         $this->user_id = $user === null ? null : $user->getId();
+        $this->userLookedUp = true;
         $this->user = $user;
         return $this;
     }

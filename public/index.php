@@ -22,6 +22,13 @@ Router::addRoutes(
     Route::get('/info', 'index', 'Info'),
     Route::get('/info/([A-Za-z0-9_/]+)', 'page', 'Info'),
 
+    // Changelog
+    Route::get('/changelog', 'index', 'Changelog')->addChildren(
+        Route::get('.atom', 'feedAtom'),
+        Route::get('.rss', 'feedRss'),
+        Route::get('/change/([0-9]+)', 'change'),
+    ),
+
     // News
     Route::get('/news', 'index', 'News')->addChildren(
         Route::get('.atom', 'feedIndexAtom'),
@@ -52,6 +59,7 @@ Router::addRoutes(
     Route::get('/index.php', url('index')),
     Route::get('/info.php', url('info')),
     Route::get('/settings.php', url('settings-index')),
+    Route::get('/changelog.php', 'legacy', 'Changelog'),
     Route::get('/info.php/([A-Za-z0-9_/]+)', 'redir', 'Info'),
     Route::get('/auth.php', 'legacy', 'Auth'),
     Route::get('/news.php', 'legacy', 'News'),

@@ -24,10 +24,11 @@ define('MSZ_URLS', [
     'auth-resolve-user'                 => ['/auth/login.php',                  ['resolve_user' => '<username>']],
     'auth-two-factor'                   => ['/auth/twofactor.php',              ['token' => '<token>']],
 
-    'changelog-index'                   => ['/changelog.php'],
-    'changelog-change'                  => ['/changelog.php',                   ['c' => '<change>']],
-    'changelog-date'                    => ['/changelog.php',                   ['d' => '<date>']],
-    'changelog-tag'                     => ['/changelog.php',                   ['t' => '<tag>']],
+    'changelog-index'                   => ['/changelog',                       ['date' => '<date>', 'user' => '<user>', 'tags' => '<tags>']],
+    'changelog-feed-rss'                => ['/changelog.rss'],
+    'changelog-feed-atom'               => ['/changelog.atom'],
+    'changelog-change'                  => ['/changelog/change/<change>'],
+    'changelog-change-comments'         => ['/changelog/change/<change>',       [], 'comments'],
 
     'news-index'                        => ['/news',                            ['p' => '<page>']],
     'news-category'                     => ['/news/<category>',                 ['p' => '<page>']],

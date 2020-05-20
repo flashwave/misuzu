@@ -106,7 +106,7 @@ class CommentsVote implements JsonSerializable {
         if(!$return)
             return null;
 
-        return CommentsVote::byExact($post, $user);
+        return self::byExact($post, $user);
     }
 
     public static function delete(CommentsPost $post, User $user): void {

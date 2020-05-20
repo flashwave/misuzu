@@ -3,28 +3,26 @@
 
 {% block manage_content %}
     <div class="changelog-actions-tags">
-        {% if changelog_tags is defined %}
-            <div class="container changelog-actions-tags__panel changelog-actions-tags__panel--tags">
-                {{ container_title('Tags') }}
+        <div class="container changelog-actions-tags__panel changelog-actions-tags__panel--tags">
+            {{ container_title('Tags') }}
 
-                <a href="{{ url('manage-changelog-tag') }}" class="input__button">Create new tag</a>
+            <a href="{{ url('manage-changelog-tag') }}" class="input__button">Create new tag</a>
 
-                <div class="changelog-actions-tags__list">
-                    {% for tag in changelog_tags %}
-                        <a href="{{ url('manage-changelog-tag', {'tag': tag.tag_id}) }}" class="changelog-actions-tags__entry">
-                            <div class="listing__entry__content changelog-tags__content">
-                                <div class="changelog-tags__text">
-                                    {{ tag.tag_name }} ({{ tag.tag_count }})
-                                </div>
-
-                                <div class="changelog-tags__description">
-                                    {{ tag.tag_description }}
-                                </div>
+            <div class="changelog-actions-tags__list">
+                {% for tag in changelog_tags %}
+                    <a href="{{ url('manage-changelog-tag', {'tag': tag.id}) }}" class="changelog-actions-tags__entry">
+                        <div class="listing__entry__content changelog-tags__content">
+                            <div class="changelog-tags__text">
+                                {{ tag.name }} ({{ tag.changeCount }})
                             </div>
-                        </a>
-                    {% endfor %}
-                </div>
+
+                            <div class="changelog-tags__description">
+                                {{ tag.description }}
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
             </div>
-        {% endif %}
+        </div>
     </div>
 {% endblock %}

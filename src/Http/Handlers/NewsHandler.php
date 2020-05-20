@@ -16,7 +16,6 @@ use Misuzu\News\NewsCategoryNotFoundException;
 use Misuzu\News\NewsPostNotException;
 use Misuzu\Parsers\Parser;
 use Misuzu\Users\User;
-use Misuzu\Users\UserNotFoundException;
 
 final class NewsHandler extends Handler {
     public function index(HttpResponse $response, HttpRequest $request) {
@@ -61,18 +60,13 @@ final class NewsHandler extends Handler {
         if(!$postInfo->isPublished() || $postInfo->isDeleted())
             return 404;
 
-        $postInfo->ensureCommentsSection();
-        $commentsInfo = $postInfo->getCommentSection();
-        try {
-            $commentsUser = User::byId(user_session_current('user_id', 0));
-        } catch(UserNotFoundException $ex) {
-            $commentsUser = null;
-        }
+        $postInfo->ensureCommentsCategory();
+        $commentsInfo = $postInfo->getCommentsCategory();
 
         $response->setTemplate('news.post', [
             'post_info' => $postInfo,
             'comments_info'  => $commentsInfo,
-            'comments_user'  => $commentsUser,
+            'comments_user'  => User::getCurrent(),
         ]);
 
     }
@@ -95,9 +89,9 @@ final class NewsHandler extends Handler {
 
             $feedItem = (new FeedItem)
                 ->setTitle($post->getTitle())
-                ->setSummary(first_paragraph($post->getText()))
+                ->setSummary($post->getFirstParagraph())
                 ->setContent(Parser::instance(Parser::MARKDOWN)->parseText($post->getText()))
-                ->setCreationDate(strtotime($post->getCreatedTime()))
+                ->setCreationDate($post->getCreatedTime())
                 ->setUniqueId($postUrl)
                 ->setContentUrl($postUrl)
                 ->setCommentsUrl($commentsUrl)

@@ -33,12 +33,12 @@
         <div class="news__preview__content markdown">
             <h1>{{ post.title }}</h1>
             <div class="news__preview__text">
-                {{ post.text|first_paragraph|parse_text(constant('\\Misuzu\\Parsers\\Parser::MARKDOWN'))|raw }}
+                {{ post.parsedFirstParagraph|raw }}
             </div>
             <div class="news__preview__links">
                 <a href="{{ url('news-post', {'post': post.id}) }}" class="news__preview__link">Continue reading</a>
                 <a href="{{ url('news-post-comments', {'post': post.id}) }}" class="news__preview__link">
-                    {{ not post.hasCommentSection or post.commentSection.postCount < 1 ? 'No' : post.commentSection.postCount|number_format }} comment{{ not post.hasCommentSection or post.commentSection.postCount != 1 ? 's' : '' }}
+                    {{ not post.hasCommentsCategory or post.commentsCategory.postCount < 1 ? 'No' : post.commentsCategory.postCount|number_format }} comment{{ not post.hasCommentsCategory or post.commentsCategory.postCount != 1 ? 's' : '' }}
                 </a>
             </div>
         </div>
@@ -88,7 +88,7 @@
 
         <div class="news__post__text markdown">
             <h1>{{ post.title }}</h1>
-            {{ post.text|parse_text(constant('\\Misuzu\\Parsers\\Parser::MARKDOWN'))|raw }}
+            {{ post.parsedText|raw }}
         </div>
     </div>
 {% endmacro %}

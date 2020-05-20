@@ -6,6 +6,8 @@ use Misuzu\Database\Database;
 use Misuzu\Database\DatabaseMigrationManager;
 use Misuzu\Net\GeoIP;
 use Misuzu\Net\IPAddress;
+use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
 
 define('MSZ_STARTUP', microtime(true));
 define('MSZ_ROOT', __DIR__);
@@ -29,6 +31,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . MSZ_ROOT);
 
 set_exception_handler(function(\Throwable $ex) {
     http_response_code(500);
+    ob_clean();
 
     if(MSZ_CLI || MSZ_DEBUG) {
         header('Content-Type: text/plain; charset=utf-8');
@@ -63,7 +66,6 @@ class_alias(\Misuzu\Http\HttpRequestMessage::class,  '\HttpRequest');
 require_once 'utility.php';
 require_once 'src/perms.php';
 require_once 'src/audit_log.php';
-require_once 'src/changelog.php';
 require_once 'src/manage.php';
 require_once 'src/url.php';
 require_once 'src/Forum/perms.php';
@@ -450,6 +452,10 @@ MIG;
                     user_session_stop(true);
                     $userDisplayInfo = [];
                 } else {
+                    try {
+                        User::byId($cookieData['user_id'])->setCurrent();
+                    } catch(UserNotFoundException $ex) {}
+
                     user_bump_last_active($cookieData['user_id']);
                     user_session_bump_active(user_session_current('session_id'));
 

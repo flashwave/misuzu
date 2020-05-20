@@ -26,8 +26,8 @@ function db_to_zip(ZipArchive $archive, int $userId, string $filename, string $q
 }
 
 $errors = [];
-$currentUserId = user_session_current('user_id');
-$currentUser = User::byId($currentUserId);
+$currentUser = User::getCurrent();
+$currentUserId = $currentUser->getId();
 
 if(isset($_POST['action']) && is_string($_POST['action'])) {
     if(isset($_POST['password']) && is_string($_POST['password'])

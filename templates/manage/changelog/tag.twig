@@ -4,29 +4,29 @@
 
 {% block manage_content %}
     <div class="container">
-        <form action="{{ url('manage-changelog-tag', {'tag': edit_tag.tag_id|default(0)}) }}" method="post">
+        <form action="{{ url('manage-changelog-tag', {'tag': edit_tag.id|default(0)}) }}" method="post">
             {{ input_csrf() }}
 
-            {{ container_title(edit_tag is defined ? 'Editing ' ~ edit_tag.tag_name ~ ' (' ~ edit_tag.tag_id ~ ')' : 'Adding a new tag') }}
+            {{ container_title(edit_tag is defined ? 'Editing ' ~ edit_tag.name ~ ' (' ~ edit_tag.id ~ ')' : 'Adding a new tag') }}
 
             <label class="form__label" style="width:100%">
                 <div class="form__label__text">Name</div>
                 <div class="form__label__input">
-                    {{ input_text('tag[name]', '', edit_tag is defined ? edit_tag.tag_name : '', 'text', '', true, {'maxlength':255}) }}
+                    {{ input_text('tag[name]', '', edit_tag is defined ? edit_tag.name : '', 'text', '', true, {'maxlength':255}) }}
                 </div>
             </label>
 
             <label class="form__label" style="width:100%">
                 <div class="form__label__text">Description</div>
                 <div class="form__label__input">
-                    <textarea class="input__textarea" name="tag[description]" maxlength="65535">{{ edit_tag is defined ? edit_tag.tag_description : '' }}</textarea>
+                    <textarea class="input__textarea" name="tag[description]" maxlength="65535">{{ edit_tag.description|default('') }}</textarea>
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Archived</div>
                 <div class="form__label__input">
-                    {{ input_checkbox('tag[archived]', '', edit_tag is defined and edit_tag.tag_archived is not null) }}
+                    {{ input_checkbox('tag[archived]', '', edit_tag.archived|default(false)) }}
                 </div>
             </label>
 
@@ -34,7 +34,7 @@
                 <label class="form__label">
                     <div class="form__label__text">Created</div>
                     <div class="form__label__input">
-                        {{ input_text('', '', edit_tag.tag_created) }}
+                        {{ input_text('', '', edit_tag.createdTime|date('r')) }}
                     </div>
                 </label>
             {% endif %}

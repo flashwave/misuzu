@@ -34,6 +34,8 @@ class User {
     public $user_background_settings = 0;
     public $user_title = null;
 
+    private static $localUser = null;
+
     private const USER_SELECT = '
         SELECT u.`user_id`, u.`username`, u.`password`, u.`email`, u.`user_super`, u.`user_title`,
                u.`user_country`, u.`user_colour`, u.`display_role`, u.`user_totp_key`,
@@ -53,32 +55,6 @@ class User {
 
     public function __construct() {
         //
-    }
-
-    public static function create(
-        string $username,
-        string $password,
-        string $email,
-        string $ipAddress
-    ): ?User {
-        $createUser = DB::prepare('
-            INSERT INTO `msz_users` (
-                `username`, `password`, `email`, `register_ip`,
-                `last_ip`, `user_country`, `display_role`
-            ) VALUES (
-                :username, :password, LOWER(:email), INET6_ATON(:register_ip),
-                INET6_ATON(:last_ip), :user_country, 1
-            )
-        ')  ->bind('username', $username)->bind('email', $email)
-            ->bind('register_ip', $ipAddress)->bind('last_ip', $ipAddress)
-            ->bind('password', user_password_hash($password))
-            ->bind('user_country', IPAddress::country($ipAddress))
-            ->executeGetId();
-
-        if($createUser < 1)
-            return null;
-
-        return static::byId($createUser);
     }
 
     public function getId(): int {
@@ -127,6 +103,10 @@ class User {
         return !empty($this->user_deleted);
     }
 
+    public function getDisplayRoleId(): int {
+        return $this->display_role < 1 ? -1 : $this->display_role;
+    }
+
     public function hasTOTP(): bool {
         return !empty($this->user_totp_key);
     }
@@ -142,6 +122,10 @@ class User {
     }
     public function getBackgroundSlide(): bool {
         return ($this->user_background_settings & MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE) > 0;
+    }
+
+    public function getTitle(): string {
+        return $this->user_title;
     }
 
     public function profileFields(bool $filterEmpty = true): array {
@@ -165,6 +149,42 @@ class User {
         return $this->commentPermsArray;
     }
 
+    public function setCurrent(): void {
+        self::$localUser = $this;
+    }
+    public static function unsetCurrent(): void {
+        self::$localUser = null;
+    }
+    public static function getCurrent(): ?User {
+        return self::$localUser;
+    }
+
+    public static function create(
+        string $username,
+        string $password,
+        string $email,
+        string $ipAddress
+    ): ?User {
+        $createUser = DB::prepare('
+            INSERT INTO `msz_users` (
+                `username`, `password`, `email`, `register_ip`,
+                `last_ip`, `user_country`, `display_role`
+            ) VALUES (
+                :username, :password, LOWER(:email), INET6_ATON(:register_ip),
+                INET6_ATON(:last_ip), :user_country, 1
+            )
+        ')  ->bind('username', $username)->bind('email', $email)
+            ->bind('register_ip', $ipAddress)->bind('last_ip', $ipAddress)
+            ->bind('password', user_password_hash($password))
+            ->bind('user_country', IPAddress::country($ipAddress))
+            ->executeGetId();
+
+        if($createUser < 1)
+            return null;
+
+        return static::byId($createUser);
+    }
+
     private static function getMemoizer() {
         static $memoizer = null;
         if($memoizer === null)
@@ -184,7 +204,7 @@ class User {
     }
     public static function findForLogin(string $usernameOrEmail): ?User {
         $usernameOrEmailLower = mb_strtolower($usernameOrEmail);
-        return self::getMemoizer()->find(function() use ($usernameOrEmailLower) {
+        return self::getMemoizer()->find(function($user) use ($usernameOrEmailLower) {
             return mb_strtolower($user->getUsername())     === $usernameOrEmailLower
                 || mb_strtolower($user->getEmailAddress()) === $usernameOrEmailLower;
         }, function() use ($usernameOrEmail) {
@@ -199,7 +219,7 @@ class User {
     }
     public static function findForProfile($userIdOrName): ?User {
         $userIdOrNameLower = mb_strtolower($userIdOrName);
-        return self::getMemoizer()->find(function() use ($userIdOrNameLower) {
+        return self::getMemoizer()->find(function($user) use ($userIdOrNameLower) {
             return $user->getId() == $userIdOrNameLower || mb_strtolower($user->getUsername()) === $userIdOrNameLower;
         }, function() use ($userIdOrName) {
             $user = DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id OR LOWER(`username`) = LOWER(:username)')

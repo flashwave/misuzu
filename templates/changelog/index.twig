@@ -3,41 +3,51 @@
 {% from 'changelog/macros.twig' import changelog_listing %}
 {% from '_layout/comments.twig' import comments_section %}
 
-{% set is_valid = changes|length > 0 %}
-{% set is_date = changelog_date|length > 0 %}
+{% set is_date = changelog_date > 0 %}
+{% set is_user = changelog_user is not null %}
 {% set title = 'Changelog' %}
+{% set changelog_date_fmt = changelog_date|default(false) ? changelog_date|date('Y-m-d') : '' %}
 
-{% if is_valid %}
-    {%
-        set canonical_url = url_construct(url('changelog-index'), {
-            'd': changelog_date,
-            'u': changelog_user|default(0),
-            'p': changelog_pagination.page,
-        })
-    %}
+{% set canonical_url = url_construct(url('changelog-index'), {
+    'd': changelog_date_fmt,
+    'u': changelog_user.id|default(0),
+    'p': changelog_pagination.page,
+}) %}
 
-    {% if is_date or changelog_user %}
-        {% set title = title ~ ' »' ~ (changelog_date ? ' ' ~ changes[0].change_date : '') ~ (changelog_user ? ' by ' ~ changes[0].username : '') %}
-    {% endif %}
+{% if is_date or is_user %}
+    {% set title = title ~ ' »' ~ (is_date ? ' ' ~ changelog_infos[0].date : '') ~ (is_user ? ' by ' ~ changelog_infos[0].user.username : '') %}
+{% else %}
+    {% set feeds = [
+        {
+            'type': 'rss',
+            'title': '',
+            'url': url('changelog-feed-rss'),
+        },
+        {
+            'type': 'atom',
+            'title': '',
+            'url': url('changelog-feed-atom'),
+        },
+    ] %}
 {% endif %}
 
 {% block content %}
     <div class="container changelog__container">
         {{ container_title('<i class="fas fa-wrench fa-fw"></i> ' ~ title) }}
 
-        {{ changelog_listing(changes, is_date) }}
+        {{ changelog_listing(changelog_infos, is_date) }}
 
         {% if not is_date %}
             <div class="changelog__pagination">
-                {{ pagination(changelog_pagination, url('changelog-index'), null, {'d':changelog_date, 'u':changelog_user|default(0)})}}
+                {{ pagination(changelog_pagination, url('changelog-index'), null, {'date':changelog_date_fmt, 'user':changelog_user.id|default(0)})}}
             </div>
         {% endif %}
     </div>
 
-    {% if comments_category is defined %}
+    {% if is_date %}
         <div class="container">
             {{ container_title('<i class="fas fa-comments fa-fw"></i> Comments') }}
-            {{ comments_section(comments_category, comments_user) }}
+            {{ comments_section(changelog_infos[0].commentsCategory, comments_user) }}
         </div>
     {% endif %}
 {% endblock %}

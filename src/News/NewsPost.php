@@ -1,17 +1,19 @@
 <?php
 namespace Misuzu\News;
 
+use JsonSerializable;
 use Misuzu\DB;
 use Misuzu\Pagination;
 use Misuzu\Comments\CommentsCategory;
 use Misuzu\Comments\CommentsCategoryNotFoundException;
+use Misuzu\Parsers\Parser;
 use Misuzu\Users\User;
 use Misuzu\Users\UserNotFoundException;
 
 class NewsPostException extends NewsException {};
 class NewsPostNotFoundException extends NewsPostException {};
 
-class NewsPost {
+class NewsPost implements JsonSerializable {
     // Database fields
     private $post_id = -1;
     private $category_id = -1;
@@ -69,6 +71,7 @@ class NewsPost {
     }
     public function setUserId(int $userId): self {
         $this->user_id = $userId < 1 ? null : $userId;
+        $this->userLookedUp = false;
         $this->user = null;
         return $this;
     }
@@ -83,19 +86,20 @@ class NewsPost {
     }
     public function setUser(?User $user): self {
         $this->user_id = $user === null ? null : $user->getId();
+        $this->userLookedUp = true;
         $this->user = $user;
         return $this;
     }
 
-    public function getCommentSectionId(): int {
+    public function getCommentsCategoryId(): int {
         return $this->comment_section_id < 1 ? -1 : $this->comment_section_id;
     }
-    public function hasCommentSection(): bool {
-        return $this->getCommentSectionId() > 0;
+    public function hasCommentsCategory(): bool {
+        return $this->getCommentsCategoryId() > 0;
     }
-    public function getCommentSection(): CommentsCategory {
+    public function getCommentsCategory(): CommentsCategory {
         if($this->comments === null)
-            $this->comments = CommentsCategory::byId($this->getCommentSectionId());
+            $this->comments = CommentsCategory::byId($this->getCommentsCategoryId());
         return $this->comments;
     }
 
@@ -121,6 +125,15 @@ class NewsPost {
     public function setText(string $text): self {
         $this->post_text = $text;
         return $this;
+    }
+    public function getParsedText(): string {
+        return Parser::instance(Parser::MARKDOWN)->parseText($this->getText());
+    }
+    public function getFirstParagraph(): string {
+        return first_paragraph($this->getText());
+    }
+    public function getParsedFirstParagraph(): string {
+        return Parser::instance(Parser::MARKDOWN)->parseText($this->getFirstParagraph());
     }
 
     public function getScheduledTime(): int {
@@ -158,18 +171,33 @@ class NewsPost {
         return $this;
     }
 
-    public function ensureCommentsSection(): void {
-        if($this->hasCommentSection())
+    public function jsonSerialize() {
+        return [
+            'id'          => $this->getId(),
+            'category'    => $this->getCategoryId(),
+            'user'        => $this->getUserId(),
+            'comments'    => $this->getCommentsCategoryId(),
+            'is_featured' => $this->isFeatured(),
+            'title'       => $this->getTitle(),
+            'text'        => $this->getText(),
+            'scheduled'   => ($time = $this->getScheduledTime()) < 0 ? null : date('c', $time),
+            'created'     => ($time = $this->getCreatedTime())   < 0 ? null : date('c', $time),
+            'updated'     => ($time = $this->getUpdatedTime())   < 0 ? null : date('c', $time),
+            'deleted'     => ($time = $this->getDeletedTime())   < 0 ? null : date('c', $time),
+        ];
+    }
+
+    public function ensureCommentsCategory(): void {
+        if($this->hasCommentsCategory())
             return;
 
-        $this->comments = (new CommentsCategory)
-            ->setName("news-{$this->getId()}");
+        $this->comments = new CommentsCategory("news-{$this->getId()}");
         $this->comments->save();
 
         $this->comment_section_id = $this->comments->getId();
         DB::prepare('UPDATE `msz_news_posts` SET `comment_section_id` = :comment_section_id WHERE `post_id` = :post_id')
             ->execute([
-                'comment_section_id' => $this->getCommentSectionId(),
+                'comment_section_id' => $this->getCommentsCategoryId(),
                 'post_id' => $this->getId(),
             ]);
     }

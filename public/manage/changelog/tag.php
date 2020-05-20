@@ -1,6 +1,10 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Changelog\ChangelogTag;
+use Misuzu\Changelog\ChangelogTagNotFoundException;
+use Misuzu\Users\User;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_PERM_CHANGELOG_MANAGE_TAGS)) {
@@ -8,57 +12,41 @@ if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_P
     return;
 }
 
-$tagId = (int)($_GET['t'] ?? 0);
+$tagId = (int)filter_input(INPUT_GET, 't', FILTER_SANITIZE_NUMBER_INT);
 
-if(!empty($_POST['tag']) && is_array($_POST['tag']) && CSRF::validateRequest()) {
-    if($tagId > 0) {
-        $updateTag = DB::prepare('
-            UPDATE `msz_changelog_tags`
-            SET `tag_name` = :name,
-                `tag_description` = :description,
-                `tag_archived` = :archived
-            WHERE `tag_id` = :id
-        ');
-        $updateTag->bind('id', $tagId);
-    } else {
-        $updateTag = DB::prepare('
-            INSERT INTO `msz_changelog_tags`
-                (`tag_name`, `tag_description`, `tag_archived`)
-            VALUES
-                (:name, :description, :archived)
-        ');
-    }
-
-    $updateTag->bind('name', $_POST['tag']['name']);
-    $updateTag->bind('description', $_POST['tag']['description']);
-    $updateTag->bind('archived', empty($_POST['tag']['archived']) ? null : date('Y-m-d H:i:s'));
-    $updateTag->execute();
-
-    if($tagId < 1) {
-        $tagId = DB::lastId();
-        audit_log(MSZ_AUDIT_CHANGELOG_TAG_EDIT, user_session_current('user_id', 0), [$tagId]);
-        url_redirect('manage-changelog-tag', ['tag' => $tagId]);
-        return;
-    } else {
-        audit_log(MSZ_AUDIT_CHANGELOG_TAG_CREATE, user_session_current('user_id', 0), [$tagId]);
-    }
-}
-
-if($tagId > 0) {
-    $getTag = DB::prepare('
-        SELECT `tag_id`, `tag_name`, `tag_description`, `tag_archived`, `tag_created`
-        FROM `msz_changelog_tags`
-        WHERE `tag_id` = :tag_id
-    ');
-    $getTag->bind('tag_id', $tagId);
-    $tag = $getTag->fetch();
-
-    if($tag) {
-        Template::set('edit_tag', $tag);
-    } else {
+if($tagId > 0)
+    try {
+        $tagInfo = ChangelogTag::byId($tagId);
+    } catch(ChangelogTagNotFoundException $ex) {
         url_redirect('manage-changelog-tags');
         return;
     }
+
+if(!empty($_POST['tag']) && is_array($_POST['tag']) && CSRF::validateRequest()) {
+    if(!isset($tagInfo)) {
+        $tagInfo = new ChangelogTag;
+        $isNew = true;
+    }
+
+    $tagInfo->setName($_POST['tag']['name'])
+        ->setDescription($_POST['tag']['description'])
+        ->setArchived(!empty($_POST['tag']['archived']))
+        ->save();
+
+    audit_log(
+        empty($isNew)
+            ? MSZ_AUDIT_CHANGELOG_TAG_EDIT
+            : MSZ_AUDIT_CHANGELOG_TAG_CREATE,
+        User::getCurrent()->getId(),
+        [$tagInfo->getId()]
+    );
+
+    if(!empty($isNew)) {
+        url_redirect('manage-changelog-tag', ['tag' => $tagInfo->getId()]);
+        return;
+    }
 }
 
-Template::render('manage.changelog.tag');
+Template::render('manage.changelog.tag', [
+    'edit_tag' => $tagInfo ?? null,
+]);

@@ -2,13 +2,14 @@
 namespace Misuzu\News;
 
 use ArrayAccess;
+use JsonSerializable;
 use Misuzu\DB;
 use Misuzu\Pagination;
 
 class NewsCategoryException extends NewsException {};
 class NewsCategoryNotFoundException extends NewsCategoryException {};
 
-class NewsCategory implements ArrayAccess {
+class NewsCategory implements ArrayAccess, JsonSerializable {
     // Database fields
     private $category_id = -1;
     private $category_name = '';
@@ -55,6 +56,16 @@ class NewsCategory implements ArrayAccess {
 
     public function getCreatedTime(): int {
         return $this->category_created === null ? -1 : $this->category_created;
+    }
+
+    public function jsonSerialize() {
+        return [
+            'id'          => $this->getId(),
+            'name'        => $this->getName(),
+            'description' => $this->getDescription(),
+            'is_hidden'   => $this->isHidden(),
+            'created'     => ($time = $this->getCreatedTime()) < 0 ? null : date('c', $time),
+        ];
     }
 
     // Purely cosmetic, use ::countAll for pagination

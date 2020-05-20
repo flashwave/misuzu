@@ -2,68 +2,52 @@
 {% from 'macros.twig' import container_title, avatar %}
 {% from '_layout/comments.twig' import comments_section %}
 
-{% set title = 'Changelog » Change #' ~ change.change_id %}
-{% set canonical_url = url('changelog-change', {'change': change.change_id}) %}
-{% set manage_link = url('manage-changelog-change', {'change': change.change_id}) %}
-{% set description = change.change_log %}
-
-{% if change.change_action == constant('MSZ_CHANGELOG_ACTION_ADD') %}
-    {% set action_name = 'Added' %}
-{% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_REMOVE') %}
-    {% set action_name = 'Removed' %}
-{% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_UPDATE') %}
-    {% set action_name = 'Updated' %}
-{% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_FIX') %}
-    {% set action_name = 'Fixed' %}
-{% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_IMPORT') %}
-    {% set action_name = 'Imported' %}
-{% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_REVERT') %}
-    {% set action_name = 'Reverted' %}
-{% else %}
-    {% set action_name = 'Unknown' %}
-{% endif %}
+{% set title = 'Changelog » Change #' ~ change_info.id %}
+{% set canonical_url = url('changelog-change', {'change': change_info.id}) %}
+{% set manage_link = url('manage-changelog-change', {'change': change_info.id}) %}
+{% set description = change_info.header %}
 
 {% block content %}
-    <div class="container changelog__log changelog__action--{{ changelog_action_name(change.change_action) }}">
+    <div class="container changelog__log changelog__action--{{ change_info.actionClass }}">
         <div class="changelog__log__action">
-            {{ action_name }}
+            {{ change_info.actionString }}
         </div>
 
         <div class="changelog__log__text">
-            {{ change.change_log }}
+            {{ change_info.header }}
         </div>
     </div>
 
-    <div class="container changelog__change" style="{% if change.user_colour is not null %}{{ change.user_colour|html_colour('--accent-colour') }}{% endif %}">
+    <div class="container changelog__change"{% if change_info.user is not null %} style="--accent-colour: {{ change_info.user.colour }}"{% endif %}>
         <div class="changelog__change__info">
             <div class="changelog__change__info__background"></div>
             <div class="changelog__change__info__content">
-                {% if change.user_id is not null %}
+                {% if change_info.user.id is not null %}
                     <div class="changelog__change__user">
-                        <a class="changelog__change__avatar" href="{{ url('user-profile', {'user': change.user_id}) }}">
-                            {{ avatar(change.user_id, 60, change.username) }}
+                        <a class="changelog__change__avatar" href="{{ url('user-profile', {'user': change_info.user.id}) }}">
+                            {{ avatar(change_info.user.id, 60, change_info.user.username) }}
                         </a>
 
                         <div class="changelog__change__user__details">
-                            <a class="changelog__change__username" href="{{ url('user-profile', {'user': change.user_id}) }}">{{ change.username }}</a>
-                            <a class="changelog__change__userrole" href="{{ url('user-list', {'role': change.user_role}) }}">{{ change.user_title }}</a>
+                            <a class="changelog__change__username" href="{{ url('user-profile', {'user': change_info.user.id}) }}">{{ change_info.user.username }}</a>
+                            <a class="changelog__change__userrole" href="{{ url('user-list', {'role': change_info.user.displayRoleId}) }}">{{ change_info.user.title }}</a>
                         </div>
                     </div>
                 {% endif %}
 
-                <a class="changelog__change__date" href="{{ url('changelog-date', {'date': change.change_date}) }}">
+                <a class="changelog__change__date" href="{{ url('changelog-index', {'date': change_info.date}) }}">
                     Created
-                    <time datetime="{{ change.change_created|date('c') }}" title="{{ change.change_created|date('r') }}">
-                        {{ change.change_created|time_diff }}
+                    <time datetime="{{ change_info.createdTime|date('c') }}" title="{{ change_info.createdTime|date('r') }}">
+                        {{ change_info.createdTime|time_diff }}
                     </time>
                 </a>
 
-                {% if tags|length > 0 %}
+                {% if change_info.tags|length > 0 %}
                     <ul class="changelog__change__tags">
-                        {% for tag in tags %}
-                            <li class="changelog__change__tag" title="{{ tag.tag_description }}">
-                                <a href="{{ url('changelog-tag', {'tag': tag.tag_id}) }}" class="changelog__change__tag__link">
-                                    {{ tag.tag_name }}
+                        {% for tag in change_info.tags %}
+                            <li class="changelog__change__tag" title="{{ tag.description }}">
+                                <a href="{{ url('changelog-tag', {'tag': tag.id}) }}" class="changelog__change__tag__link">
+                                    {{ tag.name }}
                                 </a>
                             </li>
                         {% endfor %}
@@ -75,18 +59,18 @@
         <div class="changelog__change__text markdown">
             <h1>{{ title }}</h1>
 
-            {% if change.change_text|length >= 1 %}
-                {{ change.change_text|parse_text(constant('\\Misuzu\\Parsers\\Parser::MARKDOWN'))|raw }}
+            {% if change_info.hasBody %}
+                {{ change_info.parsedBody|raw }}
             {% else %}
                 <p>This change has no additional notes.</p>
             {% endif %}
         </div>
     </div>
 
-    {% if comments_category is defined %}
+    {% if change_info.hasCommentsCategory %}
         <div class="container">
-            {{ container_title('<i class="fas fa-comments fa-fw"></i> Comments for ' ~ change.change_date) }}
-            {{ comments_section(comments_category, comments_user) }}
+            {{ container_title('<i class="fas fa-comments fa-fw"></i> Comments for ' ~ change_info.date) }}
+            {{ comments_section(change_info.commentsCategory, comments_user) }}
         </div>
     {% endif %}
 {% endblock %}

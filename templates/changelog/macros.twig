@@ -4,10 +4,10 @@
     <div class="changelog__listing">
         {% if changes|length > 0 %}
             {% for change in changes %}
-                {% if not hide_dates and (last_date is not defined or last_date != change.change_date) %}
-                    {% set last_date = change.change_date %}
+                {% if not hide_dates and (last_date is not defined or last_date != change.date) %}
+                    {% set last_date = change.date %}
 
-                    <a href="{{ is_manage ? '#cd' ~ last_date : url('changelog-date', {'date': last_date}) }}" class="changelog__listing__date" id="cd{{ last_date }}">
+                    <a href="{{ is_manage ? '#cd' ~ last_date : url('changelog-index', {'date': last_date}) }}" class="changelog__listing__date" id="cd{{ last_date }}">
                         {{ last_date }}
                     </a>
                 {% endif %}
@@ -23,72 +23,52 @@
 {% endmacro %}
 
 {% macro changelog_entry(change, is_small, is_manage) %}
-    {% set change_url = url(is_manage ? 'manage-changelog-change' : 'changelog-change', {'change': change.change_id}) %}
-    {% set has_text = change.change_has_text|default(false)
-        or (change.change_text is defined and change.change_text|length > 0)
-    %}
+    {% set change_url = url(is_manage ? 'manage-changelog-change' : 'changelog-change', {'change': change.id}) %}
 
-    <div class="changelog__entry" id="cl{{ change.change_id }}">
+    <div class="changelog__entry" id="cl{{ change.id }}">
         <div class="changelog__entry__info">
             {% if is_manage %}
-                <a href="{{ change_url|format(change.change_id) }}" class="changelog__entry__datetime">
+                <a href="{{ change_url }}" class="changelog__entry__datetime">
                     <time class="changelog__datetime__text"
-                        datetime="{{ change.change_created|date('c') }}"
-                        title="{{ change.change_created|date('r') }}">
-                        {{ change.change_created|time_diff }}
+                        datetime="{{ change.createdTime|date('c') }}"
+                        title="{{ change.createdTime|date('r') }}">
+                        {{ change.createdTime|time_diff }}
                     </time>
                 </a>
             {% endif %}
 
-            {% if change.change_action == constant('MSZ_CHANGELOG_ACTION_ADD') %}
-                {% set action_name = 'Added' %}
-            {% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_REMOVE') %}
-                {% set action_name = 'Removed' %}
-            {% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_UPDATE') %}
-                {% set action_name = 'Updated' %}
-            {% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_FIX') %}
-                {% set action_name = 'Fixed' %}
-            {% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_IMPORT') %}
-                {% set action_name = 'Imported' %}
-            {% elseif change.change_action == constant('MSZ_CHANGELOG_ACTION_REVERT') %}
-                {% set action_name = 'Reverted' %}
-            {% else %}
-                {% set action_name = 'Unknown' %}
-            {% endif %}
-
-            <a class="changelog__entry__action changelog__action--{{ changelog_action_name(change.change_action) }}"
-                href="{{ change_url|format(change.change_id) }}"
-                {% if change.action_colour is defined %}style="{{ change.action_colour|html_colour('--action-colour') }}"{% endif %}
-                {% if is_small %}title="{{ action_name }}"{% endif %}>
+            <a class="changelog__entry__action changelog__action--{{ change.actionClass }}"
+                href="{{ change_url }}"
+                {% if is_small %}title="{{ change.actionString }}"{% endif %}>
                 {% if not is_small %}
                     <div class="changelog__entry__action__text">
-                        {{ action_name }}
+                        {{ change.actionString }}
                     </div>
                 {% endif %}
             </a>
 
-            {% if change.user_id is defined %}
+            {% if not is_small %}
                 <a  class="changelog__entry__user"
-                    href="{{ url(is_manage ? 'manage-user' : 'user-profile', {'user': change.user_id}) }}"
-                    style="{{ change.user_colour|html_colour }}">
+                    href="{{ url(is_manage ? 'manage-user' : 'user-profile', {'user': change.user.id}) }}"
+                    style="--user-colour: {{ change.user.colour }}">
                     <div class="changelog__entry__user__text">
-                        {{ change.username }}
+                        {{ change.user.username }}
                     </div>
                 </a>
             {% endif %}
         </div>
 
         <div class="changelog__entry__text">
-            <a class="changelog__entry__log{% if has_text %} changelog__entry__log--link{% endif %}"
-                {% if has_text %}href="{{ change_url|format(change.change_id) }}"{% endif %}>
-                {{ change.change_log }}
+            <a class="changelog__entry__log{% if change.hasBody %} changelog__entry__log--link{% endif %}"
+                {% if change.hasBody %}href="{{ change_url }}"{% endif %}>
+                {{ change.header }}
             </a>
 
             {% if is_manage %}
                 <div class="changelog__entry__tags">
                     {% for tag in change.tags %}
-                        <a href="{{ url(is_manage ? 'manage-changelog-tag' : 'changelog-tag', {'tag': tag.tag_id}) }}" class="changelog__entry__tag">
-                            {{ tag.tag_name }}
+                        <a href="{{ url(is_manage ? 'manage-changelog-tag' : 'changelog-tag', {'tag': tag.id}) }}" class="changelog__entry__tag">
+                            {{ tag.name }}
                         </a>
                     {% endfor %}
                 </div>

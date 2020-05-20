@@ -6,6 +6,7 @@ use HttpRequest;
 use Misuzu\Config;
 use Misuzu\DB;
 use Misuzu\Pagination;
+use Misuzu\Changelog\ChangelogChange;
 use Misuzu\News\NewsPost;
 
 final class HomeHandler extends Handler {
@@ -55,15 +56,7 @@ final class HomeHandler extends Handler {
             ) AS `count_forum_posts`
         ')->fetch();
 
-        $changelog = DB::query('
-            SELECT
-                `change_id`, `change_log`, `change_action`,
-                DATE(`change_created`) AS `change_date`,
-                !ISNULL(`change_text`) AS `change_has_text`
-            FROM `msz_changelog_changes`
-            ORDER BY `change_created` DESC
-            LIMIT 10
-        ')->fetchAll();
+        $changelog = ChangelogChange::all(new Pagination(10));
 
         $birthdays = user_session_active() ? user_get_birthdays() : [];
 

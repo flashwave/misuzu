@@ -11,7 +11,6 @@ final class TwigMisuzu extends Twig_Extension {
         return [
             new Twig_Filter('html_colour', 'html_colour'),
             new Twig_Filter('country_name', 'get_country_name'),
-            new Twig_Filter('first_paragraph', 'first_paragraph'),
             new Twig_Filter('byte_symbol', 'byte_symbol'),
             new Twig_Filter('html_link', 'html_link'),
             // deprecate this call, convert to html in php
@@ -32,7 +31,6 @@ final class TwigMisuzu extends Twig_Extension {
             new Twig_Function('url_list', 'url_list'),
             new Twig_Function('html_tag', 'html_tag'),
             new Twig_Function('html_avatar', 'html_avatar'),
-            new Twig_Function('changelog_action_name', 'changelog_action_name'),
             new Twig_Function('forum_may_have_children', 'forum_may_have_children'),
             new Twig_Function('forum_may_have_topics', 'forum_may_have_topics'),
             new Twig_Function('forum_has_priority_voting', 'forum_has_priority_voting'),

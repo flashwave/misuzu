@@ -29,9 +29,8 @@ if(!CSRF::validateRequest()) {
     return;
 }
 
-try {
-    $currentUserInfo = User::byId(user_session_current('user_id', 0));
-} catch(UserNotFoundException $ex) {
+$currentUserInfo = User::getCurrent();
+if($currentUserInfo === null) {
     echo render_info_or_json($isXHR, 'You must be logged in to manage comments.', 401);
     return;
 }

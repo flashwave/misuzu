@@ -13,8 +13,8 @@ if(!user_session_active()) {
 }
 
 $errors = [];
-$currentUserId = user_session_current('user_id');
-$currentUser = User::byId($currentUserId);
+$currentUser = User::getCurrent();
+$currentUserId = $currentUser->getId();
 $currentEmail = user_email_get($currentUserId);
 $isRestricted = user_warning_check_restriction($currentUserId);
 $twoFactorInfo = user_totp_info($currentUserId);

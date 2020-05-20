@@ -1,6 +1,13 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Changelog\ChangelogChange;
+use Misuzu\Changelog\ChangelogChangeNotFoundException;
+use Misuzu\Changelog\ChangelogTag;
+use Misuzu\Changelog\ChangelogTagNotFoundException;
+use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_PERM_CHANGELOG_MANAGE_CHANGES)) {
@@ -8,122 +15,75 @@ if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_P
     return;
 }
 
-$changeId = (int)($_GET['c'] ?? 0);
+define('MANAGE_ACTIONS', [
+    ['action_id' => ChangelogChange::ACTION_ADD,    'action_name' => 'Added'],
+    ['action_id' => ChangelogChange::ACTION_REMOVE, 'action_name' => 'Removed'],
+    ['action_id' => ChangelogChange::ACTION_UPDATE, 'action_name' => 'Updated'],
+    ['action_id' => ChangelogChange::ACTION_FIX,    'action_name' => 'Fixed'],
+    ['action_id' => ChangelogChange::ACTION_IMPORT, 'action_name' => 'Imported'],
+    ['action_id' => ChangelogChange::ACTION_REVERT, 'action_name' => 'Reverted'],
+]);
+
+$changeId = (int)filter_input(INPUT_GET, 'c', FILTER_SANITIZE_NUMBER_INT);
+$tags = ChangelogTag::all();
+
+if($changeId > 0)
+    try {
+        $change = ChangelogChange::byId($changeId);
+    } catch(ChangelogChangeNotFoundException $ex) {
+        url_redirect('manage-changelog-changes');
+        return;
+    }
 
 if($_SERVER['REQUEST_METHOD'] === 'POST' && CSRF::validateRequest()) {
     if(!empty($_POST['change']) && is_array($_POST['change'])) {
-        if($changeId > 0) {
-            $postChange = DB::prepare('
-                UPDATE `msz_changelog_changes`
-                SET `change_log` = :log,
-                    `change_text` = :text,
-                    `change_action` = :action,
-                    `user_id` = :user,
-                    `change_created` = :created
-                WHERE `change_id` = :change_id
-            ');
-            $postChange->bind('change_id', $changeId);
-        } else {
-            $postChange = DB::prepare('
-                INSERT INTO `msz_changelog_changes`
-                    (
-                        `change_log`, `change_text`, `change_action`,
-                        `user_id`, `change_created`
-                    )
-                VALUES
-                    (:log, :text, :action, :user, :created)
-            ');
+        if(!isset($change)) {
+            $change = new ChangelogChange;
+            $isNew = true;
         }
 
-        $postChange->bind('log', $_POST['change']['log']);
-        $postChange->bind('action', $_POST['change']['action']);
-        $postChange->bind('text', strlen($_POST['change']['text'])
-            ? $_POST['change']['text']
-            : null);
-        $postChange->bind('user', is_numeric($_POST['change']['user'])
-            ? $_POST['change']['user']
-            : null);
-        $postChange->bind('created', strlen($_POST['change']['created'])
-            ? $_POST['change']['created']
-            : null);
-        $postChange->execute();
+        $changeUserId = filter_var($_POST['change']['user'], FILTER_SANITIZE_NUMBER_INT);
+        if($changeUserId === 0)
+            $changeUser = null;
+        else
+            try {
+                $changeUser = User::byId($changeUserId);
+            } catch(UserNotFoundException $ex) {
+                $changeUser = User::getCurrent();
+            }
 
-        if($changeId < 1) {
-            $changeId = DB::lastId();
-            audit_log(MSZ_AUDIT_CHANGELOG_ENTRY_CREATE, user_session_current('user_id', 0), [$changeId]);
-        } else {
-            audit_log(MSZ_AUDIT_CHANGELOG_ENTRY_EDIT, user_session_current('user_id', 0), [$changeId]);
-        }
+        $change->setHeader($_POST['change']['log'])
+            ->setBody($_POST['change']['text'])
+            ->setAction($_POST['change']['action'])
+            ->setUser($changeUser)
+            ->save();
+
+        audit_log(
+            empty($isNew)
+                ? MSZ_AUDIT_CHANGELOG_ENTRY_EDIT
+                : MSZ_AUDIT_CHANGELOG_ENTRY_CREATE,
+            User::getCurrent()->getId(),
+            [$change->getId()]
+        );
     }
 
-    if(!empty($_POST['tags']) && is_array($_POST['tags']) && array_test($_POST['tags'], 'ctype_digit')) {
-        $setTags = array_apply($_POST['tags'], 'intval');
-
-        $removeTags = DB::prepare(sprintf('
-            DELETE FROM `msz_changelog_change_tags`
-            WHERE `change_id` = :change_id
-            AND `tag_id` NOT IN (%s)
-        ', implode(',', $setTags)));
-        $removeTags->bind('change_id', $changeId);
-        $removeTags->execute();
-
-        $addTag = DB::prepare('
-            INSERT IGNORE INTO `msz_changelog_change_tags`
-                (`change_id`, `tag_id`)
-            VALUES
-                (:change_id, :tag_id)
-        ');
-        $addTag->bind('change_id', $changeId);
-
-        foreach($setTags as $role) {
-            $addTag->bind('tag_id', $role);
-            $addTag->execute();
-        }
+    if(isset($change) && !empty($_POST['tags']) && is_array($_POST['tags']) && array_test($_POST['tags'], 'ctype_digit')) {
+        $applyTags = [];
+        foreach($_POST['tags'] as $tagId)
+            try {
+                $applyTags[] = ChangelogTag::byId((int)filter_var($tagId, FILTER_SANITIZE_NUMBER_INT));
+            } catch(ChangelogTagNotFoundException $ex) {}
+        $change->setTags($applyTags);
     }
-}
 
-$actions = [
-    ['action_id' => MSZ_CHANGELOG_ACTION_ADD, 'action_name' => 'Added'],
-    ['action_id' => MSZ_CHANGELOG_ACTION_REMOVE, 'action_name' => 'Removed'],
-    ['action_id' => MSZ_CHANGELOG_ACTION_UPDATE, 'action_name' => 'Updated'],
-    ['action_id' => MSZ_CHANGELOG_ACTION_FIX, 'action_name' => 'Fixed'],
-    ['action_id' => MSZ_CHANGELOG_ACTION_IMPORT, 'action_name' => 'Imported'],
-    ['action_id' => MSZ_CHANGELOG_ACTION_REVERT, 'action_name' => 'Reverted'],
-];
-
-if($changeId > 0) {
-    $getChange = DB::prepare('
-        SELECT
-            `change_id`, `change_log`, `change_text`, `user_id`,
-            `change_action`, `change_created`
-        FROM `msz_changelog_changes`
-        WHERE `change_id` = :change_id
-    ');
-    $getChange->bind('change_id', $changeId);
-    $change = $getChange->fetch();
-
-    if(!$change) {
-        url_redirect('manage-changelog-changes');
+    if(!empty($isNew)) {
+        url_redirect('manage-changelog-change', ['change' => $change->getId()]);
         return;
     }
 }
 
-$getChangeTags = DB::prepare('
-    SELECT
-        ct.`tag_id`, ct.`tag_name`,
-        (
-            SELECT COUNT(`change_id`) > 0
-            FROM `msz_changelog_change_tags`
-            WHERE `tag_id` = ct.`tag_id`
-            AND `change_id` = :change_id
-        ) AS `has_tag`
-    FROM `msz_changelog_tags` AS ct
-');
-$getChangeTags->bind('change_id', $change['change_id'] ?? 0);
-$changeTags = $getChangeTags->fetchAll();
-
 Template::render('manage.changelog.change', [
     'change' => $change ?? null,
-    'change_tags' => $changeTags,
-    'change_actions' => $actions,
+    'change_tags' => $tags,
+    'change_actions' => MANAGE_ACTIONS,
 ]);
