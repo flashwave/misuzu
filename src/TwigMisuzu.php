@@ -18,7 +18,6 @@ final class TwigMisuzu extends Twig_Extension {
             new Twig_Filter('perms_check', 'perms_check'),
             new Twig_Filter('bg_settings', 'user_background_settings_strings'),
             new Twig_Filter('clamp', 'clamp'),
-            new Twig_Filter('log_format', fn(string $text, string $json) => vsprintf($text, json_decode($json))),
         ];
     }
 
@@ -29,7 +28,6 @@ final class TwigMisuzu extends Twig_Extension {
             new Twig_Function('warning_has_duration', 'user_warning_has_duration'),
             new Twig_Function('url', 'url'),
             new Twig_Function('url_list', 'url_list'),
-            new Twig_Function('html_tag', 'html_tag'),
             new Twig_Function('html_avatar', 'html_avatar'),
             new Twig_Function('forum_may_have_children', 'forum_may_have_children'),
             new Twig_Function('forum_may_have_topics', 'forum_may_have_topics'),
