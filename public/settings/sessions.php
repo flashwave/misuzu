@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\AuditLog;
+
 require_once '../../misuzu.php';
 
 if(!user_session_active()) {
@@ -28,14 +30,14 @@ if(!empty($_POST['session']) && CSRF::validateRequest()) {
             }
 
             user_session_delete($session['session_id']);
-            audit_log(MSZ_AUDIT_PERSONAL_SESSION_DESTROY, $currentUserId, [
+            AuditLog::create(AuditLog::PERSONAL_SESSION_DESTROY, [
                 $session['session_id'],
             ]);
         }
     } elseif($_POST['session'] === 'all') {
         $currentSessionKilled = true;
         user_session_purge_all($currentUserId);
-        audit_log(MSZ_AUDIT_PERSONAL_SESSION_DESTROY_ALL, $currentUserId);
+        AuditLog::create(AuditLog::PERSONAL_SESSION_DESTROY_ALL);
     }
 
     if($currentSessionKilled) {

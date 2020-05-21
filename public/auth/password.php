@@ -2,7 +2,9 @@
 namespace Misuzu;
 
 use UnexpectedValueException;
+use Misuzu\AuditLog;
 use Misuzu\Net\IPAddress;
+use Misuzu\Users\User;
 
 require_once '../../misuzu.php';
 
@@ -59,7 +61,7 @@ while($canResetPassword) {
         }
 
         if(user_password_set($userId, $passwordNew)) {
-            audit_log(MSZ_AUDIT_PASSWORD_RESET, $userId);
+            AuditLog::(AuditLog::PASSWORD_RESET, [], User::byId($userId));
         } else {
             throw new UnexpectedValueException('Password reset failed.');
         }

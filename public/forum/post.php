@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\AuditLog;
+
 require_once '../../misuzu.php';
 
 $postId = !empty($_GET['p']) && is_string($_GET['p']) ? (int)$_GET['p'] : 0;
@@ -137,7 +139,7 @@ switch($postMode) {
         $deletePost = forum_post_delete($postInfo['post_id']);
 
         if($deletePost) {
-            audit_log(MSZ_AUDIT_FORUM_POST_DELETE, $currentUserId, [$postInfo['post_id']]);
+            AuditLog::create(AuditLog::FORUM_POST_DELETE, [$postInfo['post_id']]);
         }
 
         if($isXHR) {
@@ -191,7 +193,7 @@ switch($postMode) {
             break;
         }
 
-        audit_log(MSZ_AUDIT_FORUM_POST_NUKE, $currentUserId, [$postInfo['post_id']]);
+        AuditLog::create(AuditLog::FORUM_POST_NUKE, [$postInfo['post_id']]);
         http_response_code(204);
 
         if(!$isXHR) {
@@ -233,7 +235,7 @@ switch($postMode) {
             break;
         }
 
-        audit_log(MSZ_AUDIT_FORUM_POST_RESTORE, $currentUserId, [$postInfo['post_id']]);
+        AuditLog::create(AuditLog::FORUM_POST_RESTORE, [$postInfo['post_id']]);
         http_response_code(204);
 
         if(!$isXHR) {

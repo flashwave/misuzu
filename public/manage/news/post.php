@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\AuditLog;
 use Misuzu\News\NewsCategory;
 use Misuzu\News\NewsPost;
 use Misuzu\News\NewsPostNotFoundException;
@@ -41,11 +42,10 @@ if(!empty($_POST['post']) && CSRF::validateRequest()) {
 
     $postInfo->save();
 
-    audit_log(
+    AuditLog::create(
         empty($isNew)
-            ? MSZ_AUDIT_NEWS_POST_EDIT
-            : MSZ_AUDIT_NEWS_POST_CREATE,
-        $currentUserId,
+            ? AuditLog::NEWS_POST_EDIT
+            : AuditLog::NEWS_POST_CREATE,
         [$postInfo->getId()]
     );
 

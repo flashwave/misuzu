@@ -65,7 +65,6 @@ class_alias(\Misuzu\Http\HttpRequestMessage::class,  '\HttpRequest');
 
 require_once 'utility.php';
 require_once 'src/perms.php';
-require_once 'src/audit_log.php';
 require_once 'src/manage.php';
 require_once 'src/url.php';
 require_once 'src/Forum/perms.php';

@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\AuditLog;
 use Misuzu\News\NewsCategory;
 use Misuzu\News\NewsCategoryNotFoundException;
 
@@ -33,11 +34,10 @@ if(!empty($_POST['category']) && CSRF::validateRequest()) {
         ->setHidden(!empty($_POST['category']['hidden']))
         ->save();
 
-    audit_log(
+    AuditLog::create(
         empty($isNew)
-            ? MSZ_AUDIT_NEWS_CATEGORY_EDIT
-            : MSZ_AUDIT_NEWS_CATEGORY_CREATE,
-        user_session_current('user_id'),
+            ? AuditLog::NEWS_CATEGORY_EDIT
+            : AuditLog::NEWS_CATEGORY_CREATE,
         [$categoryInfo->getId()]
     );
 

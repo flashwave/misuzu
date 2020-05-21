@@ -2,6 +2,7 @@
 namespace Misuzu;
 
 use ZipArchive;
+use Misuzu\AuditLog;
 use Misuzu\Users\User;
 
 require_once '../../misuzu.php';
@@ -34,7 +35,7 @@ if(isset($_POST['action']) && is_string($_POST['action'])) {
         && $currentUser->checkPassword($_POST['password'] ?? '')) {
         switch($_POST['action']) {
             case 'data':
-                audit_log(MSZ_AUDIT_PERSONAL_DATA_DOWNLOAD, $currentUserId);
+                AuditLog::create(AuditLog::PERSONAL_DATA_DOWNLOAD);
 
                 $timeStamp = floor(time() / 3600) * 3600;
                 $fileName = sprintf('msz-user-data-%d-%d.zip', $currentUserId, $timeStamp);

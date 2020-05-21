@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\AuditLog;
 use Misuzu\Changelog\ChangelogChange;
 use Misuzu\Changelog\ChangelogChangeNotFoundException;
 use Misuzu\Changelog\ChangelogTag;
@@ -58,11 +59,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && CSRF::validateRequest()) {
             ->setUser($changeUser)
             ->save();
 
-        audit_log(
+        AuditLog::create(
             empty($isNew)
-                ? MSZ_AUDIT_CHANGELOG_ENTRY_EDIT
-                : MSZ_AUDIT_CHANGELOG_ENTRY_CREATE,
-            User::getCurrent()->getId(),
+                ? AuditLog::CHANGELOG_ENTRY_EDIT
+                : AuditLog::CHANGELOG_ENTRY_CREATE,
             [$change->getId()]
         );
     }

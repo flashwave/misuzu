@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\AuditLog;
 use Misuzu\Users\User;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
@@ -99,7 +100,7 @@ if($isVerifiedRequest && !empty($_POST['current_password'])) {
                     }
                 } else {
                     user_email_set($currentUserId, $_POST['email']['new']);
-                    audit_log(MSZ_AUDIT_PERSONAL_EMAIL_CHANGE, $currentUserId, [
+                    AuditLog::create(AuditLog::PERSONAL_EMAIL_CHANGE, [
                         $_POST['email']['new'],
                     ]);
                 }
@@ -117,7 +118,7 @@ if($isVerifiedRequest && !empty($_POST['current_password'])) {
                     $errors[] = 'The given passwords was too weak.';
                 } else {
                     user_password_set($currentUserId, $_POST['password']['new']);
-                    audit_log(MSZ_AUDIT_PERSONAL_PASSWORD_CHANGE, $currentUserId);
+                    AuditLog::create(AuditLog::PERSONAL_PASSWORD_CHANGE);
                 }
             }
         }

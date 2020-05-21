@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\AuditLog;
 use Misuzu\Changelog\ChangelogTag;
 use Misuzu\Changelog\ChangelogTagNotFoundException;
 use Misuzu\Users\User;
@@ -33,11 +34,10 @@ if(!empty($_POST['tag']) && is_array($_POST['tag']) && CSRF::validateRequest()) 
         ->setArchived(!empty($_POST['tag']['archived']))
         ->save();
 
-    audit_log(
+    AuditLog::create(
         empty($isNew)
-            ? MSZ_AUDIT_CHANGELOG_TAG_EDIT
-            : MSZ_AUDIT_CHANGELOG_TAG_CREATE,
-        User::getCurrent()->getId(),
+            ? AuditLog::CHANGELOG_TAG_EDIT
+            : AuditLog::CHANGELOG_TAG_CREATE,
         [$tagInfo->getId()]
     );
 

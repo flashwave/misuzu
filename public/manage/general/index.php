@@ -21,7 +21,7 @@ $statistics = DB::query('
         AND `user_deleted` IS NULL
     ) AS `stat_users_active`,
     (
-        SELECT COUNT(`log_id`)
+        SELECT COUNT(*)
         FROM `msz_audit_log`
     ) AS `stat_audit_logs`,
     (

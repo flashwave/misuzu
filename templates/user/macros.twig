@@ -264,27 +264,23 @@
     </div>
 {% endmacro %}
 
-{% macro user_account_log(data, strings) %}
+{% macro user_account_log(data, is_manage) %}
     {% from 'macros.twig' import avatar %}
 
-    <div class="settings__account-log" id="account-log-{{ data.log_id }}">
-        {% if data.user_id is defined %}
-            <a href="{{ url('user-profile', {'user': data.user_id}) }}" class="settings__account-log__user" style="{{ data.user_colour|html_colour }}">
-                <div class="settings__account-log__user__avatar">{{ avatar(data.user_id, 20, data.username) }}</div>
-                <div class="settings__account-log__user__name">{{ data.username }}</div>
+    <div class="settings__account-log">
+        {% if is_manage %}
+            <a href="{{ url('user-profile', {'user': data.user.id}) }}" class="settings__account-log__user" style="--user-colour: {{ data.user.colour }}">
+                <div class="settings__account-log__user__avatar">{{ avatar(data.user.id, 20, data.user.username) }}</div>
+                <div class="settings__account-log__user__name">{{ data.user.username }}</div>
             </a>
         {% endif %}
 
         <div class="settings__account-log__container">
             <div class="settings__account-log__important">
-                <div class="flag flag--{{ data.log_country|lower }} settings__login-attempt__flag" title="{{ data.log_country|country_name }}">{{ data.log_country }}</div>
+                <div class="flag flag--{{ data.country|lower }} settings__login-attempt__flag" title="{{ data.countryName }}">{{ data.country }}</div>
 
                 <div class="settings__login-attempt__description">
-                    {% if data.log_action in strings|keys %}
-                        {{ strings[data.log_action]|log_format(data.log_params) }}
-                    {% else %}
-                        {{ data.log_action }}({{ data.log_params }})
-                    {% endif %}
+                    {{ data.string }}
                 </div>
             </div>
 
@@ -294,16 +290,16 @@
                         IP Address
                     </div>
                     <div class="settings__account-log__detail__value">
-                        {{ data.log_ip }}
+                        {{ data.remoteAddress }}
                     </div>
                 </div>
 
-                <div class="settings__account-log__detail" title="{{ data.log_created|date('r') }}">
+                <div class="settings__account-log__detail" title="{{ data.createdTime|date('r') }}">
                     <div class="settings__account-log__detail__title">
                         Date
                     </div>
-                    <time class="settings__account-log__detail__value" datetime="{{ data.log_created|date('c') }}">
-                        {{ data.log_created|time_diff }}
+                    <time class="settings__account-log__detail__value" datetime="{{ data.createdTime|date('c') }}">
+                        {{ data.createdTime|time_diff }}
                     </time>
                 </div>
             </div>

@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\AuditLog;
 use Misuzu\Comments\CommentsCategory;
 use Misuzu\Comments\CommentsCategoryNotFoundException;
 use Misuzu\Comments\CommentsPost;
@@ -154,13 +155,13 @@ switch($commentMode) {
         $commentInfo2->save();
 
         if($isModAction) {
-            audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE_MOD, $currentUserInfo->getId(), [
+            AuditLog::create(AuditLog::COMMENT_ENTRY_DELETE_MOD, [
                 $commentInfo2->getId(),
                 $commentUserId = $commentInfo2->getUserId(),
                 ($commentUserId < 1 ? '(Deleted User)' : $commentInfo2->getUser()->getUsername()),
             ]);
         } else {
-            audit_log(MSZ_AUDIT_COMMENT_ENTRY_DELETE, $currentUserInfo->getId(), [$commentInfo2->getId()]);
+            AuditLog::create(AuditLog::COMMENT_ENTRY_DELETE, [$commentInfo2->getId()]);
         }
 
         if($redirect) {
@@ -187,7 +188,7 @@ switch($commentMode) {
         $commentInfo2->setDeleted(false);
         $commentInfo2->save();
 
-        audit_log(MSZ_AUDIT_COMMENT_ENTRY_RESTORE, $currentUserInfo->getId(), [
+        AuditLog::create(AuditLog::COMMENT_ENTRY_RESTORE, [
             $commentInfo2->getId(),
             $commentUserId = $commentInfo2->getUserId(),
             ($commentUserId < 1 ? '(Deleted User)' : $commentInfo2->getUser()->getUsername()),

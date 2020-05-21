@@ -13,7 +13,7 @@
             </div>
 
             {% for log in global_logs %}
-                {{ user_account_log(log, global_logs_strings) }}
+                {{ user_account_log(log, true) }}
             {% endfor %}
 
             <div class="settings__account-logs__pagination">

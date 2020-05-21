@@ -1,6 +1,9 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\AuditLog;
+use Misuzu\Pagination;
+
 require_once '../../../misuzu.php';
 
 if(!perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), MSZ_PERM_GENERAL_VIEW_LOGS)) {
@@ -8,20 +11,16 @@ if(!perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), MSZ_PER
     return;
 }
 
-$logsPagination = new Pagination(audit_log_count(), 50);
+$pagination = new Pagination(AuditLog::countAll(), 50);
 
-if(!$logsPagination->hasValidOffset()) {
+if(!$pagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
 
-$logs = audit_log_list(
-    $logsPagination->getOffset(),
-    $logsPagination->getRange()
-);
+$logs = AuditLog::all($pagination);
 
 Template::render('manage.general.logs', [
     'global_logs' => $logs,
-    'global_logs_pagination' => $logsPagination,
-    'global_logs_strings' => MSZ_AUDIT_LOG_STRINGS,
+    'global_logs_pagination' => $pagination,
 ]);

@@ -1,8 +1,7 @@
 <?php
 function manage_get_menu(int $userId): array {
-    if(!perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_CAN_MANAGE)) {
+    if(!perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_CAN_MANAGE))
         return [];
-    }
 
     $menu = [
         'General' => [
@@ -10,57 +9,36 @@ function manage_get_menu(int $userId): array {
         ],
     ];
 
-    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_VIEW_LOGS)) {
+    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_VIEW_LOGS))
         $menu['General']['Logs'] = url('manage-general-logs');
-    }
-
-    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_MANAGE_EMOTES)) {
+    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_MANAGE_EMOTES))
         $menu['General']['Emoticons'] = url('manage-general-emoticons');
-    }
-
-    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_MANAGE_CONFIG)) {
+    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_MANAGE_CONFIG))
         $menu['General']['Settings'] = url('manage-general-settings');
-    }
-
-    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_MANAGE_BLACKLIST)) {
+    if(perms_check_user(MSZ_PERMS_GENERAL, $userId, MSZ_PERM_GENERAL_MANAGE_BLACKLIST))
         $menu['General']['IP Blacklist'] = url('manage-general-blacklist');
-    }
 
-    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_USERS)) {
+    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_USERS))
         $menu['Users & Roles']['Users'] = url('manage-users');
-    }
-
-    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_ROLES)) {
+    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_ROLES))
         $menu['Users & Roles']['Roles'] = url('manage-roles');
-    }
-
-    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_REPORTS)) {
+    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_REPORTS))
         $menu['Users & Roles']['Reports'] = url('manage-users-reports');
-    }
-
-    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_WARNINGS)) {
+    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_WARNINGS))
         $menu['Users & Roles']['Warnings'] = url('manage-users-warnings');
-    }
 
-    if(perms_check_user(MSZ_PERMS_NEWS, $userId, MSZ_PERM_NEWS_MANAGE_POSTS)) {
+    if(perms_check_user(MSZ_PERMS_NEWS, $userId, MSZ_PERM_NEWS_MANAGE_POSTS))
         $menu['News']['Posts'] = url('manage-news-posts');
-    }
-
-    if(perms_check_user(MSZ_PERMS_NEWS, $userId, MSZ_PERM_NEWS_MANAGE_CATEGORIES)) {
+    if(perms_check_user(MSZ_PERMS_NEWS, $userId, MSZ_PERM_NEWS_MANAGE_CATEGORIES))
         $menu['News']['Categories'] = url('manage-news-categories');
-    }
 
-    if(perms_check_user(MSZ_PERMS_FORUM, $userId, MSZ_PERM_FORUM_MANAGE_FORUMS)) {
+    if(perms_check_user(MSZ_PERMS_FORUM, $userId, MSZ_PERM_FORUM_MANAGE_FORUMS))
         $menu['Forum']['Categories'] = url('manage-forum-categories');
-    }
 
-    if(perms_check_user(MSZ_PERMS_CHANGELOG, $userId, MSZ_PERM_CHANGELOG_MANAGE_CHANGES)) {
+    if(perms_check_user(MSZ_PERMS_CHANGELOG, $userId, MSZ_PERM_CHANGELOG_MANAGE_CHANGES))
         $menu['Changelog']['Changes'] = url('manage-changelog-changes');
-    }
-
-    if(perms_check_user(MSZ_PERMS_CHANGELOG, $userId, MSZ_PERM_CHANGELOG_MANAGE_TAGS)) {
+    if(perms_check_user(MSZ_PERMS_CHANGELOG, $userId, MSZ_PERM_CHANGELOG_MANAGE_TAGS))
         $menu['Changelog']['Tags'] = url('manage-changelog-tags');
-    }
 
     return $menu;
 }
@@ -70,14 +48,10 @@ define('MSZ_MANAGE_PERM_NO', 'no');
 define('MSZ_MANAGE_PERM_NEVER', 'never');
 
 function manage_perms_value(int $perm, int $allow, int $deny): string {
-    if(perms_check($deny, $perm)) {
+    if(perms_check($deny, $perm))
         return MSZ_MANAGE_PERM_NEVER;
-    }
-
-    if(perms_check($allow, $perm)) {
+    if(perms_check($allow, $perm))
         return MSZ_MANAGE_PERM_YES;
-    }
-
     return MSZ_MANAGE_PERM_NO;
 }
 
@@ -85,18 +59,15 @@ function manage_perms_apply(array $list, array $post, ?array $raw = null): ?arra
     $perms = $raw !== null ? $raw : perms_create();
 
     foreach($list as $section) {
-        if(empty($post[$section['section']])
-            || !is_array($post[$section['section']])) {
+        if(empty($post[$section['section']]) || !is_array($post[$section['section']]))
             continue;
-        }
 
         $allowKey = perms_get_key($section['section'], MSZ_PERMS_ALLOW);
         $denyKey = perms_get_key($section['section'], MSZ_PERMS_DENY);
 
         foreach($section['perms'] as $perm) {
-            if(empty($post[$section['section']][$perm['section']]['value'])) {
+            if(empty($post[$section['section']][$perm['section']]['value']))
                 continue;
-            }
 
             switch($post[$section['section']][$perm['section']]['value']) {
                 case MSZ_MANAGE_PERM_YES:
@@ -119,16 +90,10 @@ function manage_perms_apply(array $list, array $post, ?array $raw = null): ?arra
     }
 
     $returnNothing = 0;
-
-    foreach($perms as $perm) {
+    foreach($perms as $perm)
         $returnNothing |= $perm;
-    }
 
-    if($returnNothing === 0) {
-        return null;
-    }
-
-    return $perms;
+    return $returnNothing === 0 ? null : $perms;
 }
 
 function manage_perms_calculate(array $rawPerms, array $perms): array {
