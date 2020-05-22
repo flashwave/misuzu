@@ -1,7 +1,6 @@
 <?php
 namespace Misuzu\Http\Handlers;
 
-use Exception;
 use HttpResponse;
 use HttpRequest;
 use Misuzu\Base64;
@@ -9,8 +8,11 @@ use Misuzu\Config;
 use Misuzu\DB;
 use Misuzu\Emoticon;
 use Misuzu\Stream;
-use Misuzu\Users\ChatToken;
 use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
+use Misuzu\Users\UserChatToken;
+use Misuzu\Users\UserChatTokenNotFoundException;
+use Misuzu\Users\UserChatTokenCreationFailedException;
 
 final class SockChatHandler extends Handler {
     private string $hashKey = 'woomy';
@@ -127,7 +129,9 @@ final class SockChatHandler extends Handler {
     }
 
     public function login(HttpResponse $response, HttpRequest $request) {
-        if(!user_session_active()) {
+        $currentUser = User::getCurrent();
+
+        if($currentUser === null) {
             $response->redirect(url('auth-login'));
             return;
         }
@@ -135,9 +139,8 @@ final class SockChatHandler extends Handler {
         $params = $request->getQueryParams();
 
         try {
-            $token = ChatToken::create(user_session_current('user_id'));
-        } catch(Exception $ex) {
-            $response->setHeader('X-SharpChat-Error', $ex->getMessage());
+            $token = UserChatToken::create($currentUser);
+        } catch(UserChatTokenNotFoundException $ex) {
             return 500;
         }
 
@@ -203,10 +206,16 @@ final class SockChatHandler extends Handler {
         if(!hash_equals($realHash, $userHash))
             return ['success' => false, 'reason' => 'hash'];
 
+        try {
+            $userInfo = User::byId($authInfo->user_id);
+        } catch(UserNotFoundException $ex) {
+            return ['success' => false, 'reason' => 'user'];
+        }
+
         $authMethod = mb_substr($authInfo->token, 0, 5);
 
         if($authMethod === 'PASS:') {
-            if(time() > 1577750400)
+            //if(time() > 1577750400)
                 return ['success' => false, 'reason' => 'unsupported'];
 
             //if(user_password_verify_db($authInfo->user_id, mb_substr($authInfo->token, 5)))
@@ -227,11 +236,11 @@ final class SockChatHandler extends Handler {
                 $userId = user_session_current('user_id');
                 user_bump_last_active($userId);
                 user_session_bump_active(user_session_current('session_id'));
-            }
+            } else return ['success' => false, 'reason' => 'expired'];
         } else {
             try {
-                $token = ChatToken::get($authInfo->user_id, $authInfo->token);
-            } catch(Exception $ex) {
+                $token = UserChatToken::byExact($userInfo, $authInfo->token);
+            } catch(UserChatTokenCreationFailedException $ex) {
                 return ['success' => false, 'reason' => 'token'];
             }
 
@@ -239,17 +248,7 @@ final class SockChatHandler extends Handler {
                 $token->delete();
                 return ['success' => false, 'reason' => 'expired'];
             }
-
-            $userId = $token->getUserId();
         }
-
-        if(!isset($userId) || $userId < 1)
-            return ['success' => false, 'reason' => 'unknown'];
-
-        $userInfo = User::byId($userId);
-
-        if($userInfo === null)
-            return ['success' => false, 'reason' => 'user'];
 
         $perms = self::PERMS_DEFAULT;
 

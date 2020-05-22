@@ -41,8 +41,6 @@ class NewsPost implements JsonSerializable {
         . ', UNIX_TIMESTAMP(%1$s.`post_updated`) AS `post_updated`'
         . ', UNIX_TIMESTAMP(%1$s.`post_deleted`) AS `post_deleted`';
 
-    public function __construct() {}
-
     public function getId(): int {
         return $this->post_id < 1 ? -1 : $this->post_id;
     }
