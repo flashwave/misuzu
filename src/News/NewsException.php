@@ -1,6 +1,6 @@
 <?php
 namespace Misuzu\News;
 
-use Exception;
+use Misuzu\MisuzuException;
 
-class NewsException extends Exception {}
+class NewsException extends MisuzuException {}

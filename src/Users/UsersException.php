@@ -1,6 +1,6 @@
 <?php
 namespace Misuzu\Users;
 
-use Exception;
+use Misuzu\MisuzuException;
 
-class UsersException extends Exception {}
+class UsersException extends MisuzuException {}

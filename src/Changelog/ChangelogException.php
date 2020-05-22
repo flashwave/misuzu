@@ -1,6 +1,6 @@
 <?php
 namespace Misuzu\Changelog;
 
-use Exception;
+use Misuzu\MisuzuException;
 
-class ChangelogException extends Exception {}
+class ChangelogException extends MisuzuException {}

@@ -8,16 +8,10 @@ use RuntimeException;
 final class ChatToken {
     public const TOKEN_LIFETIME = 60 * 60 * 24 * 7;
 
-    public function hasUserId(): bool {
-        return isset($this->user_id);
-    }
     public function getUserId(): int {
         return $this->user_id ?? 0;
     }
 
-    public function hasToken(): bool {
-        return isset($this->token_string);
-    }
     public function getToken(): string {
         return $this->token_string ?? '';
     }
@@ -33,9 +27,6 @@ final class ChatToken {
     }
 
     public function delete(): void {
-        if(!$this->hasUserId() || !$this->hasToken())
-            return;
-
         DB::prepare('
             DELETE FROM `msz_user_chat_tokens`
             WHERE `user_id` = :user,

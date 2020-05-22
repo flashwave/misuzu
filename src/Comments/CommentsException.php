@@ -1,6 +1,6 @@
 <?php
 namespace Misuzu\Comments;
 
-use Exception;
+use Misuzu\MisuzuException;
 
-class CommentsException extends Exception {}
+class CommentsException extends MisuzuException {}
