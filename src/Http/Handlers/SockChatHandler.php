@@ -3,6 +3,7 @@ namespace Misuzu\Http\Handlers;
 
 use HttpResponse;
 use HttpRequest;
+use Misuzu\AuthToken;
 use Misuzu\Base64;
 use Misuzu\Config;
 use Misuzu\DB;
@@ -13,6 +14,8 @@ use Misuzu\Users\UserNotFoundException;
 use Misuzu\Users\UserChatToken;
 use Misuzu\Users\UserChatTokenNotFoundException;
 use Misuzu\Users\UserChatTokenCreationFailedException;
+use Misuzu\Users\UserSession;
+use Misuzu\Users\UserSessionNotFoundException;
 
 final class SockChatHandler extends Handler {
     private string $hashKey = 'woomy';
@@ -222,21 +225,27 @@ final class SockChatHandler extends Handler {
             //    $userId = $authInfo->user_id;
         } elseif($authMethod === 'SESS:') {
             $sessionToken = mb_substr($authInfo->token, 5);
-            $tokenData = user_session_cookie_unpack(
-                Base64::decode($sessionToken, true),
-                true
-            );
 
-            if(isset($tokenData['session_token']))
-                $sessionToken = $tokenData['session_token'];
+            $authToken = AuthToken::unpack($sessionToken);
+            if($authToken->isValid())
+                $sessionToken = $authToken->getSessionToken();
 
-            user_session_start($authInfo->user_id, $sessionToken);
+            try {
+                $sessionInfo = UserSession::byToken($sessionToken);
+            } catch(UserSessionNotFoundException $ex) {
+                return ['success' => false, 'reason' => 'token'];
+            }
 
-            if(user_session_active()) {
-                $userId = user_session_current('user_id');
-                user_bump_last_active($userId);
-                user_session_bump_active(user_session_current('session_id'));
-            } else return ['success' => false, 'reason' => 'expired'];
+            if($sessionInfo->getUserId() !== $userInfo->getId())
+                return ['success' => false, 'reason' => 'user'];
+
+            if($sessionInfo->hasExpired()) {
+                $sessionInfo->delete();
+                return ['success' => false, 'reason' => 'expired'];
+            }
+
+            $sessionInfo->bump();
+            user_bump_last_active($userInfo->getId());
         } else {
             try {
                 $token = UserChatToken::byExact($userInfo, $authInfo->token);

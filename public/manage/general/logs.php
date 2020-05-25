@@ -3,10 +3,11 @@ namespace Misuzu;
 
 use Misuzu\AuditLog;
 use Misuzu\Pagination;
+use Misuzu\Users\User;
 
 require_once '../../../misuzu.php';
 
-if(!perms_check_user(MSZ_PERMS_GENERAL, user_session_current('user_id'), MSZ_PERM_GENERAL_VIEW_LOGS)) {
+if(!User::hasCurrent() || !perms_check_user(MSZ_PERMS_GENERAL, User::getCurrent()->getId(), MSZ_PERM_GENERAL_VIEW_LOGS)) {
     echo render_error(403);
     return;
 }

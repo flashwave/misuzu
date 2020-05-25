@@ -6,10 +6,11 @@ use Misuzu\AuditLog;
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
 use Misuzu\Users\UserLoginAttempt;
+use Misuzu\Users\UserSession;
 
 require_once '../../misuzu.php';
 
-if(user_session_active()) {
+if(UserSession::hasCurrent()) {
     url_redirect('settings-account');
     return;
 }

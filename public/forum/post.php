@@ -2,6 +2,8 @@
 namespace Misuzu;
 
 use Misuzu\AuditLog;
+use Misuzu\Users\User;
+use Misuzu\Users\UserSession;
 
 require_once '../../misuzu.php';
 
@@ -23,12 +25,13 @@ if($isXHR) {
 
 $postRequestVerified = CSRF::validateRequest();
 
-if(!empty($postMode) && !user_session_active()) {
+if(!empty($postMode) && !UserSession::hasCurrent()) {
     echo render_info_or_json($isXHR, 'You must be logged in to manage posts.', 401);
     return;
 }
 
-$currentUserId = (int)user_session_current('user_id', 0);
+$currentUser = User::getCurrent():
+$currentUserId = $currentUser === null ? 0 : $currentUser->getId();
 
 if(user_warning_check_expiration($currentUserId, MSZ_WARN_BAN) > 0) {
     echo render_info_or_json($isXHR, 'You have been banned, check your profile for more information.', 403);
@@ -251,7 +254,7 @@ switch($postMode) {
             break;
         }
 
-        $postFind = forum_post_find($postInfo['post_id'], user_session_current('user_id', 0));
+        $postFind = forum_post_find($postInfo['post_id'], $currentUserId);
 
         if(empty($postFind)) {
             echo render_error(404);

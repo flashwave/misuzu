@@ -22,7 +22,7 @@ $canViewImages = !$userExists
     || !user_warning_check_expiration($userId, MSZ_WARN_BAN)
     || (
         parse_url($_SERVER['HTTP_REFERER'] ?? '', PHP_URL_PATH) === url('user-profile')
-        && perms_check_user(MSZ_PERMS_USER, user_session_current('user_id', 0), MSZ_PERM_USER_MANAGE_USERS)
+        && perms_check_user(MSZ_PERMS_USER, User::hasCurrent() ? User::getCurrent()->getId() : 0, MSZ_PERM_USER_MANAGE_USERS)
     );
 
 switch($userAssetsMode) {

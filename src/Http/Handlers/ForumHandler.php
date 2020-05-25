@@ -4,6 +4,7 @@ namespace Misuzu\Http\Handlers;
 use HttpResponse;
 use HttpRequest;
 use Misuzu\CSRF;
+use Misuzu\Users\User;
 
 final class ForumHandler extends Handler {
     public function markAsReadGET(HttpResponse $response, HttpRequest $request): void {
@@ -20,7 +21,7 @@ final class ForumHandler extends Handler {
 
     public function markAsReadPOST(HttpResponse $response, HttpRequest $request) {
         $forumId = (int)$request->getBodyParam('forum', FILTER_SANITIZE_NUMBER_INT);
-        forum_mark_read($forumId, user_session_current('user_id'));
+        forum_mark_read($forumId, User::getCurrent()->getId());
 
         $response->redirect(
             url($forumId ? 'forum-category' : 'forum-index', ['forum' => $forumId]),

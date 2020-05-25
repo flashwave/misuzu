@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Users\User;
+
 require_once '../misuzu.php';
 
 $roleId = !empty($_GET['r']) && is_string($_GET['r']) ? (int)$_GET['r'] : MSZ_ROLE_MAIN;
@@ -75,10 +77,7 @@ if(empty($orderDir)) {
     return;
 }
 
-$canManageUsers = perms_check_user(
-    MSZ_PERMS_USER, user_session_current('user_id', 0),
-    MSZ_PERM_USER_MANAGE_USERS
-);
+$canManageUsers = perms_check_user(MSZ_PERMS_USER, User::hasCurrent() ? User::getCurrent()->getId() : 0, MSZ_PERM_USER_MANAGE_USERS);
 
 $role = user_role_get($roleId);
 
@@ -153,7 +152,7 @@ $getUsers = DB::prepare(sprintf(
     $usersPagination->getRange()
 ));
 $getUsers->bind('role_id', $role['role_id']);
-$getUsers->bind('current_user_id', user_session_current('user_id', 0));
+$getUsers->bind('current_user_id', User::hasCurrent() ? User::getCurrent()->getId() : 0);
 $users = $getUsers->fetchAll();
 
 if(empty($users)) {

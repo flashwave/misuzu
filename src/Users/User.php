@@ -173,8 +173,11 @@ class User {
     public static function unsetCurrent(): void {
         self::$localUser = null;
     }
-    public static function getCurrent(): ?User {
+    public static function getCurrent(): ?self {
         return self::$localUser;
+    }
+    public static function hasCurrent(): bool {
+        return self::$localUser !== null;
     }
 
     public static function create(
@@ -182,7 +185,7 @@ class User {
         string $password,
         string $email,
         string $ipAddress
-    ): ?User {
+    ): ?self {
         $createUser = DB::prepare('
             INSERT INTO `msz_users` (
                 `username`, `password`, `email`, `register_ip`,
@@ -210,7 +213,7 @@ class User {
         return $memoizer;
     }
 
-    public static function byId(int $userId): ?User {
+    public static function byId(int $userId): ?self {
         return self::getMemoizer()->find($userId, function() use ($userId) {
             $user = DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id')
                 ->bind('user_id', $userId)
@@ -220,7 +223,7 @@ class User {
             return $user;
         });
     }
-    public static function findForLogin(string $usernameOrEmail): ?User {
+    public static function findForLogin(string $usernameOrEmail): ?self {
         $usernameOrEmailLower = mb_strtolower($usernameOrEmail);
         return self::getMemoizer()->find(function($user) use ($usernameOrEmailLower) {
             return mb_strtolower($user->getUsername())     === $usernameOrEmailLower
@@ -235,7 +238,7 @@ class User {
             return $user;
         });
     }
-    public static function findForProfile($userIdOrName): ?User {
+    public static function findForProfile($userIdOrName): ?self {
         $userIdOrNameLower = mb_strtolower($userIdOrName);
         return self::getMemoizer()->find(function($user) use ($userIdOrNameLower) {
             return $user->getId() == $userIdOrNameLower || mb_strtolower($user->getUsername()) === $userIdOrNameLower;

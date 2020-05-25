@@ -1,9 +1,11 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Users\User;
+
 require_once '../../../misuzu.php';
 
-if(!perms_check_user(MSZ_PERMS_USER, user_session_current('user_id'), MSZ_PERM_USER_MANAGE_ROLES)) {
+if(!User::hasCurrent() || !perms_check_user(MSZ_PERMS_USER, User::getCurrent()->getId(), MSZ_PERM_USER_MANAGE_ROLES)) {
     echo render_error(403);
     return;
 }

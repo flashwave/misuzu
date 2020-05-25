@@ -1,10 +1,15 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Users\User;
+
 require_once '../../misuzu.php';
 
 $indexMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
 $forumId = !empty($_GET['f']) && is_string($_GET['f']) ? (int)$_GET['f'] : 0;
+
+$currentUser = User::getCurrent();
+$currentUserId = $currentUser === null ? 0 : $currentUser->getId();
 
 switch($indexMode) {
     case 'mark':
@@ -12,14 +17,11 @@ switch($indexMode) {
         break;
 
     default:
-        $categories = forum_get_root_categories(user_session_current('user_id', 0));
+        $categories = forum_get_root_categories($currentUserId);
         $blankForum = count($categories) < 1;
 
         foreach($categories as $key => $category) {
-            $categories[$key]['forum_subforums'] = forum_get_children(
-                $category['forum_id'],
-                user_session_current('user_id', 0)
-            );
+            $categories[$key]['forum_subforums'] = forum_get_children($category['forum_id'], $currentUserId);
 
             foreach($categories[$key]['forum_subforums'] as $skey => $sub) {
                 if(!forum_may_have_children($sub['forum_type'])) {
@@ -27,10 +29,7 @@ switch($indexMode) {
                 }
 
                 $categories[$key]['forum_subforums'][$skey]['forum_subforums']
-                    = forum_get_children(
-                        $sub['forum_id'],
-                        user_session_current('user_id', 0)
-                    );
+                    = forum_get_children($sub['forum_id'], $currentUserId);
             }
         }
 

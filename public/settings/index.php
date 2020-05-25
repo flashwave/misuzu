@@ -1,13 +1,13 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Users\UserSession;
+
 require_once '../../misuzu.php';
 
-if(!user_session_active()) {
+if(!UserSession::hasCurrent()) {
     echo render_error(401);
     return;
 }
-
-// do something with this page
 
 url_redirect('settings-account');

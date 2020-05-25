@@ -2,17 +2,22 @@
 namespace Misuzu;
 
 use Misuzu\AuditLog;
+use Misuzu\Users\User;
+use Misuzu\Users\UserSession;
+use Misuzu\Users\UserSessionNotFoundException;
 
 require_once '../../misuzu.php';
 
-if(!user_session_active()) {
+if(!User::hasCurrent()) {
     echo render_error(401);
     return;
 }
 
 $errors = [];
-$currentUserId = user_session_current('user_id');
-$sessionActive = user_session_current('session_id');
+$currentUser = User::getCurrent();
+$currentSession = UserSession::getCurrent();
+$currentUserId = $currentUser->getId();
+$sessionActive = $currentSession->getId();;
 
 if(!empty($_POST['session']) && CSRF::validateRequest()) {
     $currentSessionKilled = false;
@@ -20,23 +25,24 @@ if(!empty($_POST['session']) && CSRF::validateRequest()) {
     if(is_array($_POST['session'])) {
         foreach($_POST['session'] as $sessionId) {
             $sessionId = intval($sessionId);
-            $session = user_session_find($sessionId);
 
-            if(!$session || (int)$session['user_id'] !== $currentUserId) {
+            try {
+                $sessionInfo = UserSession::byId($sessionId);
+            } catch(UserSessionNotFoundException $ex) {}
+
+            if(empty($sessionInfo) || $sessionInfo->getUserId() !== $currentUser->getId()) {
                 $errors[] = "Session #{$sessionId} does not exist.";
                 continue;
-            } elseif((int)$session['session_id'] === $sessionActive) {
+            } elseif($sessionInfo->getId() === $sessionActive) {
                 $currentSessionKilled = true;
             }
 
-            user_session_delete($session['session_id']);
-            AuditLog::create(AuditLog::PERSONAL_SESSION_DESTROY, [
-                $session['session_id'],
-            ]);
+            $sessionInfo->delete();
+            AuditLog::create(AuditLog::PERSONAL_SESSION_DESTROY, [$sessionInfo->getId()]);
         }
     } elseif($_POST['session'] === 'all') {
         $currentSessionKilled = true;
-        user_session_purge_all($currentUserId);
+        UserSession::purgeUser($currentUser);
         AuditLog::create(AuditLog::PERSONAL_SESSION_DESTROY_ALL);
     }
 
@@ -46,17 +52,11 @@ if(!empty($_POST['session']) && CSRF::validateRequest()) {
     }
 }
 
-$sessionPagination = new Pagination(user_session_count($currentUserId), 15);
-
-$sessionList = user_session_list(
-    $sessionPagination->getOffset(),
-    $sessionPagination->getRange(),
-    $currentUserId
-);
+$pagination = new Pagination(UserSession::countAll($currentUser), 15);
 
 Template::render('settings.sessions', [
     'errors' => $errors,
-    'session_list' => $sessionList,
-    'session_active_id' => $sessionActive,
-    'session_pagination' => $sessionPagination,
+    'session_list' => UserSession::all($pagination, $currentUser),
+    'session_current' => $currentSession,
+    'session_pagination' => $pagination,
 ]);

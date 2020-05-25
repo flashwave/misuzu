@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Users\User;
+
 require_once '../../misuzu.php';
 
 $redirect = !empty($_SERVER['HTTP_REFERER']) && empty($_SERVER['HTTP_X_MISUZU_XHR']) ? $_SERVER['HTTP_REFERER'] : '';
@@ -18,12 +20,14 @@ if(!CSRF::validateRequest()) {
     return;
 }
 
-if(!user_session_active()) {
+$currentUser = User::getCurrent();
+
+if($currentUser === null) {
     echo render_info_or_json($isXHR, 'You must be logged in to vote on polls.', 401);
     return;
 }
 
-$currentUserId = user_session_current('user_id', 0);
+$currentUserId = $currentUser->getId();
 
 if(user_warning_check_expiration($currentUserId, MSZ_WARN_BAN) > 0) {
     echo render_info_or_json($isXHR, 'You have been banned, check your profile for more information.', 403);

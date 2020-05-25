@@ -2,10 +2,11 @@
 namespace Misuzu;
 
 use Misuzu\News\NewsCategory;
+use Misuzu\Users\User;
 
 require_once '../../../misuzu.php';
 
-if(!perms_check_user(MSZ_PERMS_NEWS, user_session_current('user_id'), MSZ_PERM_NEWS_MANAGE_CATEGORIES)) {
+if(!User::hasCurrent() || !perms_check_user(MSZ_PERMS_NEWS, User::getCurrent()->getId(), MSZ_PERM_NEWS_MANAGE_CATEGORIES)) {
     echo render_error(403);
     return;
 }

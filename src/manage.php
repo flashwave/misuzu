@@ -22,8 +22,8 @@ function manage_get_menu(int $userId): array {
         $menu['Users & Roles']['Users'] = url('manage-users');
     if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_ROLES))
         $menu['Users & Roles']['Roles'] = url('manage-roles');
-    if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_REPORTS))
-        $menu['Users & Roles']['Reports'] = url('manage-users-reports');
+    //if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_REPORTS))
+    //    $menu['Users & Roles']['Reports'] = url('manage-users-reports');
     if(perms_check_user(MSZ_PERMS_USER, $userId, MSZ_PERM_USER_MANAGE_WARNINGS))
         $menu['Users & Roles']['Warnings'] = url('manage-users-warnings');
 

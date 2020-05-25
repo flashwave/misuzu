@@ -2,10 +2,11 @@
 namespace Misuzu;
 
 use Misuzu\Changelog\ChangelogTag;
+use Misuzu\Users\User;
 
 require_once '../../../misuzu.php';
 
-if(!perms_check_user(MSZ_PERMS_CHANGELOG, user_session_current('user_id'), MSZ_PERM_CHANGELOG_MANAGE_TAGS)) {
+if(!User::hasCurrent() || !perms_check_user(MSZ_PERMS_CHANGELOG, User::getCurrent()->getId(), MSZ_PERM_CHANGELOG_MANAGE_TAGS)) {
     echo render_error(403);
     return;
 }

@@ -4,10 +4,12 @@ namespace Misuzu;
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
 use Misuzu\Users\UserLoginAttempt;
+use Misuzu\Users\UserSession;
+use Misuzu\Users\UserSessionCreationFailedException;
 
 require_once '../../misuzu.php';
 
-if(user_session_active()) {
+if(UserSession::hasCurrent()) {
     url_redirect('index');
     return;
 }
@@ -22,11 +24,11 @@ $tokenInfo = user_auth_tfa_token_info(
     )
 );
 
-$userData = User::byId($tokenInfo['user_id']);
+$userInfo = User::byId($tokenInfo['user_id']);
 
 // checking user_totp_key specifically because there's a fringe chance that
 //  there's a token present, but totp is actually disabled
-if(!$userData->hasTOTP()) {
+if(!$userInfo->hasTOTP()) {
     url_redirect('auth-login');
     return;
 }
@@ -50,30 +52,29 @@ while(!empty($twofactor)) {
         break;
     }
 
-    if(!in_array($twofactor['code'], $userData->getValidTOTPTokens())) {
+    if(!in_array($twofactor['code'], $userInfo->getValidTOTPTokens())) {
         $notices[] = sprintf(
             "Invalid two factor code, %d attempt%s remaining",
             $remainingAttempts - 1,
             $remainingAttempts === 2 ? '' : 's'
         );
-        UserLoginAttempt::create(false, $userData);
+        UserLoginAttempt::create(false, $userInfo);
         break;
     }
 
-    UserLoginAttempt::create(true, $userData);
-    $sessionKey = user_session_create($tokenInfo['user_id'], $ipAddress, $userAgent);
+    UserLoginAttempt::create(true, $userInfo);
+    user_auth_tfa_token_invalidate($tokenInfo['tfa_token']);
 
-    if(empty($sessionKey)) {
+    try {
+        $sessionInfo = UserSession::create($userInfo);
+        $sessionInfo->setCurrent();
+    } catch(UserSessionCreationFailedException $ex) {
         $notices[] = "Something broke while creating a session for you, please tell an administrator or developer about this!";
         break;
     }
 
-    user_auth_tfa_token_invalidate($tokenInfo['tfa_token']);
-    user_session_start($tokenInfo['user_id'], $sessionKey);
-
-    $cookieLife = strtotime(user_session_current('session_expires'));
-    $cookieValue = Base64::encode(user_session_cookie_pack($tokenInfo['user_id'], $sessionKey), true);
-    setcookie('msz_auth', $cookieValue, $cookieLife, '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
+    $authToken = AuthToken::create($userInfo, $sessionInfo);
+    setcookie('msz_auth', $authToken->pack(), $sessionInfo->getExpiresTime(), '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
 
     if(!is_local_url($redirect)) {
         $redirect = url('index');

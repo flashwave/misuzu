@@ -2,6 +2,8 @@
 namespace Misuzu;
 
 use Misuzu\AuditLog;
+use Misuzu\Users\User;
+use Misuzu\Users\UserSession;
 
 require_once '../../misuzu.php';
 
@@ -10,7 +12,8 @@ $topicId = !empty($_GET['t']) && is_string($_GET['t']) ? (int)$_GET['t'] : 0;
 $moderationMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m'] : '';
 $submissionConfirmed = !empty($_GET['confirm']) && is_string($_GET['confirm']) && $_GET['confirm'] === '1';
 
-$topicUserId = user_session_current('user_id', 0);
+$topicUser = User::getCurrent();
+$topicUserId = $topicUser === null ? 0 : $this->getId();
 
 if($topicId < 1 && $postId > 0) {
     $postInfo = forum_post_find($postId, $topicUserId);
@@ -91,7 +94,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
 
     header(CSRF::header());
 
-    if(!user_session_active()) {
+    if(!UserSession::hasCurrent()) {
         echo render_info_or_json($isXHR, 'You must be logged in to manage posts.', 401);
         return;
     }

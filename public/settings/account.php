@@ -3,12 +3,13 @@ namespace Misuzu;
 
 use Misuzu\AuditLog;
 use Misuzu\Users\User;
+use Misuzu\Users\UserSession;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 
 require_once '../../misuzu.php';
 
-if(!user_session_active()) {
+if(!UserSession::hasCurrent()) {
     echo render_error(401);
     return;
 }

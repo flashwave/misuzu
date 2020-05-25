@@ -144,11 +144,11 @@ $statistics = DB::query('
         FROM `msz_ip_blacklist`
     ) AS `stat_blacklist`,
     (
-        SELECT COUNT(`attempt_id`)
+        SELECT COUNT(*)
         FROM `msz_login_attempts`
     ) AS `stat_login_attempts_total`,
     (
-        SELECT COUNT(`attempt_id`)
+        SELECT COUNT(*)
         FROM `msz_login_attempts`
         WHERE `attempt_success` = 0
     ) AS `stat_login_attempts_failed`,

@@ -8,6 +8,8 @@ use Misuzu\Net\GeoIP;
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
 use Misuzu\Users\UserNotFoundException;
+use Misuzu\Users\UserSession;
+use Misuzu\Users\UserSessionNotFoundException;
 
 define('MSZ_STARTUP', microtime(true));
 define('MSZ_ROOT', __DIR__);
@@ -418,19 +420,49 @@ MIG;
         exit;
     }
 
-    if(!empty($_COOKIE['msz_uid']) && !empty($_COOKIE['msz_sid'])
-        && ctype_digit($_COOKIE['msz_uid']) && ctype_xdigit($_COOKIE['msz_sid'])
-        && strlen($_COOKIE['msz_sid']) === 64) {
-        $_COOKIE['msz_auth'] = Base64::decode(user_session_cookie_pack($_COOKIE['msz_uid'], $_COOKIE['msz_sid']), true);
-        setcookie('msz_auth', $_COOKIE['msz_auth'], strtotime('1 year'), '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
+    if(isset($_COOKIE['msz_uid']) && isset($_COOKIE['msz_sid'])) {
+        $authToken = (new AuthToken)
+            ->setUserId(filter_input(INPUT_COOKIE, 'msz_uid', FILTER_SANITIZE_NUMBER_INT) ?? 0)
+            ->setSessionToken(filter_input(INPUT_COOKIE, 'msz_sid', FILTER_SANITIZE_STRING) ?? '');
+
+        if($authToken->isValid())
+            setcookie('msz_auth', $authToken->pack(), strtotime('1 year'), '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
+
         setcookie('msz_uid', '', -3600, '/', '', !empty($_SERVER['HTTPS']), true);
         setcookie('msz_sid', '', -3600, '/', '', !empty($_SERVER['HTTPS']), true);
     }
 
-    if(!empty($_COOKIE['msz_auth']) && is_string($_COOKIE['msz_auth'])) {
-        $cookieData = user_session_cookie_unpack(Base64::decode($_COOKIE['msz_auth'], true));
+    if(!isset($authToken))
+        $authToken = AuthToken::unpack(filter_input(INPUT_COOKIE, 'msz_auth', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH) ?? '');
+    if($authToken->isValid()) {
+        try {
+            $sessionInfo = $authToken->getSession();
+            if($sessionInfo->hasExpired()) {
+                $sessionInfo->delete();
+            } elseif($sessionInfo->getUserId() === $authToken->getUserId()) {
+                $userInfo = $sessionInfo->getUser();
+                if(!$userInfo->isDeleted()) {
+                    $sessionInfo->setCurrent();
+                    $userInfo->setCurrent();
 
-        if(!empty($cookieData) && user_session_start($cookieData['user_id'], $cookieData['session_token'])) {
+                    $sessionInfo->bump();
+
+                    if($sessionInfo->shouldBumpExpire())
+                        setcookie('msz_auth', $authToken->pack(), $sessionInfo->getExpiresTime(), '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
+                }
+            }
+        } catch(UserNotFoundException $ex) {
+            UserSession::unsetCurrent();
+            User::unsetCurrent();
+        } catch(UserSessionNotFoundException $ex) {
+            UserSession::unsetCurrent();
+            User::unsetCurrent();
+        }
+
+        if(!UserSession::hasCurrent()) {
+            setcookie('msz_auth', '', -9001, '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
+            setcookie('msz_auth', '', -9001, '/', '', !empty($_SERVER['HTTPS']), true);
+        } else {
             $userDisplayInfo = DB::prepare('
                 SELECT
                     u.`user_id`, u.`username`, u.`user_background_settings`, u.`user_deleted`,
@@ -439,38 +471,19 @@ MIG;
                 LEFT JOIN `msz_roles` AS r
                 ON u.`display_role` = r.`role_id`
                 WHERE `user_id` = :user_id
-            ');
-            $userDisplayInfo->bind('user_id', $cookieData['user_id']);
-            $userDisplayInfo = $userDisplayInfo->fetch();
+            ')  ->bind('user_id', $userInfo->getId())
+                ->fetch();
 
-            if($userDisplayInfo) {
-                if(!is_null($userDisplayInfo['user_deleted'])) {
-                    setcookie('msz_auth', '', -9001, '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
-                    setcookie('msz_auth', '', -9001, '/', '', !empty($_SERVER['HTTPS']), true);
-                    user_session_stop(true);
-                    $userDisplayInfo = [];
-                } else {
-                    try {
-                        User::byId($cookieData['user_id'])->setCurrent();
-                    } catch(UserNotFoundException $ex) {}
+            user_bump_last_active($userInfo->getId());
 
-                    user_bump_last_active($cookieData['user_id']);
-                    user_session_bump_active(user_session_current('session_id'));
-
-                    if(user_session_current('session_expires_bump')) {
-                        setcookie('msz_auth', $_COOKIE['msz_auth'], strtotime('1 month'), '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
-                    }
-
-                    $userDisplayInfo['perms'] = perms_get_user($userDisplayInfo['user_id']);
-                    $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_BAN);
-                    $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userDisplayInfo['user_id'], MSZ_WARN_SILENCE);
-                }
-            }
+            $userDisplayInfo['perms'] = perms_get_user($userInfo->getId());
+            $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userInfo->getId(), MSZ_WARN_BAN);
+            $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userInfo->getId(), MSZ_WARN_SILENCE);
         }
     }
 
     CSRF::setGlobalSecretKey(Config::get('csrf.secret', Config::TYPE_STR, 'soup'));
-    CSRF::setGlobalIdentity(empty($userDisplayInfo) ? IPAddress::remote() : $cookieData['session_token']);
+    CSRF::setGlobalIdentity(UserSession::hasCurrent() ? UserSession::getCurrent()->getToken() : IPAddress::remote());
 
     if(Config::get('private.enabled', Config::TYPE_BOOL)) {
         $onLoginPage = $_SERVER['PHP_SELF'] === url('auth-login');
@@ -478,14 +491,16 @@ MIG;
         $misuzuBypassLockdown = !empty($misuzuBypassLockdown) || $onLoginPage;
 
         if(!$misuzuBypassLockdown) {
-            if(user_session_active()) {
+            if(UserSession::hasCurrent()) {
                 $privatePermCat = Config::get('private.perm.cat', Config::TYPE_STR);
                 $privatePermVal = Config::get('private.perm.val', Config::TYPE_INT);
 
                 if(!empty($privatePermCat) && $privatePermVal > 0) {
-                    if(!perms_check_user($privatePermCat, $userDisplayInfo['user_id'], $privatePermVal)) {
+                    if(!perms_check_user($privatePermCat, User::getCurrent()->getId(), $privatePermVal)) {
+                        // au revoir
                         unset($userDisplayInfo);
-                        user_session_stop(); // au revoir
+                        UserSession::unsetCurrent();
+                        User::unsetCurrent();
                     }
                 }
             } elseif(!$onLoginPage && !($onPasswordPage && Config::get('private.allow_password_reset', Config::TYPE_BOOL, true))) {
@@ -495,14 +510,13 @@ MIG;
         }
     }
 
-    if(!empty($userDisplayInfo)) {
+    if(!empty($userDisplayInfo)) // delete this
         Template::set('current_user', $userDisplayInfo);
-    }
 
     $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
-    $hasManageAccess = !empty($userDisplayInfo['user_id'])
-        && !user_warning_check_restriction($userDisplayInfo['user_id'])
-        && perms_check_user(MSZ_PERMS_GENERAL, $userDisplayInfo['user_id'], MSZ_PERM_GENERAL_CAN_MANAGE);
+    $hasManageAccess = User::hasCurrent()
+        && !user_warning_check_restriction(User::getCurrent()->getId())
+        && perms_check_user(MSZ_PERMS_GENERAL, User::getCurrent()->getId(), MSZ_PERM_GENERAL_CAN_MANAGE);
     Template::set('has_manage_access', $hasManageAccess);
 
     if($inManageMode) {
@@ -511,6 +525,6 @@ MIG;
             exit;
         }
 
-        Template::set('manage_menu', manage_get_menu($userDisplayInfo['user_id'] ?? 0));
+        Template::set('manage_menu', manage_get_menu(User::getCurrent()->getId()));
     }
 }

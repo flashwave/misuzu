@@ -67,7 +67,7 @@ class UserLoginAttempt {
     }
 
     public static function remaining(?string $remoteAddr = null): int {
-        $remoteAddr = $ipAddress ?? IPAddress::remote();
+        $remoteAddr = $remoteAddr ?? IPAddress::remote();
         return (int)DB::prepare(
             'SELECT 5 - COUNT(*)'
             . ' FROM `' . DB::PREFIX . self::TABLE . '`'
@@ -79,7 +79,7 @@ class UserLoginAttempt {
     }
 
     public static function create(bool $success, ?User $user = null, ?string $remoteAddr = null, string $userAgent = null): void {
-        $remoteAddr = $ipAddress ?? IPAddress::remote();
+        $remoteAddr = $remoteAddr ?? IPAddress::remote();
         $userAgent = $userAgent ?? filter_input(INPUT_SERVER, 'HTTP_USER_AGENT', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH) ?? '';
         $createLog = DB::prepare(
             'INSERT INTO `' . DB::PREFIX . self::TABLE . '` (`user_id`, `attempt_success`, `attempt_ip`, `attempt_country`, `attempt_user_agent`)'

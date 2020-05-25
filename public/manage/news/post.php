@@ -5,10 +5,11 @@ use Misuzu\AuditLog;
 use Misuzu\News\NewsCategory;
 use Misuzu\News\NewsPost;
 use Misuzu\News\NewsPostNotFoundException;
+use Misuzu\Users\User;
 
 require_once '../../../misuzu.php';
 
-if(!perms_check_user(MSZ_PERMS_NEWS, user_session_current('user_id'), MSZ_PERM_NEWS_MANAGE_POSTS)) {
+if(!User::hasCurrent() || !perms_check_user(MSZ_PERMS_NEWS, User::getCurrent()->getId(), MSZ_PERM_NEWS_MANAGE_POSTS)) {
     echo render_error(403);
     return;
 }
@@ -31,7 +32,7 @@ if(!empty($_POST['post']) && CSRF::validateRequest()) {
         $isNew = true;
     }
 
-    $currentUserId = user_session_current('user_id');
+    $currentUserId = User::getCurrent()->getId();
     $postInfo->setTitle( $_POST['post']['title'])
         ->setText($_POST['post']['text'])
         ->setCategoryId($_POST['post']['category'])

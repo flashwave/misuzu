@@ -2,13 +2,14 @@
 namespace Misuzu;
 
 use Misuzu\News\NewsPost;
+use Misuzu\Users\User;
 
 require_once '../misuzu.php';
 
 $searchQuery = !empty($_GET['q']) && is_string($_GET['q']) ? $_GET['q'] : '';
 
 if(!empty($searchQuery)) {
-    $forumTopics = forum_topic_listing_search($searchQuery, user_session_current('user_id', 0));
+    $forumTopics = forum_topic_listing_search($searchQuery, User::hasCurrent() ? User::getCurrent()->getId() : 0);
     $forumPosts = forum_post_search($searchQuery);
     $newsPosts = NewsPost::bySearchQuery($searchQuery);
 
@@ -67,7 +68,7 @@ if(!empty($searchQuery)) {
         MSZ_USER_RELATION_FOLLOW
     ));
     $findUsers->bind('query', $searchQuery);
-    $findUsers->bind('current_user_id', user_session_current('user_id', 0));
+    $findUsers->bind('current_user_id', User::hasCurrent() ? User::getCurrent()->getId() : 0);
     $users = $findUsers->fetchAll();
 }
 

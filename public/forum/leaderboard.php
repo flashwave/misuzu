@@ -1,9 +1,11 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Users\User;
+
 require_once '../../misuzu.php';
 
-if(!perms_check_user(MSZ_PERMS_FORUM, user_session_current('user_id'), MSZ_PERM_FORUM_VIEW_LEADERBOARD)) {
+if(!User::hasCurrent() || !perms_check_user(MSZ_PERMS_FORUM, User::getCurrent()->getId(), MSZ_PERM_FORUM_VIEW_LEADERBOARD)) {
     echo render_error(403);
     return;
 }
@@ -15,7 +17,7 @@ $leaderboardId = !empty($_GET['id']) && is_string($_GET['id'])
     : MSZ_FORUM_LEADERBOARD_CATEGORY_ALL;
 $leaderboardIdLength = strlen($leaderboardId);
 
-$leaderboardYear = $leaderboardIdLength === 4 || $leaderboardIdLength === 6 ? substr($leaderboardId, 0, 4) : null;
+$leaderboardYear  = $leaderboardIdLength === 4 || $leaderboardIdLength === 6 ? substr($leaderboardId, 0, 4) : null;
 $leaderboardMonth = $leaderboardIdLength === 6 ? substr($leaderboardId, 4, 2) : null;
 
 $unrankedForums = !empty($_GET['allow_unranked']) ? [] : Config::get('forum_leader.unranked.forum', Config::TYPE_ARR);

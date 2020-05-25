@@ -5,10 +5,11 @@ use Misuzu\Net\IPAddress;
 use Misuzu\Net\IPAddressBlacklist;
 use Misuzu\Users\User;
 use Misuzu\Users\UserLoginAttempt;
+use Misuzu\Users\UserSession;
 
 require_once '../../misuzu.php';
 
-if(user_session_active()) {
+if(UserSession::hasCurrent()) {
     url_redirect('index');
     return;
 }

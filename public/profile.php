@@ -4,6 +4,7 @@ namespace Misuzu;
 use Misuzu\Parsers\Parser;
 use Misuzu\Users\User;
 use Misuzu\Users\UserNotFoundException;
+use Misuzu\Users\UserSession;
 
 require_once '../misuzu.php';
 
@@ -21,15 +22,16 @@ try {
 
 $notices = [];
 
-$currentUserId = user_session_current('user_id', 0);
-$viewingAsGuest = $currentUserId === 0;
+$currentUser = User::getCurrent();
+$viewingAsGuest = $currentUser === null;
+$currentUserId = $viewingAsGuest ? 0 : $currentUser->getId();
 $viewingOwnProfile = $currentUserId === $profileUser->getId();
 
 $isBanned = user_warning_check_restriction($profileUser->getId());
 $userPerms = perms_get_user($currentUserId)[MSZ_PERMS_USER];
 $canManageWarnings = perms_check($userPerms, MSZ_PERM_USER_MANAGE_WARNINGS);
 $canEdit = !$isBanned
-    && user_session_active()
+    && UserSession::hasCurrent()
     && (
         $viewingOwnProfile
         || user_check_super($currentUserId)
@@ -297,7 +299,7 @@ $profileStats = DB::prepare(sprintf('
     WHERE `user_id` = :user_id
 ', MSZ_USER_RELATION_FOLLOW))->bind('user_id', $profileUser->getId())->fetch();
 
-$relationInfo = user_session_active()
+$relationInfo = UserSession::hasCurrent()
     ? user_relation_info($currentUserId, $profileUser->getId())
     : [];
 

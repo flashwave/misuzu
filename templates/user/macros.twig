@@ -123,18 +123,18 @@
 {% macro user_session(session, is_current_session) %}
     {% from '_layout/input.twig' import input_hidden, input_csrf, input_checkbox_raw %}
 
-    <div class="settings__session{% if is_current_session %} settings__session--current{% endif %}" id="session-{{ session.session_id }}">
+    <div class="settings__session{% if is_current_session %} settings__session--current{% endif %}" id="session-{{ session.id }}">
         <div class="settings__session__container">
             <div class="settings__session__important">
-                <div class="flag flag--{{ session.session_country|lower }} settings__session__flag" title="{{ session.session_country|country_name }}">{{ session.session_country }}</div>
+                <div class="flag flag--{{ session.country|lower }} settings__session__flag" title="{{ session.countryName }}">{{ session.country }}</div>
 
                 <div class="settings__session__description">
-                    {{ session.session_user_agent|default('')|as_platform }}
+                    {{ session.userAgentInfo.toString }}
                 </div>
 
                 <form class="settings__session__actions" method="post" action="{{ url('settings-sessions') }}">
                     {{ input_csrf() }}
-                    {{ input_hidden('session[]', session.session_id) }}
+                    {{ input_hidden('session[]', session.id) }}
 
                     <button class="settings__session__action" title="{{ is_current_session ? 'Logout' : 'End Session' }}">
                         {% if is_current_session %}
@@ -152,46 +152,46 @@
                         Created from IP
                     </div>
                     <div class="settings__session__detail__value">
-                        {{ session.session_ip }}
+                        {{ session.initialRemoteAddress }}
                     </div>
                 </div>
 
-                {% if session.session_ip_last is not null %}
+                {% if session.hasLastRemoteAddress %}
                     <div class="settings__session__detail">
                         <div class="settings__session__detail__title">
                             Last used from IP
                         </div>
                         <div class="settings__session__detail__value">
-                            {{ session.session_ip_last }}
+                            {{ session.lastRemoteAddress }}
                         </div>
                     </div>
                 {% endif %}
 
-                <div class="settings__session__detail" title="{{ session.session_created|date('r') }}">
+                <div class="settings__session__detail" title="{{ session.createdTime|date('r') }}">
                     <div class="settings__session__detail__title">
                         Created
                     </div>
-                    <time class="settings__session__detail__value" datetime="{{ session.session_created|date('c') }}">
-                        {{ session.session_created|time_diff }}
+                    <time class="settings__session__detail__value" datetime="{{ session.createdTime|date('c') }}">
+                        {{ session.createdTime|time_diff }}
                     </time>
                 </div>
 
-                <div class="settings__session__detail" title="{{ session.session_expires|date('r') }}">
+                <div class="settings__session__detail" title="{{ session.expiresTime|date('r') }}">
                     <div class="settings__session__detail__title">
-                        Expires{% if not session.session_expires_bump %} (static){% endif %}
+                        Expires{% if not session.shouldBumpExpire %} (static){% endif %}
                     </div>
-                    <time class="settings__session__detail__value" datetime="{{ session.session_expires|date('c') }}">
-                        {{ session.session_expires|time_diff }}
+                    <time class="settings__session__detail__value" datetime="{{ session.expiresTime|date('c') }}">
+                        {{ session.expiresTime|time_diff }}
                     </time>
                 </div>
 
-                {% if session.session_active is not null %}
-                    <div class="settings__session__detail" title="{{ session.session_active|date('r') }}">
+                {% if session.hasActiveTime %}
+                    <div class="settings__session__detail" title="{{ session.activeTime|date('r') }}">
                         <div class="settings__session__detail__title">
                             Last Active
                         </div>
-                        <time class="settings__session__detail__value" datetime="{{ session.session_active|date('c') }}">
-                            {{ session.session_active|time_diff }}
+                        <time class="settings__session__detail__value" datetime="{{ session.activeTime|date('c') }}">
+                            {{ session.activeTime|time_diff }}
                         </time>
                     </div>
                 {% endif %}
@@ -201,7 +201,7 @@
                         User Agent
                     </div>
                     <div class="settings__session__detail__value">
-                        {{ session.session_user_agent|length > 0 ? session.session_user_agent : 'None' }}
+                        {{ session.userAgent is empty ? 'None' : session.userAgent }}
                     </div>
                 </div>
             </div>

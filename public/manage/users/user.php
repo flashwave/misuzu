@@ -1,16 +1,18 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Users\User;
+
 require_once '../../../misuzu.php';
 
-if(!perms_check_user(MSZ_PERMS_USER, user_session_current('user_id'), MSZ_PERM_USER_MANAGE_USERS)) {
+if(!User::hasCurrent() || !perms_check_user(MSZ_PERMS_USER, User::getCurrent()->getId(), MSZ_PERM_USER_MANAGE_USERS)) {
     echo render_error(403);
     return;
 }
 
 $notices = [];
 $userId = (int)($_GET['u'] ?? 0);
-$currentUserId = user_session_current('user_id');
+$currentUserId = User::getCurrent()->getId();
 
 if($userId < 1) {
     echo render_error(404);

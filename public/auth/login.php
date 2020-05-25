@@ -1,14 +1,17 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\AuthToken;
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
 use Misuzu\Users\UserNotFoundException;
 use Misuzu\Users\UserLoginAttempt;
+use Misuzu\Users\UserSession;
+use Misuzu\Users\UserSessionCreationFailedException;
 
 require_once '../../misuzu.php';
 
-if(user_session_active()) {
+if(UserSession::hasCurrent()) {
     url_redirect('index');
     return;
 }
@@ -23,7 +26,6 @@ $notices = [];
 $siteIsPrivate = Config::get('private.enable', Config::TYPE_BOOL);
 $loginPermCat = $siteIsPrivate ? Config::get('private.perm.cat', Config::TYPE_STR) : '';
 $loginPermVal = $siteIsPrivate ? Config::get('private.perm.val', Config::TYPE_INT) : 0;
-$ipAddress = IPAddress::remote();
 $remainingAttempts = UserLoginAttempt::remaining();
 
 while(!empty($_POST['login']) && is_array($_POST['login'])) {
@@ -32,7 +34,6 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
         break;
     }
 
-    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     $loginRedirect = empty($_POST['login']['redirect']) || !is_string($_POST['login']['redirect']) ? '' : $_POST['login']['redirect'];
 
     if(empty($_POST['login']['username']) || empty($_POST['login']['password'])
@@ -54,58 +55,56 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
     $loginFailedError = "Invalid username or password, {$attemptsRemainingError}.";
 
     try {
-        $userData = User::findForLogin($_POST['login']['username']);
+        $userInfo = User::findForLogin($_POST['login']['username']);
     } catch(UserNotFoundException $ex) {
         UserLoginAttempt::create(false);
         $notices[] = $loginFailedError;
         break;
     }
 
-    if(!$userData->hasPassword()) {
+    if(!$userInfo->hasPassword()) {
         $notices[] = 'Your password has been invalidated, please reset it.';
         break;
     }
 
-    if($userData->isDeleted() || !$userData->checkPassword($_POST['login']['password'])) {
-        UserLoginAttempt::create(false, $userData);
+    if($userInfo->isDeleted() || !$userInfo->checkPassword($_POST['login']['password'])) {
+        UserLoginAttempt::create(false, $userInfo);
         $notices[] = $loginFailedError;
         break;
     }
 
-    if($userData->passwordNeedsRehash()) {
-        $userData->setPassword($_POST['login']['password']);
+    if($userInfo->passwordNeedsRehash()) {
+        $userInfo->setPassword($_POST['login']['password']);
     }
 
-    if(!empty($loginPermCat) && $loginPermVal > 0 && !perms_check_user($loginPermCat, $userData->getId(), $loginPermVal)) {
+    if(!empty($loginPermCat) && $loginPermVal > 0 && !perms_check_user($loginPermCat, $userInfo->getId(), $loginPermVal)) {
         $notices[] = "Login succeeded, but you're not allowed to browse the site right now.";
-        UserLoginAttempt::create(true, $userData);
+        UserLoginAttempt::create(true, $userInfo);
         break;
     }
 
-    if($userData->hasTOTP()) {
+    if($userInfo->hasTOTP()) {
         url_redirect('auth-two-factor', [
-            'token' => user_auth_tfa_token_create($userData->getId()),
+            'token' => user_auth_tfa_token_create($userInfo->getId()),
         ]);
         return;
     }
 
-    UserLoginAttempt::create(true, $userData);
-    $sessionKey = user_session_create($userData->getId(), $ipAddress, $userAgent);
+    UserLoginAttempt::create(true, $userInfo);
 
-    if(empty($sessionKey)) {
+    try {
+        $sessionInfo = UserSession::create($userInfo);
+        $sessionInfo->setCurrent();
+    } catch(UserSessionCreationFailedException $ex) {
         $notices[] = "Something broke while creating a session for you, please tell an administrator or developer about this!";
         break;
     }
 
-    user_session_start($userData->getId(), $sessionKey);
+    $authToken = AuthToken::create($userInfo, $sessionInfo);
+    setcookie('msz_auth', $authToken->pack(), $sessionInfo->getExpiresTime(), '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
 
-    $cookieLife = strtotime(user_session_current('session_expires'));
-    $cookieValue = Base64::encode(user_session_cookie_pack($userData->getId(), $sessionKey), true);
-    setcookie('msz_auth', $cookieValue, $cookieLife, '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
-
-    if(!is_local_url($loginRedirect)) {
+    if(!is_local_url($loginRedirect))
         $loginRedirect = url('index');
-    }
 
     redirect($loginRedirect);
     return;

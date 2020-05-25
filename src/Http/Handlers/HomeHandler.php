@@ -8,6 +8,7 @@ use Misuzu\DB;
 use Misuzu\Pagination;
 use Misuzu\Changelog\ChangelogChange;
 use Misuzu\News\NewsPost;
+use Misuzu\Users\UserSession;
 
 final class HomeHandler extends Handler {
     public function index(HttpResponse $response, HttpRequest $request): void {
@@ -58,7 +59,7 @@ final class HomeHandler extends Handler {
 
         $changelog = ChangelogChange::all(new Pagination(10));
 
-        $birthdays = user_session_active() ? user_get_birthdays() : [];
+        $birthdays = UserSession::hasCurrent() ? user_get_birthdays() : [];
 
         $latestUser = DB::query('
             SELECT

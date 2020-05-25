@@ -2,16 +2,17 @@
 namespace Misuzu;
 
 use Misuzu\Net\IPAddress;
+use Misuzu\Users\User;
 
 require_once '../../../misuzu.php';
 
-if(!perms_check_user(MSZ_PERMS_USER, user_session_current('user_id'), MSZ_PERM_USER_MANAGE_WARNINGS)) {
+if(!User::hasCurrent() || !perms_check_user(MSZ_PERMS_USER, User::getCurrent()->getId(), MSZ_PERM_USER_MANAGE_WARNINGS)) {
     echo render_error(403);
     return;
 }
 
 $notices = [];
-$currentUserId = user_session_current('user_id');
+$currentUserId = User::getCurrent()->getId();
 
 if(!empty($_POST['lookup']) && is_string($_POST['lookup'])) {
     url_redirect('manage-users-warnings', ['user' => user_id_from_username($_POST['lookup'])]);

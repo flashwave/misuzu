@@ -3,15 +3,20 @@ namespace Misuzu;
 
 use Misuzu\Net\IPAddress;
 use Misuzu\Parsers\Parser;
+use Misuzu\Users\User;
 
 require_once '../../misuzu.php';
 
-if(!user_session_active()) {
+$currentUser = User::getCurrent();
+
+if($currentUser === null) {
     echo render_error(401);
     return;
 }
 
-if(user_warning_check_restriction(user_session_current('user_id', 0))) {
+$currentUserId = $currentUser->getId();
+
+if(user_warning_check_restriction($currentUserId)) {
     echo render_error(403);
     return;
 }
@@ -83,7 +88,7 @@ if(empty($forum)) {
     return;
 }
 
-$perms = forum_perms_get_user($forum['forum_id'], user_session_current('user_id'))[MSZ_FORUM_PERMS_GENERAL];
+$perms = forum_perms_get_user($forum['forum_id'], $currentUserId)[MSZ_FORUM_PERMS_GENERAL];
 
 if($forum['forum_archived']
     || (!empty($topic['topic_locked']) && !perms_check($perms, MSZ_FORUM_PERM_LOCK_TOPIC))
@@ -121,7 +126,7 @@ if($mode === 'edit') {
         return;
     }
 
-    if(!perms_check($perms, $post['poster_id'] === user_session_current('user_id') ? MSZ_FORUM_PERM_EDIT_POST : MSZ_FORUM_PERM_EDIT_ANY_POST)) {
+    if(!perms_check($perms, $post['poster_id'] === $currentUserId ? MSZ_FORUM_PERM_EDIT_POST : MSZ_FORUM_PERM_EDIT_ANY_POST)) {
         echo render_error(403);
         return;
     }
@@ -142,7 +147,7 @@ if(!empty($_POST)) {
         $isEditingTopic = empty($topic) || ($mode === 'edit' && $post['is_opening_post']);
 
         if($mode === 'create') {
-            $timeoutCheck = max(1, forum_timeout($forumId, user_session_current('user_id')));
+            $timeoutCheck = max(1, forum_timeout($forumId, $currentUserId));
 
             if($timeoutCheck < 5) {
                 $notices[] = sprintf("You're posting too quickly! Please wait %s seconds before posting again.", number_format($timeoutCheck));
@@ -195,7 +200,7 @@ if(!empty($_POST)) {
                     } else {
                         $topicId = forum_topic_create(
                             $forum['forum_id'],
-                            user_session_current('user_id', 0),
+                            $currentUserId,
                             $topicTitle,
                             $topicType
                         );
@@ -204,13 +209,13 @@ if(!empty($_POST)) {
                     $postId = forum_post_create(
                         $topicId,
                         $forum['forum_id'],
-                        user_session_current('user_id', 0),
+                        $currentUserId,
                         IPAddress::remote(),
                         $postText,
                         $postParser,
                         $postSignature
                     );
-                    forum_topic_mark_read(user_session_current('user_id', 0), $topicId, $forum['forum_id']);
+                    forum_topic_mark_read($currentUserId, $topicId, $forum['forum_id']);
                     forum_count_increase($forum['forum_id'], empty($topic));
                     break;
 
@@ -248,7 +253,7 @@ if($mode === 'edit') { // $post is pretty much sure to be populated at this poin
     Template::set('posting_post', $post);
 }
 
-$displayInfo = forum_posting_info(user_session_current('user_id'));
+$displayInfo = forum_posting_info($currentUserId);
 
 Template::render('forum.posting', [
     'posting_breadcrumbs' => forum_get_breadcrumbs($forumId),

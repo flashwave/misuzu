@@ -31,7 +31,7 @@
 
             <div class="settings__sessions__list">
                 {% for session in session_list %}
-                    {{ user_session(session, session.session_id == session_active_id) }}
+                    {{ user_session(session, session_current.id == session.id) }}
                 {% endfor %}
             </div>
 

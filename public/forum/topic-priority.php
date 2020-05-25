@@ -1,14 +1,16 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Users\User;
+
 require_once '../../misuzu.php';
 
-if(!MSZ_DEBUG) {
+if(!MSZ_DEBUG)
     return;
-}
 
 $topicId = !empty($_GET['t']) && is_string($_GET['t']) ? (int)$_GET['t'] : 0;
-$topicUserId = user_session_current('user_id', 0);
+$topicUser = User::getCurrent();
+$topicUserId = $topicUser === null ? 0 : $topicUser->getId();
 
 if($topicUserId < 1) {
     echo render_error(403);
@@ -48,6 +50,6 @@ if(!forum_has_priority_voting($topic['forum_type'])) {
     return;
 }
 
-forum_topic_priority_increase($topicId, user_session_current('user_id', 0));
+forum_topic_priority_increase($topicId, $topicUserId);
 
 url_redirect('forum-topic', ['topic' => $topicId]);
