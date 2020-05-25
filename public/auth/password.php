@@ -5,6 +5,7 @@ use UnexpectedValueException;
 use Misuzu\AuditLog;
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
+use Misuzu\Users\UserLoginAttempt;
 
 require_once '../../misuzu.php';
 
@@ -29,7 +30,7 @@ $notices = [];
 $siteIsPrivate = Config::get('private.enable', Config::TYPE_BOOL);
 $canResetPassword = $siteIsPrivate ? Config::get('private.allow_password_reset', Config::TYPE_BOOL, true) : true;
 $ipAddress = IPAddress::remote();
-$remainingAttempts = user_login_attempts_remaining($ipAddress);
+$remainingAttempts = UserLoginAttempt::remaining();
 
 while($canResetPassword) {
     if(!empty($reset) && $userId > 0) {

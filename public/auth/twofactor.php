@@ -2,6 +2,8 @@
 namespace Misuzu;
 
 use Misuzu\Net\IPAddress;
+use Misuzu\Users\User;
+use Misuzu\Users\UserLoginAttempt;
 
 require_once '../../misuzu.php';
 
@@ -13,16 +15,18 @@ if(user_session_active()) {
 $twofactor = !empty($_POST['twofactor']) && is_array($_POST['twofactor']) ? $_POST['twofactor'] : [];
 $notices = [];
 $ipAddress = IPAddress::remote();
-$remainingAttempts = user_login_attempts_remaining($ipAddress);
+$remainingAttempts = UserLoginAttempt::remaining();
 $tokenInfo = user_auth_tfa_token_info(
     !empty($_GET['token']) && is_string($_GET['token']) ? $_GET['token'] : (
         !empty($twofactor['token']) && is_string($twofactor['token']) ? $twofactor['token'] : ''
     )
 );
 
+$userData = User::byId($tokenInfo['user_id']);
+
 // checking user_totp_key specifically because there's a fringe chance that
 //  there's a token present, but totp is actually disabled
-if(empty($tokenInfo['user_totp_key'])) {
+if(!$userData->hasTOTP()) {
     url_redirect('auth-login');
     return;
 }
@@ -46,24 +50,17 @@ while(!empty($twofactor)) {
         break;
     }
 
-    $totp = new TOTP($tokenInfo['user_totp_key']);
-    $accepted = [
-        $totp->generate(time()),
-        $totp->generate(time() - 30),
-        $totp->generate(time() + 30),
-    ];
-
-    if(!in_array($twofactor['code'], $accepted)) {
+    if(!in_array($twofactor['code'], $userData->getValidTOTPTokens())) {
         $notices[] = sprintf(
             "Invalid two factor code, %d attempt%s remaining",
             $remainingAttempts - 1,
             $remainingAttempts === 2 ? '' : 's'
         );
-        user_login_attempt_record(false, $tokenInfo['user_id'], $ipAddress, $userAgent);
+        UserLoginAttempt::create(false, $userData);
         break;
     }
 
-    user_login_attempt_record(true, $tokenInfo['user_id'], $ipAddress, $userAgent);
+    UserLoginAttempt::create(true, $userData);
     $sessionKey = user_session_create($tokenInfo['user_id'], $ipAddress, $userAgent);
 
     if(empty($sessionKey)) {

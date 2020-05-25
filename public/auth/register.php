@@ -4,6 +4,7 @@ namespace Misuzu;
 use Misuzu\Net\IPAddress;
 use Misuzu\Net\IPAddressBlacklist;
 use Misuzu\Users\User;
+use Misuzu\Users\UserLoginAttempt;
 
 require_once '../../misuzu.php';
 
@@ -15,7 +16,7 @@ if(user_session_active()) {
 $register = !empty($_POST['register']) && is_array($_POST['register']) ? $_POST['register'] : [];
 $notices = [];
 $ipAddress = IPAddress::remote();
-$remainingAttempts = user_login_attempts_remaining($ipAddress);
+$remainingAttempts = UserLoginAttempt::remaining();
 $restricted = IPAddressBlacklist::check($ipAddress) ? 'blacklist'
     : (user_warning_check_ip($ipAddress) ? 'ban' : '');
 

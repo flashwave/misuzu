@@ -4,6 +4,7 @@ namespace Misuzu\Users;
 use Misuzu\Colour;
 use Misuzu\DB;
 use Misuzu\Memoizer;
+use Misuzu\TOTP;
 use Misuzu\Net\IPAddress;
 
 class UserException extends UsersException {} // this naming definitely won't lead to confusion down the line!
@@ -35,6 +36,8 @@ class User {
     public $user_title = null;
 
     private static $localUser = null;
+
+    private $totp = null;
 
     private const USER_SELECT = '
         SELECT u.`user_id`, u.`username`, u.`password`, u.`email`, u.`user_super`, u.`user_title`,
@@ -109,6 +112,21 @@ class User {
 
     public function hasTOTP(): bool {
         return !empty($this->user_totp_key);
+    }
+    public function getTOTP(): TOTP {
+        if($this->totp === null)
+            $this->totp = new TOTP($this->user_totp_key);
+        return $this->totp;
+    }
+    public function getValidTOTPTokens(): array {
+        if(!$this->hasTOTP())
+            return [];
+        $totp = $this->getTOTP();
+        return [
+            $totp->generate(time()),
+            $totp->generate(time() - 30),
+            $totp->generate(time() + 30),
+        ];
     }
 
     public function getBackgroundSettings(): int { // Use the below methods instead

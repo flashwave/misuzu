@@ -211,12 +211,12 @@
 {% endmacro %}
 
 {% macro user_login_attempt(attempt) %}
-    {% set browser = get_browser(attempt.attempt_user_agent) %}
+    {% set browser = get_browser(attempt.userAgent) %}
 
-    <div class="settings__login-attempt{% if not attempt.attempt_success %} settings__login-attempt--failed{% endif %}" id="login-attempt-{{ attempt.attempt_id }}">
+    <div class="settings__login-attempt{% if not attempt.success %} settings__login-attempt--failed{% endif %}">
         <div class="settings__login-attempt__container">
             <div class="settings__login-attempt__important">
-                <div class="flag flag--{{ attempt.attempt_country|lower }} settings__login-attempt__flag" title="{{ attempt.attempt_country|country_name }}">{{ attempt.attempt_country }}</div>
+                <div class="flag flag--{{ attempt.country|lower }} settings__login-attempt__flag" title="{{ attempt.countryName }}">{{ attempt.country }}</div>
 
                 <div class="settings__login-attempt__description">
                     {{ browser.browser }} on {{ browser.platform }}
@@ -229,7 +229,7 @@
                         IP Address
                     </div>
                     <div class="settings__login-attempt__detail__value">
-                        {{ attempt.attempt_ip }}
+                        {{ attempt.remoteAddress }}
                     </div>
                 </div>
 
@@ -238,16 +238,16 @@
                         Succeeded
                     </div>
                     <div class="settings__login-attempt__detail__value">
-                        {{ attempt.attempt_success ? 'Yes' : 'No' }}
+                        {{ attempt.success ? 'Yes' : 'No' }}
                     </div>
                 </div>
 
-                <div class="settings__login-attempt__detail" title="{{ attempt.attempt_created|date('r') }}">
+                <div class="settings__login-attempt__detail" title="{{ attempt.createdTime|date('r') }}">
                     <div class="settings__login-attempt__detail__title">
                         Attempted
                     </div>
-                    <time class="settings__login-attempt__detail__value" datetime="{{ attempt.attempt_created|date('c') }}">
-                        {{ attempt.attempt_created|time_diff }}
+                    <time class="settings__login-attempt__detail__value" datetime="{{ attempt.createdTime|date('c') }}">
+                        {{ attempt.createdTime|time_diff }}
                     </time>
                 </div>
 
@@ -256,7 +256,7 @@
                         User Agent
                     </div>
                     <div class="settings__login-attempt__detail__value">
-                        {{ attempt.attempt_user_agent|length > 0 ? attempt.attempt_user_agent : 'None' }}
+                        {{ attempt.userAgent is empty ? 'None' : attempt.userAgent }}
                     </div>
                 </div>
             </div>

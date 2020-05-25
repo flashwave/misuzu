@@ -4,6 +4,7 @@ namespace Misuzu;
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
 use Misuzu\Users\UserNotFoundException;
+use Misuzu\Users\UserLoginAttempt;
 
 require_once '../../misuzu.php';
 
@@ -23,7 +24,7 @@ $siteIsPrivate = Config::get('private.enable', Config::TYPE_BOOL);
 $loginPermCat = $siteIsPrivate ? Config::get('private.perm.cat', Config::TYPE_STR) : '';
 $loginPermVal = $siteIsPrivate ? Config::get('private.perm.val', Config::TYPE_INT) : 0;
 $ipAddress = IPAddress::remote();
-$remainingAttempts = user_login_attempts_remaining($ipAddress);
+$remainingAttempts = UserLoginAttempt::remaining();
 
 while(!empty($_POST['login']) && is_array($_POST['login'])) {
     if(!CSRF::validateRequest()) {
@@ -55,7 +56,7 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
     try {
         $userData = User::findForLogin($_POST['login']['username']);
     } catch(UserNotFoundException $ex) {
-        user_login_attempt_record(false, null, $ipAddress, $userAgent);
+        UserLoginAttempt::create(false);
         $notices[] = $loginFailedError;
         break;
     }
@@ -66,7 +67,7 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
     }
 
     if($userData->isDeleted() || !$userData->checkPassword($_POST['login']['password'])) {
-        user_login_attempt_record(false, $userData->getId(), $ipAddress, $userAgent);
+        UserLoginAttempt::create(false, $userData);
         $notices[] = $loginFailedError;
         break;
     }
@@ -77,7 +78,7 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
 
     if(!empty($loginPermCat) && $loginPermVal > 0 && !perms_check_user($loginPermCat, $userData->getId(), $loginPermVal)) {
         $notices[] = "Login succeeded, but you're not allowed to browse the site right now.";
-        user_login_attempt_record(true, $userData->getId(), $ipAddress, $userAgent);
+        UserLoginAttempt::create(true, $userData);
         break;
     }
 
@@ -88,7 +89,7 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
         return;
     }
 
-    user_login_attempt_record(true, $userData->getId(), $ipAddress, $userAgent);
+    UserLoginAttempt::create(true, $userData);
     $sessionKey = user_session_create($userData->getId(), $ipAddress, $userAgent);
 
     if(empty($sessionKey)) {
