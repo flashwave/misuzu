@@ -13,7 +13,7 @@ $moderationMode = !empty($_GET['m']) && is_string($_GET['m']) ? (string)$_GET['m
 $submissionConfirmed = !empty($_GET['confirm']) && is_string($_GET['confirm']) && $_GET['confirm'] === '1';
 
 $topicUser = User::getCurrent();
-$topicUserId = $topicUser === null ? 0 : $this->getId();
+$topicUserId = $topicUser === null ? 0 : $topicUser->getId();
 
 if($topicId < 1 && $postId > 0) {
     $postInfo = forum_post_find($postId, $topicUserId);
