@@ -18,12 +18,12 @@ final class TwigMisuzu extends Twig_Extension {
             new Twig_Filter('perms_check', 'perms_check'),
             new Twig_Filter('bg_settings', 'user_background_settings_strings'),
             new Twig_Filter('clamp', 'clamp'),
+            new Twig_Filter('as_platform', fn(string $userAgent) => (new \WhichBrowser\Parser($userAgent))->toString()),
         ];
     }
 
     public function getFunctions() {
         return [
-            new Twig_Function('get_browser', 'get_browser'),
             new Twig_Function('url_construct', 'url_construct'),
             new Twig_Function('warning_has_duration', 'user_warning_has_duration'),
             new Twig_Function('url', 'url'),

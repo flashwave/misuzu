@@ -122,7 +122,6 @@
 
 {% macro user_session(session, is_current_session) %}
     {% from '_layout/input.twig' import input_hidden, input_csrf, input_checkbox_raw %}
-    {% set browser = get_browser(session.session_user_agent) %}
 
     <div class="settings__session{% if is_current_session %} settings__session--current{% endif %}" id="session-{{ session.session_id }}">
         <div class="settings__session__container">
@@ -130,7 +129,7 @@
                 <div class="flag flag--{{ session.session_country|lower }} settings__session__flag" title="{{ session.session_country|country_name }}">{{ session.session_country }}</div>
 
                 <div class="settings__session__description">
-                    {{ browser.browser }} on {{ browser.platform }}
+                    {{ session.session_user_agent|default('')|as_platform }}
                 </div>
 
                 <form class="settings__session__actions" method="post" action="{{ url('settings-sessions') }}">
@@ -211,15 +210,13 @@
 {% endmacro %}
 
 {% macro user_login_attempt(attempt) %}
-    {% set browser = get_browser(attempt.userAgent) %}
-
     <div class="settings__login-attempt{% if not attempt.success %} settings__login-attempt--failed{% endif %}">
         <div class="settings__login-attempt__container">
             <div class="settings__login-attempt__important">
                 <div class="flag flag--{{ attempt.country|lower }} settings__login-attempt__flag" title="{{ attempt.countryName }}">{{ attempt.country }}</div>
 
                 <div class="settings__login-attempt__description">
-                    {{ browser.browser }} on {{ browser.platform }}
+                    {{ attempt.userAgentInfo.toString }}
                 </div>
             </div>
 

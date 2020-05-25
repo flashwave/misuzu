@@ -4,6 +4,7 @@ namespace Misuzu\Users;
 use Misuzu\DB;
 use Misuzu\Pagination;
 use Misuzu\Net\IPAddress;
+use WhichBrowser\Parser as UserAgentParser;
 
 class UserLoginAttempt {
     // Database fields
@@ -16,6 +17,7 @@ class UserLoginAttempt {
 
     private $user = null;
     private $userLookedUp = false;
+    private $uaInfo = null;
 
     public const TABLE = 'login_attempts';
     private const QUERY_SELECT = 'SELECT %1$s FROM `' . DB::PREFIX . self::TABLE . '` AS '. self::TABLE;
@@ -57,6 +59,11 @@ class UserLoginAttempt {
 
     public function getUserAgent(): string {
         return $this->attempt_user_agent;
+    }
+    public function getUserAgentInfo(): UserAgentParser {
+        if($this->uaInfo === null)
+            $this->uaInfo = new UserAgentParser($this->getUserAgent());
+        return $this->uaInfo;
     }
 
     public static function remaining(?string $remoteAddr = null): int {
