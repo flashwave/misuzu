@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>Error 503</title>
+        <style type="text/css">
+            body {
+                font: 12px/20px Tahoma, Geneva, 'Dejavu Sans', Arial, Helvetica, sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Error 503</h1>
+        <p>The site is currently unavailable due to ongoing updates. It should be back shortly!</p>
+        <p>The page will refresh when the site becomes available again.</p>
+        <p><a href="javascript:location.reload(true)">Retry</a></p>
+        <script type="text/javascript">
+            setInterval(function() {
+                var xhr = new XMLHttpRequest;
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState === 4 && xhr.status !== 503)
+                        document.links[0].click();
+                };
+                xhr.open('HEAD', location.pathname + '?_check=' + Date.now().toString());
+                xhr.send();
+            }, 10000);
+        </script>
+    </body>
+</html>

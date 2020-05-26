@@ -163,7 +163,10 @@ Template::addPath(MSZ_ROOT . '/templates');
 
 if(file_exists(MSZ_ROOT . '/.migrating')) {
     http_response_code(503);
-    Template::render('home.migration');
+    if(!isset($_GET['_check'])) {
+        header('Content-Type: text/html; charset-utf-8');
+        echo file_get_contents(MSZ_ROOT . '/templates/503.html');
+    }
     exit;
 }
 
@@ -181,6 +184,7 @@ if(isset($_COOKIE['msz_uid']) && isset($_COOKIE['msz_sid'])) {
 
 if(!isset($authToken))
     $authToken = AuthToken::unpack(filter_input(INPUT_COOKIE, 'msz_auth', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH) ?? '');
+
 if($authToken->isValid()) {
     try {
         $sessionInfo = $authToken->getSession();
