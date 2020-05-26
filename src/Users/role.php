@@ -47,9 +47,8 @@ function user_role_has(int $userId, int $roleId): bool {
 }
 
 function user_role_set_display(int $userId, int $roleId): bool {
-    if(!user_role_has($userId, $roleId)) {
+    if(!user_role_has($userId, $roleId))
         return false;
-    }
 
     $setDisplay = \Misuzu\DB::prepare('
         UPDATE `msz_users`
@@ -63,9 +62,8 @@ function user_role_set_display(int $userId, int $roleId): bool {
 }
 
 function user_role_get_display(int $userId): int {
-    if($userId < 1) {
+    if($userId < 1)
         return MSZ_ROLE_MAIN;
-    }
 
     $fetchRole = \Misuzu\DB::prepare('
         SELECT `display_role`

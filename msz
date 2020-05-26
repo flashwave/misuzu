@@ -1,0 +1,20 @@
+#!/usr/bin/env php
+<?php
+namespace Misuzu;
+
+use Misuzu\Console\CommandArgs;
+use Misuzu\Console\CommandCollection;
+
+require_once __DIR__ . '/misuzu.php';
+
+if(!MSZ_CLI)
+    die('This tool is meant to be used through command line only.' . PHP_EOL);
+
+$commands = new CommandCollection;
+$commands->addCommands(
+    new \Misuzu\Console\Commands\CronCommand,
+    new \Misuzu\Console\Commands\MigrateCommand,
+    new \Misuzu\Console\Commands\NewMigrationCommand,
+    new \Misuzu\Console\Commands\TwitterAuthCommand,
+);
+$commands->dispatch(new CommandArgs($argv));

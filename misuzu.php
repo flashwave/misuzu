@@ -32,15 +32,19 @@ date_default_timezone_set('utc');
 set_include_path(get_include_path() . PATH_SEPARATOR . MSZ_ROOT);
 
 set_exception_handler(function(\Throwable $ex) {
-    http_response_code(500);
-    ob_clean();
-
-    if(MSZ_CLI || MSZ_DEBUG) {
-        header('Content-Type: text/plain; charset=utf-8');
+    if(MSZ_CLI) {
         echo (string)$ex;
     } else {
-        header('Content-Type: text/html; charset-utf-8');
-        echo file_get_contents(MSZ_ROOT . '/templates/500.html');
+        http_response_code(500);
+        ob_clean();
+
+        if(MSZ_DEBUG) {
+            header('Content-Type: text/plain; charset=utf-8');
+            echo (string)$ex;
+        } else {
+            header('Content-Type: text/html; charset-utf-8');
+            echo file_get_contents(MSZ_ROOT . '/templates/500.html');
+        }
     }
     exit;
 });
@@ -113,418 +117,160 @@ Mailer::init(Config::get('mail.method', Config::TYPE_STR), [
 define('MSZ_STORAGE', Config::get('storage.path', Config::TYPE_STR, MSZ_ROOT . '/store'));
 mkdirs(MSZ_STORAGE, true);
 
-if(MSZ_CLI) {
+if(MSZ_CLI) { // Temporary backwards compatibility measure, remove this later
     if(realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
-        switch($argv[1] ?? null) {
-            case 'cron':
-                $runLowFreq = (bool)(!empty($argv[2]) && $argv[2] == 'low');
-
-                $cronTasks = [
-                    [
-                        'name' => 'Ensures main role exists.',
-                        'type' => 'sql',
-                        'run' => $runLowFreq,
-                        'command' => "
-                            INSERT IGNORE INTO `msz_roles`
-                                (`role_id`, `role_name`, `role_hierarchy`, `role_colour`, `role_description`, `role_created`)
-                            VALUES
-                                (1, 'Member', 1, 1073741824, NULL, NOW())
-                        ",
-                    ],
-                    [
-                        'name' => 'Ensures all users are in the main role.',
-                        'type' => 'sql',
-                        'run' => $runLowFreq,
-                        'command' => "
-                            INSERT INTO `msz_user_roles`
-                                (`user_id`, `role_id`)
-                            SELECT `user_id`, 1 FROM `msz_users` as u
-                            WHERE NOT EXISTS (
-                                SELECT 1
-                                FROM `msz_user_roles` as ur
-                                WHERE `role_id` = 1
-                                AND u.`user_id` = ur.`user_id`
-                            )
-                        ",
-                    ],
-                    [
-                        'name' => 'Ensures all display_role values are correct with `msz_user_roles`.',
-                        'type' => 'sql',
-                        'run' => $runLowFreq,
-                        'command' => "
-                            UPDATE `msz_users` as u
-                            SET `display_role` = (
-                                 SELECT ur.`role_id`
-                                 FROM `msz_user_roles` as ur
-                                 LEFT JOIN `msz_roles` as r
-                                 ON r.`role_id` = ur.`role_id`
-                                 WHERE ur.`user_id` = u.`user_id`
-                                 ORDER BY `role_hierarchy` DESC
-                                 LIMIT 1
-                            )
-                            WHERE NOT EXISTS (
-                                SELECT 1
-                                FROM `msz_user_roles` as ur
-                                WHERE ur.`role_id` = u.`display_role`
-                                AND `ur`.`user_id` = u.`user_id`
-                            )
-                        ",
-                    ],
-                    [
-                        'name' => 'Remove expired sessions.',
-                        'type' => 'sql',
-                        'run' => true,
-                        'command' => "
-                            DELETE FROM `msz_sessions`
-                            WHERE `session_expires` < NOW()
-                        ",
-                    ],
-                    [
-                        'name' => 'Remove old password reset records.',
-                        'type' => 'sql',
-                        'run' => true,
-                        'command' => "
-                            DELETE FROM `msz_users_password_resets`
-                            WHERE `reset_requested` < NOW() - INTERVAL 1 WEEK
-                        ",
-                    ],
-                    [
-                        'name' => 'Remove old chat login tokens.',
-                        'type' => 'sql',
-                        'run' => true,
-                        'command' => "
-                            DELETE FROM `msz_user_chat_tokens`
-                            WHERE `token_created` < NOW() - INTERVAL 1 WEEK
-                        ",
-                    ],
-                    [
-                        'name' => 'Clean up login history.',
-                        'type' => 'sql',
-                        'run' => true,
-                        'command' => "
-                            DELETE FROM `msz_login_attempts`
-                            WHERE `attempt_created` < NOW() - INTERVAL 1 MONTH
-                        ",
-                    ],
-                    [
-                        'name' => 'Clean up audit log.',
-                        'type' => 'sql',
-                        'run' => true,
-                        'command' => "
-                            DELETE FROM `msz_audit_log`
-                            WHERE `log_created` < NOW() - INTERVAL 3 MONTH
-                        ",
-                    ],
-                    [
-                        'name' => 'Remove stale forum tracking entries.',
-                        'type' => 'sql',
-                        'run' => true,
-                        'command' => "
-                            DELETE tt FROM `msz_forum_topics_track` as tt
-                            LEFT JOIN `msz_forum_topics` as t
-                            ON t.`topic_id` = tt.`topic_id`
-                            WHERE t.`topic_bumped` < NOW() - INTERVAL 1 MONTH
-                        ",
-                    ],
-                    [
-                        'name' => 'Synchronise forum_id.',
-                        'type' => 'sql',
-                        'run' => $runLowFreq,
-                        'command' => "
-                            UPDATE `msz_forum_posts` AS p
-                            INNER JOIN `msz_forum_topics` AS t
-                            ON t.`topic_id` = p.`topic_id`
-                            SET p.`forum_id` = t.`forum_id`
-                        ",
-                    ],
-                    [
-                        'name' => 'Recount forum topics and posts.',
-                        'type' => 'func',
-                        'run' => $runLowFreq,
-                        'command' => 'forum_count_synchronise',
-                    ],
-                    [
-                        'name' => 'Clean up expired tfa tokens.',
-                        'type' => 'sql',
-                        'run' => true,
-                        'command' => "
-                            DELETE FROM `msz_auth_tfa`
-                            WHERE `tfa_created` < NOW() - INTERVAL 15 MINUTE
-                        ",
-                    ],
-                ];
-
-                foreach($cronTasks as $cronTask) {
-                    if($cronTask['run']) {
-                        echo $cronTask['name'] . PHP_EOL;
-
-                        switch($cronTask['type']) {
-                            case 'sql':
-                                DB::exec($cronTask['command']);
-                                break;
-
-                            case 'func':
-                                call_user_func($cronTask['command']);
-                                break;
-                        }
-                    }
-                }
-                break;
-
-            case 'migrate':
-                $doRollback = !empty($argv[2]) && $argv[2] === 'rollback';
-
-                touch(MSZ_ROOT . '/.migrating');
-
-                echo "Creating migration manager.." . PHP_EOL;
-                $migrationManager = new DatabaseMigrationManager(DB::getPDO(), MSZ_ROOT . '/database');
-                $migrationManager->setLogger(function ($log) {
-                    echo $log . PHP_EOL;
-                });
-
-                if($doRollback) {
-                    $migrationManager->rollback();
-                } else {
-                    $migrationManager->migrate();
-                }
-
-                $errors = $migrationManager->getErrors();
-                $errorCount = count($errors);
-
-                if($errorCount < 1) {
-                    echo 'Completed with no errors!' . PHP_EOL;
-                } else {
-                    echo PHP_EOL . "There were {$errorCount} errors during the migrations..." . PHP_EOL;
-
-                    foreach($errors as $error) {
-                        echo $error . PHP_EOL;
-                    }
-                }
-
-                unlink(MSZ_ROOT . '/.migrating');
-                break;
-
-            case 'new-mig':
-                if(empty($argv[2])) {
-                    echo 'Specify a migration name.' . PHP_EOL;
-                    return;
-                }
-
-                if(!preg_match('#^([a-z_]+)$#', $argv[2])) {
-                    echo 'Migration name may only contain alpha and _ characters.' . PHP_EOL;
-                    return;
-                }
-
-                $filename = date('Y_m_d_His_') . trim($argv[2], '_') . '.php';
-                $filepath = MSZ_ROOT . '/database/' . $filename;
-                $namespace = snake_to_camel($argv[2]);
-                $template = <<<MIG
-<?php
-namespace Misuzu\DatabaseMigrations\\$namespace;
-
-use PDO;
-
-function migrate_up(PDO \$conn): void {
-    \$conn->exec("
-        CREATE TABLE ...
-    ");
+        if(($argv[1] ?? '') === 'cron' && ($argv[2] ?? '') === 'low')
+            $argv[2] = '--slow';
+        array_shift($argv);
+        echo shell_exec(__DIR__ . '/msz ' . implode(' ', $argv));
+    }
+    return;
 }
 
-function migrate_down(PDO \$conn): void {
-    \$conn->exec("
-        DROP TABLE ...
-    ");
+// Everything below here should eventually be moved to index.php, probably only initialised when required.
+// Serving things like the css/js doesn't need to initialise sessions.
+
+if(!mb_check_encoding()) {
+    http_response_code(415);
+    echo 'Invalid request encoding.';
+    exit;
 }
 
-MIG;
+ob_start();
 
-                file_put_contents($filepath, $template);
+if(!is_readable(MSZ_STORAGE) || !is_writable(MSZ_STORAGE)) {
+    echo 'Cannot access storage directory.';
+    exit;
+}
 
-                echo "Template for '{$namespace}' has been created." . PHP_EOL;
-                break;
+GeoIP::init(Config::get('geoip.database', Config::TYPE_STR, '/var/lib/GeoIP/GeoLite2-Country.mmdb'));
 
-            case 'twitter-auth':
-                $apiKey = Config::get('twitter.api.key', Config::TYPE_STR);
-                $apiSecret = Config::get('twitter.api.secret', Config::TYPE_STR);
+if(!MSZ_DEBUG) {
+    $twigCache = sys_get_temp_dir() . '/msz-tpl-cache-' . md5(MSZ_ROOT);
+    mkdirs($twigCache, true);
+}
 
-                if(empty($apiKey) || empty($apiSecret)) {
-                    echo 'No Twitter api keys set in config.' . PHP_EOL;
-                    break;
-                }
+Template::init($twigCache ?? null, MSZ_DEBUG);
 
-                Twitter::init($apiKey, $apiSecret);
-                echo 'Twitter Authentication' . PHP_EOL;
+Template::set('globals', [
+    'site_name' => Config::get('site.name', Config::TYPE_STR, 'Misuzu'),
+    'site_description' => Config::get('site.desc', Config::TYPE_STR),
+    'site_url' => Config::get('site.url', Config::TYPE_STR),
+    'site_twitter' => Config::get('social.twitter', Config::TYPE_STR),
+]);
 
-                $authPage = Twitter::createAuth();
+Template::addPath(MSZ_ROOT . '/templates');
 
-                if(empty($authPage)) {
-                    echo 'Request to begin authentication failed.' . PHP_EOL;
-                    break;
-                }
+if(file_exists(MSZ_ROOT . '/.migrating')) {
+    http_response_code(503);
+    Template::render('home.migration');
+    exit;
+}
 
-                echo 'Go to the page below and paste the pin code displayed.' . PHP_EOL . $authPage . PHP_EOL;
+if(isset($_COOKIE['msz_uid']) && isset($_COOKIE['msz_sid'])) {
+    $authToken = (new AuthToken)
+        ->setUserId(filter_input(INPUT_COOKIE, 'msz_uid', FILTER_SANITIZE_NUMBER_INT) ?? 0)
+        ->setSessionToken(filter_input(INPUT_COOKIE, 'msz_sid', FILTER_SANITIZE_STRING) ?? '');
 
-                $pin = readline('Pin: ');
-                $authComplete = Twitter::completeAuth($pin);
+    if($authToken->isValid())
+        setcookie('msz_auth', $authToken->pack(), strtotime('1 year'), '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
 
-                if(empty($authComplete)) {
-                    echo 'Invalid pin code.' . PHP_EOL;
-                    break;
-                }
+    setcookie('msz_uid', '', -3600, '/', '', !empty($_SERVER['HTTPS']), true);
+    setcookie('msz_sid', '', -3600, '/', '', !empty($_SERVER['HTTPS']), true);
+}
 
-                echo 'Authentication successful!' . PHP_EOL
-                    . "Token: {$authComplete['token']}" . PHP_EOL
-                    . "Token Secret: {$authComplete['token_secret']}" . PHP_EOL;
-                break;
+if(!isset($authToken))
+    $authToken = AuthToken::unpack(filter_input(INPUT_COOKIE, 'msz_auth', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH) ?? '');
+if($authToken->isValid()) {
+    try {
+        $sessionInfo = $authToken->getSession();
+        if($sessionInfo->hasExpired()) {
+            $sessionInfo->delete();
+        } elseif($sessionInfo->getUserId() === $authToken->getUserId()) {
+            $userInfo = $sessionInfo->getUser();
+            if(!$userInfo->isDeleted()) {
+                $sessionInfo->setCurrent();
+                $userInfo->setCurrent();
 
-            default:
-                echo 'Unknown command.' . PHP_EOL;
-                break;
-        }
-    }
-} else {
-    if(!mb_check_encoding()) {
-        http_response_code(415);
-        echo 'Invalid request encoding.';
-        exit;
-    }
+                $sessionInfo->bump();
 
-    ob_start();
-
-    if(!is_readable(MSZ_STORAGE) || !is_writable(MSZ_STORAGE)) {
-        echo 'Cannot access storage directory.';
-        exit;
-    }
-
-    GeoIP::init(Config::get('geoip.database', Config::TYPE_STR, '/var/lib/GeoIP/GeoLite2-Country.mmdb'));
-
-    if(!MSZ_DEBUG) {
-        $twigCache = sys_get_temp_dir() . '/msz-tpl-cache-' . md5(MSZ_ROOT);
-        mkdirs($twigCache, true);
-    }
-
-    Template::init($twigCache ?? null, MSZ_DEBUG);
-
-    Template::set('globals', [
-        'site_name' => Config::get('site.name', Config::TYPE_STR, 'Misuzu'),
-        'site_description' => Config::get('site.desc', Config::TYPE_STR),
-        'site_url' => Config::get('site.url', Config::TYPE_STR),
-        'site_twitter' => Config::get('social.twitter', Config::TYPE_STR),
-    ]);
-
-    Template::addPath(MSZ_ROOT . '/templates');
-
-    if(file_exists(MSZ_ROOT . '/.migrating')) {
-        http_response_code(503);
-        Template::render('home.migration');
-        exit;
-    }
-
-    if(isset($_COOKIE['msz_uid']) && isset($_COOKIE['msz_sid'])) {
-        $authToken = (new AuthToken)
-            ->setUserId(filter_input(INPUT_COOKIE, 'msz_uid', FILTER_SANITIZE_NUMBER_INT) ?? 0)
-            ->setSessionToken(filter_input(INPUT_COOKIE, 'msz_sid', FILTER_SANITIZE_STRING) ?? '');
-
-        if($authToken->isValid())
-            setcookie('msz_auth', $authToken->pack(), strtotime('1 year'), '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
-
-        setcookie('msz_uid', '', -3600, '/', '', !empty($_SERVER['HTTPS']), true);
-        setcookie('msz_sid', '', -3600, '/', '', !empty($_SERVER['HTTPS']), true);
-    }
-
-    if(!isset($authToken))
-        $authToken = AuthToken::unpack(filter_input(INPUT_COOKIE, 'msz_auth', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH) ?? '');
-    if($authToken->isValid()) {
-        try {
-            $sessionInfo = $authToken->getSession();
-            if($sessionInfo->hasExpired()) {
-                $sessionInfo->delete();
-            } elseif($sessionInfo->getUserId() === $authToken->getUserId()) {
-                $userInfo = $sessionInfo->getUser();
-                if(!$userInfo->isDeleted()) {
-                    $sessionInfo->setCurrent();
-                    $userInfo->setCurrent();
-
-                    $sessionInfo->bump();
-
-                    if($sessionInfo->shouldBumpExpire())
-                        setcookie('msz_auth', $authToken->pack(), $sessionInfo->getExpiresTime(), '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
-                }
-            }
-        } catch(UserNotFoundException $ex) {
-            UserSession::unsetCurrent();
-            User::unsetCurrent();
-        } catch(UserSessionNotFoundException $ex) {
-            UserSession::unsetCurrent();
-            User::unsetCurrent();
-        }
-
-        if(!UserSession::hasCurrent()) {
-            setcookie('msz_auth', '', -9001, '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
-            setcookie('msz_auth', '', -9001, '/', '', !empty($_SERVER['HTTPS']), true);
-        } else {
-            $userDisplayInfo = DB::prepare('
-                SELECT
-                    u.`user_id`, u.`username`, u.`user_background_settings`, u.`user_deleted`,
-                    COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
-                FROM `msz_users` AS u
-                LEFT JOIN `msz_roles` AS r
-                ON u.`display_role` = r.`role_id`
-                WHERE `user_id` = :user_id
-            ')  ->bind('user_id', $userInfo->getId())
-                ->fetch();
-
-            user_bump_last_active($userInfo->getId());
-
-            $userDisplayInfo['perms'] = perms_get_user($userInfo->getId());
-            $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userInfo->getId(), MSZ_WARN_BAN);
-            $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userInfo->getId(), MSZ_WARN_SILENCE);
-        }
-    }
-
-    CSRF::setGlobalSecretKey(Config::get('csrf.secret', Config::TYPE_STR, 'soup'));
-    CSRF::setGlobalIdentity(UserSession::hasCurrent() ? UserSession::getCurrent()->getToken() : IPAddress::remote());
-
-    if(Config::get('private.enabled', Config::TYPE_BOOL)) {
-        $onLoginPage = $_SERVER['PHP_SELF'] === url('auth-login');
-        $onPasswordPage = parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH) === url('auth-forgot');
-        $misuzuBypassLockdown = !empty($misuzuBypassLockdown) || $onLoginPage;
-
-        if(!$misuzuBypassLockdown) {
-            if(UserSession::hasCurrent()) {
-                $privatePermCat = Config::get('private.perm.cat', Config::TYPE_STR);
-                $privatePermVal = Config::get('private.perm.val', Config::TYPE_INT);
-
-                if(!empty($privatePermCat) && $privatePermVal > 0) {
-                    if(!perms_check_user($privatePermCat, User::getCurrent()->getId(), $privatePermVal)) {
-                        // au revoir
-                        unset($userDisplayInfo);
-                        UserSession::unsetCurrent();
-                        User::unsetCurrent();
-                    }
-                }
-            } elseif(!$onLoginPage && !($onPasswordPage && Config::get('private.allow_password_reset', Config::TYPE_BOOL, true))) {
-                url_redirect('auth-login');
-                exit;
+                if($sessionInfo->shouldBumpExpire())
+                    setcookie('msz_auth', $authToken->pack(), $sessionInfo->getExpiresTime(), '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
             }
         }
+    } catch(UserNotFoundException $ex) {
+        UserSession::unsetCurrent();
+        User::unsetCurrent();
+    } catch(UserSessionNotFoundException $ex) {
+        UserSession::unsetCurrent();
+        User::unsetCurrent();
     }
 
-    if(!empty($userDisplayInfo)) // delete this
-        Template::set('current_user', $userDisplayInfo);
+    if(!UserSession::hasCurrent()) {
+        setcookie('msz_auth', '', -9001, '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
+        setcookie('msz_auth', '', -9001, '/', '', !empty($_SERVER['HTTPS']), true);
+    } else {
+        $userDisplayInfo = DB::prepare('
+            SELECT
+                u.`user_id`, u.`username`, u.`user_background_settings`, u.`user_deleted`,
+                COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
+            FROM `msz_users` AS u
+            LEFT JOIN `msz_roles` AS r
+            ON u.`display_role` = r.`role_id`
+            WHERE `user_id` = :user_id
+        ')  ->bind('user_id', $userInfo->getId())
+            ->fetch();
 
-    $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
-    $hasManageAccess = User::hasCurrent()
-        && !user_warning_check_restriction(User::getCurrent()->getId())
-        && perms_check_user(MSZ_PERMS_GENERAL, User::getCurrent()->getId(), MSZ_PERM_GENERAL_CAN_MANAGE);
-    Template::set('has_manage_access', $hasManageAccess);
+        user_bump_last_active($userInfo->getId());
 
-    if($inManageMode) {
-        if(!$hasManageAccess) {
-            echo render_error(403);
+        $userDisplayInfo['perms'] = perms_get_user($userInfo->getId());
+        $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userInfo->getId(), MSZ_WARN_BAN);
+        $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userInfo->getId(), MSZ_WARN_SILENCE);
+    }
+}
+
+CSRF::setGlobalSecretKey(Config::get('csrf.secret', Config::TYPE_STR, 'soup'));
+CSRF::setGlobalIdentity(UserSession::hasCurrent() ? UserSession::getCurrent()->getToken() : IPAddress::remote());
+
+if(Config::get('private.enabled', Config::TYPE_BOOL)) {
+    $onLoginPage = $_SERVER['PHP_SELF'] === url('auth-login');
+    $onPasswordPage = parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH) === url('auth-forgot');
+    $misuzuBypassLockdown = !empty($misuzuBypassLockdown) || $onLoginPage;
+
+    if(!$misuzuBypassLockdown) {
+        if(UserSession::hasCurrent()) {
+            $privatePermCat = Config::get('private.perm.cat', Config::TYPE_STR);
+            $privatePermVal = Config::get('private.perm.val', Config::TYPE_INT);
+
+            if(!empty($privatePermCat) && $privatePermVal > 0) {
+                if(!perms_check_user($privatePermCat, User::getCurrent()->getId(), $privatePermVal)) {
+                    // au revoir
+                    unset($userDisplayInfo);
+                    UserSession::unsetCurrent();
+                    User::unsetCurrent();
+                }
+            }
+        } elseif(!$onLoginPage && !($onPasswordPage && Config::get('private.allow_password_reset', Config::TYPE_BOOL, true))) {
+            url_redirect('auth-login');
             exit;
         }
-
-        Template::set('manage_menu', manage_get_menu(User::getCurrent()->getId()));
     }
+}
+
+if(!empty($userDisplayInfo)) // delete this
+    Template::set('current_user', $userDisplayInfo);
+
+$inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
+$hasManageAccess = User::hasCurrent()
+    && !user_warning_check_restriction(User::getCurrent()->getId())
+    && perms_check_user(MSZ_PERMS_GENERAL, User::getCurrent()->getId(), MSZ_PERM_GENERAL_CAN_MANAGE);
+Template::set('has_manage_access', $hasManageAccess);
+
+if($inManageMode) {
+    if(!$hasManageAccess) {
+        echo render_error(403);
+        exit;
+    }
+
+    Template::set('manage_menu', manage_get_menu(User::getCurrent()->getId()));
 }

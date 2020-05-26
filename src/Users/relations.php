@@ -14,13 +14,11 @@ function user_relation_is_valid_type(int $type): bool {
 }
 
 function user_relation_set(int $userId, int $subjectId, int $type = MSZ_USER_RELATION_FOLLOW): bool {
-    if($type === MSZ_USER_RELATION_NONE) {
+    if($type === MSZ_USER_RELATION_NONE)
         return user_relation_remove($userId, $subjectId);
-    }
 
-    if($userId < 1 || $subjectId < 1 || !user_relation_is_valid_type($type)) {
+    if($userId < 1 || $subjectId < 1 || !user_relation_is_valid_type($type))
         return false;
-    }
 
     $addRelation = \Misuzu\DB::prepare('
         REPLACE INTO `msz_user_relations`
@@ -37,9 +35,8 @@ function user_relation_set(int $userId, int $subjectId, int $type = MSZ_USER_REL
 }
 
 function user_relation_remove(int $userId, int $subjectId): bool {
-    if($userId < 1 || $subjectId < 1) {
+    if($userId < 1 || $subjectId < 1)
         return false;
-    }
 
     $removeRelation = \Misuzu\DB::prepare('
         DELETE FROM `msz_user_relations`
@@ -81,9 +78,8 @@ function user_relation_info(int $userId, int $subjectId): array {
 }
 
 function user_relation_count(int $userId, int $type, bool $from): int {
-    if($userId < 1 || $type <= MSZ_USER_RELATION_NONE || !user_relation_is_valid_type($type)) {
+    if($userId < 1 || $type <= MSZ_USER_RELATION_NONE || !user_relation_is_valid_type($type))
         return 0;
-    }
 
     static $getCount = [];
     $fetchCount = $getCount[$from] ?? null;
@@ -123,9 +119,8 @@ function user_relation_users(
     int $offset = 0,
     int $requestingUserId = 0
 ): array {
-    if($userId < 1 || $type <= MSZ_USER_RELATION_NONE || !user_relation_is_valid_type($type)) {
+    if($userId < 1 || $type <= MSZ_USER_RELATION_NONE || !user_relation_is_valid_type($type))
         return [];
-    }
 
     $fetchAll = $take < 1;
     $key = sprintf('%s,%s', $from ? 'from' : 'to', $fetchAll ? 'all' : 'page');

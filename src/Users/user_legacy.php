@@ -41,9 +41,8 @@ function user_password_set(int $userId, string $password): bool {
 }
 
 function user_totp_info(int $userId): array {
-    if($userId < 1) {
+    if($userId < 1)
         return [];
-    }
 
     $getTwoFactorInfo = \Misuzu\DB::prepare('
         SELECT
@@ -58,9 +57,8 @@ function user_totp_info(int $userId): array {
 }
 
 function user_totp_update(int $userId, ?string $key): void {
-    if($userId < 1) {
+    if($userId < 1)
         return;
-    }
 
     $key = empty($key) ? null : $key;
 
@@ -75,9 +73,8 @@ function user_totp_update(int $userId, ?string $key): void {
 }
 
 function user_email_get(int $userId): string {
-    if($userId < 1) {
+    if($userId < 1)
         return '';
-    }
 
     $fetchMail = \Misuzu\DB::prepare('
         SELECT `email`
@@ -150,9 +147,8 @@ function user_check_super(int $userId): bool {
 }
 
 function user_check_authority(int $userId, int $subjectId, bool $canManageSelf = true): bool {
-    if($canManageSelf && $userId === $subjectId) {
+    if($canManageSelf && $userId === $subjectId)
         return true;
-    }
 
     $checkHierarchy = \Misuzu\DB::prepare('
         SELECT (
@@ -193,25 +189,22 @@ define('MSZ_E_USER_BIRTHDATE_FAIL', 3);
 define('MSZ_E_USER_BIRTHDATE_YEAR', 4);
 
 function user_set_birthdate(int $userId, int $day, int $month, int $year, int $yearRange = 100): int {
-    if($userId < 1) {
+    if($userId < 1)
         return MSZ_E_USER_BIRTHDATE_USER;
-    }
 
     $unset = $day === 0 && $month === 0;
 
     if($year === 0) {
         $checkYear = date('Y');
     } else {
-        if($year < date('Y') - $yearRange || $year > date('Y')) {
+        if($year < date('Y') - $yearRange || $year > date('Y'))
             return MSZ_E_USER_BIRTHDATE_YEAR;
-        }
 
         $checkYear = $year;
     }
 
-    if(!$unset && !checkdate($month, $day, $checkYear)) {
+    if(!$unset && !checkdate($month, $day, $checkYear))
         return MSZ_E_USER_BIRTHDATE_DATE;
-    }
 
     $birthdate = $unset ? null : implode('-', [$year, $month, $day]);
     $setBirthdate = \Misuzu\DB::prepare('
@@ -228,11 +221,7 @@ function user_set_birthdate(int $userId, int $day, int $month, int $year, int $y
 }
 
 function user_get_birthdays(int $day = 0, int $month = 0) {
-    if($day < 1 || $month < 1) {
-        $date = date('%-m-d');
-    } else {
-        $date = "%-{$month}-{$day}";
-    }
+    $date = ($day < 1 || $month < 1) ? date('%-m-d') : "%-{$month}-{$day}";
 
     $getBirthdays = \Misuzu\DB::prepare('
         SELECT `user_id`, `username`, `user_birthdate`,
@@ -254,19 +243,16 @@ define('MSZ_E_USER_ABOUT_TOO_LONG', 3);
 define('MSZ_E_USER_ABOUT_UPDATE_FAILED', 4);
 
 function user_set_about_page(int $userId, string $content, int $parser = \Misuzu\Parsers\Parser::PLAIN): int {
-    if($userId < 1) {
+    if($userId < 1)
         return MSZ_E_USER_ABOUT_INVALID_USER;
-    }
 
-    if(!\Misuzu\Parsers\Parser::isValid($parser)) {
+    if(!\Misuzu\Parsers\Parser::isValid($parser))
         return MSZ_E_USER_ABOUT_INVALID_PARSER;
-    }
 
     $length = strlen($content);
 
-    if($length > MSZ_USER_ABOUT_MAX_LENGTH) {
+    if($length > MSZ_USER_ABOUT_MAX_LENGTH)
         return MSZ_E_USER_ABOUT_TOO_LONG;
-    }
 
     $setAbout = \Misuzu\DB::prepare('
         UPDATE `msz_users`
@@ -292,19 +278,16 @@ define('MSZ_E_USER_SIGNATURE_TOO_LONG', 3);
 define('MSZ_E_USER_SIGNATURE_UPDATE_FAILED', 4);
 
 function user_set_signature(int $userId, string $content, int $parser = \Misuzu\Parsers\Parser::PLAIN): int {
-    if($userId < 1) {
+    if($userId < 1)
         return MSZ_E_USER_SIGNATURE_INVALID_USER;
-    }
 
-    if(!\Misuzu\Parsers\Parser::isValid($parser)) {
+    if(!\Misuzu\Parsers\Parser::isValid($parser))
         return MSZ_E_USER_SIGNATURE_INVALID_PARSER;
-    }
 
     $length = strlen($content);
 
-    if($length > MSZ_USER_SIGNATURE_MAX_LENGTH) {
+    if($length > MSZ_USER_SIGNATURE_MAX_LENGTH)
         return MSZ_E_USER_SIGNATURE_TOO_LONG;
-    }
 
     $setSignature = \Misuzu\DB::prepare('
         UPDATE `msz_users`

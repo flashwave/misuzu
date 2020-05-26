@@ -6,9 +6,8 @@ function user_auth_tfa_token_generate(): string {
 }
 
 function user_auth_tfa_token_create(int $userId): string {
-    if($userId < 1) {
+    if($userId < 1)
         return '';
-    }
 
     $token = user_auth_tfa_token_generate();
 
@@ -21,9 +20,8 @@ function user_auth_tfa_token_create(int $userId): string {
     $createToken->bind('user_id', $userId);
     $createToken->bind('token', $token);
 
-    if(!$createToken->execute()) {
+    if(!$createToken->execute())
         return '';
-    }
 
     return $token;
 }

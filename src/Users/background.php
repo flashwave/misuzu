@@ -45,23 +45,19 @@ function user_background_settings_strings(int $settings, string $format = '%s'):
 
     $attachment = $settings & 0x0F;
 
-    if(array_key_exists($attachment, MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES)) {
+    if(array_key_exists($attachment, MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES))
         $arr[] = sprintf($format, MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES[$attachment]);
-    }
 
-    foreach(MSZ_USER_BACKGROUND_ATTRIBUTES_NAMES as $flag => $name) {
-        if(($settings & $flag) > 0) {
+    foreach(MSZ_USER_BACKGROUND_ATTRIBUTES_NAMES as $flag => $name)
+        if(($settings & $flag) > 0)
             $arr[] = sprintf($format, $name);
-        }
-    }
 
     return $arr;
 }
 
 function user_background_set_settings(int $userId, int $settings): void {
-    if($userId < 1) {
+    if($userId < 1)
         return;
-    }
 
     $setAttrs = \Misuzu\DB::prepare('
         UPDATE `msz_users`
@@ -109,9 +105,8 @@ define('MSZ_USER_BACKGROUND_ERROR_STORE_FAILED', 6);
 define('MSZ_USER_BACKGROUND_ERROR_FILE_NOT_FOUND', 7);
 
 function user_background_set_from_path(int $userId, string $path, array $options = []): int {
-    if(!file_exists($path)) {
+    if(!file_exists($path))
         return MSZ_USER_BACKGROUND_ERROR_FILE_NOT_FOUND;
-    }
 
     $options = array_merge(user_background_default_options(), $options);
 
@@ -121,22 +116,18 @@ function user_background_set_from_path(int $userId, string $path, array $options
     if($imageInfo === false
         || count($imageInfo) < 3
         || $imageInfo[0] < 1
-        || $imageInfo[1] < 1) {
+        || $imageInfo[1] < 1)
         return MSZ_USER_BACKGROUND_ERROR_INVALID_IMAGE;
-    }
 
-    if(!user_background_is_allowed_type($imageInfo[2])) {
+    if(!user_background_is_allowed_type($imageInfo[2]))
         return MSZ_USER_BACKGROUND_ERROR_PROHIBITED_TYPE;
-    }
 
     if($imageInfo[0] > $options['max_width']
-        || $imageInfo[1] > $options['max_height']) {
+        || $imageInfo[1] > $options['max_height'])
         return MSZ_USER_BACKGROUND_ERROR_DIMENSIONS_TOO_LARGE;
-    }
 
-    if(filesize($path) > $options['max_size']) {
+    if(filesize($path) > $options['max_size'])
         return MSZ_USER_BACKGROUND_ERROR_DATA_TOO_LARGE;
-    }
 
     user_background_delete($userId);
 
@@ -145,9 +136,8 @@ function user_background_set_from_path(int $userId, string $path, array $options
     mkdirs($storageDir, true);
     $backgroundPath = "{$storageDir}/{$fileName}";
 
-    if(!copy($path, $backgroundPath)) {
+    if(!copy($path, $backgroundPath))
         return MSZ_USER_BACKGROUND_ERROR_STORE_FAILED;
-    }
 
     return MSZ_USER_BACKGROUND_NO_ERRORS;
 }
@@ -155,9 +145,8 @@ function user_background_set_from_path(int $userId, string $path, array $options
 function user_background_set_from_data(int $userId, string $data, array $options = []): int {
     $tmp = tempnam(sys_get_temp_dir(), 'msz');
 
-    if($tmp === false || !file_exists($tmp)) {
+    if($tmp === false || !file_exists($tmp))
         return MSZ_USER_BACKGROUND_ERROR_TMP_FAILED;
-    }
 
     chmod($tmp, 644);
     file_put_contents($tmp, $data);
