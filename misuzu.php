@@ -138,6 +138,15 @@ if(!mb_check_encoding()) {
 
 ob_start();
 
+if(file_exists(MSZ_ROOT . '/.migrating')) {
+    http_response_code(503);
+    if(!isset($_GET['_check'])) {
+        header('Content-Type: text/html; charset-utf-8');
+        echo file_get_contents(MSZ_ROOT . '/templates/503.html');
+    }
+    exit;
+}
+
 if(!is_readable(MSZ_STORAGE) || !is_writable(MSZ_STORAGE)) {
     echo 'Cannot access storage directory.';
     exit;
@@ -160,15 +169,6 @@ Template::set('globals', [
 ]);
 
 Template::addPath(MSZ_ROOT . '/templates');
-
-if(file_exists(MSZ_ROOT . '/.migrating')) {
-    http_response_code(503);
-    if(!isset($_GET['_check'])) {
-        header('Content-Type: text/html; charset-utf-8');
-        echo file_get_contents(MSZ_ROOT . '/templates/503.html');
-    }
-    exit;
-}
 
 if(isset($_COOKIE['msz_uid']) && isset($_COOKIE['msz_sid'])) {
     $authToken = (new AuthToken)
