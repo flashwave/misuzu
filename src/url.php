@@ -24,7 +24,7 @@ define('MSZ_URLS', [
     'auth-resolve-user'                 => ['/auth/login.php',                  ['resolve_user' => '<username>']],
     'auth-two-factor'                   => ['/auth/twofactor.php',              ['token' => '<token>']],
 
-    'changelog-index'                   => ['/changelog',                       ['date' => '<date>', 'user' => '<user>', 'tags' => '<tags>']],
+    'changelog-index'                   => ['/changelog',                       ['date' => '<date>', 'user' => '<user>', 'tags' => '<tags>', 'p' => '<page>']],
     'changelog-feed-rss'                => ['/changelog.rss'],
     'changelog-feed-atom'               => ['/changelog.atom'],
     'changelog-change'                  => ['/changelog/change/<change>'],

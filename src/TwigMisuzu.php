@@ -18,7 +18,6 @@ final class TwigMisuzu extends Twig_Extension {
             new Twig_Filter('perms_check', 'perms_check'),
             new Twig_Filter('bg_settings', 'user_background_settings_strings'),
             new Twig_Filter('clamp', 'clamp'),
-            new Twig_Filter('as_platform', fn(string $userAgent) => (new \WhichBrowser\Parser($userAgent))->toString()),
         ];
     }
 

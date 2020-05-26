@@ -8,10 +8,10 @@
 {% set title = 'Changelog' %}
 {% set changelog_date_fmt = changelog_date|default(false) ? changelog_date|date('Y-m-d') : '' %}
 
-{% set canonical_url = url_construct(url('changelog-index'), {
-    'd': changelog_date_fmt,
-    'u': changelog_user.id|default(0),
-    'p': changelog_pagination.page,
+{% set canonical_url = url('changelog-index', {
+    'date': changelog_date_fmt,
+    'user': changelog_user.id|default(0),
+    'page': changelog_pagination.page < 2 ? 0 : changelog_pagination.page,
 }) %}
 
 {% if is_date or is_user %}
