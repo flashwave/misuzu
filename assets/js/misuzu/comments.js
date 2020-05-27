@@ -14,7 +14,7 @@ Misuzu.Comments.init = function() {
 
     var commentInputs = document.getElementsByClassName('comment__text--input');
     for(var i = 0; i < commentInputs.length; ++i) {
-        commentInputs[i].form.action = '';
+        commentInputs[i].form.action = 'javascript:void(0);';
         commentInputs[i].form.addEventListener('submit', Misuzu.Comments.postCommentHandler);
         commentInputs[i].addEventListener('keydown', Misuzu.Comments.inputCommentHandler);
     }
