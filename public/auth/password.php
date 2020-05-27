@@ -63,7 +63,7 @@ while($canResetPassword) {
         }
 
         if(user_password_set($userId, $passwordNew)) {
-            AuditLog::(AuditLog::PASSWORD_RESET, [], User::byId($userId));
+            AuditLog::create(AuditLog::PASSWORD_RESET, [], User::byId($userId));
         } else {
             throw new UnexpectedValueException('Password reset failed.');
         }
