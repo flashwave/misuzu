@@ -9,7 +9,11 @@ class CommandArgs {
     }
 
     public function getArgs(): array {
-        return $this->args;
+        return array_slice($this->args, 2);
+    }
+
+    public function getArgCount(): int {
+        return count($this->args) - 2;
     }
 
     public function getCommand(): string {

@@ -33,7 +33,7 @@ MIG;
     }
 
     public function dispatch(CommandArgs $args): void {
-        $name = trim($args->getArg(0));
+        $name = str_replace(' ', '_', implode(' ', $args->getArgs()));
 
         if(empty($name)) {
             echo 'Specify a migration name.' . PHP_EOL;
