@@ -5,6 +5,7 @@ use UnexpectedValueException;
 use Misuzu\AuditLog;
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
 use Misuzu\Users\UserLoginAttempt;
 use Misuzu\Users\UserSession;
 
@@ -20,12 +21,14 @@ $forgot = !empty($_POST['forgot']) && is_array($_POST['forgot']) ? $_POST['forgo
 $userId = !empty($reset['user']) ? (int)$reset['user'] : (
     !empty($_GET['user']) ? (int)$_GET['user'] : 0
 );
-$username = $userId > 0 ? user_username_from_id($userId) : '';
 
-if($userId > 0 && empty($username)) {
-    url_redirect('auth-forgot');
-    return;
-}
+if($userId > 0)
+    try {
+        $userInfo = User::byId($userId);
+    } catch(UserNotFoundException $ex) {
+        url_redirect('auth-forgot');
+        return;
+    }
 
 $notices = [];
 $siteIsPrivate = Config::get('private.enable', Config::TYPE_BOOL);
@@ -57,18 +60,16 @@ while($canResetPassword) {
             break;
         }
 
-        if(user_validate_password($passwordNew) !== '') {
+        if(User::validatePassword($passwordNew) !== '') {
             $notices[] = 'Your password is too weak!';
             break;
         }
 
-        if(user_password_set($userId, $passwordNew)) {
-            AuditLog::create(AuditLog::PASSWORD_RESET, [], User::byId($userId));
-        } else {
-            throw new UnexpectedValueException('Password reset failed.');
-        }
+        $userInfo->setPassword($passwordNew);
+        AuditLog::create(AuditLog::PASSWORD_RESET, [], $userInfo);
 
         // disable two factor auth to prevent getting locked out of account entirely
+        // this behaviour should really be replaced with recovery keys...
         user_totp_update($userId, null);
 
         user_recovery_token_invalidate($userId, $verificationCode);
@@ -93,49 +94,52 @@ while($canResetPassword) {
             break;
         }
 
-        $forgotUser = user_find_for_reset($forgot['email']);
+        try {
+            $forgotUser = User::byEMailAddress($forgot['email']);
+        } catch(UserNotFoundException $ex) {
+            unset($forgotUser);
+        }
 
-        if(empty($forgotUser)) {
+        if(empty($forgotUser) || $forgotUser->isDeleted()) {
             $notices[] = "This e-mail address is not registered with us.";
             break;
         }
 
-        if(!user_recovery_token_sent($forgotUser['user_id'], $ipAddress)) {
-            $verificationCode = user_recovery_token_create($forgotUser['user_id'], $ipAddress);
+        if(!user_recovery_token_sent($forgotUser->getId(), $ipAddress)) {
+            $verificationCode = user_recovery_token_create($forgotUser->getId(), $ipAddress);
 
             if(empty($verificationCode)) {
                 throw new UnexpectedValueException('A verification code failed to insert.');
             }
 
             $recoveryMessage = Mailer::template('password-recovery', [
-                'username' => $forgotUser['username'],
+                'username' => $forgotUser->getUsername(),
                 'token' => $verificationCode,
             ]);
 
             $recoveryMail = Mailer::sendMessage(
-                [$forgotUser['email'] => $forgotUser['username']],
+                [$forgotUser->getEMailAddress() => $forgotUser->getUsername()],
                 $recoveryMessage['subject'], $recoveryMessage['message']
             );
 
             if(!$recoveryMail) {
                 $notices[] = "Failed to send reset email, please contact the administrator.";
-                user_recovery_token_invalidate($forgotUser['user_id'], $verificationCode);
+                user_recovery_token_invalidate($forgotUser->getId(), $verificationCode);
                 break;
             }
         }
 
-        url_redirect('auth-reset', ['user' => $forgotUser['user_id']]);
+        url_redirect('auth-reset', ['user' => $forgotUser->getId()]);
         return;
     }
 
     break;
 }
 
-Template::render($userId > 0 ? 'auth.password_reset' : 'auth.password_forgot', [
+Template::render(isset($userInfo) ? 'auth.password_reset' : 'auth.password_forgot', [
     'password_notices' => $notices,
     'password_email' => !empty($forget['email']) && is_string($forget['email']) ? $forget['email'] : '',
     'password_attempts_remaining' => $remainingAttempts,
-    'password_user_id' => $userId,
-    'password_username' => $username,
+    'password_user' => $userInfo ?? null,
     'password_verification' => $verificationCode ?? '',
 ]);

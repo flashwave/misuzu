@@ -111,15 +111,14 @@ if(CSRF::validateRequest() && $canEdit) {
             $setUserInfo['display_role'] = $displayRole;
         }
 
-        $usernameValidation = user_validate_username($setUserInfo['username']);
-        $emailValidation = user_validate_email($setUserInfo['email']);
+        $usernameValidation = User::validateUsername($setUserInfo['username']);
+        $emailValidation = User::validateEMailAddress($setUserInfo['email']);
         $countryValidation = strlen($setUserInfo['user_country']) === 2
             && ctype_alpha($setUserInfo['user_country'])
             && ctype_upper($setUserInfo['user_country']);
 
-        if(!empty($usernameValidation)) {
-            $notices[] = MSZ_USER_USERNAME_VALIDATION_STRINGS[$usernameValidation];
-        }
+        if(!empty($usernameValidation))
+            $notices[] = User::usernameValidationErrorString($usernameValidation);
 
         if(!empty($emailValidation)) {
             $notices[] = $emailValidation === 'in-use'
@@ -163,10 +162,10 @@ if(CSRF::validateRequest() && $canEdit) {
         if(!empty($passwordNewValue)) {
             if($passwordNewValue !== $passwordConfirmValue) {
                 $notices[] = 'Confirm password does not match.';
-            } elseif(!empty(user_validate_password($passwordNewValue))) {
+            } elseif(!empty(User::validatePassword($passwordNewValue))) {
                 $notices[] = 'New password is too weak.';
             } else {
-                $setUserInfo['password'] = user_password_hash($passwordNewValue);
+                $setUserInfo['password'] = User::hashPassword($passwordNewValue);
             }
         }
     }

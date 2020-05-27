@@ -17,7 +17,6 @@ if(!UserSession::hasCurrent()) {
 $errors = [];
 $currentUser = User::getCurrent();
 $currentUserId = $currentUser->getId();
-$currentEmail = user_email_get($currentUserId);
 $isRestricted = user_warning_check_restriction($currentUserId);
 $twoFactorInfo = user_totp_info($currentUserId);
 $isVerifiedRequest = CSRF::validateRequest();
@@ -77,10 +76,10 @@ if($isVerifiedRequest && !empty($_POST['current_password'])) {
         if(!empty($_POST['email']['new'])) {
             if(empty($_POST['email']['confirm']) || $_POST['email']['new'] !== $_POST['email']['confirm']) {
                 $errors[] = 'The addresses you entered did not match each other.';
-            } elseif($currentEmail === mb_strtolower($_POST['email']['confirm'])) {
+            } elseif($currentUser->getEMailAddress() === mb_strtolower($_POST['email']['confirm'])) {
                 $errors[] = 'This is already your e-mail address!';
             } else {
-                $checkMail = user_validate_email($_POST['email']['new'], true);
+                $checkMail = User::validateEMailAddress($_POST['email']['new'], true);
 
                 if($checkMail !== '') {
                     switch($checkMail) {
@@ -113,12 +112,12 @@ if($isVerifiedRequest && !empty($_POST['current_password'])) {
             if(empty($_POST['password']['confirm']) || $_POST['password']['new'] !== $_POST['password']['confirm']) {
                 $errors[] = 'The new passwords you entered did not match each other.';
             } else {
-                $checkPassword = user_validate_password($_POST['password']['new']);
+                $checkPassword = User::validatePassword($_POST['password']['new']);
 
                 if($checkPassword !== '') {
                     $errors[] = 'The given passwords was too weak.';
                 } else {
-                    user_password_set($currentUserId, $_POST['password']['new']);
+                    $currentUser->setPassword($_POST['password']['new']);
                     AuditLog::create(AuditLog::PERSONAL_PASSWORD_CHANGE);
                 }
             }
@@ -130,7 +129,7 @@ $userRoles = user_role_all_user($currentUserId);
 
 Template::render('settings.account', [
     'errors' => $errors,
-    'current_email' => $currentEmail,
+    'current_email' => $currentUser->getEMailAddress(),
     'user_roles' => $userRoles,
     'user_display_role' => user_role_get_display($currentUserId),
     'is_restricted' => $isRestricted,

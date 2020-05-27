@@ -11,6 +11,16 @@ class UserException extends UsersException {} // this naming definitely won't le
 class UserNotFoundException extends UserException {}
 
 class User {
+    public const NAME_MIN_LENGTH =  3;               // Minimum username length
+    public const NAME_MAX_LENGTH = 16;               // Maximum username length, unless your name is Flappyzor(WorldwideOnline2018through2019through2020)
+    public const NAME_REGEX      = '[A-Za-z0-9-_]+'; // Username character constraint
+
+    // Minimum amount of unique characters for passwords
+    public const PASSWORD_UNIQUE = 6;
+
+    // Password hashing algorithm
+    public const PASSWORD_ALGO = PASSWORD_ARGON2ID;
+
     // Database fields
     // TODO: update all references to use getters and setters and mark all of these as private
     public $user_id = -1;
@@ -39,6 +49,20 @@ class User {
 
     private $totp = null;
 
+    public const TABLE = 'users';
+    private const QUERY_SELECT = 'SELECT %1$s FROM `' . DB::PREFIX . self::TABLE . '` AS '. self::TABLE;
+    private const SELECT = '%1$s.`user_id`, %1$s.`username`, %1$s.`password`, %1$s.`email`, %1$s.`user_super`, %1$s.`user_title`, '
+                         . ', %1$s.`user_country`, %1$s.`user_colour`, %1$s.`display_role`, %1$s.`user_totp_key`'
+                         . ', %1$s.`user_about_content`, %1$s.`user_about_parser`'
+                         . ', %1$s.`user_signature_content`, %1$s.`user_signature_parser`'
+                         . ', %1$s.`user_birthdate`, %1$s.`user_background_settings`'
+                         . ', INET6_NTOA(%1$s.`register_ip`) AS `register_ip`'
+                         . ', INET6_NTOA(%1$s.`last_ip`) AS `last_ip`'
+                         . ', UNIX_TIMESTAMP(%1$s.`user_created`) AS `user_created`'
+                         . ', UNIX_TIMESTAMP(%1$s.`user_active`) AS `user_active`'
+                         . ', UNIX_TIMESTAMP(%1$s.`user_deleted`) AS `user_deleted`';
+
+    // Stop using this one and use the one above
     private const USER_SELECT = '
         SELECT u.`user_id`, u.`username`, u.`password`, u.`email`, u.`user_super`, u.`user_title`,
                u.`user_country`, u.`user_colour`, u.`display_role`, u.`user_totp_key`,
@@ -79,6 +103,14 @@ class User {
         return $this->email;
     }
 
+    public function getRegisterRemoteAddress(): string {
+        return $this->register_ip;
+    }
+
+    public function getLastRemoteAddress(): string {
+        return $this->last_ip;
+    }
+
     public function getHierarchy(): int {
         return ($userId = $this->getId()) < 1 ? 0 : user_get_hierarchy($userId);
     }
@@ -90,15 +122,12 @@ class User {
         return $this->hasPassword() && password_verify($password, $this->password);
     }
     public function passwordNeedsRehash(): bool {
-        return password_needs_rehash($this->password, MSZ_USERS_PASSWORD_HASH_ALGO);
+        return password_needs_rehash($this->password, self::PASSWORD_ALGO);
     }
     public function setPassword(string $password): void {
-        if(($userId = $this->getId()) < 1)
-            return;
-
         DB::prepare('UPDATE `msz_users` SET `password` = :password WHERE `user_id` = :user_id')
-            ->bind('password', password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO))
-            ->bind('user_id', $userId)
+            ->bind('password', $this->password = self::hashPassword($password))
+            ->bind('user_id', $this->getId())
             ->execute();
     }
 
@@ -180,6 +209,79 @@ class User {
         return self::$localUser !== null;
     }
 
+    public static function validateUsername(string $name): string {
+        if($name !== trim($name))
+            return 'trim';
+
+        $length = mb_strlen($name);
+        if($length < self::NAME_MIN_LENGTH)
+            return 'short';
+        if($length > self::NAME_MAX_LENGTH)
+            return 'long';
+
+        if(!preg_match('#^' . self::NAME_REGEX . '$#u', $name))
+            return 'invalid';
+
+        $userId = (int)DB::prepare(
+            'SELECT `user_id`'
+            . ' FROM `' . DB::PREFIX . self::TABLE . '`'
+            . ' WHERE LOWER(`username`) = LOWER(:username)'
+        )   ->bind('username', $name)
+            ->fetchColumn();
+        if($userId > 0)
+            return 'in-use';
+
+        return '';
+    }
+
+    public static function usernameValidationErrorString(string $error): string {
+        switch($error) {
+            case 'trim':
+                return 'Your username may not start or end with spaces!';
+            case 'short':
+                return sprintf('Your username is too short, it has to be at least %d characters!', self::NAME_MIN_LENGTH);
+            case 'long':
+                return sprintf("Your username is too long, it can't be longer than %d characters!", self::NAME_MAX_LENGTH);
+            case 'invalid':
+                return 'Your username contains invalid characters.';
+            case 'in-use':
+                return 'This username is already taken!';
+            case '':
+                return 'This username is correctly formatted!';
+            default:
+                return 'This username is incorrectly formatted.';
+        }
+    }
+
+    public static function validateEMailAddress(string $address): string {
+        if(filter_var($address, FILTER_VALIDATE_EMAIL) === false)
+            return 'format';
+        if(!checkdnsrr(mb_substr(mb_strstr($address, '@'), 1), 'MX'))
+            return 'dns';
+
+        $userId = (int)DB::prepare(
+            'SELECT `user_id`'
+            . ' FROM `' . DB::PREFIX . self::TABLE . '`'
+            . ' WHERE LOWER(`email`) = LOWER(:email)'
+        )   ->bind('email', $address)
+            ->fetchColumn();
+        if($userId > 0)
+            return 'in-use';
+
+        return '';
+    }
+
+    public static function validatePassword(string $password): string {
+        if(unique_chars($password) < self::PASSWORD_UNIQUE)
+            return 'weak';
+
+        return '';
+    }
+
+    public static function hashPassword(string $password): string {
+        return password_hash($password, self::PASSWORD_ALGO);
+    }
+
     public static function create(
         string $username,
         string $password,
@@ -196,7 +298,7 @@ class User {
             )
         ')  ->bind('username', $username)->bind('email', $email)
             ->bind('register_ip', $ipAddress)->bind('last_ip', $ipAddress)
-            ->bind('password', user_password_hash($password))
+            ->bind('password', self::hashPassword($password))
             ->bind('user_country', IPAddress::country($ipAddress))
             ->executeGetId();
 
@@ -217,7 +319,20 @@ class User {
         return self::getMemoizer()->find($userId, function() use ($userId) {
             $user = DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id')
                 ->bind('user_id', $userId)
-                ->fetchObject(User::class);
+                ->fetchObject(self::class);
+            if(!$user)
+                throw new UserNotFoundException;
+            return $user;
+        });
+    }
+    public static function byEMailAddress(string $address): ?self {
+        $address = mb_strtolower($address);
+        return self::getMemoizer()->find(function($user) use ($address) {
+            return $user->getEmailAddress() === $address;
+        }, function() use ($address) {
+            $user = DB::prepare(self::USER_SELECT . 'WHERE LOWER(`email`) = :email')
+                ->bind('email', $address)
+                ->fetchObject(self::class);
             if(!$user)
                 throw new UserNotFoundException;
             return $user;
@@ -232,7 +347,7 @@ class User {
             $user = DB::prepare(self::USER_SELECT . 'WHERE LOWER(`email`) = LOWER(:email) OR LOWER(`username`) = LOWER(:username)')
                 ->bind('email', $usernameOrEmail)
                 ->bind('username', $usernameOrEmail)
-                ->fetchObject(User::class);
+                ->fetchObject(self::class);
             if(!$user)
                 throw new UserNotFoundException;
             return $user;
@@ -246,7 +361,7 @@ class User {
             $user = DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id OR LOWER(`username`) = LOWER(:username)')
                 ->bind('user_id', (int)$userIdOrName)
                 ->bind('username', (string)$userIdOrName)
-                ->fetchObject(User::class);
+                ->fetchObject(self::class);
             if(!$user)
                 throw new UserNotFoundException;
             return $user;

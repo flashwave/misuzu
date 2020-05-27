@@ -5,7 +5,7 @@ use Misuzu\DB;
 use Misuzu\Users\User;
 
 class CommentsParser {
-    private const MARKUP_USERNAME = '#\B(?:@{1}(' . MSZ_USERNAME_REGEX . '))#u';
+    private const MARKUP_USERNAME = '#\B(?:@{1}(' . User::NAME_REGEX . '))#u';
     private const MARKUP_USERID = '#\B(?:@{2}([0-9]+))#u';
 
     public static function parseForStorage(string $text): string {

@@ -3,43 +3,6 @@
 // Never ever EVER use it for ANYTHING other than determining display colours, there's a small chance that it might not be accurate.
 // And even if it were, roles properties are aggregated and thus must all be accounted for.
 
-define(
-    'MSZ_USERS_PASSWORD_HASH_ALGO',
-    defined('PASSWORD_ARGON2ID')
-    ? PASSWORD_ARGON2ID
-    : (
-        defined('PASSWORD_ARGON2I')
-        ? PASSWORD_ARGON2I
-        : PASSWORD_BCRYPT
-    )
-);
-
-function user_find_for_reset(string $email): array {
-    $getUser = \Misuzu\DB::prepare('
-        SELECT `user_id`, `username`, `email`
-        FROM `msz_users`
-        WHERE LOWER(`email`) = LOWER(:email)
-        AND `user_deleted` IS NULL
-    ');
-    $getUser->bind('email', $email);
-    return $getUser->fetch();
-}
-
-function user_password_hash(string $password): string {
-    return password_hash($password, MSZ_USERS_PASSWORD_HASH_ALGO);
-}
-
-function user_password_set(int $userId, string $password): bool {
-    $updatePassword = \Misuzu\DB::prepare('
-        UPDATE `msz_users`
-        SET `password` = :password
-        WHERE `user_id` = :user
-    ');
-    $updatePassword->bind('user', $userId);
-    $updatePassword->bind('password', user_password_hash($password));
-    return $updatePassword->execute();
-}
-
 function user_totp_info(int $userId): array {
     if($userId < 1)
         return [];
@@ -70,19 +33,6 @@ function user_totp_update(int $userId, ?string $key): void {
     $updateTotpKey->bind('user_id', $userId);
     $updateTotpKey->bind('key', $key);
     $updateTotpKey->execute();
-}
-
-function user_email_get(int $userId): string {
-    if($userId < 1)
-        return '';
-
-    $fetchMail = \Misuzu\DB::prepare('
-        SELECT `email`
-        FROM `msz_users`
-        WHERE `user_id` = :user_id
-    ');
-    $fetchMail->bind('user_id', $userId);
-    return (string)$fetchMail->fetchColumn(0, '');
 }
 
 function user_email_set(int $userId, string $email): bool {

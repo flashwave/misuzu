@@ -48,12 +48,12 @@ while(!$restricted && !empty($register)) {
         break;
     }
 
-    $usernameValidation = user_validate_username($register['username'], true);
+    $usernameValidation = User::validateUsername($register['username']);
     if($usernameValidation !== '') {
-        $notices[] = MSZ_USER_USERNAME_VALIDATION_STRINGS[$usernameValidation];
+        $notices[] = User::usernameValidationErrorString($usernameValidation);
     }
 
-    $emailValidation = user_validate_email($register['email'], true);
+    $emailValidation = User::validateEMailAddress($register['email']);
     if($emailValidation !== '') {
         $notices[] = $emailValidation === 'in-use'
             ? 'This e-mail address has already been used!'
@@ -64,7 +64,7 @@ while(!$restricted && !empty($register)) {
         $notices[] = 'The given passwords don\'t match.';
     }
 
-    if(user_validate_password($register['password']) !== '') {
+    if(User::validatePassword($register['password']) !== '') {
         $notices[] = 'Your password is too weak!';
     }
 
