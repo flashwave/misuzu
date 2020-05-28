@@ -2,8 +2,6 @@
 namespace Misuzu;
 
 use PDO;
-use Misuzu\Database\Database;
-use Misuzu\Database\DatabaseMigrationManager;
 use Misuzu\Net\GeoIP;
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
@@ -80,7 +78,6 @@ require_once 'src/Forum/poll.php';
 require_once 'src/Forum/post.php';
 require_once 'src/Forum/topic.php';
 require_once 'src/Forum/validate.php';
-require_once 'src/Users/auth.php';
 require_once 'src/Users/avatar.php';
 require_once 'src/Users/background.php';
 require_once 'src/Users/recovery.php';

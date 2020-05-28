@@ -6,6 +6,8 @@ use Misuzu\Users\User;
 use Misuzu\Users\UserLoginAttempt;
 use Misuzu\Users\UserSession;
 use Misuzu\Users\UserSessionCreationFailedException;
+use Misuzu\Users\UserAuthSession;
+use Misuzu\Users\UserAuthSessionNotFoundException;
 
 require_once '../../misuzu.php';
 
@@ -18,13 +20,21 @@ $twofactor = !empty($_POST['twofactor']) && is_array($_POST['twofactor']) ? $_PO
 $notices = [];
 $ipAddress = IPAddress::remote();
 $remainingAttempts = UserLoginAttempt::remaining();
-$tokenInfo = user_auth_tfa_token_info(
-    !empty($_GET['token']) && is_string($_GET['token']) ? $_GET['token'] : (
-        !empty($twofactor['token']) && is_string($twofactor['token']) ? $twofactor['token'] : ''
-    )
-);
 
-$userInfo = User::byId($tokenInfo['user_id']);
+try {
+    $tokenInfo = UserAuthSession::byToken(
+        !empty($_GET['token']) && is_string($_GET['token']) ? $_GET['token'] : (
+            !empty($twofactor['token']) && is_string($twofactor['token']) ? $twofactor['token'] : ''
+        )
+    );
+} catch(UserAuthSessionNotFoundException $ex) {}
+
+if(empty($tokenInfo) || $tokenInfo->hasExpired()) {
+    url_redirect('auth-login');
+    return;
+}
+
+$userInfo = $tokenInfo->getUser();
 
 // checking user_totp_key specifically because there's a fringe chance that
 //  there's a token present, but totp is actually disabled
@@ -63,7 +73,7 @@ while(!empty($twofactor)) {
     }
 
     UserLoginAttempt::create(true, $userInfo);
-    user_auth_tfa_token_invalidate($tokenInfo['tfa_token']);
+    $tokenInfo->delete();
 
     try {
         $sessionInfo = UserSession::create($userInfo);
@@ -88,5 +98,5 @@ Template::render('auth.twofactor', [
     'twofactor_notices' => $notices,
     'twofactor_redirect' => !empty($_GET['redirect']) && is_string($_GET['redirect']) ? $_GET['redirect'] : url('index'),
     'twofactor_attempts_remaining' => $remainingAttempts,
-    'twofactor_token' => $tokenInfo['tfa_token'],
+    'twofactor_token' => $tokenInfo->getToken(),
 ]);

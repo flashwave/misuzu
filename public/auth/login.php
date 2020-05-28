@@ -5,6 +5,7 @@ use Misuzu\AuthToken;
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
 use Misuzu\Users\UserNotFoundException;
+use Misuzu\Users\UserAuthSession;
 use Misuzu\Users\UserLoginAttempt;
 use Misuzu\Users\UserSession;
 use Misuzu\Users\UserSessionCreationFailedException;
@@ -85,7 +86,7 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
 
     if($userInfo->hasTOTP()) {
         url_redirect('auth-two-factor', [
-            'token' => user_auth_tfa_token_create($userInfo->getId()),
+            'token' => UserAuthSession::create($userInfo)->getToken(),
         ]);
         return;
     }

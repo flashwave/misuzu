@@ -15,6 +15,7 @@ class UserChatToken {
 
     private $user = null;
 
+    public const TOKEN_WIDTH = 32;
     public const TOKEN_LIFETIME = 60 * 60 * 24 * 7;
 
     public const TABLE = 'user_chat_tokens';
@@ -56,7 +57,7 @@ class UserChatToken {
     }
 
     public static function generateToken(): string {
-        return bin2hex(random_bytes(32));
+        return bin2hex(random_bytes(self::TOKEN_WIDTH));
     }
 
     public static function create(User $user): self {

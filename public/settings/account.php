@@ -2,6 +2,7 @@
 namespace Misuzu;
 
 use Misuzu\AuditLog;
+use Misuzu\Config;
 use Misuzu\Users\User;
 use Misuzu\Users\UserSession;
 use chillerlan\QRCode\QRCode;
@@ -46,13 +47,14 @@ if(!$isRestricted && $isVerifiedRequest && !empty($_POST['role'])) {
 if($isVerifiedRequest && isset($_POST['tfa']['enable']) && (bool)$twoFactorInfo['totp_enabled'] !== (bool)$_POST['tfa']['enable']) {
     if((bool)$_POST['tfa']['enable']) {
         $tfaKey = TOTP::generateKey();
+        $tfaIssuer = Config::get('site.name', Config::TYPE_STR, 'Misuzu');
         $tfaQrcode = (new QRCode(new QROptions([
             'version'    => 5,
             'outputType' => QRCode::OUTPUT_IMAGE_JPG,
             'eccLevel'   => QRCode::ECC_L,
-        ])))->render(sprintf('otpauth://totp/Flashii:%s?%s', $twoFactorInfo['username'], http_build_query([
+        ])))->render(sprintf('otpauth://totp/%s:%s?%s', $tfaIssuer, $twoFactorInfo['username'], http_build_query([
             'secret' => $tfaKey,
-            'issuer' => 'Flashii',
+            'issuer' => $tfaIssuer,
         ])));
 
         Template::set([
