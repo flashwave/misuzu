@@ -147,7 +147,7 @@ $getUsers = DB::prepare(sprintf(
     $canManageUsers ? '' : 'AND u.`user_deleted` IS NULL',
     $orderFields[$orderBy]['column'],
     $orderDir,
-    MSZ_USER_RELATION_FOLLOW,
+    \Misuzu\Users\UserRelation::TYPE_FOLLOW,
     $usersPagination->getOffset(),
     $usersPagination->getRange()
 ));

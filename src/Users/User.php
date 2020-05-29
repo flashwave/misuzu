@@ -4,6 +4,7 @@ namespace Misuzu\Users;
 use Misuzu\Colour;
 use Misuzu\DB;
 use Misuzu\Memoizer;
+use Misuzu\Pagination;
 use Misuzu\TOTP;
 use Misuzu\Net\IPAddress;
 
@@ -92,13 +93,6 @@ class User {
         return $this->username;
     }
 
-    public function getColour(): Colour {
-        return new Colour($this->getColourRaw());
-    }
-    public function getColourRaw(): int {
-        return $this->user_colour ?? 0x40000000;
-    }
-
     public function getEmailAddress(): string {
         return $this->email;
     }
@@ -109,6 +103,38 @@ class User {
 
     public function getLastRemoteAddress(): string {
         return $this->last_ip;
+    }
+
+    public function isSuper(): bool {
+        return boolval($this->user_super);
+    }
+
+    public function hasCountry(): bool {
+        return $this->user_country !== 'XX';
+    }
+    public function getCountry(): string {
+        return $this->user_country;
+    }
+    public function getCountryName(): string {
+        return get_country_name($this->getCountry());
+    }
+
+    public function getColour(): Colour {
+        return new Colour($this->getColourRaw());
+    }
+    public function getColourRaw(): int {
+        return $this->user_colour ?? 0x40000000;
+    }
+
+    public function getCreatedTime(): int {
+        return $this->user_created === null ? -1 : $this->user_created;
+    }
+
+    public function hasBeenActive(): bool {
+        return $this->user_active !== null;
+    }
+    public function getActiveTime(): int {
+        return $this->user_active === null ? -1 : $this->user_active;
     }
 
     public function getHierarchy(): int {
@@ -171,6 +197,9 @@ class User {
         return ($this->user_background_settings & MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE) > 0;
     }
 
+    public function hasTitle(): bool {
+        return !empty($this->user_title);
+    }
     public function getTitle(): string {
         return $this->user_title;
     }
@@ -194,6 +223,82 @@ class User {
                 'can_vote' => MSZ_PERM_COMMENTS_VOTE,
             ]);
         return $this->commentPermsArray;
+    }
+
+    private $relationCache = [];
+    private $relationFollowingCount = -1;
+    private $relationFollowersCount = -1;
+
+    public function getRelation(self $other): UserRelation {
+        if(isset($this->relationCache[$other->getId()]))
+            return $this->relationCache[$other->getId()];
+        return $this->relationCache[$other->getId()] = UserRelation::byUserAndSubject($this, $other);
+    }
+    public function getRelationString(self $other): string {
+        if($other->getId() === $this->getId())
+            return 'self';
+
+        $from = $this->getRelation($other);
+        $to   = $other->getRelation($this);
+
+        if($from->isFollow() && $to->isFollow())
+            return 'mutual';
+        if($from->isFollow())
+            return 'following';
+        if($to->isFollow())
+            return 'followed';
+        return 'none';
+    }
+    public function getRelationTime(self $other): int {
+        if($other->getId() === $this->getId())
+            return -1;
+
+        $from = $this->getRelation($other);
+        $to   = $other->getRelation($this);
+
+        return max($from->getCreationTime(), $to->getCreationTime());
+    }
+    public function addFollower(self $other): void {
+        UserRelation::create($other, $this, UserRelation::TYPE_FOLLOW);
+        unset($this->relationCache[$other->getId()]);
+    }
+    public function removeRelation(self $other): void {
+        UserRelation::destroy($other, $this);
+        unset($this->relationCache[$other->getId()]);
+    }
+    public function getFollowers(?Pagination $pagination = null): array {
+        return UserRelation::bySubject($this, UserRelation::TYPE_FOLLOW, $pagination);
+    }
+    public function getFollowersCount(): int {
+        if($this->relationFollowersCount < 0)
+            $this->relationFollowersCount = UserRelation::countBySubject($this, UserRelation::TYPE_FOLLOW);
+        return $this->relationFollowersCount;
+    }
+    public function getFollowing(?Pagination $pagination = null): array {
+        return UserRelation::byUser($this, UserRelation::TYPE_FOLLOW, $pagination);
+    }
+    public function getFollowingCount(): int {
+        if($this->relationFollowingCount < 0)
+            $this->relationFollowingCount = UserRelation::countByUser($this, UserRelation::TYPE_FOLLOW);
+        return $this->relationFollowingCount;
+    }
+
+    private $forumTopicCount = -1;
+    private $forumPostCount = -1;
+
+    public function getForumTopicCount(): int {
+        if($this->forumTopicCount < 0)
+            $this->forumTopicCount = (int)DB::prepare('SELECT COUNT(*) FROM `msz_forum_topics` WHERE `user_id` = :user AND `topic_deleted` IS NULL')
+                                        ->bind('user', $this->getId())
+                                        ->fetchColumn();
+        return $this->forumTopicCount;
+    }
+    public function getForumPostCount(): int {
+        if($this->forumPostCount < 0)
+            $this->forumPostCount = (int)DB::prepare('SELECT COUNT(*) FROM `msz_forum_posts` WHERE `user_id` = :user AND `post_deleted` IS NULL')
+                                        ->bind('user', $this->getId())
+                                        ->fetchColumn();
+        return $this->forumPostCount;
     }
 
     public function setCurrent(): void {

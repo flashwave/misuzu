@@ -1,4 +1,131 @@
-{% macro user_card(user) %}
+{% macro user_card(user, current_user) %}
+    {% if user.getId is defined %}
+        {% from _self import user_card_new %}
+        {{ user_card_new(user, current_user) }}
+    {% else %}
+        {% from _self import user_card_old %}
+        {{ user_card_old(user) }}
+    {% endif %}
+{% endmacro %}
+
+{% macro user_card_new(user, current_user) %}
+    {% from 'macros.twig' import avatar %}
+
+    <div class="usercard" style="--accent-colour: {{ user.colour }}">
+        <div class="usercard__background"></div>
+
+        <div class="usercard__header">
+            <a class="usercard__header__link" href="{{ url('user-profile', {'user': user.id}) }}"></a>
+
+            <div class="usercard__header__container">
+                <div class="usercard__header__avatar">
+                    {{ avatar(user.id, 60, user.username) }}
+                </div>
+
+                <div class="usercard__header__details">
+                    <div class="usercard__header__username">
+                        {{ user.username }}
+                    </div>
+
+                    {% if user.hasTitle %}
+                        <div class="usercard__header__title">
+                            {{ user.title }}
+                        </div>
+                    {% endif %}
+
+                    {% if user.hasCountry %}
+                        <div class="usercard__header__country">
+                            <div class="flag flag--{{ user.country|lower }}"></div>
+                            <div class="usercard__header__country__name">
+                                {{ user.countryName }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="usercard__container">
+            <div class="usercard__stats">
+                {% if user.followingCount > 0 %}
+                    <a class="usercard__stat" href="{{ url('user-profile-following', {'user': user.id}) }}">
+                        <div class="usercard__stat__name">
+                            Following
+                        </div>
+                        <div class="usercard__stat__value">
+                            {{ user.followingCount|number_format }}
+                        </div>
+                    </a>
+                {% endif %}
+
+                {% if user.followersCount > 0 %}
+                    <a class="usercard__stat" href="{{ url('user-profile-followers', {'user': user.id}) }}">
+                        <div class="usercard__stat__name">
+                            Followers
+                        </div>
+                        <div class="usercard__stat__value">
+                            {{ user.followersCount|number_format }}
+                        </div>
+                    </a>
+                {% endif %}
+
+                {% if user.forumTopicCount > 0 %}
+                    <a class="usercard__stat" href="{{ url('user-profile-forum-topics', {'user': user.id}) }}">
+                        <div class="usercard__stat__name">
+                            Topics
+                        </div>
+                        <div class="usercard__stat__value">
+                            {{ user.forumTopicCount|number_format }}
+                        </div>
+                    </a>
+                {% endif %}
+
+                {% if user.forumPostCount > 0 %}
+                    <a class="usercard__stat" href="{{ url('user-profile-forum-posts', {'user': user.id}) }}">
+                        <div class="usercard__stat__name">
+                            Posts
+                        </div>
+                        <div class="usercard__stat__value">
+                            {{ user.forumPostCount|number_format }}
+                        </div>
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="usercard__dates">
+                <div class="usercard__date" title="{{ user.createdTime|date('r') }}">
+                    Joined <time datetime="{{ user.createdTime|date('c') }}">{{ user.createdTime|time_diff }}</time>
+                </div>
+
+                {% if user.hasBeenActive %}
+                    <div class="usercard__date" title="{{ user.activeTime|date('r') }}">
+                        Last seen <time datetime="{{ user.activeTime|date('c') }}">{{ user.activeTime|time_diff }}</time>
+                    </div>
+                {% else %}
+                    <div class="usercard__date">
+                        Never logged in
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="usercard__actions">
+                <a class="usercard__action" href="{{ url('user-profile', {'user': user.id}) }}" title="View Profile">
+                    <i class="fas fa-user"></i>
+                </a>
+
+                {% if current_user is not null %}
+                    {% set is_following = current_user.relationString(user) in ['mutual', 'following'] %}
+                    <a class="usercard__action js-user-relation-action" href="{{ url('user-relation-follow', {'user': user.id}) }}" title="{{ is_following ? 'Unfollow' : 'Follow' }}"
+                         data-relation-user="{{ user.id }}" data-relation-type="{{ is_following ? 0 : 1 }}">
+                        <i class="fas fa-user-{{ is_following ? 'minus' : 'plus' }}"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro user_card_old(user) %}
     {% from 'macros.twig' import avatar %}
 
     <div class="usercard"{% if user.user_colour is defined %} style="{{ user.user_colour|html_colour('--accent-colour') }}"{% endif %}>
@@ -111,7 +238,7 @@
                     {% set is_following = user.user_is_following|default(false) %}
 
                     <a class="usercard__action js-user-relation-action" href="{{ url('user-relation-follow', {'user': user.user_id}) }}" title="{{ is_following ? 'Unfollow' : 'Follow' }}"
-                         data-relation-user="{{ user.user_id }}" data-relation-type="{{ constant(is_following ? 'MSZ_USER_RELATION_NONE' : 'MSZ_USER_RELATION_FOLLOW') }}">
+                         data-relation-user="{{ user.user_id }}" data-relation-type="{{ is_following ? 0 : 1 }}">
                         <i class="fas fa-user-{{ is_following ? 'minus' : 'plus' }}"></i>
                     </a>
                 {% endif %}

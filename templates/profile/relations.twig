@@ -9,7 +9,7 @@
         <div class="profile__relations">
             {% for user in profile_users %}
                 <div class="profile__relations__user">
-                    {{ user_card(user) }}
+                    {{ user_card(attribute(user, relation_prop), profile_viewer) }}
                 </div>
             {% endfor %}
         </div>

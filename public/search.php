@@ -65,7 +65,7 @@ if(!empty($searchQuery)) {
             WHERE LOWER(u.`username`) LIKE CONCAT("%%", LOWER(:query), "%%")
             GROUP BY u.`user_id`
         ',
-        MSZ_USER_RELATION_FOLLOW
+        \Misuzu\Users\UserRelation::TYPE_FOLLOW
     ));
     $findUsers->bind('query', $searchQuery);
     $findUsers->bind('current_user_id', User::hasCurrent() ? User::getCurrent()->getId() : 0);

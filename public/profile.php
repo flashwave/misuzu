@@ -297,11 +297,7 @@ $profileStats = DB::prepare(sprintf('
     ) AS `following_count`
     FROM `msz_users` AS u
     WHERE `user_id` = :user_id
-', MSZ_USER_RELATION_FOLLOW))->bind('user_id', $profileUser->getId())->fetch();
-
-$relationInfo = UserSession::hasCurrent()
-    ? user_relation_info($currentUserId, $profileUser->getId())
-    : [];
+', \Misuzu\Users\UserRelation::TYPE_FOLLOW))->bind('user_id', $profileUser->getId())->fetch();
 
 $backgroundPath = sprintf('%s/backgrounds/original/%d.msz', MSZ_STORAGE, $profileUser->getId());
 
@@ -325,49 +321,37 @@ switch($profileMode) {
 
     case 'following':
         $template = 'profile.relations';
-        $followingCount = user_relation_count_from($profileUser->getId(), MSZ_USER_RELATION_FOLLOW);
-        $followingPagination = new Pagination($followingCount, MSZ_USER_RELATION_FOLLOW_PER_PAGE);
+        $pagination = new Pagination($profileUser->getFollowingCount(), 15);
 
-        if(!$followingPagination->hasValidOffset()) {
+        if(!$pagination->hasValidOffset()) {
             echo render_error(404);
             return;
         }
 
-        $following = user_relation_users_from(
-            $profileUser->getId(), MSZ_USER_RELATION_FOLLOW,
-            $followingPagination->getRange(), $followingPagination->getOffset(),
-            $currentUserId
-        );
-
         Template::set([
             'title' => $profileUser->getUsername() . ' / following',
             'canonical_url' => url('user-profile-following', ['user' => $profileUser->getId()]),
-            'profile_users' => $following,
-            'profile_relation_pagination' => $followingPagination,
+            'profile_users' => $profileUser->getFollowing($pagination),
+            'profile_relation_pagination' => $pagination,
+            'relation_prop' => 'subject',
         ]);
         break;
 
     case 'followers':
         $template = 'profile.relations';
-        $followerCount = user_relation_count_to($profileUser->getId(), MSZ_USER_RELATION_FOLLOW);
-        $followerPagination = new Pagination($followerCount, MSZ_USER_RELATION_FOLLOW_PER_PAGE);
+        $pagination = new Pagination($profileUser->getFollowersCount(), 15);
 
-        if(!$followerPagination->hasValidOffset()) {
+        if(!$pagination->hasValidOffset()) {
             echo render_error(404);
             return;
         }
 
-        $followers = user_relation_users_to(
-            $profileUser->getId(), MSZ_USER_RELATION_FOLLOW,
-            $followerPagination->getRange(), $followerPagination->getOffset(),
-            $currentUserId
-        );
-
         Template::set([
             'title' => $profileUser->getUsername() . ' / followers',
             'canonical_url' => url('user-profile-followers', ['user' => $profileUser->getId()]),
-            'profile_users' => $followers,
-            'profile_relation_pagination' => $followerPagination,
+            'profile_users' => $profileUser->getFollowers($pagination),
+            'profile_relation_pagination' => $pagination,
+            'relation_prop' => 'user',
         ]);
         break;
 
@@ -446,6 +430,7 @@ switch($profileMode) {
 
 if(!empty($template)) {
     Template::render($template, [
+        'profile_viewer' => $currentUser,
         'profile_user' => $profileUser,
         'profile_stats' => $profileStats,
         'profile_mode' => $profileMode,
@@ -453,6 +438,5 @@ if(!empty($template)) {
         'profile_can_edit' => $canEdit,
         'profile_is_editing' => $isEditing,
         'profile_is_banned' => $isBanned,
-        'profile_relation_info' => $relationInfo,
     ]);
 }

@@ -1,7 +1,10 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Config;
 use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
+use Misuzu\Users\UserRelation;
 
 require_once '../misuzu.php';
 
@@ -39,25 +42,30 @@ if(user_warning_check_expiration($currentUser->getId(), MSZ_WARN_BAN) > 0) {
 $subjectId = !empty($_GET['u']) && is_string($_GET['u']) ? (int)$_GET['u'] : 0;
 $relationType = isset($_GET['m']) && is_string($_GET['m']) ? (int)$_GET['m'] : -1;
 
-if(!user_relation_is_valid_type($relationType)) {
+if($relationType < 0) {
     echo render_info_or_json($isXHR, 'Invalid relation type.', 400);
     return;
 }
 
-if($currentUser->getId() < 1 || $subjectId < 1) {
+$relationType = $relationType > 0 ? UserRelation::TYPE_FOLLOW : UserRelation::TYPE_NONE;
+
+try {
+    $subjectInfo = User::byId($subjectId);
+} catch(UserNotFoundException $ex) {
     echo render_info_or_json($isXHR, "That user doesn't exist.", 400);
     return;
 }
 
-if(!user_relation_set($currentUser->getId(), $subjectId, $relationType)) {
-    echo render_info_or_json($isXHR, "Failed to save relation.", 500);
-    return;
-}
+if($relationType > 0)
+    $subjectInfo->addFollower($currentUser);
+else
+    $subjectInfo->removeRelation($currentUser);
 
-
-if(($relationType === MSZ_USER_RELATION_NONE || $relationType === MSZ_USER_RELATION_FOLLOW)
-    && in_array($subjectId, Config::get('relations.replicate', Config::TYPE_ARR))) {
-    user_relation_set($subjectId, $currentUser->getId(), $relationType);
+if(in_array($subjectInfo->getId(), Config::get('relations.replicate', Config::TYPE_ARR))) {
+    if($relationType > 0)
+        $currentUser->addFollower($subjectInfo);
+    else
+        $currentUser->removeRelation($subjectInfo);
 }
 
 if(!$isXHR) {
@@ -67,6 +75,6 @@ if(!$isXHR) {
 
 echo json_encode([
     'user_id' => $currentUser->getId(),
-    'subject_id' => $subjectId,
+    'subject_id' => $subjectInfo->getId(),
     'relation_type' => $relationType,
 ]);

@@ -57,13 +57,13 @@
             {% endif %}
         </div>
 
-        {% if profile_user is defined and profile_relation_info|length > 0 and (profile_relation_info.subject_relation is not null or profile_relation_info.user_relation is not null) %}
-            <div class="profile__header__details__relation" title="Since {{ profile_relation_info.relation_created|date('r') }}">
-                {% if profile_relation_info.subject_relation and profile_relation_info.user_relation %}
+        {% if profile_viewer is not null and profile_user.id != profile_viewer.id and profile_user.relationString(profile_viewer) != 'none' %}
+            <div class="profile__header__details__relation" title="Since {{ profile_user.relationTime(profile_viewer)|date('r') }}">
+                {% if profile_user.relationString(profile_viewer) == 'mutual' %}
                     Mutual Friends
-                {% elseif profile_relation_info.user_relation %}
+                {% elseif profile_user.relationString(profile_viewer) == 'followed' %}
                     You Follow
-                {% elseif profile_relation_info.subject_relation %}
+                {% elseif profile_user.relationString(profile_viewer) == 'following' %}
                     Follows You
                 {% endif %}
             </div>
@@ -83,10 +83,10 @@
                     {% endif %}
 
                     {% if current_user is defined and current_user.user_id != profile_user.user_id and not profile_is_editing %}
-                        {% if profile_relation_info.user_relation == constant('MSZ_USER_RELATION_FOLLOW') %}
-                            <a href="{{ url('user-relation-none', {'user': profile_user.user_id}) }}" class="input__button input__button--destroy profile__header__action js-user-relation-action" data-relation-user="{{ profile_user.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_NONE') }}">Unfollow</a>
+                        {% if profile_user.relationString(profile_viewer) != 'following' %}
+                            <a href="{{ url('user-relation-none', {'user': profile_user.user_id}) }}" class="input__button input__button--destroy profile__header__action js-user-relation-action" data-relation-user="{{ profile_user.user_id }}" data-relation-type="0">Unfollow</a>
                         {% else %}
-                            <a href="{{ url('user-relation-follow', {'user': profile_user.user_id}) }}" class="input__button profile__header__action js-user-relation-action" data-relation-user="{{ profile_user.user_id }}" data-relation-type="{{ constant('MSZ_USER_RELATION_FOLLOW') }}">Follow</a>
+                            <a href="{{ url('user-relation-follow', {'user': profile_user.user_id}) }}" class="input__button profile__header__action js-user-relation-action" data-relation-user="{{ profile_user.user_id }}" data-relation-type="1">Follow</a>
                         {% endif %}
                     {% endif %}
                 {% else %}

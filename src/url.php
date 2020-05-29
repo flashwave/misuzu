@@ -78,8 +78,8 @@ define('MSZ_URLS', [
     'user-background'                   => ['/user-assets.php',                 ['u' => '<user>', 'm' => 'background']],
 
     'user-relation-create'              => ['/relations.php',                   ['u' => '<user>', 'm' => '<type>', 'csrf' => '{csrf}']],
-    'user-relation-none'                => ['/relations.php',                   ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_NONE]', 'csrf' => '{csrf}']],
-    'user-relation-follow'              => ['/relations.php',                   ['u' => '<user>', 'm' => '[MSZ_USER_RELATION_FOLLOW]', 'csrf' => '{csrf}']],
+    'user-relation-none'                => ['/relations.php',                   ['u' => '<user>', 'm' => '[\Misuzu\Users\UserRelation::TYPE_NONE]', 'csrf' => '{csrf}']],
+    'user-relation-follow'              => ['/relations.php',                   ['u' => '<user>', 'm' => '[\Misuzu\Users\UserRelation::TYPE_FOLLOW]', 'csrf' => '{csrf}']],
 
     'settings-index'                    => ['/settings'],
     'settings-account'                  => ['/settings/account.php'],
