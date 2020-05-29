@@ -1,12 +1,13 @@
 <?php
 namespace Misuzu;
 
-use UnexpectedValueException;
 use Misuzu\AuditLog;
-use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
 use Misuzu\Users\UserNotFoundException;
 use Misuzu\Users\UserLoginAttempt;
+use Misuzu\Users\UserRecoveryToken;
+use Misuzu\Users\UserRecoveryTokenNotFoundException;
+use Misuzu\Users\UserRecoveryTokenCreationFailedException;
 use Misuzu\Users\UserSession;
 
 require_once '../../misuzu.php';
@@ -33,7 +34,6 @@ if($userId > 0)
 $notices = [];
 $siteIsPrivate = Config::get('private.enable', Config::TYPE_BOOL);
 $canResetPassword = $siteIsPrivate ? Config::get('private.allow_password_reset', Config::TYPE_BOOL, true) : true;
-$ipAddress = IPAddress::remote();
 $remainingAttempts = UserLoginAttempt::remaining();
 
 while($canResetPassword) {
@@ -45,7 +45,13 @@ while($canResetPassword) {
 
         $verificationCode = !empty($reset['verification']) && is_string($reset['verification']) ? $reset['verification'] : '';
 
-        if(!user_recovery_token_validate($userId, $verificationCode)) {
+        try {
+            $tokenInfo = UserRecoveryToken::byToken($verificationCode);
+        } catch(UserRecoveryTokenNotFoundException $ex) {
+            unset($tokenInfo);
+        }
+
+        if(empty($tokenInfo) || !$tokenInfo->isValid() || $tokenInfo->getUserId() !== $userInfo->getId()) {
             $notices[] = 'Invalid verification code!';
             break;
         }
@@ -72,7 +78,7 @@ while($canResetPassword) {
         // this behaviour should really be replaced with recovery keys...
         user_totp_update($userId, null);
 
-        user_recovery_token_invalidate($userId, $verificationCode);
+        $tokenInfo->invalidate();
 
         url_redirect('auth-login', ['redirect' => '/']);
         return;
@@ -105,16 +111,14 @@ while($canResetPassword) {
             break;
         }
 
-        if(!user_recovery_token_sent($forgotUser->getId(), $ipAddress)) {
-            $verificationCode = user_recovery_token_create($forgotUser->getId(), $ipAddress);
-
-            if(empty($verificationCode)) {
-                throw new UnexpectedValueException('A verification code failed to insert.');
-            }
+        try {
+            $tokenInfo = UserRecoveryToken::byUserAndRemoteAddress($forgotUser);
+        } catch(UserRecoveryTokenNotFoundException $ex) {
+            $tokenInfo = UserRecoveryToken::create($forgotUser);
 
             $recoveryMessage = Mailer::template('password-recovery', [
                 'username' => $forgotUser->getUsername(),
-                'token' => $verificationCode,
+                'token' => $tokenInfo->getToken(),
             ]);
 
             $recoveryMail = Mailer::sendMessage(
@@ -124,7 +128,7 @@ while($canResetPassword) {
 
             if(!$recoveryMail) {
                 $notices[] = "Failed to send reset email, please contact the administrator.";
-                user_recovery_token_invalidate($forgotUser->getId(), $verificationCode);
+                $tokenInfo->invalidate();
                 break;
             }
         }
