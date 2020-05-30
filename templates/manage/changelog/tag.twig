@@ -7,12 +7,12 @@
         <form action="{{ url('manage-changelog-tag', {'tag': edit_tag.id|default(0)}) }}" method="post">
             {{ input_csrf() }}
 
-            {{ container_title(edit_tag is defined ? 'Editing ' ~ edit_tag.name ~ ' (' ~ edit_tag.id ~ ')' : 'Adding a new tag') }}
+            {{ container_title(edit_tag.id is defined ? 'Editing ' ~ edit_tag.name ~ ' (' ~ edit_tag.id ~ ')' : 'Adding a new tag') }}
 
             <label class="form__label" style="width:100%">
                 <div class="form__label__text">Name</div>
                 <div class="form__label__input">
-                    {{ input_text('tag[name]', '', edit_tag is defined ? edit_tag.name : '', 'text', '', true, {'maxlength':255}) }}
+                    {{ input_text('tag[name]', '', edit_tag.id is defined ? edit_tag.name : '', 'text', '', true, {'maxlength':255}) }}
                 </div>
             </label>
 
@@ -30,7 +30,7 @@
                 </div>
             </label>
 
-            {% if edit_tag is defined %}
+            {% if edit_tag.id is defined %}
                 <label class="form__label">
                     <div class="form__label__text">Created</div>
                     <div class="form__label__input">
