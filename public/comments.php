@@ -63,7 +63,7 @@ if($commentId > 0)
 switch($commentMode) {
     case 'pin':
     case 'unpin':
-        if(!$commentPerms['can_pin']) {
+        if(!$commentPerms['can_pin'] && !$commentInfo2->isOwner($currentUserInfo)) {
             echo render_info_or_json($isXHR, "You're not allowed to pin comments.", 403);
             break;
         }
@@ -103,7 +103,7 @@ switch($commentMode) {
         break;
 
     case 'vote':
-        if(!$commentPerms['can_vote']) {
+        if(!$commentPerms['can_vote'] && !$commentInfo2->isOwner($currentUserInfo)) {
             echo render_info_or_json($isXHR, "You're not allowed to vote on comments.", 403);
             break;
         }
@@ -129,7 +129,7 @@ switch($commentMode) {
         break;
 
     case 'delete':
-        if(!$commentPerms['can_delete']) {
+        if(!$commentPerms['can_delete'] && !$commentInfo2->isOwner($currentUserInfo)) {
             echo render_info_or_json($isXHR, "You're not allowed to delete comments.", 403);
             break;
         }
@@ -205,7 +205,7 @@ switch($commentMode) {
         break;
 
     case 'create':
-        if(!$commentPerms['can_comment']) {
+        if(!$commentPerms['can_comment'] && !$commentInfo2->isOwner($currentUserInfo)) {
             echo render_info_or_json($isXHR, "You're not allowed to post comments.", 403);
             break;
         }

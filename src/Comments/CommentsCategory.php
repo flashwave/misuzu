@@ -14,14 +14,16 @@ class CommentsCategory implements JsonSerializable {
     // Database fields
     private $category_id = -1;
     private $category_name = '';
+    private $owner_id = null;
     private $category_created = null;
     private $category_locked = null;
 
     private $postCount = -1;
+    private $owner = null;
 
     public const TABLE = 'comments_categories';
     private const QUERY_SELECT = 'SELECT %1$s FROM `' . DB::PREFIX . self::TABLE . '` AS '. self::TABLE;
-    private const SELECT = '%1$s.`category_id`, %1$s.`category_name`'
+    private const SELECT = '%1$s.`category_id`, %1$s.`category_name`, %1$s.`owner_id`'
         . ', UNIX_TIMESTAMP(%1$s.`category_created`) AS `category_created`'
         . ', UNIX_TIMESTAMP(%1$s.`category_locked`) AS `category_locked`';
 
@@ -40,6 +42,21 @@ class CommentsCategory implements JsonSerializable {
     public function setName(string $name): self {
         $this->category_name = $name;
         return $this;
+    }
+
+    public function getOwnerId(): int {
+        return $this->owner_id < 1 ? -1 : $this->owner_id;
+    }
+    public function hasOwner(): bool {
+        return $this->owner_id !== null;
+    }
+    public function getOwner(): User {
+        if($this->owner === null && ($ownerId = $this->getOwnerId()) >= 1)
+            $this->owner = User::byId($ownerId);
+        return $this->owner;
+    }
+    public function isOwner(User $user): bool {
+        return $this->hasOwner() && $user->getId() === $this->getOwnerId();
     }
 
     public function getCreatedTime(): int {
