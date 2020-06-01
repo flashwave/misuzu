@@ -29,9 +29,8 @@ if(!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     return;
 }
 
-if(user_warning_check_restriction($forumUserId)) {
+if($forumUser->hasActiveWarning())
     $perms &= ~MSZ_FORUM_PERM_SET_WRITE;
-}
 
 Template::set('forum_perms', $perms);
 

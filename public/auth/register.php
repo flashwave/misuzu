@@ -6,6 +6,7 @@ use Misuzu\Net\IPAddressBlacklist;
 use Misuzu\Users\User;
 use Misuzu\Users\UserLoginAttempt;
 use Misuzu\Users\UserSession;
+use Misuzu\Users\UserWarning;
 
 require_once '../../misuzu.php';
 
@@ -19,7 +20,7 @@ $notices = [];
 $ipAddress = IPAddress::remote();
 $remainingAttempts = UserLoginAttempt::remaining();
 $restricted = IPAddressBlacklist::check($ipAddress) ? 'blacklist'
-    : (user_warning_check_ip($ipAddress) ? 'ban' : '');
+    : (UserWarning::countByRemoteAddress() > 0 ? 'ban' : '');
 
 while(!$restricted && !empty($register)) {
     if(!CSRF::validateRequest()) {

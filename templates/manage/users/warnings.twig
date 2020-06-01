@@ -6,7 +6,7 @@
 {% block manage_content %}
     <form class="container container--lazy" action="{{ url('manage-users-warnings') }}" method="post">
         {{ container_title('<i class="fas fa-users fa-fw"></i> Filters') }}
-        {{ input_text('lookup', null, warnings.username, 'text', 'Enter a username') }}
+        {{ input_text('lookup', null, warnings.user.username|default(''), 'text', 'Enter a username') }}
         <button class="input__button">Filter</button>
     </form>
 
@@ -20,11 +20,11 @@
         </div>
     {% endif %}
 
-    {% if warnings.user_id > 0 and warnings.username|length > 0 %}{# shittiest validation in the world, but it should work #}
+    {% if warnings.user is not null %}
         <form class="container container--lazy" method="post" action="">
-            {{ container_title('<i class="fas fa-user-shield fa-fw"></i> Warn ' ~ warnings.username) }}
+            {{ container_title('<i class="fas fa-user-shield fa-fw"></i> Warn ' ~ warnings.user.username) }}
             {{ input_csrf() }}
-            {{ input_hidden('warning[user]', warnings.user_id) }}
+            {{ input_hidden('warning[user]', warnings.user.id) }}
 
             {{ input_select('warning[type]', warnings.types) }}
             {{ input_text('warning[note]', '', '', 'text', 'Public note') }}
@@ -38,7 +38,7 @@
 
     <div class="container container--lazy">
         {{ container_title('<i class="fas fa-exclamation-circle fa-fw"></i> Warnings') }}
-        {% set warnpag = pagination(warnings.pagination, url('manage-users-warnings')) %}
+        {% set warnpag = pagination(warnings.pagination, url('manage-users-warnings', {'user': warnings.user.id|default(0)})) %}
 
         {{ warnpag }}
 
@@ -76,7 +76,7 @@
                     </div>
 
                     <div class="profile__warning__duration">
-                        Expires
+                        Duration
                     </div>
 
                     <div class="profile__warning__note">

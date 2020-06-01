@@ -221,8 +221,6 @@ if($authToken->isValid()) {
         user_bump_last_active($userInfo->getId());
 
         $userDisplayInfo['perms'] = perms_get_user($userInfo->getId());
-        $userDisplayInfo['ban_expiration'] = user_warning_check_expiration($userInfo->getId(), MSZ_WARN_BAN);
-        $userDisplayInfo['silence_expiration'] = $userDisplayInfo['ban_expiration'] > 0 ? 0 : user_warning_check_expiration($userInfo->getId(), MSZ_WARN_SILENCE);
     }
 }
 
@@ -254,12 +252,15 @@ if(Config::get('private.enabled', Config::TYPE_BOOL)) {
     }
 }
 
-if(!empty($userDisplayInfo)) // delete this
+// delete these
+if(!empty($userDisplayInfo))
     Template::set('current_user', $userDisplayInfo);
+if(!empty($userInfo))
+    Template::set('current_user2', $userInfo);
 
 $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
 $hasManageAccess = User::hasCurrent()
-    && !user_warning_check_restriction(User::getCurrent()->getId())
+    && !User::getCurrent()->hasActiveWarning()
     && perms_check_user(MSZ_PERMS_GENERAL, User::getCurrent()->getId(), MSZ_PERM_GENERAL_CAN_MANAGE);
 Template::set('has_manage_access', $hasManageAccess);
 

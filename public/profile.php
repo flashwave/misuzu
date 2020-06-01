@@ -26,8 +26,8 @@ $currentUser = User::getCurrent();
 $viewingAsGuest = $currentUser === null;
 $currentUserId = $viewingAsGuest ? 0 : $currentUser->getId();
 $viewingOwnProfile = $currentUserId === $profileUser->getId();
-
-$isBanned = user_warning_check_restriction($profileUser->getId());
+define('DUMB_SHIT', true);
+$isBanned = $profileUser->hasActiveWarning();
 $userPerms = perms_get_user($currentUserId)[MSZ_PERMS_USER];
 $canManageWarnings = perms_check($userPerms, MSZ_PERM_USER_MANAGE_WARNINGS);
 $canEdit = !$isBanned
@@ -406,23 +406,11 @@ switch($profileMode) {
 
     case '':
         $template = 'profile.index';
-        $warnings = $viewingAsGuest
-            ? []
-            : user_warning_fetch(
-                $profileUser->getId(),
-                90,
-                $canManageWarnings
-                    ? MSZ_WARN_TYPES_VISIBLE_TO_STAFF
-                    : (
-                        $viewingOwnProfile
-                            ? MSZ_WARN_TYPES_VISIBLE_TO_USER
-                            : MSZ_WARN_TYPES_VISIBLE_TO_PUBLIC
-                    )
-            );
+        $warnings = $profileUser->getProfileWarnings($currentUser);
 
         Template::set([
             'profile_warnings' => $warnings,
-            'profile_warnings_view_private' => $viewingOwnProfile,
+            'profile_warnings_view_private' => $canManageWarnings,
             'profile_warnings_can_manage' => $canManageWarnings,
         ]);
         break;

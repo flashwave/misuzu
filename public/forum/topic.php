@@ -28,9 +28,8 @@ $perms = $topic
     ? forum_perms_get_user($topic['forum_id'], $topicUserId)[MSZ_FORUM_PERMS_GENERAL]
     : 0;
 
-if(user_warning_check_restriction($topicUserId)) {
+if($topicUser->hasActiveWarning())
     $perms &= ~MSZ_FORUM_PERM_SET_WRITE;
-}
 
 $topicIsDeleted = !empty($topic['topic_deleted']);
 $canDeleteAny = perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST);
@@ -99,11 +98,11 @@ if(in_array($moderationMode, $validModerationModes, true)) {
         return;
     }
 
-    if(user_warning_check_expiration($topicUserId, MSZ_WARN_BAN) > 0) {
+    if($topicUser->isBanned()) {
         echo render_info_or_json($isXHR, 'You have been banned, check your profile for more information.', 403);
         return;
     }
-    if(user_warning_check_expiration($topicUserId, MSZ_WARN_SILENCE) > 0) {
+    if($topicUser->isSilenced()) {
         echo render_info_or_json($isXHR, 'You have been silenced, check your profile for more information.', 403);
         return;
     }

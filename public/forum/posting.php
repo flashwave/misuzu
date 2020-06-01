@@ -16,7 +16,7 @@ if($currentUser === null) {
 
 $currentUserId = $currentUser->getId();
 
-if(user_warning_check_restriction($currentUserId)) {
+if($currentUser->hasActiveWarning()) {
     echo render_error(403);
     return;
 }

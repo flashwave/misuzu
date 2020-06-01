@@ -143,7 +143,7 @@ final class SockChatHandler extends Handler {
 
         try {
             $token = UserChatToken::create($currentUser);
-        } catch(UserChatTokenNotFoundException $ex) {
+        } catch(UserChatTokenCreationFailedException $ex) {
             return 500;
         }
 
@@ -249,7 +249,7 @@ final class SockChatHandler extends Handler {
         } else {
             try {
                 $token = UserChatToken::byExact($userInfo, $authInfo->token);
-            } catch(UserChatTokenCreationFailedException $ex) {
+            } catch(UserChatTokenNotFoundException $ex) {
                 return ['success' => false, 'reason' => 'token'];
             }
 
@@ -276,7 +276,7 @@ final class SockChatHandler extends Handler {
             'username' => $userInfo->getUsername(),
             'colour_raw' => $userInfo->getColourRaw(),
             'hierarchy' => $userInfo->getHierarchy(),
-            'is_silenced' => date('c', user_warning_check_expiration($userInfo->getId(), MSZ_WARN_SILENCE)),
+            'is_silenced' => date('c', $userInfo->isSilenced() || $userInfo->isBanned() ? ($userInfo->isActiveWarningPermanent() ? strtotime('10 years') : $userInfo->getActiveWarningExpiration()) : 0),
             'perms' => $perms,
         ];
     }

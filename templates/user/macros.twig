@@ -433,13 +433,13 @@
 
 {% macro user_profile_warning(warning, show_private_note, show_user_info, delete_csrf) %}
     {% from 'macros.twig' import avatar %}
-    {% if warning.warning_type == constant('MSZ_WARN_SILENCE') %}
+    {% if warning.isSilence %}
         {% set warning_text = 'Silence' %}
         {% set warning_class = 'silence' %}
-    {% elseif warning.warning_type == constant('MSZ_WARN_BAN') %}
+    {% elseif warning.isBan %}
         {% set warning_text = 'Ban' %}
         {% set warning_class = 'ban' %}
-    {% elseif warning.warning_type == constant('MSZ_WARN_WARNING') %}
+    {% elseif warning.isWarning %}
         {% set warning_text = 'Warning' %}
         {% set warning_class = 'warning' %}
     {% else %}
@@ -453,41 +453,35 @@
         {% if show_user_info or delete_csrf %}
             <div class="profile__warning__tools">
                 {% if show_user_info %}
-                    {% if warning.username is defined or warning.user_ip is defined %}
-                        <div class="profile__warning__user">
-                            {% if warning.username is defined %}
-                                <div class="profile__warning__user__avatar">
-                                    {{ avatar(warning.user_id, 20, warning.username) }}
-                                </div>
-                                <a class="profile__warning__user__username" href="{{ url('user-profile', {'user': warning.user_id}) }}">
-                                    {{ warning.username }}
-                                </a>
-                            {% endif %}
-
-                            {% if warning.user_ip is defined %}
-                                <div class="profile__warning__user__ip">
-                                    {{ warning.user_ip }}
-                                </div>
-                            {% endif %}
+                    <div class="profile__warning__user">
+                        <div class="profile__warning__user__avatar">
+                            {{ avatar(warning.user.id, 20, warning.user.username) }}
                         </div>
-                    {% endif %}
+                        <a class="profile__warning__user__username" href="{{ url('user-profile', {'user': warning.user.id}) }}">
+                            {{ warning.user.username }}
+                        </a>
+
+                        <div class="profile__warning__user__ip">
+                            {{ warning.userRemoteAddress }}
+                        </div>
+                    </div>
 
                     <div class="profile__warning__user">
                         <div class="profile__warning__user__avatar">
-                            {{ avatar(warning.issuer_id, 20, warning.issuer_username) }}
+                            {{ avatar(warning.issuer.id, 20, warning.issuer.username) }}
                         </div>
-                        <a class="profile__warning__user__username" href="{{ url('user-profile', {'user': warning.user_id}) }}">
-                            {{ warning.issuer_username }}
+                        <a class="profile__warning__user__username" href="{{ url('user-profile', {'user': warning.issuer.id}) }}">
+                            {{ warning.issuer.username }}
                         </a>
                         <div class="profile__warning__user__ip">
-                            {{ warning.issuer_ip }}
+                            {{ warning.issuerRemoteAddress }}
                         </div>
                     </div>
                 {% endif %}
 
                 {% if delete_csrf %}
                     <div class="profile__warning__options">
-                        <a href="{{ url('manage-users-warning-delete', {'warning': warning.warning_id}) }}" class="profile__warning__option"><i class="far fa-trash-alt"></i> Delete</a>
+                        <a href="{{ url('manage-users-warning-delete', {'warning': warning.id}) }}" class="profile__warning__option"><i class="far fa-trash-alt"></i> Delete</a>
                     </div>
                 {% endif %}
             </div>
@@ -498,24 +492,28 @@
                 {{ warning_text }}
             </div>
 
-            <time datetime="{{ warning.warning_created|date('c') }}" title="{{ warning.warning_created|date('r') }}" class="profile__warning__created">
-                {{ warning.warning_created|time_diff }}
+            <time datetime="{{ warning.createdTime|date('c') }}" title="{{ warning.createdTime|date('r') }}" class="profile__warning__created">
+                {{ warning.createdTime|time_diff }}
             </time>
 
-            {% if warning_has_duration(warning.warning_type) %}
-                <time datetime="{{ warning.warning_duration|date('c') }}" title="{{ warning.warning_duration|date('r') }}" class="profile__warning__duration">
-                    {{ warning.warning_duration|time_diff }}
-                </time>
+            {% if warning.isPermanent %}
+                <div class="profile__warning__duration">
+                    <b>PERMANENT</b>
+                </div>
+            {% elseif warning.hasDuration %}
+                <div class="profile__warning__duration">
+                    {{ warning.durationString }}
+                </div>
             {% else %}
                 <div class="profile__warning__duration"></div>
             {% endif %}
 
             <div class="profile__warning__note">
-                {{ warning.warning_note }}
+                {{ warning.publicNote }}
 
-                {% if show_private_note and warning.warning_note_private|length > 0 %}
+                {% if show_private_note and warning.hasPrivateNote %}
                     <div class="profile__warning__private">
-                        {{ warning.warning_note_private|nl2br }}
+                        {{ warning.privateNote|nl2br }}
                     </div>
                 {% endif %}
             </div>

@@ -31,10 +31,10 @@
         {% include '_layout/header.twig' %}
 
         <div class="main__wrapper">
-            {% if current_user.ban_expiration|default(0) > 0 or current_user.silence_expiration|default(0) > 0 %}
+            {% if current_user2.hasActiveWarning|default(false) %}
                 <div class="warning">
                     <div class="warning__content">
-                        You have been {{ current_user.silence_expiration ? 'silenced' : 'banned' }} until <strong>{{ (current_user.silence_expiration ? current_user.silence_expiration : current_user.ban_expiration)|date('r') }}</strong>, view the account standing table on <a href="{{ url('user-account-standing', {'user': current_user.user_id}) }}" class="warning__link">your profile</a> to view why.
+                        You have been {{ current_user2.isSilenced ? 'silenced' : 'banned' }} {% if current_user2.isActiveWarningPermanent %}<strong>permanently</strong>{% else %}until <strong>{{ current_user2.activeWarningExpiration|date('r') }}</strong>{% endif %}, view the account standing table on <a href="{{ url('user-account-standing', {'user': current_user2.id}) }}" class="warning__link">your profile</a> to view why.
                     </div>
                 </div>
             {% endif %}

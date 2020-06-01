@@ -36,11 +36,11 @@ if($currentUserInfo === null) {
     return;
 }
 
-if(user_warning_check_expiration($currentUserInfo->getId(), MSZ_WARN_BAN) > 0) {
+if($currentUserInfo->isBanned()) {
     echo render_info_or_json($isXHR, 'You have been banned, check your profile for more information.', 403);
     return;
 }
-if(user_warning_check_expiration($currentUserInfo->getId(), MSZ_WARN_SILENCE) > 0) {
+if($currentUserInfo->isSilenced()) {
     echo render_info_or_json($isXHR, 'You have been silenced, check your profile for more information.', 403);
     return;
 }

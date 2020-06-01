@@ -34,7 +34,7 @@ if($currentUser === null) {
     return;
 }
 
-if(user_warning_check_expiration($currentUser->getId(), MSZ_WARN_BAN) > 0) {
+if($currentUser->isBanned()) {
     echo render_info_or_json($isXHR, 'You have been banned, check your profile for more information.', 403);
     return;
 }

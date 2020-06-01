@@ -2,6 +2,7 @@
 namespace Misuzu;
 
 use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
 
 require_once '../../misuzu.php';
 
@@ -22,9 +23,8 @@ $perms = $topic
     ? forum_perms_get_user($topic['forum_id'], $topicUserId)[MSZ_FORUM_PERMS_GENERAL]
     : 0;
 
-if(user_warning_check_restriction($topicUserId)) {
+if($topicUser->hasActiveWarning())
     $perms &= ~MSZ_FORUM_PERM_SET_WRITE;
-}
 
 $topicIsDeleted = !empty($topic['topic_deleted']);
 $canDeleteAny = perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST);

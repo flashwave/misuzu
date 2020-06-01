@@ -301,6 +301,32 @@ class User {
         return $this->forumPostCount;
     }
 
+    private $activeWarning = -1;
+
+    public function getActiveWarning(): ?UserWarning {
+        if($this->activeWarning === -1)
+            $this->activeWarning = UserWarning::byUserActive($this);
+        return $this->activeWarning;
+    }
+    public function hasActiveWarning(): bool {
+        return $this->getActiveWarning() !== null && !$this->getActiveWarning()->hasExpired();
+    }
+    public function isSilenced(): bool {
+        return $this->hasActiveWarning() && $this->getActiveWarning()->isSilence();
+    }
+    public function isBanned(): bool {
+        return $this->hasActiveWarning() && $this->getActiveWarning()->isBan();
+    }
+    public function getActiveWarningExpiration(): int {
+        return !$this->hasActiveWarning() ? 0 : $this->getActiveWarning()->getExpirationTime();
+    }
+    public function isActiveWarningPermanent(): bool {
+        return $this->hasActiveWarning() && $this->getActiveWarning()->isPermanent();
+    }
+    public function getProfileWarnings(?self $viewer): array {
+        return UserWarning::byProfile($this, $viewer);
+    }
+
     public function setCurrent(): void {
         self::$localUser = $this;
     }

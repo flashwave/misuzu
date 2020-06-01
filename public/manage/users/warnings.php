@@ -1,8 +1,13 @@
 <?php
 namespace Misuzu;
 
+use InvalidArgumentException;
 use Misuzu\Net\IPAddress;
 use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
+use Misuzu\Users\UserWarning;
+use Misuzu\Users\UserWarningNotFoundException;
+use Misuzu\Users\UserWarningCreationFailedException;
 
 require_once '../../../misuzu.php';
 
@@ -22,110 +27,88 @@ if(!empty($_POST['lookup']) && is_string($_POST['lookup'])) {
 // instead of just kinda taking $_GET['w'] this should really fetch the info from the database
 // and make sure that the user has authority
 if(!empty($_GET['delete'])) {
-    user_warning_remove((int)($_GET['w'] ?? 0));
+    try {
+        UserWarning::byId((int)filter_input(INPUT_GET, 'w', FILTER_SANITIZE_NUMBER_INT))->delete();
+    } catch(UserWarningNotFoundException $ex) {}
     redirect($_SERVER['HTTP_REFERER'] ?? url('manage-users-warnings'));
     return;
 }
 
 if(!empty($_POST['warning']) && is_array($_POST['warning'])) {
     $warningType = (int)($_POST['warning']['type'] ?? 0);
+    $warningDuration = 0;
+    $warningDuration = (int)($_POST['warning']['duration'] ?? 0);
 
-    if(user_warning_type_is_valid($warningType)) {
-        $warningDuration = 0;
+    if($warningDuration < -1) {
+        $customDuration = $_POST['warning']['duration_custom'] ?? '';
 
-        if(user_warning_has_duration($warningType)) {
-            $duration = (int)($_POST['warning']['duration'] ?? 0);
+        if(!empty($customDuration)) {
+            switch($warningDuration) {
+                case -100: // YYYY-MM-DD
+                    $splitDate = array_apply(explode('-', $customDuration, 3), function ($a) {
+                        return (int)$a;
+                    });
 
-            if($duration > 0) {
-                $warningDuration = time() + $duration;
-            } elseif($duration < 0) {
-                $customDuration = $_POST['warning']['duration_custom'] ?? '';
-
-                if(!empty($customDuration)) {
-                    switch($duration) {
-                        case -1: // YYYY-MM-DD
-                            $splitDate = array_apply(explode('-', $customDuration, 3), function ($a) {
-                                return (int)$a;
-                            });
-
-                            if(checkdate($splitDate[1], $splitDate[2], $splitDate[0])) {
-                                $warningDuration = mktime(0, 0, 0, $splitDate[1], $splitDate[2], $splitDate[0]);
-                            }
-                            break;
-
-                        case -2: // Raw seconds
-                            $warningDuration = time() + (int)$customDuration;
-                            break;
-
-                        case -3: // strtotime
-                            $warningDuration = strtotime($customDuration);
-                            break;
-                    }
-                }
-            }
-
-            if($warningDuration <= time()) {
-                $notices[] = 'The duration supplied was invalid.';
-            }
-        }
-
-        $warningsUser = (int)($_POST['warning']['user'] ?? 0);
-
-        if(!user_check_super($currentUserId) && !user_check_authority($currentUserId, $warningsUser)) {
-            $notices[] = 'You do not have authority over this user.';
-        }
-
-        if(empty($notices) && $warningsUser > 0) {
-            $warningId = user_warning_add(
-                $warningsUser,
-                user_get_last_ip($warningsUser),
-                $currentUserId,
-                IPAddress::remote(),
-                $warningType,
-                $_POST['warning']['note'],
-                $_POST['warning']['private'],
-                $warningDuration
-            );
-        }
-
-        if(!empty($warningId) && $warningId < 0) {
-            switch($warningId) {
-                case MSZ_E_WARNING_ADD_DB:
-                    $notices[] = 'Failed to record the warning in the database.';
+                    if(checkdate($splitDate[1], $splitDate[2], $splitDate[0]))
+                        $warningDuration = mktime(0, 0, 0, $splitDate[1], $splitDate[2], $splitDate[0]) - time();
                     break;
 
-                case MSZ_E_WARNING_ADD_TYPE:
-                    $notices[] = 'The warning type provided was invalid.';
+                case -200: // Raw seconds
+                    $warningDuration = (int)$customDuration;
                     break;
 
-                case MSZ_E_WARNING_ADD_USER:
-                    $notices[] = 'The User ID provided was invalid.';
-                    break;
-
-                case MSZ_E_WARNING_ADD_DURATION:
-                    $notices[] = 'The duration specified was invalid.';
+                case -300: // strtotime
+                    $warningDuration = strtotime($customDuration) - time();
                     break;
             }
         }
     }
+
+    try {
+        $warningsUserInfo = User::byId((int)($_POST['warning']['user'] ?? 0));
+        $warningsUser = $warningsUserInfo->getId();
+    } catch(UserNotFoundException $ex) {
+        $warningsUserInfo = null;
+    }
+
+    if(!user_check_super($currentUserId) && !user_check_authority($currentUserId, $warningsUser)) {
+        $notices[] = 'You do not have authority over this user.';
+    }
+
+    if(empty($notices) && $warningsUser > 0) {
+        try {
+            $warningInfo = UserWarning::create(
+                $warningsUserInfo,
+                User::getCurrent(),
+                $warningType,
+                $warningDuration,
+                $_POST['warning']['note'],
+                $_POST['warning']['private']
+            );
+        } catch(InvalidArgumentException $ex) {
+            $notices[] = $ex->getMessage();
+        } catch(UserWarningCreationFailedException $ex) {
+            $notices[] = 'Warning creation failed.';
+        }
+    }
 }
 
-if(empty($warningsUser)) {
+if(empty($warningsUser))
     $warningsUser = max(0, (int)($_GET['u'] ?? 0));
-}
 
-$warningsPagination = new Pagination(user_warning_global_count($warningsUser), 50);
+if(empty($warningsUserInfo))
+    try {
+        $warningsUserInfo = User::byId($warningsUser);
+    } catch(UserNotFoundException $ex) {
+        $warningsUserInfo = null;
+    }
+
+$warningsPagination = new Pagination(UserWarning::countAll($warningsUserInfo), 10);
 
 if(!$warningsPagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
-
-$warningsList = user_warning_global_fetch(
-    $warningsPagination->getOffset(),
-    $warningsPagination->getRange(),
-    $warningsUser
-);
 
 // calling array_flip since the input_select macro wants value => display, but this looks cuter
 $warningDurations = array_flip([
@@ -148,19 +131,24 @@ $warningDurations = array_flip([
     '6 Months'              => 60 * 60 * 24 * 365 / 12 * 6,
     '9 Months'              => 60 * 60 * 24 * 365 / 12 * 9,
     '1 Year'                => 60 * 60 * 24 * 365,
-    'Until (YYYY-MM-DD) ->' => -1,
-    'Until (Seconds) ->'    => -2,
-    'Until (strtotime) ->'  => -3,
+    'Permanent'             => -1,
+    'Until (YYYY-MM-DD) ->' => -100,
+    'Until (Seconds) ->'    => -200,
+    'Until (strtotime) ->'  => -300,
 ]);
 
 Template::render('manage.users.warnings', [
     'warnings' => [
         'notices' => $notices,
         'pagination' => $warningsPagination,
-        'list' => $warningsList,
-        'user_id' => $warningsUser,
-        'username' => user_username_from_id($warningsUser),
-        'types' => user_warning_get_types(),
+        'list' => UserWarning::all($warningsUserInfo, $warningsPagination),
+        'user' => $warningsUserInfo,
         'durations' => $warningDurations,
+        'types' => [
+            UserWarning::TYPE_NOTE => 'Note',
+            UserWarning::TYPE_WARN => 'Warning',
+            UserWarning::TYPE_MUTE => 'Silence',
+            UserWarning::TYPE_BAHN => 'Ban',
+        ],
     ],
 ]);

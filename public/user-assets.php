@@ -19,7 +19,7 @@ try {
 $userId = $userExists ? $userInfo->getId() : 0;
 
 $canViewImages = !$userExists
-    || !user_warning_check_expiration($userId, MSZ_WARN_BAN)
+    || !$userInfo->isBanned()
     || (
         parse_url($_SERVER['HTTP_REFERER'] ?? '', PHP_URL_PATH) === url('user-profile')
         && perms_check_user(MSZ_PERMS_USER, User::hasCurrent() ? User::getCurrent()->getId() : 0, MSZ_PERM_USER_MANAGE_USERS)

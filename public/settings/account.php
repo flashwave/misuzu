@@ -18,7 +18,7 @@ if(!UserSession::hasCurrent()) {
 $errors = [];
 $currentUser = User::getCurrent();
 $currentUserId = $currentUser->getId();
-$isRestricted = user_warning_check_restriction($currentUserId);
+$isRestricted = $currentUser->hasActiveWarning();
 $twoFactorInfo = user_totp_info($currentUserId);
 $isVerifiedRequest = CSRF::validateRequest();
 
