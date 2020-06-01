@@ -183,30 +183,6 @@ function render_info_or_json(bool $json, string $message, int $httpCode = 200, s
     return render_info($message, $httpCode, $template);
 }
 
-function html_link(string $url, ?string $content = null, $attributes = []): string {
-    $content = $content ?? $url;
-    $attributes = array_merge(
-        is_string($attributes) ? ['class' => $attributes] : $attributes,
-        ['href' => $url]
-    );
-
-    if(mb_strpos($url, '://') !== false) {
-        $attributes['target'] = '_blank';
-        $attributes['rel'] = 'noreferrer noopener';
-    }
-
-    $html = '<a';
-
-    foreach($attributes as $name => $value) {
-        $value = str_replace('"', '\"', $value);
-        $html .= " {$name}=\"{$value}\"";
-    }
-
-    $html .= ">{$content}</a>";
-
-    return $html;
-}
-
 function html_colour(?int $colour, $attribs = '--user-colour'): string {
     $colour = $colour == null ? \Misuzu\Colour::none() : new \Misuzu\Colour($colour);
 

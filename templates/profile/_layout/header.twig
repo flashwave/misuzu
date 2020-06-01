@@ -42,9 +42,9 @@
                 {% endif %}
 
                 <div class="profile__header__country">
-                    <div class="flag flag--{{ profile_user.user_country|lower }}"></div>
+                    <div class="flag flag--{{ profile_user.country|lower }}"></div>
                     <div class="profile__header__country__name">
-                        {{ profile_user.user_country|country_name }}{% if profile_user.user_age > 0 %}, {{ profile_user.user_age }} year{{ profile_user.user_age != 's' ? 's' : '' }} old{% endif %}
+                        {{ profile_user.countryName }}{% if profile_user.user_age > 0 %}, {{ profile_user.user_age }} year{{ profile_user.user_age != 's' ? 's' : '' }} old{% endif %}
                     </div>
                 </div>
             {% else %}

@@ -12,8 +12,6 @@ final class TwigMisuzu extends Twig_Extension {
             new Twig_Filter('html_colour', 'html_colour'),
             new Twig_Filter('country_name', 'get_country_name'),
             new Twig_Filter('byte_symbol', 'byte_symbol'),
-            new Twig_Filter('html_link', 'html_link'),
-            // deprecate this call, convert to html in php
             new Twig_Filter('parse_text', fn(string $text, int $parser): string => Parser::instance($parser)->parseText($text)),
             new Twig_Filter('perms_check', 'perms_check'),
             new Twig_Filter('bg_settings', 'user_background_settings_strings'),

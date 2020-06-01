@@ -127,7 +127,7 @@
                                                     {% if field.format_link is empty %}
                                                         {{ profile_field_value }}
                                                     {% else %}
-                                                        {{ field.format_link|format(field.field_value)|html_link(profile_field_value, 'profile__accounts__link')|raw }}
+                                                        <a href="{{ field.format_link|format(field.field_value) }}" class="profile__accounts__link" target="_blank" rel="noreferrer noopener">{{ profile_field_value }}</a>
                                                     {% endif %}
                                                 </div>
                                             {% endif %}

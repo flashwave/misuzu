@@ -111,7 +111,7 @@
             {% for item in site_menu %}
                 {% if item.display is not defined or item.display %}
                     <div class="header__desktop__menu">
-                        {{ item.url|html_link(item.title, {'class': 'header__desktop__link header__desktop__menu__link'})|raw }}
+                        <a href="{{ item.url }}" class="header__desktop__link header__desktop__menu__link">{{ item.title }}</a>
 
                         {% if item.menu is defined and item.menu is iterable %}
                             <div class="header__desktop__submenu">
@@ -119,7 +119,7 @@
                                 <div class="header__desktop__submenu__content">
                                     {% for subitem in item.menu %}
                                         {% if subitem.display is not defined or subitem.display %}
-                                            {{ subitem.url|html_link(subitem.title, {'class': 'header__desktop__link header__desktop__submenu__link'})|raw }}
+                                            <a href="{{ subitem.url }}" class="header__desktop__link header__desktop__submenu__link">{{ subitem.title }}</a>
                                         {% endif %}
                                     {% endfor %}
                                 </div>
@@ -183,12 +183,12 @@
             <div class="header__mobile__navigation">
                 {% for item in site_menu %}
                     {% if item.display is not defined or item.display %}
-                        {{ item.url|html_link(item.title, {'class': 'header__mobile__link header__mobile__link--primary'})|raw }}
+                        <a href="{{ item.url }}" class="header__mobile__link header__mobile__link--primary">{{ item.title }}</a>
 
                         {% if item.menu is defined and item.menu is iterable %}
                             {% for subitem in item.menu %}
                                 {% if subitem.display is not defined or subitem.display %}
-                                    {{ subitem.url|html_link(subitem.title, {'class': 'header__mobile__link'})|raw }}
+                                    <a href="{{ subitem.url }}" class="header__mobile__link">{{ subitem.title }}</a>
                                 {% endif %}
                             {% endfor %}
                         {% endif %}

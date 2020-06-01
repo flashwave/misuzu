@@ -208,7 +208,7 @@ if($authToken->isValid()) {
     } else {
         $userDisplayInfo = DB::prepare('
             SELECT
-                u.`user_id`, u.`username`, u.`user_background_settings`, u.`user_deleted`,
+                u.`user_id`, u.`username`,
                 COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
             FROM `msz_users` AS u
             LEFT JOIN `msz_roles` AS r
