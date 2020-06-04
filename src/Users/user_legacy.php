@@ -52,12 +52,6 @@ function user_id_from_username(string $username): int {
     return (int)$getId->fetchColumn(0, 0);
 }
 
-function user_username_from_id(int $userId): string {
-    $getName = \Misuzu\DB::prepare('SELECT `username` FROM `msz_users` WHERE `user_id` = :user_id');
-    $getName->bind('user_id', $userId);
-    return $getName->fetchColumn(0, '');
-}
-
 function user_bump_last_active(int $userId, string $ipAddress = null): void {
     $bumpUserLast = \Misuzu\DB::prepare('
         UPDATE `msz_users`
@@ -68,68 +62,6 @@ function user_bump_last_active(int $userId, string $ipAddress = null): void {
     $bumpUserLast->bind('last_ip', $ipAddress ?? \Misuzu\Net\IPAddress::remote());
     $bumpUserLast->bind('user_id', $userId);
     $bumpUserLast->execute();
-}
-
-function user_get_last_ip(int $userId): string {
-    $getAddress = \Misuzu\DB::prepare('
-        SELECT INET6_NTOA(`last_ip`)
-        FROM `msz_users`
-        WHERE `user_id` = :user_id
-    ');
-    $getAddress->bind('user_id', $userId);
-    return $getAddress->fetchColumn(0, '');
-}
-
-function user_check_super(int $userId): bool {
-    static $superUsers = [];
-
-    if(!isset($superUsers[$userId])) {
-        $checkSuperUser = \Misuzu\DB::prepare("
-            SELECT `user_super`
-            FROM `msz_users`
-            WHERE `user_id` = :user_id
-        ");
-        $checkSuperUser->bind('user_id', $userId);
-        $superUsers[$userId] = (bool)$checkSuperUser->fetchColumn(0, false);
-    }
-
-    return $superUsers[$userId];
-}
-
-function user_check_authority(int $userId, int $subjectId, bool $canManageSelf = true): bool {
-    if($canManageSelf && $userId === $subjectId)
-        return true;
-
-    $checkHierarchy = \Misuzu\DB::prepare('
-        SELECT (
-            SELECT MAX(r.`role_hierarchy`)
-            FROM `msz_roles` AS r
-            LEFT JOIN `msz_user_roles` AS ur
-            ON ur.`role_id` = r.`role_id`
-            WHERE ur.`user_id` = :user_id
-        ) > (
-            SELECT MAX(r.`role_hierarchy`)
-            FROM `msz_roles` AS r
-            LEFT JOIN `msz_user_roles` AS ur
-            ON ur.`role_id` = r.`role_id`
-            WHERE ur.`user_id` = :subject_id
-        )
-    ');
-    $checkHierarchy->bind('user_id', $userId);
-    $checkHierarchy->bind('subject_id', $subjectId);
-    return (bool)$checkHierarchy->fetchColumn(0, false);
-}
-
-function user_get_hierarchy(int $userId): int {
-    $getHierarchy = \Misuzu\DB::prepare('
-        SELECT MAX(r.`role_hierarchy`)
-        FROM `msz_roles` AS r
-        LEFT JOIN `msz_user_roles` AS ur
-        ON ur.`role_id` = r.`role_id`
-        WHERE ur.`user_id` = :user_id
-    ');
-    $getHierarchy->bind('user_id', $userId);
-    return (int)$getHierarchy->fetchColumn(0, 0);
 }
 
 define('MSZ_E_USER_BIRTHDATE_OK', 0);

@@ -32,8 +32,8 @@
             </div>
 
             {% for role in manage_roles %}
-                <div class="manage__role-item" style="{{ role.role_colour|html_colour('--accent-colour') }}">
-                    <a href="{{ url('manage-role', {'role': role.role_id}) }}" class="manage__role-item__background"></a>
+                <div class="manage__role-item" style="--accent-colour: {{ role.colour }}">
+                    <a href="{{ url('manage-role', {'role': role.id}) }}" class="manage__role-item__background"></a>
 
                     <div class="manage__role-item__container">
                         <div class="manage__role-item__icon">
@@ -44,23 +44,23 @@
                         </div>
                         <div class="manage__role-item__info">
                             <div class="manage__role-item__name">
-                                {{ role.role_name }}
+                                {{ role.name }}
                             </div>
                             <div class="manage__role-item__details">
-                                {% if role.users > 0 %}
+                                {% if role.userCount > 0 %}
                                     <div class="manage__role-item__users">
-                                        <i class="fas fa-users fa-fw"></i> {{ role.users|number_format }}
+                                        <i class="fas fa-users fa-fw"></i> {{ role.userCount|number_format }}
                                     </div>
                                 {% endif %}
-                                {% if role.role_title|default('')|length > 0 %}
+                                {% if role.title is not empty %}
                                     <div class="manage__role-item__title">
-                                        {{ role.role_title }}
+                                        {{ role.title }}
                                     </div>
                                 {% endif %}
                             </div>
                         </div>
                         <div class="manage__role-item__actions">
-                            <a href="{{ url('user-list', {'role': role.role_id}) }}" class="manage__role-item__action" title="Members">
+                            <a href="{{ url('user-list', {'role': role.id}) }}" class="manage__role-item__action" title="Members">
                                 <i class="fas fa-users fa-fw"></i>
                             </a>
                         </div>

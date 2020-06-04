@@ -2,6 +2,7 @@
 namespace Misuzu;
 
 use Misuzu\Users\User;
+use Misuzu\Users\UserRole;
 
 require_once '../../../misuzu.php';
 
@@ -10,34 +11,14 @@ if(!User::hasCurrent() || !perms_check_user(MSZ_PERMS_USER, User::getCurrent()->
     return;
 }
 
-$manageRolesCount = (int)DB::query('
-    SELECT COUNT(`role_id`)
-    FROM `msz_roles`
-')->fetchColumn();
+$pagination = new Pagination(UserRole::countAll(true), 10);
 
-$rolesPagination = new Pagination($manageRolesCount, 10);
-
-if(!$rolesPagination->hasValidOffset()) {
+if(!$pagination->hasValidOffset()) {
     echo render_error(404);
     return;
 }
 
-$getManageRoles = DB::prepare('
-    SELECT
-        `role_id`, `role_colour`, `role_name`, `role_title`,
-        (
-            SELECT COUNT(`user_id`)
-            FROM `msz_user_roles` as ur
-            WHERE ur.`role_id` = r.`role_id`
-        ) as `users`
-    FROM `msz_roles` as r
-    LIMIT :offset, :take
-');
-$getManageRoles->bind('offset', $rolesPagination->getOffset());
-$getManageRoles->bind('take', $rolesPagination->getRange());
-$manageRoles = $getManageRoles->fetchAll();
-
 Template::render('manage.users.roles', [
-    'manage_roles' => $manageRoles,
-    'manage_roles_pagination' => $rolesPagination,
+    'manage_roles' => UserRole::all(true, $pagination),
+    'manage_roles_pagination' => $pagination,
 ]);

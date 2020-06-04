@@ -107,7 +107,7 @@ final class SockChatHandler extends Handler {
             $out[] = [
                 'Text' => $strings,
                 'Image' => $emote->getUrl(),
-                'Hierarchy' => $emote->getHierarchy(),
+                'Hierarchy' => $emote->getRank(),
             ];
         }
 
@@ -275,7 +275,7 @@ final class SockChatHandler extends Handler {
             'user_id' => $userInfo->getId(),
             'username' => $userInfo->getUsername(),
             'colour_raw' => $userInfo->getColourRaw(),
-            'hierarchy' => $userInfo->getHierarchy(),
+            'hierarchy' => $userInfo->getRank(),
             'is_silenced' => date('c', $userInfo->isSilenced() || $userInfo->isBanned() ? ($userInfo->isActiveWarningPermanent() ? strtotime('10 years') : $userInfo->getActiveWarningExpiration()) : 0),
             'perms' => $perms,
         ];

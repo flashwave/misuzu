@@ -36,11 +36,11 @@ final class Emoticon {
         return $this;
     }
 
-    public function getHierarchy(): int {
+    public function getRank(): int {
         return $this->emote_hierarchy ?? 0;
     }
-    public function setHierarchy(int $hierarchy): self {
-        $this->emote_hierarchy = $hierarchy;
+    public function setRank(int $rank): self {
+        $this->emote_hierarchy = $rank;
         return $this;
     }
 
@@ -111,7 +111,7 @@ final class Emoticon {
         }
 
         $saved = $save->bind('order', $this->getOrder())
-            ->bind('hierarchy', $this->getHierarchy())
+            ->bind('hierarchy', $this->getRank())
             ->bind('url', $this->getUrl())
             ->execute();
 

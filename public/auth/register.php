@@ -4,7 +4,9 @@ namespace Misuzu;
 use Misuzu\Net\IPAddress;
 use Misuzu\Net\IPAddressBlacklist;
 use Misuzu\Users\User;
+use Misuzu\Users\UserCreationFailedException;
 use Misuzu\Users\UserLoginAttempt;
+use Misuzu\Users\UserRole;
 use Misuzu\Users\UserSession;
 use Misuzu\Users\UserWarning;
 
@@ -50,42 +52,38 @@ while(!$restricted && !empty($register)) {
     }
 
     $usernameValidation = User::validateUsername($register['username']);
-    if($usernameValidation !== '') {
+    if($usernameValidation !== '')
         $notices[] = User::usernameValidationErrorString($usernameValidation);
-    }
 
     $emailValidation = User::validateEMailAddress($register['email']);
-    if($emailValidation !== '') {
+    if($emailValidation !== '')
         $notices[] = $emailValidation === 'in-use'
             ? 'This e-mail address has already been used!'
             : 'The e-mail address you entered is invalid!';
-    }
 
-    if($register['password_confirm'] !== $register['password']) {
+    if($register['password_confirm'] !== $register['password'])
         $notices[] = 'The given passwords don\'t match.';
-    }
 
-    if(User::validatePassword($register['password']) !== '') {
+    if(User::validatePassword($register['password']) !== '')
         $notices[] = 'Your password is too weak!';
-    }
 
-    if(!empty($notices)) {
+    if(!empty($notices))
         break;
-    }
 
-    $createUser = User::create(
-        $register['username'],
-        $register['password'],
-        $register['email'],
-        $ipAddress
-    );
-
-    if($createUser === null) {
+    try {
+        $createUser = User::create(
+            $register['username'],
+            $register['password'],
+            $register['email'],
+            $ipAddress
+        );
+    } catch(UserCreationFailedException $ex) {
         $notices[] = 'Something went wrong while creating your account, please alert an administrator or a developer about this!';
         break;
     }
 
-    user_role_add($createUser->getId(), MSZ_ROLE_MAIN);
+    $createUser->addRole(UserRole::byDefault());
+
     url_redirect('auth-login-welcome', ['username' => $createUser->getUsername()]);
     return;
 }

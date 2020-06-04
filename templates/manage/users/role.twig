@@ -4,37 +4,37 @@
 {% from '_layout/input.twig' import input_csrf, input_text, input_checkbox %}
 
 {% block manage_content %}
-    <form action="?v=role{{ edit_role is defined ? '&r=' ~ edit_role.role_id : '' }}" method="post"{% if edit_role is defined %} style="{{ edit_role.role_colour|html_colour('--accent-colour') }}"{% endif %}>
+    <form action="?v=role{{ role_info is not null ? '&r=' ~ role_info.id : '' }}" method="post"{% if role_info is not null %} style="--accent-colour: {{ role_info.colour }}"{% endif %}>
         {{ input_csrf() }}
 
         <div class="container">
-            {{ container_title(edit_role is defined ? 'Editing ' ~ edit_role.role_name ~ ' (' ~ edit_role.role_id ~ ')' : 'Creating a new role') }}
+            {{ container_title(role_info is not null ? 'Editing ' ~ role_info.name ~ ' (' ~ role_info.id ~ ')' : 'Creating a new role') }}
 
             <label class="form__label">
                 <div class="form__label__text">Role Name</div>
                 <div class="form__label__input">
-                    {{ input_text('role[name]', '', edit_role.role_name|default(''), 'text', '', true, {'maxlength':255}) }}
+                    {{ input_text('role[name]', '', role_info.name|default(''), 'text', '', true, {'maxlength':255}) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Hide Rank</div>
                 <div class="form__label__input">
-                    {{ input_checkbox('role[secret]', '', edit_role is defined and edit_role.role_hidden) }}
+                    {{ input_checkbox('role[secret]', '', role_info is not null and role_info.hidden) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Hierarchy</div>
                 <div class="form__label__input">
-                    {{ input_text('role[hierarchy]', '', edit_role.role_hierarchy|default(1), 'number', '', true) }}
+                    {{ input_text('role[hierarchy]', '', role_info.rank|default(1), 'number', '', true) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Title</div>
                 <div class="form__label__input">
-                    {{ input_text('role[title]', '', edit_role.role_title|default(''), 'text', '', false, {'maxlength':64}) }}
+                    {{ input_text('role[title]', '', role_info.title|default(''), 'text', '', false, {'maxlength':64}) }}
                 </div>
             </label>
 
@@ -46,28 +46,28 @@
             <label class="form__label">
                 <div class="form__label__text">Inherit Colour</div>
                 <div class="form__label__input">
-                    {{ input_checkbox('role[colour][inherit]', '', role_colour is defined ? role_colour.inherit : true) }}
+                    {{ input_checkbox('role[colour][inherit]', '', role_info is not null ? role_info.colour.inherit : true) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Red</div>
                 <div class="form__label__input">
-                    {{ input_text('role[colour][red]', '', role_colour.red|default(0), 'number', '', false, {'min':0,'max':255}) }}
+                    {{ input_text('role[colour][red]', '', role_info.colour.red|default(0), 'number', '', false, {'min':0,'max':255}) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Green</div>
                 <div class="form__label__input">
-                    {{ input_text('role[colour][green]', '', role_colour.green|default(0), 'number', '', false, {'min':0,'max':255}) }}
+                    {{ input_text('role[colour][green]', '', role_info.colour.green|default(0), 'number', '', false, {'min':0,'max':255}) }}
                 </div>
             </label>
 
             <label class="form__label">
                 <div class="form__label__text">Blue</div>
                 <div class="form__label__input">
-                    {{ input_text('role[colour][blue]', '', role_colour.blue|default(0), 'number', '', false, {'min':0,'max':255}) }}
+                    {{ input_text('role[colour][blue]', '', role_info.colour.blue|default(0), 'number', '', false, {'min':0,'max':255}) }}
                 </div>
             </label>
 
@@ -79,7 +79,7 @@
             <label class="form__label">
                 <div class="form__label__text">Description</div>
                 <div class="form__label__input">
-                    <textarea class="input__textarea" name="role[description]" maxlength="1000">{{ edit_role is defined ? edit_role.role_description : '' }}</textarea>
+                    <textarea class="input__textarea" name="role[description]" maxlength="1000">{{ role_info.description|default('') }}</textarea>
                 </div>
             </label>
         </div>
@@ -89,6 +89,6 @@
             {{ permissions_table(permissions, not can_manage_perms) }}
         </div>
 
-        <button class="input__button">{{ edit_role is defined ? 'Update role' : 'Create role' }}</button>
+        <button class="input__button">{{ role_info is not null ? 'Update role' : 'Create role' }}</button>
     </form>
 {% endblock %}

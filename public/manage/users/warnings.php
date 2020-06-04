@@ -17,7 +17,8 @@ if(!User::hasCurrent() || !perms_check_user(MSZ_PERMS_USER, User::getCurrent()->
 }
 
 $notices = [];
-$currentUserId = User::getCurrent()->getId();
+$currentUser = User::getCurrent();
+$currentUserId = $currentUser->getId();
 
 if(!empty($_POST['lookup']) && is_string($_POST['lookup'])) {
     url_redirect('manage-users-warnings', ['user' => user_id_from_username($_POST['lookup'])]);
@@ -67,19 +68,19 @@ if(!empty($_POST['warning']) && is_array($_POST['warning'])) {
     try {
         $warningsUserInfo = User::byId((int)($_POST['warning']['user'] ?? 0));
         $warningsUser = $warningsUserInfo->getId();
+
+        if(!$currentUser->hasAuthorityOver($warningsUserInfo))
+            $notices[] = 'You do not have authority over this user.';
     } catch(UserNotFoundException $ex) {
-        $warningsUserInfo = null;
+        $notices[] = 'This user doesn\'t exist.';
     }
 
-    if(!user_check_super($currentUserId) && !user_check_authority($currentUserId, $warningsUser)) {
-        $notices[] = 'You do not have authority over this user.';
-    }
 
-    if(empty($notices) && $warningsUser > 0) {
+    if(empty($notices) && !empty($warningsUserInfo)) {
         try {
             $warningInfo = UserWarning::create(
                 $warningsUserInfo,
-                User::getCurrent(),
+                $currentUser,
                 $warningType,
                 $warningDuration,
                 $_POST['warning']['note'],

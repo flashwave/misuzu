@@ -19,7 +19,7 @@
                     <div class="settings__account__title">
                         New e-mail address
                     </div>
-                    {{ input_text('email[new]', 'settings__account__input', '', 'email', current_email) }}
+                    {{ input_text('email[new]', 'settings__account__input', '', 'email', settings_user.emailAddress) }}
                 </label>
 
                 <label class="settings__account__input">
@@ -71,22 +71,22 @@
             </div>
 
             <div class="settings__role__collection">
-                {% for role in user_roles %}
-                    {% set is_display_role = user_display_role == role.role_id %}
+                {% for role in settings_user.roles %}
+                    {% set is_display_role = settings_user.isDisplayRole(role) %}
 
-                    <div class="settings__role" style="{{ role.role_colour|html_colour('--accent-colour') }}">
+                    <div class="settings__role" style="--accent-colour: {{ role.colour }}">
                         <div class="settings__role__content">
                             <div class="settings__role__name">
-                                {{ role.role_name }}
+                                {{ role.name }}
                             </div>
 
                             <div class="settings__role__description">
-                                {{ role.role_description }}
+                                {{ role.description }}
                             </div>
 
                             <form class="settings__role__options" method="post" action="{{ url('settings-account') }}">
                                 {{ input_csrf() }}
-                                {{ input_hidden('role[id]', role.role_id) }}
+                                {{ input_hidden('role[id]', role.id) }}
 
                                 <button class="settings__role__option{% if is_display_role %} settings__role__option--disabled{% endif %}"
                                     name="role[mode]" value="display" title="Set this as your display role"
@@ -94,10 +94,10 @@
                                     <i class="far {{ is_display_role ? 'fa-check-square' : 'fa-square' }}"></i>
                                 </button>
 
-                                <button class="settings__role__option{% if not role.role_can_leave %} settings__role__option--disabled{% endif %}"
+                                <button class="settings__role__option{% if not role.canLeave %} settings__role__option--disabled{% endif %}"
                                     name="role[mode]" value="leave" title="Leave this role"
-                                    onclick="return confirm('Are you sure you want to remove {{ role.role_name|replace({"'": "\'"}) }} from your account?')"
-                                    {% if not role.role_can_leave %}disabled{% endif %}>
+                                    onclick="return confirm('Are you sure you want to remove {{ role.name|replace({"'": "\'"}) }} from your account?')"
+                                    {% if not role.canLeave %}disabled{% endif %}>
                                     <i class="fas fa-times-circle"></i>
                                 </button>
                             </form>

@@ -2,6 +2,9 @@
 namespace Misuzu;
 
 use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
+use Misuzu\Users\UserRole;
+use Misuzu\Users\UserRoleNotFoundException;
 
 require_once '../../../misuzu.php';
 
@@ -11,32 +14,28 @@ if(!User::hasCurrent() || !perms_check_user(MSZ_PERMS_USER, User::getCurrent()->
 }
 
 $notices = [];
-$userId = (int)($_GET['u'] ?? 0);
-$currentUserId = User::getCurrent()->getId();
+$userId = (int)filter_input(INPUT_GET, 'u', FILTER_SANITIZE_NUMBER_INT);
+$currentUser = User::getCurrent();
+$currentUserId = $currentUser->getId();
 
-if($userId < 1) {
+try {
+    $userInfo = User::byId($userId);
+} catch(UserNotFoundException $ex) {
     echo render_error(404);
     return;
 }
 
-$isSuperUser = user_check_super($currentUserId);
-$canEdit = $isSuperUser || user_check_authority($currentUserId, $userId);
+$canEdit = $currentUser->hasAuthorityOver($userInfo);
 $canEditPerms = $canEdit && perms_check_user(MSZ_PERMS_USER, $currentUserId, MSZ_PERM_USER_MANAGE_PERMS);
 $permissions = manage_perms_list(perms_get_user_raw($userId));
 
 if(CSRF::validateRequest() && $canEdit) {
     if(!empty($_POST['roles']) && is_array($_POST['roles']) && array_test($_POST['roles'], 'ctype_digit')) {
         // Fetch existing roles
-        $existingRoles = DB::prepare('
-            SELECT `role_id`
-            FROM `msz_user_roles`
-            WHERE `user_id` = :user_id
-        ');
-        $existingRoles->bind('user_id', $userId);
-        $existingRoles = $existingRoles->fetchAll();
+        $existingRoles = $userInfo->getRoles();
 
-        // Initialise set array with existing role ids
-        $setRoles = array_column($existingRoles, 'role_id');
+        // Initialise set array with existing roles
+        $setRoles = $existingRoles;
 
         // Read user input array and throw intval on em
         $applyRoles = array_apply($_POST['roles'], 'intval');
@@ -48,53 +47,33 @@ if(CSRF::validateRequest() && $canEdit) {
         //         Roles that the current users isn't allowed to touch (hierarchy) will stay.
         foreach($setRoles as $role) {
             // Also prevent the main role from being removed.
-            if($role === MSZ_ROLE_MAIN || (!$isSuperUser && !user_role_check_authority($currentUserId, $role))) {
+            if($role->isDefault() || !$currentUser->hasAuthorityOver($role))
                 continue;
-            }
-
-            if(!in_array($role, $applyRoles)) {
+            if(!in_array($role->getId(), $applyRoles))
                 $removeRoles[] = $role;
-            }
         }
 
         // STEP 2: Purge the ones marked for removal.
         $setRoles = array_diff($setRoles, $removeRoles);
 
         // STEP 3: Add roles to the set array from the user input, if the user has authority over the given roles.
-        foreach($applyRoles as $role) {
-            if(!$isSuperUser && !user_role_check_authority($currentUserId, $role)) {
+        foreach($applyRoles as $roleId) {
+            try {
+                $role = $existingRoles[$roleId] ?? UserRole::byId($roleId);
+            } catch(UserRoleNotFoundException $ex) {
                 continue;
             }
-
-            if(!in_array($role, $setRoles)) {
+            if(!$currentUser->hasAuthorityOver($role))
+                continue;
+            if(!in_array($role, $setRoles))
                 $setRoles[] = $role;
-            }
         }
 
-        if(!empty($setRoles)) {
-            // The implode here probably sets off alarm bells, but the array is
-            // guaranteed to only contain integers so it's probably fine.
-            $removeRanks = DB::prepare(sprintf('
-                DELETE FROM `msz_user_roles`
-                WHERE `user_id` = :user_id
-                AND `role_id` NOT IN (%s)
-            ', implode(',', $setRoles)));
-            $removeRanks->bind('user_id', $userId);
-            $removeRanks->execute();
+        foreach($removeRoles as $role)
+            $userInfo->removeRole($role);
 
-            $addRank = DB::prepare('
-                INSERT IGNORE INTO `msz_user_roles`
-                    (`user_id`, `role_id`)
-                VALUES
-                    (:user_id, :role_id)
-            ');
-            $addRank->bind('user_id', $userId);
-
-            foreach($setRoles as $role) {
-                $addRank->bind('role_id', $role);
-                $addRank->execute();
-            }
-        }
+        foreach($setRoles as $role)
+            $userInfo->addRole($role);
     }
 
     $setUserInfo = [];
@@ -107,9 +86,9 @@ if(CSRF::validateRequest() && $canEdit) {
 
         $displayRole = (int)($_POST['user']['display_role'] ?? 0);
 
-        if(user_role_has($userId, $displayRole)) {
-            $setUserInfo['display_role'] = $displayRole;
-        }
+        try {
+            $userInfo->setDisplayRole(UserRole::byId($displayRole));
+        } catch(UserRoleNotFoundException $ex) {}
 
         $usernameValidation = User::validateUsername($setUserInfo['username']);
         $emailValidation = User::validateEMailAddress($setUserInfo['email']);
@@ -124,19 +103,16 @@ if(CSRF::validateRequest() && $canEdit) {
             $notices[] = $emailValidation === 'in-use'
                 ? 'This e-mail address has already been used!'
                 : 'This e-mail address is invalid!';
-        } else {
+        } else
             $setUserInfo['email'] = mb_strtolower($setUserInfo['email']);
-        }
 
-        if(!$countryValidation) {
+        if(!$countryValidation)
             $notices[] = 'Country code was invalid.';
-        }
 
-        if(strlen($setUserInfo['user_title']) < 1) {
+        if(strlen($setUserInfo['user_title']) < 1)
             $setUserInfo['user_title'] = null;
-        } elseif(strlen($setUserInfo['user_title']) > 64) {
+        elseif(strlen($setUserInfo['user_title']) > 64)
             $notices[] = 'User title was invalid.';
-        }
     }
 
     if(!empty($_POST['colour']) && is_array($_POST['colour'])) {
@@ -160,13 +136,12 @@ if(CSRF::validateRequest() && $canEdit) {
         $passwordConfirmValue = (string)($_POST['password']['confirm'] ?? '');
 
         if(!empty($passwordNewValue)) {
-            if($passwordNewValue !== $passwordConfirmValue) {
+            if($passwordNewValue !== $passwordConfirmValue)
                 $notices[] = 'Confirm password does not match.';
-            } elseif(!empty(User::validatePassword($passwordNewValue))) {
+            elseif(!empty(User::validatePassword($passwordNewValue)))
                 $notices[] = 'New password is too weak.';
-            } else {
+            else
                 $setUserInfo['password'] = User::hashPassword($passwordNewValue);
-            }
         }
     }
 
@@ -181,26 +156,22 @@ if(CSRF::validateRequest() && $canEdit) {
         ));
         $userUpdate->bind('set_user_id', $userId);
 
-        foreach($setUserInfo as $key => $value) {
+        foreach($setUserInfo as $key => $value)
             $userUpdate->bind($key, $value);
-        }
 
-        if(!$userUpdate->execute()) {
+        if(!$userUpdate->execute())
             $notices[] = 'Something went wrong while updating the user.';
-        }
     }
 
     if($canEditPerms && !empty($_POST['perms']) && is_array($_POST['perms'])) {
         $perms = manage_perms_apply($permissions, $_POST['perms']);
 
         if($perms !== null) {
-            if(!perms_set_user_raw($userId, $perms)) {
+            if(!perms_set_user_raw($userId, $perms))
                 $notices[] = 'Failed to update permissions.';
-            }
         } else {
-            if(!perms_delete_user($userId)) {
+            if(!perms_delete_user($userId))
                 $notices[] = 'Failed to remove permissions.';
-            }
         }
 
         // this smells, make it refresh/apply in a non-retarded way
@@ -208,45 +179,10 @@ if(CSRF::validateRequest() && $canEdit) {
     }
 }
 
-$getUser = DB::prepare('
-    SELECT
-        u.*,
-        INET6_NTOA(u.`register_ip`) as `register_ip_decoded`,
-        INET6_NTOA(u.`last_ip`) as `last_ip_decoded`,
-        COALESCE(u.`user_colour`, r.`role_colour`) as `colour`
-    FROM `msz_users` as u
-    LEFT JOIN `msz_roles` as r
-    ON u.`display_role` = r.`role_id`
-    WHERE `user_id` = :user_id
-    ORDER BY `user_id`
-');
-$getUser->bind('user_id', $userId);
-$manageUser = $getUser->fetch();
-
-if(empty($manageUser)) {
-    echo render_error(404);
-    return;
-}
-
-$getRoles = DB::prepare('
-    SELECT
-        r.`role_id`, r.`role_name`, r.`role_hierarchy`, r.`role_colour`,
-        (
-            SELECT COUNT(`user_id`) > 0
-            FROM `msz_user_roles`
-            WHERE `role_id` = r.`role_id`
-            AND `user_id` = :user_id
-        ) AS `has_role`
-    FROM `msz_roles` AS r
-');
-$getRoles->bind('user_id', $manageUser['user_id']);
-$roles = $getRoles->fetchAll();
-
 Template::render('manage.users.user', [
-    'manage_user' => $manageUser,
-    'user_colour' => empty($manageUser['user_colour']) ? Colour::none() : new Colour($manageUser['user_colour']),
+    'user_info' => $userInfo,
     'manage_notices' => $notices,
-    'manage_roles' => $roles,
+    'manage_roles' => UserRole::all(true),
     'can_edit_user' => $canEdit,
     'can_edit_perms' => $canEdit && $canEditPerms,
     'permissions' => $permissions ?? [],

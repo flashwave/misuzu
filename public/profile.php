@@ -26,20 +26,15 @@ $currentUser = User::getCurrent();
 $viewingAsGuest = $currentUser === null;
 $currentUserId = $viewingAsGuest ? 0 : $currentUser->getId();
 $viewingOwnProfile = $currentUserId === $profileUser->getId();
-define('DUMB_SHIT', true);
 $isBanned = $profileUser->hasActiveWarning();
 $userPerms = perms_get_user($currentUserId)[MSZ_PERMS_USER];
 $canManageWarnings = perms_check($userPerms, MSZ_PERM_USER_MANAGE_WARNINGS);
 $canEdit = !$isBanned
     && UserSession::hasCurrent()
-    && (
-        $viewingOwnProfile
-        || user_check_super($currentUserId)
-        || (
-            perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS)
-            && user_check_authority($currentUserId, $profileUser->getId())
-        )
-    );
+    && ($viewingOwnProfile || $currentUserId->isSuper() || (
+        perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS)
+        && $currentUserId->hasAuthorityOver($profileUser)
+    ));
 
 if($isEditing) {
     if(!$canEdit) {

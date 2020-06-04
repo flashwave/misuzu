@@ -2,10 +2,12 @@
 namespace Misuzu;
 
 use Misuzu\Users\User;
+use Misuzu\Users\UserRole;
+use Misuzu\Users\UserRoleNotFoundException;
 
 require_once '../misuzu.php';
 
-$roleId = !empty($_GET['r']) && is_string($_GET['r']) ? (int)$_GET['r'] : MSZ_ROLE_MAIN;
+$roleId = !empty($_GET['r']) && is_string($_GET['r']) ? (int)$_GET['r'] : UserRole::DEFAULT;
 $orderBy = !empty($_GET['ss']) && is_string($_GET['ss']) ? mb_strtolower($_GET['ss']) : '';
 $orderDir = !empty($_GET['sd']) && is_string($_GET['sd']) ? mb_strtolower($_GET['sd']) : '';
 
@@ -79,16 +81,16 @@ if(empty($orderDir)) {
 
 $canManageUsers = perms_check_user(MSZ_PERMS_USER, User::hasCurrent() ? User::getCurrent()->getId() : 0, MSZ_PERM_USER_MANAGE_USERS);
 
-$role = user_role_get($roleId);
-
-if(empty($role)) {
+try {
+    $roleInfo = UserRole::byId($roleId);
+} catch(UserRoleNotFoundException $ex) {
     echo render_error(404);
     return;
 }
 
-$usersPagination = new Pagination($role['role_user_count'], 15);
+$pagination = new Pagination($roleInfo->getUserCount(), 15);
 
-$roles = user_role_all();
+$roles = UserRole::all();
 
 $getUsers = DB::prepare(sprintf(
     '
@@ -148,20 +150,19 @@ $getUsers = DB::prepare(sprintf(
     $orderFields[$orderBy]['column'],
     $orderDir,
     \Misuzu\Users\UserRelation::TYPE_FOLLOW,
-    $usersPagination->getOffset(),
-    $usersPagination->getRange()
+    $pagination->getOffset(),
+    $pagination->getRange()
 ));
-$getUsers->bind('role_id', $role['role_id']);
+$getUsers->bind('role_id', $roleInfo->getId());
 $getUsers->bind('current_user_id', User::hasCurrent() ? User::getCurrent()->getId() : 0);
 $users = $getUsers->fetchAll();
 
-if(empty($users)) {
+if(empty($users))
     http_response_code(404);
-}
 
 Template::render('user.listing', [
     'roles' => $roles,
-    'role' => $role,
+    'role' => $roleInfo,
     'users' => $users,
     'order_fields' => $orderFields,
     'order_directions' => $orderDirs,
@@ -169,5 +170,5 @@ Template::render('user.listing', [
     'order_direction' => $orderDir,
     'order_default' => $defaultOrder,
     'can_manage_users' => $canManageUsers,
-    'users_pagination' => $usersPagination,
+    'users_pagination' => $pagination,
 ]);

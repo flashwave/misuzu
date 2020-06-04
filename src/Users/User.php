@@ -3,6 +3,7 @@ namespace Misuzu\Users;
 
 use Misuzu\Colour;
 use Misuzu\DB;
+use Misuzu\HasRankInterface;
 use Misuzu\Memoizer;
 use Misuzu\Pagination;
 use Misuzu\TOTP;
@@ -10,8 +11,9 @@ use Misuzu\Net\IPAddress;
 
 class UserException extends UsersException {} // this naming definitely won't lead to confusion down the line!
 class UserNotFoundException extends UserException {}
+class UserCreationFailedException extends UserException {}
 
-class User {
+class User implements HasRankInterface {
     public const NAME_MIN_LENGTH =  3;               // Minimum username length
     public const NAME_MAX_LENGTH = 16;               // Maximum username length, unless your name is Flappyzor(WorldwideOnline2018through2019through2020)
     public const NAME_REGEX      = '[A-Za-z0-9-_]+'; // Username character constraint
@@ -21,6 +23,17 @@ class User {
 
     // Password hashing algorithm
     public const PASSWORD_ALGO = PASSWORD_ARGON2ID;
+
+    // Order constants for ::all function
+    public const ORDER_ID            = 'id';
+    public const ORDER_NAME          = 'name';
+    public const ORDER_COUNTRY       = 'country';
+    public const ORDER_CREATED       = 'registered';
+    public const ORDER_ACTIVE        = 'last-online';
+    public const ORDER_FORUM_TOPICS  = 'forum-topics';
+    public const ORDER_FORUM_POSTS   = 'forum-posts';
+    public const ORDER_FOLLOWING     = 'following';
+    public const ORDER_FOLLOWERS     = 'followers';
 
     // Database fields
     // TODO: update all references to use getters and setters and mark all of these as private
@@ -52,7 +65,7 @@ class User {
 
     public const TABLE = 'users';
     private const QUERY_SELECT = 'SELECT %1$s FROM `' . DB::PREFIX . self::TABLE . '` AS '. self::TABLE;
-    private const SELECT = '%1$s.`user_id`, %1$s.`username`, %1$s.`password`, %1$s.`email`, %1$s.`user_super`, %1$s.`user_title`, '
+    private const SELECT = '%1$s.`user_id`, %1$s.`username`, %1$s.`password`, %1$s.`email`, %1$s.`user_super`, %1$s.`user_title`'
                          . ', %1$s.`user_country`, %1$s.`user_colour`, %1$s.`display_role`, %1$s.`user_totp_key`'
                          . ', %1$s.`user_about_content`, %1$s.`user_about_parser`'
                          . ', %1$s.`user_signature_content`, %1$s.`user_signature_parser`'
@@ -119,7 +132,11 @@ class User {
         return get_country_name($this->getCountry());
     }
 
-    public function getColour(): Colour {
+    public function getColour(): Colour { // Swaps role colour in if user has no personal colour
+        // TODO: Check inherit flag and grab role colour instead
+        return new Colour($this->getColourRaw());
+    }
+    public function getUserColour(): Colour { // Only ever gets the user's actual colour
         return new Colour($this->getColourRaw());
     }
     public function getColourRaw(): int {
@@ -137,8 +154,23 @@ class User {
         return $this->user_active === null ? -1 : $this->user_active;
     }
 
-    public function getHierarchy(): int {
-        return ($userId = $this->getId()) < 1 ? 0 : user_get_hierarchy($userId);
+    private $userRank = null;
+    public function getRank(): int {
+        if($this->userRank === null)
+            $this->userRank = (int)DB::prepare(
+                'SELECT MAX(`role_hierarchy`)'
+                . ' FROM `' . DB::PREFIX . UserRole::TABLE . '`'
+                . ' WHERE `role_id` IN (SELECT `role_id` FROM `' . DB::PREFIX . UserRoleRelation::TABLE . '` WHERE `user_id` = :user)'
+            )->bind('user', $this->getId())->fetchColumn();
+        return $this->userRank;
+    }
+    public function hasAuthorityOver(HasRankInterface $other): bool {
+        // Don't even bother checking if we're a super user
+        if($this->isSuper())
+            return true;
+        if($other instanceof self && $other->getId() === $this->getId())
+            return true;
+        return $this->getRank() > $other->getRank();
     }
 
     public function hasPassword(): bool {
@@ -163,6 +195,29 @@ class User {
 
     public function getDisplayRoleId(): int {
         return $this->display_role < 1 ? -1 : $this->display_role;
+    }
+    public function setDisplayRoleId(int $roleId): self {
+        $this->display_role = $roleId < 1 ? -1 : $roleId;
+
+        // TEMPORARY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // This DB update statement should be removed when a global update/save/whatever call exists
+        DB::prepare('UPDATE `' . DB::PREFIX . self::TABLE . '` SET `display_role` = :role WHERE `user_id` = :user')
+            ->bind('role', $this->display_role)
+            ->bind('user', $this->user_id)
+            ->execute();
+
+        return $this;
+    }
+    public function getDisplayRole(): UserRole {
+        return $this->getRoleRelations()[$this->getDisplayRoleId()]->getRole();
+    }
+    public function setDisplayRole(UserRole $role): self {
+        if($this->hasRole($role))
+            $this->setDisplayRoleId($role->getId());
+        return $this;
+    }
+    public function isDisplayRole(UserRole $role): bool {
+        return $this->getDisplayRoleId() === $role->getId();
     }
 
     public function hasTOTP(): bool {
@@ -225,6 +280,54 @@ class User {
         return $this->commentPermsArray;
     }
 
+    /*********
+     * ROLES *
+     *********/
+
+    private $roleRelations = null;
+
+    public function addRole(UserRole $role, bool $display = false): void {
+        if(!$this->hasRole($role))
+            $this->roleRelations[$role->getId()] = UserRoleRelation::create($this, $role);
+
+        if($display && $this->isDisplayRole($role))
+            $this->setDisplayRole($role);
+    }
+
+    public function removeRole(UserRole $role): void {
+        if(!$this->hasRole($role))
+            return;
+        UserRoleRelation::destroy($this, $role);
+        unset($this->roleRelations[$role->getId()]);
+
+        if($this->isDisplayRole($role))
+            $this->setDisplayRoleId(UserRole::DEFAULT);
+    }
+
+    public function getRoleRelations(): array {
+        if($this->roleRelations === null) {
+            $this->roleRelations = [];
+            foreach(UserRoleRelation::byUser($this) as $rel)
+                $this->roleRelations[$rel->getRoleId()] = $rel;
+        }
+        return $this->roleRelations;
+    }
+
+    public function getRoles(): array {
+        $roles = [];
+        foreach($this->getRoleRelations() as $rel)
+            $roles[$rel->getRoleId()] = $rel->getRole();
+        return $roles;
+    }
+
+    public function hasRole(UserRole $role): bool {
+        return array_key_exists($role->getId(), $this->getRoleRelations());
+    }
+
+    /*************
+     * RELATIONS *
+     *************/
+
     private $relationCache = [];
     private $relationFollowingCount = -1;
     private $relationFollowersCount = -1;
@@ -283,6 +386,10 @@ class User {
         return $this->relationFollowingCount;
     }
 
+    /***************
+     * FORUM STATS *
+     ***************/
+
     private $forumTopicCount = -1;
     private $forumPostCount = -1;
 
@@ -327,6 +434,10 @@ class User {
         return UserWarning::byProfile($this, $viewer);
     }
 
+    /**************
+     * LOCAL USER *
+     **************/
+
     public function setCurrent(): void {
         self::$localUser = $this;
     }
@@ -339,6 +450,10 @@ class User {
     public static function hasCurrent(): bool {
         return self::$localUser !== null;
     }
+
+    /**************
+     * VALIDATION *
+     **************/
 
     public static function validateUsername(string $name): string {
         if($name !== trim($name))
@@ -418,25 +533,22 @@ class User {
         string $password,
         string $email,
         string $ipAddress
-    ): ?self {
-        $createUser = DB::prepare('
-            INSERT INTO `msz_users` (
-                `username`, `password`, `email`, `register_ip`,
-                `last_ip`, `user_country`, `display_role`
-            ) VALUES (
-                :username, :password, LOWER(:email), INET6_ATON(:register_ip),
-                INET6_ATON(:last_ip), :user_country, 1
-            )
-        ')  ->bind('username', $username)->bind('email', $email)
-            ->bind('register_ip', $ipAddress)->bind('last_ip', $ipAddress)
+    ): self {
+        $createUser = DB::prepare(
+            'INSERT INTO `' . DB::PREFIX . self::TABLE . '` (`username`, `password`, `email`, `register_ip`, `last_ip`, `user_country`, `display_role`)'
+            . ' VALUES (:username, :password, LOWER(:email), INET6_ATON(:register_ip), INET6_ATON(:last_ip), :user_country, 1)'
+        )   ->bind('username', $username)
+            ->bind('email', $email)
+            ->bind('register_ip', $ipAddress)
+            ->bind('last_ip', $ipAddress)
             ->bind('password', self::hashPassword($password))
             ->bind('user_country', IPAddress::country($ipAddress))
             ->executeGetId();
 
         if($createUser < 1)
-            return null;
+            throw new UserCreationFailedException;
 
-        return static::byId($createUser);
+        return self::byId($createUser);
     }
 
     private static function getMemoizer() {

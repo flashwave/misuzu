@@ -80,7 +80,6 @@ require_once 'src/Forum/topic.php';
 require_once 'src/Forum/validate.php';
 require_once 'src/Users/avatar.php';
 require_once 'src/Users/background.php';
-require_once 'src/Users/role.php';
 require_once 'src/Users/user_legacy.php';
 
 $dbConfig = parse_ini_file(MSZ_ROOT . '/config/config.ini', true, INI_SCANNER_TYPED);

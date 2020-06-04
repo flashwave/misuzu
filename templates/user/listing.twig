@@ -2,7 +2,7 @@
 {% from 'macros.twig' import container_title %}
 {% from 'user/macros.twig' import user_card %}
 
-{% set url_role = role.role_id != 1 ? role.role_id : 0 %}
+{% set url_role = role.id > 1 ? role.id : 0 %}
 {% set url_sort = order_field == order_default ? '' : order_field %}
 {% set url_direction = order_fields[order_field]['default-dir'] == order_direction ? '' : order_direction %}
 {% set canonical_url = url('user-list', {
@@ -11,7 +11,7 @@
     'direction': url_direction,
     'page': users_pagination.page|default(0) > 2 ? users_pagination.page : 0,
 }) %}
-{% set title = role.role_id == 1 ? 'Members' : 'Role » ' ~ role.role_name  %}
+{% set title = role.id == 1 ? 'Members' : 'Role » ' ~ role.name  %}
 {% set manage_link = url('manage-users') %}
 
 {% macro member_nav(roles, role_id, orders, order, directions, direction, users_pagination, url_role, url_sort, url_direction) %}
@@ -20,7 +20,7 @@
 
     <div class="userlist__navigation">
         <form onchange="this.submit()" class="userlist__sorting">
-            {{ input_select('r', roles, role_id, 'role_name', 'role_id', false, 'userlist__select') }}
+            {{ input_select('r', roles, role_id, 'name', 'id', false, 'userlist__select') }}
             {{ input_select('ss', orders, order, 'title', null, false, 'userlist__select') }}
             {{ input_select('sd', directions, direction, null, null, false, 'userlist__select') }}
 
@@ -38,13 +38,13 @@
 {% block content %}
     {% from _self import member_nav %}
     {% set member_nav = member_nav(
-        roles, role.role_id,
+        roles, role.id,
         order_fields, order_field,
         order_directions, order_direction,
         users_pagination, url_role, url_sort, url_direction
     ) %}
 
-    <div class="container userlist__container" style="{{ role.role_colour|html_colour('--accent-colour') }}">
+    <div class="container userlist__container" style="--accent-colour: {{ role.colour }}">
         {{ member_nav }}
     </div>
 
@@ -62,7 +62,7 @@
         </div>
     {% endif %}
 
-    <div class="container userlist__container" style="{{ role.role_colour|html_colour('--accent-colour') }}">
+    <div class="container userlist__container" style="--accent-colour: {{ role.colour }}">
         {{ member_nav }}
     </div>
 {% endblock %}

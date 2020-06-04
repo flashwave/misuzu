@@ -14,7 +14,7 @@ class Colour {
     private int $raw = 0;
 
     public function __construct(?int $raw = 0) {
-        $this->setRaw($raw);
+        $this->setRaw($raw ?? 0);
     }
 
     public static function none(): self {

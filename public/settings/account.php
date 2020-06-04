@@ -4,6 +4,8 @@ namespace Misuzu;
 use Misuzu\AuditLog;
 use Misuzu\Config;
 use Misuzu\Users\User;
+use Misuzu\Users\UserRole;
+use Misuzu\Users\UserRoleNotFoundException;
 use Misuzu\Users\UserSession;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
@@ -23,24 +25,25 @@ $twoFactorInfo = user_totp_info($currentUserId);
 $isVerifiedRequest = CSRF::validateRequest();
 
 if(!$isRestricted && $isVerifiedRequest && !empty($_POST['role'])) {
-    $roleId = (int)($_POST['role']['id'] ?? 0);
+    try {
+        $roleInfo = UserRole::byId((int)($_POST['role']['id'] ?? 0));
+    } catch(UserRoleNotFoundException $ex) {}
 
-    if($roleId > 0 && user_role_has($currentUserId, $roleId)) {
+    if(empty($roleInfo) || !$currentUser->hasRole($roleInfo))
+        $errors[] = "You're trying to modify a role that hasn't been assigned to you.";
+    else {
         switch($_POST['role']['mode'] ?? '') {
             case 'display':
-                user_role_set_display($currentUserId, $roleId);
+                $currentUser->setDisplayRole($roleInfo);
                 break;
 
             case 'leave':
-                if(user_role_can_leave($roleId)) {
-                    user_role_remove($currentUserId, $roleId);
-                } else {
+                if($roleInfo->getCanLeave())
+                    $currentUser->removeRole($roleInfo);
+                else
                     $errors[] = "You're not allow to leave this role, an administrator has to remove it for you.";
-                }
                 break;
         }
-    } else {
-        $errors[] = "You're trying to modify a role that hasn't been assigned to you.";
     }
 }
 
@@ -127,13 +130,9 @@ if($isVerifiedRequest && !empty($_POST['current_password'])) {
     }
 }
 
-$userRoles = user_role_all_user($currentUserId);
-
 Template::render('settings.account', [
     'errors' => $errors,
-    'current_email' => $currentUser->getEMailAddress(),
-    'user_roles' => $userRoles,
-    'user_display_role' => user_role_get_display($currentUserId),
+    'settings_user' => $currentUser,
     'is_restricted' => $isRestricted,
     'settings_2fa_enabled' => $twoFactorInfo['totp_enabled'],
 ]);

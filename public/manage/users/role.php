@@ -1,8 +1,9 @@
 <?php
-// TODO: UNFUCK THIS FILE
 namespace Misuzu;
 
 use Misuzu\Users\User;
+use Misuzu\Users\UserRole;
+use Misuzu\Users\UserRoleNotFoundException;
 
 require_once '../../../misuzu.php';
 
@@ -11,23 +12,28 @@ if(!User::hasCurrent() || !perms_check_user(MSZ_PERMS_USER, User::getCurrent()->
     return;
 }
 
-$roleId = $_GET['r'] ?? null;
-$currentUserId = User::getCurrent()->getId();
-/*$isSuperUser = user_check_super($currentUserId);
-$canEdit = $isSuperUser || user_check_authority($currentUserId, $userId);*/
-$canEditPerms = /*$canEdit && */perms_check_user(MSZ_PERMS_USER, $currentUserId, MSZ_PERM_USER_MANAGE_PERMS);
+$roleId = (int)filter_input(INPUT_GET, 'r', FILTER_SANITIZE_NUMBER_INT);
 
-if($canEditPerms) {
+if($roleId > 0)
+    try {
+        $roleInfo = UserRole::byId($roleId);
+    } catch(UserRoleNotFoundException $ex) {
+        echo render_error(404);
+        return;
+    }
+
+$currentUser = User::getCurrent();
+$currentUserId = $currentUser->getId();
+$canEditPerms = perms_check_user(MSZ_PERMS_USER, $currentUserId, MSZ_PERM_USER_MANAGE_PERMS);
+
+if($canEditPerms)
     $permissions = manage_perms_list(perms_get_role_raw($roleId ?? 0));
-}
 
 if(!empty($_POST['role']) && is_array($_POST['role']) && CSRF::validateRequest()) {
     $roleHierarchy = (int)($_POST['role']['hierarchy'] ?? -1);
 
-    if(!user_check_super($currentUserId) && ($roleId === null
-            ? (user_get_hierarchy($currentUserId) <= $roleHierarchy)
-            : !user_role_check_authority($currentUserId, $roleId))) {
-        echo 'Your hierarchy is too low to do this.';
+    if(!$currentUser->isSuper() && (isset($roleInfo) ? $roleInfo->hasAuthorityOver($currentUser) : $currentUser->getRank() <= $roleHierarchy)) {
+        echo 'You don\'t hold authority over this role.';
         return;
     }
 
@@ -63,15 +69,13 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && CSRF::validateRequest()
         }
     }
 
-    $roleDescription = $_POST['role']['description'] ?? null;
-    $roleTitle = $_POST['role']['title'] ?? null;
+    $roleDescription = $_POST['role']['description'] ?? '';
+    $roleTitle = $_POST['role']['title'] ?? '';
 
     if($roleDescription !== null) {
         $rdLength = strlen($roleDescription);
 
-        if($rdLength < 1) {
-            $roleDescription = null;
-        } elseif($rdLength > 1000) {
+        if($rdLength > 1000) {
             echo 'description is too long';
             return;
         }
@@ -80,52 +84,22 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && CSRF::validateRequest()
     if($roleTitle !== null) {
         $rtLength = strlen($roleTitle);
 
-        if($rtLength < 1) {
-            $roleTitle = null;
-        } elseif($rtLength > 64) {
+        if($rtLength > 64) {
             echo 'title is too long';
             return;
         }
     }
 
-    if($roleId < 1) {
-        $updateRole = DB::prepare('
-            INSERT INTO `msz_roles`
-                (
-                    `role_name`, `role_hierarchy`, `role_hidden`, `role_colour`,
-                    `role_description`, `role_title`
-                )
-            VALUES
-                (
-                    :role_name, :role_hierarchy, :role_hidden, :role_colour,
-                    :role_description, :role_title
-                )
-        ');
-    } else {
-        $updateRole = DB::prepare('
-            UPDATE `msz_roles`
-            SET `role_name` = :role_name,
-                `role_hierarchy` = :role_hierarchy,
-                `role_hidden` = :role_hidden,
-                `role_colour` = :role_colour,
-                `role_description` = :role_description,
-                `role_title` = :role_title
-            WHERE `role_id` = :role_id
-        ');
-        $updateRole->bind('role_id', $roleId);
-    }
+    if(!isset($roleInfo))
+        $roleInfo = new UserRole;
 
-    $updateRole->bind('role_name', $roleName);
-    $updateRole->bind('role_hierarchy', $roleHierarchy);
-    $updateRole->bind('role_hidden', $roleSecret ? 1 : 0);
-    $updateRole->bind('role_colour', $roleColour->getRaw());
-    $updateRole->bind('role_description', $roleDescription);
-    $updateRole->bind('role_title', $roleTitle);
-    $updateRole->execute();
-
-    if($roleId < 1) {
-        $roleId = DB::lastId();
-    }
+    $roleInfo->setName($roleName)
+        ->setRank($roleHierarchy)
+        ->setHidden($roleSecret)
+        ->setColour($roleColour)
+        ->setDescription($roleDescription)
+        ->setTitle($roleTitle)
+        ->save();
 
     if(!empty($permissions) && !empty($_POST['perms']) && is_array($_POST['perms'])) {
         $perms = manage_perms_apply($permissions, $_POST['perms']);
@@ -138,7 +112,7 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && CSRF::validateRequest()
                 VALUES
                     (:role_id, NULL, :' . implode(', :', $permKeys) . ')
             ');
-            $setPermissions->bind('role_id', $roleId);
+            $setPermissions->bind('role_id', $roleInfo->getId());
 
             foreach($perms as $key => $value) {
                 $setPermissions->bind($key, $value);
@@ -151,41 +125,17 @@ if(!empty($_POST['role']) && is_array($_POST['role']) && CSRF::validateRequest()
                 WHERE `role_id` = :role_id
                 AND `user_id` IS NULL
             ');
-            $deletePermissions->bind('role_id', $roleId);
+            $deletePermissions->bind('role_id', $roleInfo->getId());
             $deletePermissions->execute();
         }
     }
 
-    url_redirect('manage-role', ['role' => $roleId]);
+    url_redirect('manage-role', ['role' => $roleInfo->getId()]);
     return;
 }
 
-if($roleId !== null) {
-    if($roleId < 1) {
-        echo 'no';
-        return;
-    }
-
-    $getEditRole = DB::prepare('
-        SELECT *
-        FROM `msz_roles`
-        WHERE `role_id` = :role_id
-    ');
-    $getEditRole->bind('role_id', $roleId);
-    $editRole = $getEditRole->fetch();
-
-    if(empty($editRole)) {
-        echo 'invalid role';
-        return;
-    }
-
-    Template::set([
-        'edit_role' => $editRole,
-        'role_colour' => new Colour($editRole['role_colour']),
-    ]);
-}
-
 Template::render('manage.users.role', [
+    'role_info' => $roleInfo ?? null,
     'can_manage_perms' => $canEditPerms,
     'permissions' => $permissions ?? [],
 ]);

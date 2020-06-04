@@ -16,7 +16,7 @@ $emoteInfo = !$isNew ? Emoticon::byId($emoteId) : new Emoticon;
 
 if(CSRF::validateRequest() && isset($_POST['emote_order']) && isset($_POST['emote_hierarchy']) && !empty($_POST['emote_url']) && !empty($_POST['emote_strings'])) {
     $emoteInfo->setUrl($_POST['emote_url'])
-        ->setHierarchy($_POST['emote_hierarchy'])
+        ->setRank($_POST['emote_hierarchy'])
         ->setOrder($_POST['emote_order'])
         ->save();
 
