@@ -31,9 +31,9 @@ $userPerms = perms_get_user($currentUserId)[MSZ_PERMS_USER];
 $canManageWarnings = perms_check($userPerms, MSZ_PERM_USER_MANAGE_WARNINGS);
 $canEdit = !$isBanned
     && UserSession::hasCurrent()
-    && ($viewingOwnProfile || $currentUserId->isSuper() || (
+    && ($viewingOwnProfile || $currentUser->isSuper() || (
         perms_check($userPerms, MSZ_PERM_USER_MANAGE_USERS)
-        && $currentUserId->hasAuthorityOver($profileUser)
+        && $currentUser->hasAuthorityOver($profileUser)
     ));
 
 if($isEditing) {
