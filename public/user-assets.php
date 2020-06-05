@@ -34,16 +34,12 @@ switch($userAssetsMode) {
 
         $filename = Config::get('avatar.default', Config::TYPE_STR, MSZ_ROOT . '/public/images/no-avatar.png');
 
-        if(!$userExists) {
+        if(!$userExists)
             break;
-        }
 
         $dimensions = MSZ_USER_AVATAR_RESOLUTION_DEFAULT;
-
-        // todo: find closest dimensions
-        if(isset($_GET['r']) && is_string($_GET['r']) && ctype_digit($_GET['r'])) {
+        if(isset($_GET['r']) && is_string($_GET['r']) && ctype_digit($_GET['r']))
             $dimensions = user_avatar_resolution_closest((int)$_GET['r']);
-        }
 
         $avatarFilename = sprintf('%d.msz', $userId);
         $avatarOriginal = sprintf('%s/avatars/original/%s', MSZ_STORAGE, $avatarFilename);
@@ -55,6 +51,7 @@ switch($userAssetsMode) {
 
         $avatarStorage = sprintf('%1$s/avatars/%2$dx%2$d', MSZ_STORAGE, $dimensions);
         $avatarCropped = sprintf('%s/%s', $avatarStorage, $avatarFilename);
+        $fileDisposition = sprintf('avatar-%d-%2$dx%2$d', $userId, $dimensions);
 
         if(is_file($avatarCropped)) {
             $filename = $avatarCropped;
@@ -72,11 +69,11 @@ switch($userAssetsMode) {
         break;
 
     case 'background':
-        if(!$canViewImages && !$userExists) {
+        if(!$canViewImages && !$userExists)
             break;
-        }
 
         $backgroundStorage = sprintf('%s/backgrounds/original', MSZ_STORAGE);
+        $fileDisposition = sprintf('background-%d', $userId);
         $filename = sprintf('%s/%d.msz', $backgroundStorage, $userId);
         mkdirs($backgroundStorage, true);
         break;
@@ -87,19 +84,9 @@ if(empty($filename) || !is_file($filename)) {
     return;
 }
 
-$fileContents = file_get_contents($filename);
-$entityTag = sprintf('W/"{%s}"', hash('sha256', $fileContents));
+$contentType = mime_content_type($filename);
 
-if(!empty($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $entityTag) {
-    http_response_code(304);
-    return;
-}
-
-$finfo = finfo_open(FILEINFO_MIME);
-$fmime = finfo_buffer($finfo, $fileContents);
-finfo_close($finfo);
-
-http_response_code(200);
-header(sprintf('Content-Type: %s', $fmime));
-header(sprintf('ETag: %s', $entityTag));
-echo $fileContents;
+header(sprintf('X-Accel-Redirect: %s', str_replace(MSZ_STORAGE, '/msz-storage', $filename)));
+header(sprintf('Content-Type: %s', $contentType));
+if(isset($fileDisposition))
+    header(sprintf('Content-Disposition: inline; filename="%s.%s"', $fileDisposition, explode('/', $contentType)[1]));
