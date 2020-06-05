@@ -12,6 +12,7 @@ class BBCodeParser implements ParserInterface {
                 // Advanced markup
                 new Tags\CodeTag,
                 new Tags\QuoteTag,
+                new Tags\AlignTag,
 
                 // Slightly more advanced markup
                 new Tags\AudioTag,
@@ -39,10 +40,8 @@ class BBCodeParser implements ParserInterface {
     }
 
     public function parseText(string $text): string {
-        foreach($this->tags as $tag) {
+        foreach($this->tags as $tag)
             $text = $tag->parseText($text);
-        }
-
         return $text;
     }
 
