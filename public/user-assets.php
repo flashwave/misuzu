@@ -40,7 +40,6 @@ switch($userAssetsMode) {
         if(!$userExists)
             break;
 
-        $isFound = true;
         $dimensions = MSZ_USER_AVATAR_RESOLUTION_DEFAULT;
         if(isset($_GET['r']) && is_string($_GET['r']) && ctype_digit($_GET['r']))
             $dimensions = user_avatar_resolution_closest((int)$_GET['r']);
@@ -58,9 +57,11 @@ switch($userAssetsMode) {
         $fileDisposition = sprintf('avatar-%d-%2$dx%2$d', $userId, $dimensions);
 
         if(is_file($avatarCropped)) {
+            $isFound = true;
             $filename = $avatarCropped;
         } else {
             if(is_file($avatarOriginal)) {
+                $isFound = true;
                 try {
                     mkdirs($avatarStorage, true);
 
