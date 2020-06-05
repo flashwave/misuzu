@@ -25,18 +25,22 @@ $canViewImages = !$userExists
         && perms_check_user(MSZ_PERMS_USER, User::hasCurrent() ? User::getCurrent()->getId() : 0, MSZ_PERM_USER_MANAGE_USERS)
     );
 
+$isFound = true;
+
 switch($userAssetsMode) {
     case 'avatar':
+        $isFound = false;
         if(!$canViewImages) {
-            $filename = Config::get('avatar.banned', Config::TYPE_STR, MSZ_ROOT . '/public/images/banned-avatar.png');
+            $filename = Config::get('avatar.banned', Config::TYPE_STR, '/images/banned-avatar.png');
             break;
         }
 
-        $filename = Config::get('avatar.default', Config::TYPE_STR, MSZ_ROOT . '/public/images/no-avatar.png');
+        $filename = Config::get('avatar.default', Config::TYPE_STR, '/images/no-avatar.png');
 
         if(!$userExists)
             break;
 
+        $isFound = true;
         $dimensions = MSZ_USER_AVATAR_RESOLUTION_DEFAULT;
         if(isset($_GET['r']) && is_string($_GET['r']) && ctype_digit($_GET['r']))
             $dimensions = user_avatar_resolution_closest((int)$_GET['r']);
@@ -79,12 +83,12 @@ switch($userAssetsMode) {
         break;
 }
 
-if(empty($filename) || !is_file($filename)) {
+if($isFound && (empty($filename) || !is_file($filename))) {
     http_response_code(404);
     return;
 }
 
-$contentType = mime_content_type($filename);
+$contentType = mime_content_type($isFound ? $filename : (MSZ_ROOT . '/public' . $filename));
 
 header(sprintf('X-Accel-Redirect: %s', str_replace(MSZ_STORAGE, '/msz-storage', $filename)));
 header(sprintf('Content-Type: %s', $contentType));
