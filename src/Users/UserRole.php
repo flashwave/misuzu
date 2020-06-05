@@ -179,13 +179,15 @@ class UserRole implements ArrayAccess, HasRankInterface {
         return sprintf(self::QUERY_SELECT, sprintf(self::SELECT, self::TABLE));
     }
     public static function byId(int $roleId): self {
-        $object = DB::prepare(
-            self::byQueryBase() . ' WHERE `role_id` = :role'
-        )   ->bind('role', $roleId)
-            ->fetchObject(self::class);
-        if(!$object)
-            throw new UserRoleNotFoundException;
-        return $object;
+        return self::memoizer()->find($roleId, function() use ($roleId) {
+            $object = DB::prepare(
+                self::byQueryBase() . ' WHERE `role_id` = :role'
+            )   ->bind('role', $roleId)
+                ->fetchObject(self::class);
+            if(!$object)
+                throw new UserRoleNotFoundException;
+            return $object;
+        });
     }
     public static function byDefault(): self {
         return self::byId(self::DEFAULT);
