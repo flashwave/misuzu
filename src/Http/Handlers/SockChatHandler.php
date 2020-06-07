@@ -277,7 +277,7 @@ final class SockChatHandler extends Handler {
             'success' => true,
             'user_id' => $userInfo->getId(),
             'username' => $userInfo->getUsername(),
-            'colour_raw' => $userInfo->getColourRaw(),
+            'colour_raw' => $userInfo->getColour()->getRaw(),
             'hierarchy' => $userInfo->getRank(),
             'is_silenced' => date('c', $userInfo->isSilenced() || $userInfo->isBanned() ? ($userInfo->isActiveWarningPermanent() ? strtotime('10 years') : $userInfo->getActiveWarningExpiration()) : 0),
             'perms' => $perms,
