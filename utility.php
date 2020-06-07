@@ -50,14 +50,6 @@ function first_paragraph(string $text, string $delimiter = "\n"): string {
     return $index === false ? $text : mb_substr($text, 0, $index);
 }
 
-function camel_to_snake(string $camel): string {
-    return trim(mb_strtolower(preg_replace('#([A-Z][a-z]+)#', '$1_', $camel)), '_');
-}
-
-function snake_to_camel(string $snake): string {
-    return str_replace('_', '', ucwords($snake, '_'));
-}
-
 function unique_chars(string $input, bool $multibyte = true): int {
     $chars = [];
     $strlen = $multibyte ? 'mb_strlen' : 'strlen';
@@ -87,27 +79,6 @@ function byte_symbol(int $bytes, bool $decimal = false, array $symbols = ['', 'K
     return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
 }
 
-function safe_delete(string $path): void {
-    $path = realpath($path);
-    if(empty($path))
-        return;
-
-    if(is_dir($path)) {
-        rmdir($path);
-        return;
-    }
-
-    if(is_file($path))
-        unlink($path);
-}
-
-// mkdir but it fails silently
-function mkdirs(string $path, bool $recursive = false, int $mode = 0777): bool {
-    if(file_exists($path))
-        return true;
-    return mkdir($path, $mode, $recursive);
-}
-
 function get_country_name(string $code): string {
     switch(strtolower($code)) {
         case 'xx':
@@ -122,24 +93,6 @@ function get_country_name(string $code): string {
         default:
             return locale_get_display_region("-{$code}", 'en');
     }
-}
-
-function pdo_prepare_array_update(array $keys, bool $useKeys = false, string $format = '%s'): string {
-    return pdo_prepare_array($keys, $useKeys, sprintf($format, '`%1$s` = :%1$s'));
-}
-
-function pdo_prepare_array(array $keys, bool $useKeys = false, string $format = '`%s`'): string {
-    $parts = [];
-
-    if($useKeys) {
-        $keys = array_keys($keys);
-    }
-
-    foreach($keys as $key) {
-        $parts[] = sprintf($format, $key);
-    }
-
-    return implode(', ', $parts);
 }
 
 // render_error, render_info and render_info_or_json should be redone a bit better

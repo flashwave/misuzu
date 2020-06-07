@@ -14,7 +14,6 @@ final class TwigMisuzu extends Twig_Extension {
             new Twig_Filter('byte_symbol', 'byte_symbol'),
             new Twig_Filter('parse_text', fn(string $text, int $parser): string => Parser::instance($parser)->parseText($text)),
             new Twig_Filter('perms_check', 'perms_check'),
-            new Twig_Filter('bg_settings', 'user_background_settings_strings'),
             new Twig_Filter('clamp', 'clamp'),
         ];
     }

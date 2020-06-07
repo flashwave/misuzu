@@ -48,8 +48,8 @@
                     {% if perms.edit_avatar %}
                         <ul class="profile__guidelines__section">
                             <li class="profile__guidelines__line profile__guidelines__line--header">Avatar</li>
-                            <li class="profile__guidelines__line">May not exceed the <span class="profile__guidelines__emphasis">{{ guidelines.avatar.max_size|byte_symbol(true) }}</span> file size limit.</li>
-                            <li class="profile__guidelines__line">May not be larger than <span class="profile__guidelines__emphasis">{{ guidelines.avatar.max_width }}x{{ guidelines.avatar.max_height }}</span>.</li>
+                            <li class="profile__guidelines__line">May not exceed the <span class="profile__guidelines__emphasis">{{ profile_user.avatarInfo.maxBytes|byte_symbol() }}</span> file size limit.</li>
+                            <li class="profile__guidelines__line">May not be larger than <span class="profile__guidelines__emphasis">{{ profile_user.avatarInfo.maxWidth }}x{{ profile_user.avatarInfo.maxHeight }}</span>.</li>
                             <li class="profile__guidelines__line">Will be centre cropped and scaled to at most <span class="profile__guidelines__emphasis">240x240</span>.</li>
                             <li class="profile__guidelines__line">Animated gif images are allowed.</li>
                         </ul>
@@ -58,8 +58,8 @@
                     {% if perms.edit_background %}
                         <ul class="profile__guidelines__section">
                             <li class="profile__guidelines__line profile__guidelines__line--header">Background</li>
-                            <li class="profile__guidelines__line">May not exceed the <span class="profile__guidelines__emphasis">{{ guidelines.background.max_size|byte_symbol(true) }}</span> file size limit.</li>
-                            <li class="profile__guidelines__line">May not be larger than <span class="profile__guidelines__emphasis">{{ guidelines.background.max_width }}x{{ guidelines.background.max_height }}</span>.</li>
+                            <li class="profile__guidelines__line">May not exceed the <span class="profile__guidelines__emphasis">{{ profile_user.backgroundInfo.maxBytes|byte_symbol() }}</span> file size limit.</li>
+                            <li class="profile__guidelines__line">May not be larger than <span class="profile__guidelines__emphasis">{{ profile_user.backgroundInfo.maxWidth }}x{{ profile_user.backgroundInfo.maxHeight }}</span>.</li>
                             <li class="profile__guidelines__line">Gif images, in general, are only allowed when tiling.</li>
                         </ul>
                     {% endif %}
@@ -94,11 +94,11 @@
 
                                     {{ input_checkbox('background[attach]', 'None', true, '', 0, true, {'onchange':'profileChangeBackgroundAttach(this.value)'}) }}
                                     {% for key, value in background_attachments %}
-                                        {{ input_checkbox('background[attach]', value|capitalize, key == profile_user.backgroundAttachment, '', key, true, {'onchange':'profileChangeBackgroundAttach(this.value)'}) }}
+                                        {{ input_checkbox('background[attach]', value, key == profile_user.backgroundInfo.attachment, '', key, true, {'onchange':'profileChangeBackgroundAttach(this.value)'}) }}
                                     {% endfor %}
 
-                                    {{ input_checkbox('background[attr][blend]', 'Blend', profile_user.backgroundBlend, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'blend\', this.checked)'}) }}
-                                    {{ input_checkbox('background[attr][slide]', 'Slide', profile_user.backgroundSlide, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'slide\', this.checked)'}) }}
+                                    {{ input_checkbox('background[attr][blend]', 'Blend', profile_user.backgroundInfo.blend, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'blend\', this.checked)'}) }}
+                                    {{ input_checkbox('background[attr][slide]', 'Slide', profile_user.backgroundInfo.slide, '', '', false, {'onchange':'profileToggleBackgroundAttr(\'slide\', this.checked)'}) }}
                                 </div>
                             </div>
                         {% endif %}
@@ -140,22 +140,20 @@
                             <div class="container profile__container profile__birthdate">
                                 {{ container_title('Birthdate') }}
 
-                                {% set birthdate = profile_user.user_birthdate|split('-') %}
-
                                 <div class="profile__birthdate__content">
                                     <div class="profile__birthdate__date">
                                         <label class="profile__birthdate__label">
                                             <div class="profile__birthdate__title">
                                                 Day
                                             </div>
-                                            {{ input_select('birthdate[day]', ['-']|merge(range(1, 31)), birthdate[2]|default(0)|trim('0', 'left'), '', '', true, 'profile__birthdate__select profile__birthdate__select--day') }}
+                                            {{ input_select('birthdate[day]', ['-']|merge(range(1, 31)), profile_user.hasBirthdate ? profile_user.birthdate.format('d') : 0, '', '', true, 'profile__birthdate__select profile__birthdate__select--day') }}
                                         </label>
 
                                         <label class="profile__birthdate__label">
                                             <div class="profile__birthdate__title">
                                                 Month
                                             </div>
-                                            {{ input_select('birthdate[month]', ['-']|merge(range(1, 12)), birthdate[1]|default(0)|trim('0', 'left'), '', '', true, 'profile__birthdate__select profile__birthdate__select--month') }}
+                                            {{ input_select('birthdate[month]', ['-']|merge(range(1, 12)), profile_user.hasBirthdate ? profile_user.birthdate.format('m') : 0, '', '', true, 'profile__birthdate__select profile__birthdate__select--month') }}
                                         </label>
                                     </div>
 
@@ -164,7 +162,7 @@
                                             <div class="profile__birthdate__title">
                                                 Year (may be left empty)
                                             </div>
-                                            {{ input_select('birthdate[year]', ['-']|merge(range(null|date('Y'), null|date('Y') - 100)), birthdate[0]|default(0)|trim('0', 'left'), '', '', true, 'profile__birthdate__select profile__birthdate__select--year') }}
+                                            {{ input_select('birthdate[year]', ['-']|merge(range(null|date('Y'), null|date('Y') - 100)), profile_user.birthdate.format('Y'), '', '', true, 'profile__birthdate__select profile__birthdate__select--year') }}
                                         </label>
                                     </div>
                                 </div>
@@ -175,35 +173,35 @@
 
                 {% if profile_user is defined %}
                     <div class="profile__content__main">
-                        {% if (profile_is_editing and perms.edit_about) or profile_user.user_about_content|length > 0 %}
+                        {% if (profile_is_editing and perms.edit_about) or profile_user.hasProfileAbout %}
                             <div class="container profile__container profile__about" id="about">
                                 {{ container_title('About ' ~ profile_user.username) }}
 
                                 {% if profile_is_editing %}
                                     <div class="profile__signature__editor">
-                                        {{ input_select('about[parser]', constant('\\Misuzu\\Parsers\\Parser::NAMES'), profile_user.user_about_parser, '', '', false, 'profile__about__select') }}
-                                        <textarea name="about[text]" class="input__textarea profile__about__text" id="about-textarea">{{ profile_user.user_about_content|escape }}</textarea>
+                                        {{ input_select('about[parser]', constant('\\Misuzu\\Parsers\\Parser::NAMES'), profile_user.profileAboutParser, '', '', false, 'profile__about__select') }}
+                                        <textarea name="about[text]" class="input__textarea profile__about__text" id="about-textarea">{{ profile_user.profileAboutText }}</textarea>
                                     </div>
                                 {% else %}
-                                    <div class="profile__about__content{% if profile_is_editing %} profile__about__content--edit{% elseif profile_user.user_about_parser == constant('\\Misuzu\\Parsers\\Parser::MARKDOWN') %} markdown{% endif %}">
-                                        {{ profile_user.user_about_content|escape|parse_text(profile_user.user_about_parser)|raw }}
+                                    <div class="profile__about__content{% if profile_is_editing %} profile__about__content--edit{% elseif profile_user.profileAboutParser == constant('\\Misuzu\\Parsers\\Parser::MARKDOWN') %} markdown{% endif %}">
+                                        {{ profile_user.profileAboutParsed|raw }}
                                     </div>
                                 {% endif %}
                             </div>
                         {% endif %}
 
-                        {% if (profile_is_editing and perms.edit_signature) or profile_user.user_signature_content|length > 0 %}
+                        {% if (profile_is_editing and perms.edit_signature) or profile_user.hasForumSignature %}
                             <div class="container profile__container profile__signature" id="signature">
                                 {{ container_title('Signature') }}
 
                                 {% if profile_is_editing %}
                                     <div class="profile__signature__editor">
-                                        {{ input_select('signature[parser]', constant('\\Misuzu\\Parsers\\Parser::NAMES'), profile_user.user_signature_parser, '', '', false, 'profile__signature__select') }}
-                                        <textarea name="signature[text]" class="input__textarea profile__signature__text" id="signature-textarea">{{ profile_user.user_signature_content|escape }}</textarea>
+                                        {{ input_select('signature[parser]', constant('\\Misuzu\\Parsers\\Parser::NAMES'), profile_user.forumSignatureParser, '', '', false, 'profile__signature__select') }}
+                                        <textarea name="signature[text]" class="input__textarea profile__signature__text" id="signature-textarea">{{ profile_user.forumSignatureText }}</textarea>
                                     </div>
                                 {% else %}
-                                    <div class="profile__signature__content{% if profile_is_editing %} profile__signature__content--edit{% elseif profile_user.user_signature_parser == constant('\\Misuzu\\Parsers\\Parser::MARKDOWN') %} markdown{% endif %}">
-                                    {{ profile_user.user_signature_content|escape|parse_text(profile_user.user_signature_parser)|raw }}
+                                    <div class="profile__signature__content{% if profile_is_editing %} profile__signature__content--edit{% elseif profile_user.forumSignatureParser == constant('\\Misuzu\\Parsers\\Parser::MARKDOWN') %} markdown{% endif %}">
+                                        {{ profile_user.forumSignatureParsed|raw }}
                                     </div>
                                 {% endif %}
                             </div>

@@ -190,7 +190,9 @@ final class SockChatHandler extends Handler {
             return;
 
         foreach($bumpInfo as $bumpUser)
-            user_bump_last_active($bumpUser->id, $bumpUser->ip);
+            try {
+                User::byId($bumpUser->id)->bumpActivity($bumpUser->ip);
+            } catch(UserNotFoundException $ex) {}
     }
 
     public function verify(HttpResponse $response, HttpRequest $request): array {
@@ -245,7 +247,6 @@ final class SockChatHandler extends Handler {
             }
 
             $sessionInfo->bump();
-            user_bump_last_active($userInfo->getId());
         } else {
             try {
                 $token = UserChatToken::byExact($userInfo, $authInfo->token);
@@ -258,6 +259,8 @@ final class SockChatHandler extends Handler {
                 return ['success' => false, 'reason' => 'expired'];
             }
         }
+
+        $userInfo->bumpActivity($authInfo->ip);
 
         $perms = self::PERMS_DEFAULT;
 

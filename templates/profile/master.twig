@@ -3,16 +3,19 @@
 {% if profile_user is defined %}
     {% set image = url('user-avatar', {'user': profile_user.id, 'res': 200}) %}
     {% set manage_link = url('manage-user', {'user': profile_user.id}) %}
+    {% if profile_user.hasBackground %}
+        {% set site_background = profile_user.backgroundInfo %}
+    {% endif %}
     {% set stats = [
         {
             'title': 'Joined',
             'is_date': true,
-            'value': profile_user.user_created,
+            'value': profile_user.createdTime,
         },
         {
             'title': 'Last seen',
             'is_date': true,
-            'value': profile_user.user_active,
+            'value': profile_user.activeTime,
         },
         {
             'title': 'Following',

@@ -89,33 +89,33 @@
                     {{ container_title('<i class="fas fa-birthday-cake fa-fw"></i> Happy Birthday!') }}
 
                     {% for birthday in birthdays %}
-                        <a class="landing__latest" href="{{ url('user-profile', {'user': birthday.user_id}) }}">
-                            <div class="landing__latest__avatar">{{ avatar(birthday.user_id, 50, birthday.username) }}</div>
+                        <a class="landing__latest" style="--user-colour: {{ birthday.colour }}" href="{{ url('user-profile', {'user': birthday.id}) }}">
+                            <div class="landing__latest__avatar">{{ avatar(birthday.id, 50, birthday.username) }}</div>
                             <div class="landing__latest__content">
                                 <div class="landing__latest__username">
                                     {{ birthday.username }}
                                 </div>
-                                {% if birthday.user_age is not null %}
+                                {% if birthday.hasAge %}
                                     <div class="landing__latest__joined">
-                                        Turned {{ birthday.user_age }} today!
+                                        Turned {{ birthday.age }} today!
                                     </div>
                                 {% endif %}
                             </div>
                         </a>
                     {% endfor %}
                 </div>
-            {% elseif latest_user.user_id|default(0) > 0 %}
+            {% elseif latest_user is not null %}
                 <div class="container landing__container">
                     {{ container_title('<i class="fas fa-user-plus fa-fw"></i> Newest User') }}
 
-                    <a class="landing__latest" style="{{ latest_user.user_colour|html_colour }}" href="{{ url('user-profile', {'user': latest_user.user_id}) }}">
-                        <div class="landing__latest__avatar">{{ avatar(latest_user.user_id, 50, latest_user.username) }}</div>
+                    <a class="landing__latest" style="--user-colour: {{ latest_user.colour }}" href="{{ url('user-profile', {'user': latest_user.id}) }}">
+                        <div class="landing__latest__avatar">{{ avatar(latest_user.id, 50, latest_user.username) }}</div>
                         <div class="landing__latest__content">
                             <div class="landing__latest__username">
                                 {{ latest_user.username }}
                             </div>
                             <div class="landing__latest__joined">
-                                Joined <time datetime="{{ latest_user.user_created|date('c') }}" title="{{ latest_user.user_created|date('r') }}">{{ latest_user.user_created|time_diff }}</time>
+                                Joined <time datetime="{{ latest_user.createdTime|date('c') }}" title="{{ latest_user.createdTime|date('r') }}">{{ latest_user.createdTime|time_diff }}</time>
                             </div>
                         </div>
                     </a>

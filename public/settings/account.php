@@ -21,7 +21,6 @@ $errors = [];
 $currentUser = User::getCurrent();
 $currentUserId = $currentUser->getId();
 $isRestricted = $currentUser->hasActiveWarning();
-$twoFactorInfo = user_totp_info($currentUserId);
 $isVerifiedRequest = CSRF::validateRequest();
 
 if(!$isRestricted && $isVerifiedRequest && !empty($_POST['role'])) {
@@ -47,7 +46,7 @@ if(!$isRestricted && $isVerifiedRequest && !empty($_POST['role'])) {
     }
 }
 
-if($isVerifiedRequest && isset($_POST['tfa']['enable']) && (bool)$twoFactorInfo['totp_enabled'] !== (bool)$_POST['tfa']['enable']) {
+if($isVerifiedRequest && isset($_POST['tfa']['enable']) && $currentUser->hasTOTP() !== (bool)$_POST['tfa']['enable']) {
     if((bool)$_POST['tfa']['enable']) {
         $tfaKey = TOTP::generateKey();
         $tfaIssuer = Config::get('site.name', Config::TYPE_STR, 'Misuzu');
@@ -55,7 +54,7 @@ if($isVerifiedRequest && isset($_POST['tfa']['enable']) && (bool)$twoFactorInfo[
             'version'    => 5,
             'outputType' => QRCode::OUTPUT_IMAGE_JPG,
             'eccLevel'   => QRCode::ECC_L,
-        ])))->render(sprintf('otpauth://totp/%s:%s?%s', $tfaIssuer, $twoFactorInfo['username'], http_build_query([
+        ])))->render(sprintf('otpauth://totp/%s:%s?%s', $tfaIssuer, $currentUser->getUsername(), http_build_query([
             'secret' => $tfaKey,
             'issuer' => $tfaIssuer,
         ])));
@@ -65,12 +64,10 @@ if($isVerifiedRequest && isset($_POST['tfa']['enable']) && (bool)$twoFactorInfo[
             'settings_2fa_image' => $tfaQrcode,
         ]);
 
-        user_totp_update($currentUserId, $tfaKey);
+        $currentUser->setTOTPKey($tfaKey);
     } else {
-        user_totp_update($currentUserId, null);
+        $currentUser->removeTOTPKey();
     }
-
-    $twoFactorInfo['totp_enabled'] = !$twoFactorInfo['totp_enabled'];
 }
 
 if($isVerifiedRequest && !empty($_POST['current_password'])) {
@@ -104,7 +101,7 @@ if($isVerifiedRequest && !empty($_POST['current_password'])) {
                             $errors[] = 'Unknown e-mail validation error.';
                     }
                 } else {
-                    user_email_set($currentUserId, $_POST['email']['new']);
+                    $currentUser->setEMailAddress($_POST['email']['new']);
                     AuditLog::create(AuditLog::PERSONAL_EMAIL_CHANGE, [
                         $_POST['email']['new'],
                     ]);
@@ -130,9 +127,12 @@ if($isVerifiedRequest && !empty($_POST['current_password'])) {
     }
 }
 
+// THIS FUCKING SUCKS AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+if($_SERVER['REQUEST_METHOD'] === 'POST' && $isVerifiedRequest)
+    $currentUser->save();
+
 Template::render('settings.account', [
     'errors' => $errors,
     'settings_user' => $currentUser,
     'is_restricted' => $isRestricted,
-    'settings_2fa_enabled' => $twoFactorInfo['totp_enabled'],
 ]);

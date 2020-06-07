@@ -105,10 +105,13 @@ Misuzu.initLoginPage = function() {
             if(xhr.readyState !== 4)
                 return;
 
-            avatarElem.src = Misuzu.Urls.format('user-avatar', [
-                { name: 'user', value: xhr.responseText.indexOf('<') !== -1 ? '0' : xhr.responseText },
-                { name: 'res', value: 100 },
-            ]);
+            var json = JSON.parse(xhr.responseText);
+            if(!json)
+                return;
+
+            if(json.name)
+                usernameElem.value = json.name;
+            avatarElem.src = json.avatar;
         });
         xhr.open('GET', Misuzu.Urls.format('auth-resolve-user', [{name: 'username', value: encodeURIComponent(usernameElem.value)}]));
         xhr.send();

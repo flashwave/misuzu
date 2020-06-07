@@ -47,7 +47,7 @@ MIG;
 
         $fileName = date('Y_m_d_His_') . trim($name, '_') . '.php';
         $filePath = MSZ_ROOT . '/database/' . $fileName;
-        $namespace = snake_to_camel($name);
+        $namespace = str_replace('_', '', ucwords($name, '_'));
 
         file_put_contents($filePath, sprintf(self::TEMPLATE, $namespace));
 

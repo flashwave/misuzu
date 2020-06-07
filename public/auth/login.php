@@ -17,9 +17,26 @@ if(UserSession::hasCurrent()) {
     return;
 }
 
-if(!empty($_GET['resolve_user']) && is_string($_GET['resolve_user'])) {
-    header('Content-Type: text/plain; charset=utf-8');
-    echo user_id_from_username($_GET['resolve_user']);
+if(!empty($_GET['resolve'])) {
+    header('Content-Type: application/json; charset=utf-8');
+
+    try {
+        // Only works for usernames, this is by design
+        $userInfo = User::byUsername((string)filter_input(INPUT_GET, 'name', FILTER_SANITIZE_STRING));
+    } catch(UserNotFoundException $ex) {
+        echo json_encode([
+            'id' => 0,
+            'name' => '',
+            'avatar' => url('user-avatar', ['res' => 200]),
+        ]);
+        return;
+    }
+
+    echo json_encode([
+        'id' => $userInfo->getId(),
+        'name' => $userInfo->getUsername(),
+        'avatar' => url('user-avatar', ['user' => $userInfo->getId(), 'res' => 200]),
+    ]);
     return;
 }
 
@@ -56,7 +73,7 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
     $loginFailedError = "Invalid username or password, {$attemptsRemainingError}.";
 
     try {
-        $userInfo = User::findForLogin($_POST['login']['username']);
+        $userInfo = User::byUsernameOrEMailAddress($_POST['login']['username']);
     } catch(UserNotFoundException $ex) {
         UserLoginAttempt::create(false);
         $notices[] = $loginFailedError;
@@ -74,9 +91,8 @@ while(!empty($_POST['login']) && is_array($_POST['login'])) {
         break;
     }
 
-    if($userInfo->passwordNeedsRehash()) {
-        $userInfo->setPassword($_POST['login']['password']);
-    }
+    if($userInfo->passwordNeedsRehash())
+        $userInfo->setPassword($_POST['login']['password'])->save();
 
     if(!empty($loginPermCat) && $loginPermVal > 0 && !perms_check_user($loginPermCat, $userInfo->getId(), $loginPermVal)) {
         $notices[] = "Login succeeded, but you're not allowed to browse the site right now.";

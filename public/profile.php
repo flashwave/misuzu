@@ -1,10 +1,17 @@
 <?php
 namespace Misuzu;
 
+use InvalidArgumentException;
 use Misuzu\Parsers\Parser;
 use Misuzu\Users\User;
 use Misuzu\Users\UserNotFoundException;
 use Misuzu\Users\UserSession;
+use Misuzu\Users\Assets\UserBackgroundAsset;
+use Misuzu\Users\Assets\UserImageAssetException;
+use Misuzu\Users\Assets\UserImageAssetInvalidImageException;
+use Misuzu\Users\Assets\UserImageAssetInvalidTypeException;
+use Misuzu\Users\Assets\UserImageAssetInvalidDimensionsException;
+use Misuzu\Users\Assets\UserImageAssetFileTooLargeException;
 
 require_once '../misuzu.php';
 
@@ -53,20 +60,16 @@ if($isEditing) {
 
     Template::set([
         'perms' => $perms,
-        'guidelines' => [
-            'avatar' => $avatarProps = user_avatar_default_options(),
-            'background' => $backgroundProps = user_background_default_options(),
-        ],
-        'background_attachments' => MSZ_USER_BACKGROUND_ATTACHMENTS_NAMES,
+        'background_attachments' => UserBackgroundAsset::getAttachmentStringOptions(),
     ]);
 
     if(!empty($_POST) && is_array($_POST)) {
         if(!CSRF::validateRequest()) {
-            $notices[] = MSZ_TMP_USER_ERROR_STRINGS['csrf'];
+            $notices[] = 'Couldn\'t verify you, please refresh the page and retry.';
         } else {
             if(!empty($_POST['profile']) && is_array($_POST['profile'])) {
                 if(!$perms['edit_profile']) {
-                    $notices[] = MSZ_TMP_USER_ERROR_STRINGS['profile']['not-allowed'];
+                    $notices[] = 'You\'re not allowed to edit your profile';
                 } else {
                     $profileFields = $profileUser->profileFields(false);
 
@@ -74,7 +77,7 @@ if($isEditing) {
                         if(isset($_POST['profile'][$profileField->field_key])
                             && $profileField->field_value !== $_POST['profile'][$profileField->field_key]
                             && !$profileField->setFieldValue($_POST['profile'][$profileField->field_key])) {
-                            $notices[] = sprintf(MSZ_TMP_USER_ERROR_STRINGS['profile']['invalid'], $profileField->field_title);
+                            $notices[] = sprintf('%s was formatted incorrectly!', $profileField->field_title);
                         }
                     }
                 }
@@ -82,38 +85,48 @@ if($isEditing) {
 
             if(!empty($_POST['about']) && is_array($_POST['about'])) {
                 if(!$perms['edit_about']) {
-                    $notices[] = MSZ_TMP_USER_ERROR_STRINGS['about']['not-allowed'];
+                    $notices[] = 'You\'re not allowed to edit your about page.';
                 } else {
-                    $setAboutError = user_set_about_page(
-                        $profileUser->getId(),
-                        $_POST['about']['text'] ?? '',
-                        (int)($_POST['about']['parser'] ?? Parser::PLAIN)
-                    );
+                    $aboutText  = (string)($_POST['about']['text'] ?? '');
+                    $aboutParse = (int)($_POST['about']['parser'] ?? Parser::PLAIN);
+                    $aboutValid = User::validateProfileAbout($aboutParse, $aboutText, strlen($profileUser->getProfileAboutText()) > User::PROFILE_ABOUT_MAX_LENGTH);
 
-                    if($setAboutError !== MSZ_E_USER_ABOUT_OK) {
-                        $notices[] = sprintf(
-                            MSZ_TMP_USER_ERROR_STRINGS['about'][$setAboutError] ?? MSZ_TMP_USER_ERROR_STRINGS['about']['_'],
-                            MSZ_USER_ABOUT_MAX_LENGTH
-                        );
+                    if($aboutValid === '')
+                        $currentUser->setProfileAboutText($aboutText)->setProfileAboutParser($aboutParse);
+                    else switch($aboutValid) {
+                        case 'parser':
+                            $notices[] = 'The selected about section parser is invalid.';
+                            break;
+                        case 'long':
+                            $notices[] = sprintf('Please keep the length of your about section below %d characters.', User::PROFILE_ABOUT_MAX_LENGTH);
+                            break;
+                        default:
+                            $notices[] = 'Failed to update about section, contact an administator.';
+                            break;
                     }
                 }
             }
 
             if(!empty($_POST['signature']) && is_array($_POST['signature'])) {
                 if(!$perms['edit_signature']) {
-                    $notices[] = MSZ_TMP_USER_ERROR_STRINGS['signature']['not-allowed'];
+                    $notices[] = 'You\'re not allowed to edit your forum signature.';
                 } else {
-                    $setSignatureError = user_set_signature(
-                        $profileUser->getId(),
-                        $_POST['signature']['text'] ?? '',
-                        (int)($_POST['signature']['parser'] ?? Parser::PLAIN)
-                    );
+                    $sigText  = (string)($_POST['signature']['text'] ?? '');
+                    $sigParse = (int)($_POST['signature']['parser'] ?? Parser::PLAIN);
+                    $sigValid = User::validateForumSignature($sigParse, $sigText);
 
-                    if($setSignatureError !== MSZ_E_USER_SIGNATURE_OK) {
-                        $notices[] = sprintf(
-                            MSZ_TMP_USER_ERROR_STRINGS['signature'][$setSignatureError] ?? MSZ_TMP_USER_ERROR_STRINGS['signature']['_'],
-                            MSZ_USER_SIGNATURE_MAX_LENGTH
-                        );
+                    if($sigValid === '')
+                        $currentUser->setForumSignatureText($sigText)->setForumSignatureParser($sigParse);
+                    else switch($sigValid) {
+                        case 'parser':
+                            $notices[] = 'The selected forum signature parser is invalid.';
+                            break;
+                        case 'long':
+                            $notices[] = sprintf('Please keep the length of your signature below %d characters.', User::FORUM_SIGNATURE_MAX_LENGTH);
+                            break;
+                        default:
+                            $notices[] = 'Failed to update signature, contact an administator.';
+                            break;
                     }
                 }
             }
@@ -122,68 +135,67 @@ if($isEditing) {
                 if(!$perms['edit_birthdate']) {
                     $notices[] = "You aren't allow to change your birthdate.";
                 } else {
-                    $setBirthdate = user_set_birthdate(
-                        $profileUser->getId(),
-                        (int)($_POST['birthdate']['day'] ?? 0),
-                        (int)($_POST['birthdate']['month'] ?? 0),
-                        (int)($_POST['birthdate']['year'] ?? 0)
-                    );
+                    $birthYear  = (int)($_POST['birthdate']['year'] ?? 0);
+                    $birthMonth = (int)($_POST['birthdate']['month'] ?? 0);
+                    $birthDay   = (int)($_POST['birthdate']['day'] ?? 0);
+                    $birthValid = User::validateBirthdate($birthYear, $birthMonth, $birthDay);
 
-                    switch($setBirthdate) {
-                        case MSZ_E_USER_BIRTHDATE_USER:
-                            $notices[] = 'Invalid user specified while setting birthdate?';
-                            break;
-                        case MSZ_E_USER_BIRTHDATE_DATE:
-                            $notices[] = 'The given birthdate is invalid.';
-                            break;
-                        case MSZ_E_USER_BIRTHDATE_FAIL:
-                            $notices[] = 'Failed to set birthdate.';
-                            break;
-                        case MSZ_E_USER_BIRTHDATE_YEAR:
+                    if($birthValid === '')
+                        $currentUser->setBirthdate($birthYear, $birthMonth, $birthDay);
+                    else switch($birthValid) {
+                        case 'year':
                             $notices[] = 'The given birth year is invalid.';
                             break;
-                        case MSZ_E_USER_BIRTHDATE_OK:
+                        case 'date':
+                            $notices[] = 'The given birthdate is invalid.';
                             break;
                         default:
                             $notices[] = 'Something unexpected happened while setting your birthdate.';
+                            break;
                     }
                 }
             }
 
             if(!empty($_FILES['avatar'])) {
+                $avatarInfo = $profileUser->getAvatarInfo();
+
                 if(!empty($_POST['avatar']['delete'])) {
-                    user_avatar_delete($profileUser->getId());
+                    $avatarInfo->delete();
                 } else {
                     if(!$perms['edit_avatar']) {
-                        $notices[] = MSZ_TMP_USER_ERROR_STRINGS['avatar']['not-allowed'];
+                        $notices[] = 'You aren\'t allow to change your avatar.';
                     } elseif(!empty($_FILES['avatar'])
                         && is_array($_FILES['avatar'])
                         && !empty($_FILES['avatar']['name']['file'])) {
                         if($_FILES['avatar']['error']['file'] !== UPLOAD_ERR_OK) {
-                            $notices[] = sprintf(
-                                MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload'][$_FILES['avatar']['error']['file']]
-                                ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['upload']['_'],
-                                $_FILES['avatar']['error']['file'],
-                                byte_symbol($avatarProps['max_size'], true),
-                                $avatarProps['max_width'],
-                                $avatarProps['max_height']
-                            );
+                            switch($_FILES['avatar']['error']['file']) {
+                                case UPLOAD_ERR_NO_FILE:
+                                    $notices[] = 'Select a file before hitting upload!';
+                                    break;
+                                case UPLOAD_ERR_PARTIAL:
+                                    $notices[] = 'The upload was interrupted, please try again!';
+                                    break;
+                                case UPLOAD_ERR_INI_SIZE:
+                                case UPLOAD_ERR_FORM_SIZE:
+                                    $notices[] = sprintf('Your avatar is not allowed to be larger in file size than %2$s!', byte_symbol($avatarInfo->getMaxBytes(), true));
+                                    break;
+                                default:
+                                    $notices[] = 'Unable to save your avatar, contact an administator!';
+                                    break;
+                            }
                         } else {
-                            $setAvatar = user_avatar_set_from_path(
-                                $profileUser->getId(),
-                                $_FILES['avatar']['tmp_name']['file'],
-                                $avatarProps
-                            );
-
-                            if($setAvatar !== MSZ_USER_AVATAR_NO_ERRORS) {
-                                $notices[] = sprintf(
-                                    MSZ_TMP_USER_ERROR_STRINGS['avatar']['set'][$setAvatar]
-                                    ?? MSZ_TMP_USER_ERROR_STRINGS['avatar']['set']['_'],
-                                    $setAvatar,
-                                    byte_symbol($avatarProps['max_size'], true),
-                                    $avatarProps['max_width'],
-                                    $avatarProps['max_height']
-                                );
+                            try {
+                                $avatarInfo->setFromPath($_FILES['avatar']['tmp_name']['file']);
+                            } catch(UserImageAssetInvalidImageException $ex) {
+                                $notices[] = 'The file you uploaded was not an image!';
+                            } catch(UserImageAssetInvalidTypeException $ex) {
+                                $notices[] = 'This type of image is not supported, keep to PNG, JPG or GIF!';
+                            } catch(UserImageAssetInvalidDimensionsException $ex) {
+                                $notices[] = sprintf('Your avatar can\'t be larger than %dx%d!', $avatarInfo->getMaxWidth(), $avatarInfo->getMaxHeight());
+                            } catch(UserImageAssetFileTooLargeException $ex) {
+                                $notices[] = sprintf('Your avatar is not allowed to be larger in file size than %2$s!', byte_symbol($avatarInfo->getMaxBytes(), true));
+                            } catch(UserImageAssetException $ex) {
+                                $notices[] = 'Unable to save your avatar, contact an administator!';
                             }
                         }
                     }
@@ -191,66 +203,63 @@ if($isEditing) {
             }
 
             if(!empty($_FILES['background'])) {
+                $backgroundInfo = $profileUser->getBackgroundInfo();
+
                 if((int)($_POST['background']['attach'] ?? -1) === 0) {
-                    user_background_delete($profileUser->getId());
-                    user_background_set_settings($profileUser->getId(), MSZ_USER_BACKGROUND_ATTACHMENT_NONE);
+                    $backgroundInfo->delete();
                 } else {
                     if(!$perms['edit_background']) {
-                        $notices[] = MSZ_TMP_USER_ERROR_STRINGS['background']['not-allowed'];
-                    } elseif(!empty($_FILES['background'])
-                        && is_array($_FILES['background'])) {
+                        $notices[] = 'You aren\'t allow to change your background.';
+                    } elseif(!empty($_FILES['background']) && is_array($_FILES['background'])) {
                         if(!empty($_FILES['background']['name']['file'])) {
                             if($_FILES['background']['error']['file'] !== UPLOAD_ERR_OK) {
-                                $notices[] = sprintf(
-                                    MSZ_TMP_USER_ERROR_STRINGS['background']['upload'][$_FILES['background']['error']['file']]
-                                    ?? MSZ_TMP_USER_ERROR_STRINGS['background']['upload']['_'],
-                                    $_FILES['background']['error']['file'],
-                                    byte_symbol($backgroundProps['max_size'], true),
-                                    $backgroundProps['max_width'],
-                                    $backgroundProps['max_height']
-                                );
-                            } else {
-                                $setBackground = user_background_set_from_path(
-                                    $profileUser->getId(),
-                                    $_FILES['background']['tmp_name']['file'],
-                                    $backgroundProps
-                                );
-
-                                if($setBackground !== MSZ_USER_BACKGROUND_NO_ERRORS) {
-                                    $notices[] = sprintf(
-                                        MSZ_TMP_USER_ERROR_STRINGS['background']['set'][$setBackground]
-                                        ?? MSZ_TMP_USER_ERROR_STRINGS['background']['set']['_'],
-                                        $setBackground,
-                                        byte_symbol($backgroundProps['max_size'], true),
-                                        $backgroundProps['max_width'],
-                                        $backgroundProps['max_height']
-                                    );
+                                switch($_FILES['background']['error']['file']) {
+                                    case UPLOAD_ERR_NO_FILE:
+                                        $notices[] = 'Select a file before hitting upload!';
+                                        break;
+                                    case UPLOAD_ERR_PARTIAL:
+                                        $notices[] = 'The upload was interrupted, please try again!';
+                                        break;
+                                    case UPLOAD_ERR_INI_SIZE:
+                                    case UPLOAD_ERR_FORM_SIZE:
+                                        $notices[] = sprintf('Your background is not allowed to be larger in file size than %s!', byte_symbol($backgroundProps['max_size'], true));
+                                        break;
+                                    default:
+                                        $notices[] = 'Unable to save your background, contact an administator!';
+                                        break;
                                 }
+                            } else {
+                                try {
+                                    $backgroundInfo->setFromPath($_FILES['background']['tmp_name']['file']);
+                                } catch(UserImageAssetInvalidImageException $ex) {
+                                    $notices[] = 'The file you uploaded was not an image!';
+                                } catch(UserImageAssetInvalidTypeException $ex) {
+                                    $notices[] = 'This type of image is not supported, keep to PNG, JPG or GIF!';
+                                } catch(UserImageAssetInvalidDimensionsException $ex) {
+                                    $notices[] = sprintf('Your background can\'t be larger than %dx%d!', $backgroundInfo->getMaxWidth(), $backgroundInfo->getMaxHeight());
+                                } catch(UserImageAssetFileTooLargeException $ex) {
+                                    $notices[] = sprintf('Your background is not allowed to be larger in file size than %2$s!', byte_symbol($backgroundInfo->getMaxBytes(), true));
+                                } catch(UserImageAssetException $ex) {
+                                    $notices[] = 'Unable to save your background, contact an administator!';
+                                }
+
+                                try {
+                                    $backgroundInfo->setAttachmentString($_POST['background']['attach'] ?? '')
+                                        ->setBlend(!empty($_POST['background']['attr']['blend']))
+                                        ->setSlide(!empty($_POST['background']['attr']['slide']));
+                                } catch(InvalidArgumentException $ex) {}
                             }
                         }
-
-                        $backgroundSettings = in_array($_POST['background']['attach'] ?? '', MSZ_USER_BACKGROUND_ATTACHMENTS)
-                            ? (int)($_POST['background']['attach'])
-                            : MSZ_USER_BACKGROUND_ATTACHMENTS[0];
-
-                        if(!empty($_POST['background']['attr']['blend'])) {
-                            $backgroundSettings |= MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND;
-                        }
-
-                        if(!empty($_POST['background']['attr']['slide'])) {
-                            $backgroundSettings |= MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE;
-                        }
-
-                        user_background_set_settings($profileUser->getId(), $backgroundSettings);
                     }
                 }
             }
+
+            $profileUser->saveProfile();
         }
 
         // Unset $isEditing and hope the user doesn't refresh their profile!
-        if(empty($notices)) {
+        if(empty($notices))
             $isEditing = false;
-        }
     }
 }
 
@@ -293,21 +302,6 @@ $profileStats = DB::prepare(sprintf('
     FROM `msz_users` AS u
     WHERE `user_id` = :user_id
 ', \Misuzu\Users\UserRelation::TYPE_FOLLOW))->bind('user_id', $profileUser->getId())->fetch();
-
-$backgroundPath = sprintf('%s/backgrounds/original/%d.msz', MSZ_STORAGE, $profileUser->getId());
-
-if(is_file($backgroundPath)) {
-    $backgroundInfo = getimagesize($backgroundPath);
-
-    if($backgroundInfo) {
-        Template::set('site_background', [
-            'url' => url('user-background', ['user' => $profileUser->getId()]),
-            'width' => $backgroundInfo[0],
-            'height' => $backgroundInfo[1],
-            'settings' => $profileUser->getBackgroundSettings(),
-        ]);
-    }
-}
 
 switch($profileMode) {
     default:

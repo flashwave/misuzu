@@ -3,6 +3,7 @@ namespace Misuzu\Comments;
 
 use Misuzu\DB;
 use Misuzu\Users\User;
+use Misuzu\Users\UserNotFoundException;
 
 class CommentsParser {
     private const MARKUP_USERNAME = '#\B(?:@{1}(' . User::NAME_REGEX . '))#u';
@@ -10,8 +11,11 @@ class CommentsParser {
 
     public static function parseForStorage(string $text): string {
         return preg_replace_callback(self::MARKUP_USERNAME, function ($matches) {
-            return ($userId = user_id_from_username($matches[1])) < 1
-                ? $matches[0] : "@@{$userId}";
+            try {
+                return sprintf('@@%d', User::byUsername($matches[1])->getId());
+            } catch(UserNotFoundException $ex) {
+                return $matches[0];
+            }
         }, $text);
     }
 

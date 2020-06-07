@@ -8,7 +8,7 @@
         <div class="profile__header__avatar">
             {% if profile_is_editing and perms.edit_avatar %}
                 <label class="profile__header__avatar__image profile__header__avatar__image--edit" for="avatar-selection">
-                    {{ avatar(profile_user.user_id, 120, profile_user.username, {'id': 'avatar-preview'}) }}
+                    {{ avatar(profile_user.id, 120, profile_user.username, {'id': 'avatar-preview'}) }}
                 </label>
 
                 <div class="profile__header__avatar__options">
@@ -24,27 +24,27 @@
                 </div>
             {% else %}
                 <div class="profile__header__avatar__image">
-                    {{ avatar(profile_user.user_id|default(0), 120, profile_user.username|default('')) }}
+                    {{ avatar(profile_user.id|default(0), 120, profile_user.username|default('')) }}
                 </div>
             {% endif %}
         </div>
 
         <div class="profile__header__details__content">
             {% if profile_user is defined %}
-                <div class="profile__header__username" style="{{ profile_user.user_colour|html_colour }}">
+                <div class="profile__header__username" style="--user-colour: {{ profile_user.colour }}">
                     {{ profile_user.username }}
                 </div>
 
-                {% if profile_user.user_title is not empty %}
+                {% if profile_user.hasTitle %}
                     <div class="profile__header__title">
-                        {{ profile_user.user_title }}
+                        {{ profile_user.title }}
                     </div>
                 {% endif %}
 
                 <div class="profile__header__country">
                     <div class="flag flag--{{ profile_user.country|lower }}"></div>
                     <div class="profile__header__country__name">
-                        {{ profile_user.countryName }}{% if profile_user.user_age > 0 %}, {{ profile_user.user_age }} year{{ profile_user.user_age != 's' ? 's' : '' }} old{% endif %}
+                        {{ profile_user.countryName }}{% if profile_user.hasAge %},{% set age = profile_user.age %} {{ age }} year{{ age != 's' ? 's' : '' }} old{% endif %}
                     </div>
                 </div>
             {% else %}
@@ -76,21 +76,21 @@
                 {% if profile_mode is empty %}
                     {% if profile_is_editing %}
                         <button class="input__button input__button--save profile__header__action">Save</button>
-                        <a href="{{ url('user-profile', {'user': profile_user.user_id}) }}" class="input__button input__button--destroy profile__header__action">Discard</a>
+                        <a href="{{ url('user-profile', {'user': profile_user.id}) }}" class="input__button input__button--destroy profile__header__action">Discard</a>
                         <a href="{{ url('settings-index') }}" class="input__button profile__header__action">Settings</a>
                     {% elseif profile_can_edit %}
-                        <a href="{{ url('user-profile-edit', {'user': profile_user.user_id}) }}" class="input__button profile__header__action">Edit Profile</a>
+                        <a href="{{ url('user-profile-edit', {'user': profile_user.id}) }}" class="input__button profile__header__action">Edit Profile</a>
                     {% endif %}
 
-                    {% if current_user is defined and current_user.user_id != profile_user.user_id and not profile_is_editing %}
+                    {% if current_user2 is defined and current_user2.id|default(0) != profile_user.id and not profile_is_editing %}
                         {% if profile_user.relationString(profile_viewer) != 'following' %}
-                            <a href="{{ url('user-relation-none', {'user': profile_user.user_id}) }}" class="input__button input__button--destroy profile__header__action js-user-relation-action" data-relation-user="{{ profile_user.user_id }}" data-relation-type="0">Unfollow</a>
+                            <a href="{{ url('user-relation-none', {'user': profile_user.id}) }}" class="input__button input__button--destroy profile__header__action js-user-relation-action" data-relation-user="{{ profile_user.id }}" data-relation-type="0">Unfollow</a>
                         {% else %}
-                            <a href="{{ url('user-relation-follow', {'user': profile_user.user_id}) }}" class="input__button profile__header__action js-user-relation-action" data-relation-user="{{ profile_user.user_id }}" data-relation-type="1">Follow</a>
+                            <a href="{{ url('user-relation-follow', {'user': profile_user.id}) }}" class="input__button profile__header__action js-user-relation-action" data-relation-user="{{ profile_user.id }}" data-relation-type="1">Follow</a>
                         {% endif %}
                     {% endif %}
                 {% else %}
-                    <a href="{{ url('user-profile', {'user': profile_user.user_id}) }}" class="input__button profile__header__action">Return</a>
+                    <a href="{{ url('user-profile', {'user': profile_user.id}) }}" class="input__button profile__header__action">Return</a>
                 {% endif %}
             </div>
         {% endif %}
@@ -98,7 +98,7 @@
         {% if stats is defined %}
             <div class="profile__header__stats">
                 {% for stat in stats %}
-                    {% if stat.value|default(false) %}
+                    {% if stat.value|default(0) > 0 %}
                         {% set is_date = stat.is_date|default(false) %}
                         {% set is_url = stat.url is defined %}
                         {% set active_class = stat.active|default(false) ? ' profile__header__stat--active' : '' %}

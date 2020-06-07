@@ -71,12 +71,13 @@ while($canResetPassword) {
             break;
         }
 
-        $userInfo->setPassword($passwordNew);
-        AuditLog::create(AuditLog::PASSWORD_RESET, [], $userInfo);
-
-        // disable two factor auth to prevent getting locked out of account entirely
+        // also disables two factor auth to prevent getting locked out of account entirely
         // this behaviour should really be replaced with recovery keys...
-        user_totp_update($userId, null);
+        $userInfo->setPassword($passwordNew)
+            ->removeTOTPKey()
+            ->save();
+
+        AuditLog::create(AuditLog::PASSWORD_RESET, [], $userInfo);
 
         $tokenInfo->invalidate();
 

@@ -14,6 +14,10 @@ define('MSZ_ROOT', __DIR__);
 define('MSZ_CLI', PHP_SAPI === 'cli');
 define('MSZ_DEBUG', is_file(MSZ_ROOT . '/.debug'));
 define('MSZ_PHP_MIN_VER', '7.4.0');
+define('MSZ_PUBLIC', MSZ_ROOT . '/public');
+define('MSZ_SOURCE', MSZ_ROOT . '/src');
+define('MSZ_CONFIG', MSZ_ROOT . '/config');
+define('MSZ_TEMPLATES', MSZ_ROOT . '/templates');
 
 if(version_compare(PHP_VERSION, MSZ_PHP_MIN_VER, '<'))
     die("Misuzu requires <i>at least</i> PHP <b>" . MSZ_PHP_MIN_VER . "</b> to run.\r\n");
@@ -41,7 +45,7 @@ set_exception_handler(function(\Throwable $ex) {
             echo (string)$ex;
         } else {
             header('Content-Type: text/html; charset-utf-8');
-            echo file_get_contents(MSZ_ROOT . '/templates/500.html');
+            echo file_get_contents(MSZ_TEMPLATES . '/500.html');
         }
     }
     exit;
@@ -59,7 +63,7 @@ spl_autoload_register(function(string $className) {
     if($parts[0] !== 'Misuzu')
         return;
 
-    $classPath = MSZ_ROOT . '/src/' . str_replace('\\', '/', $parts[1]) . '.php';
+    $classPath = MSZ_SOURCE . '/' . str_replace('\\', '/', $parts[1]) . '.php';
     if(is_file($classPath))
         require_once $classPath;
 });
@@ -78,11 +82,8 @@ require_once 'src/Forum/poll.php';
 require_once 'src/Forum/post.php';
 require_once 'src/Forum/topic.php';
 require_once 'src/Forum/validate.php';
-require_once 'src/Users/avatar.php';
-require_once 'src/Users/background.php';
-require_once 'src/Users/user_legacy.php';
 
-$dbConfig = parse_ini_file(MSZ_ROOT . '/config/config.ini', true, INI_SCANNER_TYPED);
+$dbConfig = parse_ini_file(MSZ_CONFIG . '/config.ini', true, INI_SCANNER_TYPED);
 
 if(empty($dbConfig)) {
     echo 'Database config is missing.';
@@ -106,7 +107,8 @@ Mailer::init(Config::get('mail.method', Config::TYPE_STR), [
 
 // replace this with a better storage mechanism
 define('MSZ_STORAGE', Config::get('storage.path', Config::TYPE_STR, MSZ_ROOT . '/store'));
-mkdirs(MSZ_STORAGE, true);
+if(!is_dir(MSZ_STORAGE))
+    mkdir(MSZ_STORAGE, 0775, true);
 
 if(MSZ_CLI) { // Temporary backwards compatibility measure, remove this later
     if(realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
@@ -133,7 +135,7 @@ if(file_exists(MSZ_ROOT . '/.migrating')) {
     http_response_code(503);
     if(!isset($_GET['_check'])) {
         header('Content-Type: text/html; charset-utf-8');
-        echo file_get_contents(MSZ_ROOT . '/templates/503.html');
+        echo file_get_contents(MSZ_TEMPLATES . '/503.html');
     }
     exit;
 }
@@ -147,7 +149,8 @@ GeoIP::init(Config::get('geoip.database', Config::TYPE_STR, '/var/lib/GeoIP/GeoL
 
 if(!MSZ_DEBUG) {
     $twigCache = sys_get_temp_dir() . '/msz-tpl-cache-' . md5(MSZ_ROOT);
-    mkdirs($twigCache, true);
+    if(!is_dir($twigCache))
+        mkdir($twigCache, 0775, true);
 }
 
 Template::init($twigCache ?? null, MSZ_DEBUG);
@@ -159,7 +162,7 @@ Template::set('globals', [
     'site_twitter' => Config::get('social.twitter', Config::TYPE_STR),
 ]);
 
-Template::addPath(MSZ_ROOT . '/templates');
+Template::addPath(MSZ_TEMPLATES);
 
 if(isset($_COOKIE['msz_uid']) && isset($_COOKIE['msz_sid'])) {
     $authToken = (new AuthToken)
@@ -201,10 +204,9 @@ if($authToken->isValid()) {
         User::unsetCurrent();
     }
 
-    if(!UserSession::hasCurrent()) {
-        setcookie('msz_auth', '', -9001, '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
-        setcookie('msz_auth', '', -9001, '/', '', !empty($_SERVER['HTTPS']), true);
-    } else {
+    if(UserSession::hasCurrent()) {
+        $userInfo->bumpActivity();
+
         $userDisplayInfo = DB::prepare('
             SELECT
                 u.`user_id`, u.`username`,
@@ -216,9 +218,10 @@ if($authToken->isValid()) {
         ')  ->bind('user_id', $userInfo->getId())
             ->fetch();
 
-        user_bump_last_active($userInfo->getId());
-
         $userDisplayInfo['perms'] = perms_get_user($userInfo->getId());
+    } else {
+        setcookie('msz_auth', '', -9001, '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
+        setcookie('msz_auth', '', -9001, '/', '', !empty($_SERVER['HTTPS']), true);
     }
 }
 

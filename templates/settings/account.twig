@@ -127,7 +127,7 @@
             {% endif %}
 
             <div class="settings__two-factor__settings">
-                {% if settings_2fa_enabled %}
+                {% if settings_user.hasTOTP %}
                     <div class="settings__two-factor__settings__status">
                         <i class="fas fa-lock fa-fw"></i> Two Factor Authentication is enabled!
                     </div>

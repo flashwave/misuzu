@@ -8,6 +8,7 @@ use Misuzu\DB;
 use Misuzu\Pagination;
 use Misuzu\Changelog\ChangelogChange;
 use Misuzu\News\NewsPost;
+use Misuzu\Users\User;
 use Misuzu\Users\UserSession;
 
 final class HomeHandler extends Handler {
@@ -59,19 +60,8 @@ final class HomeHandler extends Handler {
 
         $changelog = ChangelogChange::all(new Pagination(10));
 
-        $birthdays = UserSession::hasCurrent() ? user_get_birthdays() : [];
-
-        $latestUser = DB::query('
-            SELECT
-                u.`user_id`, u.`username`, u.`user_created`,
-                COALESCE(u.`user_colour`, r.`role_colour`) as `user_colour`
-            FROM `msz_users` as u
-            LEFT JOIN `msz_roles` as r
-            ON r.`role_id` = u.`display_role`
-            WHERE `user_deleted` IS NULL
-            ORDER BY u.`user_id` DESC
-            LIMIT 1
-        ')->fetch();
+        $birthdays  = !UserSession::hasCurrent() ? []   : User::byBirthdate();
+        $latestUser = !empty($birthdays)         ? null : User::byLatest();
 
         $onlineUsers = DB::query('
             SELECT

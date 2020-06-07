@@ -21,7 +21,12 @@ $currentUser = User::getCurrent();
 $currentUserId = $currentUser->getId();
 
 if(!empty($_POST['lookup']) && is_string($_POST['lookup'])) {
-    url_redirect('manage-users-warnings', ['user' => user_id_from_username($_POST['lookup'])]);
+    try {
+        $userId = User::byUsername((string)filter_input(INPUT_POST, 'lookup', FILTER_SANITIZE_STRING))->getId();
+    } catch(UserNotFoundException $ex) {
+        $userId = 0;
+    }
+    url_redirect('manage-users-warnings', ['user' => $userId]);
     return;
 }
 

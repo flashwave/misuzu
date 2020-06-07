@@ -50,11 +50,11 @@
 ] %}
 
 {% set user_menu =
-    current_user is defined
+    current_user2 is defined
     ? [
         {
             'title': 'Profile',
-            'url': url('user-profile', {'user': current_user.user_id}),
+            'url': url('user-profile', {'user': current_user2.id}),
             'icon': 'fas fa-user fa-fw',
         },
         {
@@ -139,9 +139,9 @@
                 {% endif %}
             {% endfor %}
 
-            {% if current_user is defined %}
-                <a href="{{ url('user-profile', {'user': current_user.user_id}) }}" class="avatar header__desktop__user__avatar" title="{{ current_user.username }}" style="{{ current_user.user_colour|html_colour }}">
-                    {{ avatar(current_user.user_id, 60, current_user.username) }}
+            {% if current_user2 is defined %}
+                <a href="{{ url('user-profile', {'user': current_user2.id}) }}" class="avatar header__desktop__user__avatar" title="{{ current_user.username }}" style="--user-colour: {{ current_user2.colour }}">
+                    {{ avatar(current_user2.id, 60, current_user2.username) }}
                 </a>
             {% else %}
                 <a href="{{ url('auth-login') }}" class="avatar header__desktop__user__avatar">
@@ -162,7 +162,7 @@
             </a>
 
             <label class="header__mobile__icon header__mobile__avatar" for="toggle-mobile-header">
-                {{ avatar(current_user.user_id|default(0), 40, current_user.username|default('Log in')) }}
+                {{ avatar(current_user2.id|default(0), 40, current_user2.username|default('Log in')) }}
             </label>
         </div>
 

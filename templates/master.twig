@@ -26,7 +26,7 @@
         {% endif %}
     </head>
 
-    <body class="main{% if site_background is defined %} {{ site_background.settings|bg_settings('main--bg-%s')|join(' ') }}{% endif %}"
+    <body class="main{% if site_background is defined %} {{ site_background.classNames('main--bg-%s')|join(' ') }}{% endif %}"
         style="{% if global_accent_colour is defined %}{{ global_accent_colour|html_colour('--accent-colour') }}{% endif %}" id="container">
         {% include '_layout/header.twig' %}
 

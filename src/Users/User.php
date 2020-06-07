@@ -1,6 +1,9 @@
 <?php
 namespace Misuzu\Users;
 
+use DateTime;
+use DateTimeZone;
+use JsonSerializable;
 use Misuzu\Colour;
 use Misuzu\DB;
 use Misuzu\HasRankInterface;
@@ -8,12 +11,24 @@ use Misuzu\Memoizer;
 use Misuzu\Pagination;
 use Misuzu\TOTP;
 use Misuzu\Net\IPAddress;
+use Misuzu\Parsers\Parser;
+use Misuzu\Users\Assets\UserAvatarAsset;
+use Misuzu\Users\Assets\UserBackgroundAsset;
 
 class UserException extends UsersException {} // this naming definitely won't lead to confusion down the line!
 class UserNotFoundException extends UserException {}
 class UserCreationFailedException extends UserException {}
 
-class User implements HasRankInterface {
+// Quick note to myself and others about the `display_role` column in the users database and its corresponding methods in this class.
+// Never ever EVER use it for ANYTHING other than determining display colours, there's a small chance that it might not be accurate.
+// And even if it were, roles properties are aggregated and thus must all be accounted for.
+
+// TODO
+// - Search for comments starting with TODO
+// - Move background settings and about shit to a separate users_profiles table (should birthdate be profile specific?)
+// - Create a users_stats table containing static counts for things like followers, followings, topics, posts, etc.
+
+class User implements HasRankInterface, JsonSerializable {
     public const NAME_MIN_LENGTH =  3;               // Minimum username length
     public const NAME_MAX_LENGTH = 16;               // Maximum username length, unless your name is Flappyzor(WorldwideOnline2018through2019through2020)
     public const NAME_REGEX      = '[A-Za-z0-9-_]+'; // Username character constraint
@@ -23,6 +38,13 @@ class User implements HasRankInterface {
 
     // Password hashing algorithm
     public const PASSWORD_ALGO = PASSWORD_ARGON2ID;
+
+    // Maximum length of profile about section
+    public const PROFILE_ABOUT_MAX_LENGTH     = 60000;
+    public const PROFILE_ABOUT_MAX_LENGTH_OLD = 65535; // Used for malloc's essay
+
+    // Maximum length of forum signature
+    public const FORUM_SIGNATURE_MAX_LENGTH = 2000;
 
     // Order constants for ::all function
     public const ORDER_ID            = 'id';
@@ -36,28 +58,27 @@ class User implements HasRankInterface {
     public const ORDER_FOLLOWERS     = 'followers';
 
     // Database fields
-    // TODO: update all references to use getters and setters and mark all of these as private
-    public $user_id = -1;
-    public $username = '';
-    public $password = '';
-    public $email = '';
-    public $register_ip = '::1';
-    public $last_ip = '::1';
-    public $user_super = 0;
-    public $user_country = 'XX';
-    public $user_colour = null;
-    public $user_created = null;
-    public $user_active = null;
-    public $user_deleted = null;
-    public $display_role = 1;
-    public $user_totp_key = null;
-    public $user_about_content = null;
-    public $user_about_parser = 0;
-    public $user_signature_content = null;
-    public $user_signature_parser = 0;
-    public $user_birthdate = '';
-    public $user_background_settings = 0;
-    public $user_title = null;
+    private $user_id = -1;
+    private $username = '';
+    private $password = '';
+    private $email = '';
+    private $register_ip = '::1';
+    private $last_ip = '::1';
+    private $user_super = 0;
+    private $user_country = 'XX';
+    private $user_colour = null;
+    private $user_created = null;
+    private $user_active = null;
+    private $user_deleted = null;
+    private $display_role = 1;
+    private $user_totp_key = null;
+    private $user_about_content = null;
+    private $user_about_parser = 0;
+    private $user_signature_content = null;
+    private $user_signature_parser = 0;
+    private $user_birthdate = null;
+    private $user_background_settings = 0;
+    private $user_title = null;
 
     private static $localUser = null;
 
@@ -76,28 +97,6 @@ class User implements HasRankInterface {
                          . ', UNIX_TIMESTAMP(%1$s.`user_active`) AS `user_active`'
                          . ', UNIX_TIMESTAMP(%1$s.`user_deleted`) AS `user_deleted`';
 
-    // Stop using this one and use the one above
-    private const USER_SELECT = '
-        SELECT u.`user_id`, u.`username`, u.`password`, u.`email`, u.`user_super`, u.`user_title`,
-               u.`user_country`, u.`user_colour`, u.`display_role`, u.`user_totp_key`,
-               u.`user_about_content`, u.`user_about_parser`,
-               u.`user_signature_content`, u.`user_signature_parser`,
-               u.`user_birthdate`, u.`user_background_settings`,
-               INET6_NTOA(u.`register_ip`) AS `register_ip`, INET6_NTOA(u.`last_ip`) AS `last_ip`,
-               UNIX_TIMESTAMP(u.`user_created`) AS `user_created`, UNIX_TIMESTAMP(u.`user_active`) AS `user_active`,
-               UNIX_TIMESTAMP(u.`user_deleted`) AS `user_deleted`,
-               COALESCE(u.`user_title`, r.`role_title`) AS `user_title`,
-               COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`,
-               TIMESTAMPDIFF(YEAR, IF(u.`user_birthdate` < \'0001-01-01\', NULL, u.`user_birthdate`), NOW()) AS `user_age`
-        FROM `msz_users` AS u
-        LEFT JOIN `msz_roles` AS r
-        ON r.`role_id` = u.`display_role`
-    ';
-
-    public function __construct() {
-        //
-    }
-
     public function getId(): int {
         return $this->user_id < 1 ? -1 : $this->user_id;
     }
@@ -105,42 +104,75 @@ class User implements HasRankInterface {
     public function getUsername(): string {
         return $this->username;
     }
+    public function setUsername(string $username): self {
+        $this->username = $username;
+        return $this;
+    }
 
     public function getEmailAddress(): string {
         return $this->email;
     }
-
-    public function getRegisterRemoteAddress(): string {
-        return $this->register_ip;
+    public function setEmailAddress(string $address): self {
+        $this->email = mb_strtolower($address);
+        return $this;
     }
 
+    public function getRegisterRemoteAddress(): string {
+        return $this->register_ip ?? '::1';
+    }
     public function getLastRemoteAddress(): string {
-        return $this->last_ip;
+        return $this->last_ip ?? '::1';
     }
 
     public function isSuper(): bool {
         return boolval($this->user_super);
+    }
+    public function setSuper(bool $super): self {
+        $this->user_super = $super ? 1 : 0;
+        return $this;
     }
 
     public function hasCountry(): bool {
         return $this->user_country !== 'XX';
     }
     public function getCountry(): string {
-        return $this->user_country;
+        return $this->user_country ?? 'XX';
+    }
+    public function setCountry(string $country): self {
+        $this->user_country = strtoupper(substr($country, 0, 2));
+        return $this;
     }
     public function getCountryName(): string {
         return get_country_name($this->getCountry());
     }
 
+    private $userColour = null;
+    private $realColour = null;
+
     public function getColour(): Colour { // Swaps role colour in if user has no personal colour
-        // TODO: Check inherit flag and grab role colour instead
-        return new Colour($this->getColourRaw());
+        if($this->realColour === null) {
+            $this->realColour = $this->getUserColour();
+            if($this->realColour->getInherit())
+                $this->realColour = $this->getDisplayRole()->getColour();
+        }
+        return $this->realColour;
+    }
+    public function setColour(?Colour $colour): self {
+        return $this->setColourRaw($colour === null ? null : $colour->getRaw());
     }
     public function getUserColour(): Colour { // Only ever gets the user's actual colour
-        return new Colour($this->getColourRaw());
+        if($this->userColour === null)
+            $this->userColour = new Colour($this->getColourRaw());
+        return $this->userColour;
     }
     public function getColourRaw(): int {
         return $this->user_colour ?? 0x40000000;
+    }
+    public function setColourRaw(?int $colour): self {
+        $this->user_colour = $colour;
+        $this->userColour = null;
+        $this->realColour = null;
+        return $this;
     }
 
     public function getCreatedTime(): int {
@@ -173,39 +205,11 @@ class User implements HasRankInterface {
         return $this->getRank() > $other->getRank();
     }
 
-    public function hasPassword(): bool {
-        return !empty($this->password);
-    }
-    public function checkPassword(string $password): bool {
-        return $this->hasPassword() && password_verify($password, $this->password);
-    }
-    public function passwordNeedsRehash(): bool {
-        return password_needs_rehash($this->password, self::PASSWORD_ALGO);
-    }
-    public function setPassword(string $password): void {
-        DB::prepare('UPDATE `msz_users` SET `password` = :password WHERE `user_id` = :user_id')
-            ->bind('password', $this->password = self::hashPassword($password))
-            ->bind('user_id', $this->getId())
-            ->execute();
-    }
-
-    public function isDeleted(): bool {
-        return !empty($this->user_deleted);
-    }
-
     public function getDisplayRoleId(): int {
         return $this->display_role < 1 ? -1 : $this->display_role;
     }
     public function setDisplayRoleId(int $roleId): self {
         $this->display_role = $roleId < 1 ? -1 : $roleId;
-
-        // TEMPORARY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // This DB update statement should be removed when a global update/save/whatever call exists
-        DB::prepare('UPDATE `' . DB::PREFIX . self::TABLE . '` SET `display_role` = :role WHERE `user_id` = :user')
-            ->bind('role', $this->display_role)
-            ->bind('user', $this->user_id)
-            ->execute();
-
         return $this;
     }
     public function getDisplayRole(): UserRole {
@@ -228,6 +232,19 @@ class User implements HasRankInterface {
             $this->totp = new TOTP($this->user_totp_key);
         return $this->totp;
     }
+    public function getTOTPKey(): string {
+        return $this->user_totp_key ?? '';
+    }
+    public function setTOTPKey(string $key): self {
+        $this->totp = null;
+        $this->user_totp_key = $key;
+        return $this;
+    }
+    public function removeTOTPKey(): self {
+        $this->totp = null;
+        $this->user_totp_key = null;
+        return $this;
+    }
     public function getValidTOTPTokens(): array {
         if(!$this->hasTOTP())
             return [];
@@ -239,30 +256,111 @@ class User implements HasRankInterface {
         ];
     }
 
-    public function getBackgroundSettings(): int { // Use the below methods instead
+    public function hasProfileAbout(): bool {
+        return !empty($this->user_about_content);
+    }
+    public function getProfileAboutText(): string {
+        return $this->user_about_content ?? '';
+    }
+    public function setProfileAboutText(string $text): self {
+        $this->user_about_content = empty($text) ? null : $text;
+        return $this;
+    }
+    public function getProfileAboutParser(): int {
+        return $this->hasProfileAbout() ? $this->user_about_parser : Parser::BBCODE;
+    }
+    public function setProfileAboutParser(int $parser): self {
+        $this->user_about_parser = $parser;
+        return $this;
+    }
+    public function getProfileAboutParsed(): string {
+        if(!$this->hasProfileAbout())
+            return '';
+        return Parser::instance($this->getProfileAboutParser())
+            ->parseText(htmlspecialchars($this->getProfileAboutText()));
+    }
+
+    public function hasForumSignature(): bool {
+        return !empty($this->user_signature_content);
+    }
+    public function getForumSignatureText(): string {
+        return $this->user_signature_content ?? '';
+    }
+    public function setForumSignatureText(string $text): self {
+        $this->user_signature_content = empty($text) ? null : $text;
+        return $this;
+    }
+    public function getForumSignatureParser(): int {
+        return $this->hasForumSignature() ? $this->user_signature_parser : Parser::BBCODE;
+    }
+    public function setForumSignatureParser(int $parser): self {
+        $this->user_signature_parser = $parser;
+        return $this;
+    }
+    public function getForumSignatureParsed(): string {
+        if(!$this->hasForumSignature())
+            return '';
+        return Parser::instance($this->getForumSignatureParser())
+            ->parseText(htmlspecialchars($this->getForumSignatureText()));
+    }
+
+    // Address these through getBackgroundInfo()
+    public function getBackgroundSettings(): int {
         return $this->user_background_settings;
     }
-    public function getBackgroundAttachment(): int {
-        return $this->user_background_settings & 0x0F;
-    }
-    public function getBackgroundBlend(): bool {
-        return ($this->user_background_settings & MSZ_USER_BACKGROUND_ATTRIBUTE_BLEND) > 0;
-    }
-    public function getBackgroundSlide(): bool {
-        return ($this->user_background_settings & MSZ_USER_BACKGROUND_ATTRIBUTE_SLIDE) > 0;
+    public function setBackgroundSettings(int $settings): self {
+        $this->user_background_settings = $settings;
+        return $this;
     }
 
     public function hasTitle(): bool {
         return !empty($this->user_title);
     }
     public function getTitle(): string {
-        return $this->user_title;
+        return $this->user_title ?? '';
+    }
+    public function setTitle(string $title): self {
+        $this->user_title = empty($title) ? null : $title;
+        return $this;
+    }
+
+    public function hasBirthdate(): bool {
+        return $this->user_birthdate !== null;
+    }
+    public function getBirthdate(): DateTime {
+        return new DateTime($this->user_birthdate ?? '0000-01-01', new DateTimeZone('UTC'));
+    }
+    public function setBirthdate(int $year, int $month, int $day): self {
+        $this->user_birthdate = $month < 1 || $day < 1 ? null : sprintf('%04d-%02d-%02d', $year, $month, $day);
+        return $this;
+    }
+    public function hasAge(): bool {
+        return $this->hasBirthdate() && intval($this->getBirthdate()->format('Y')) > 1900;
+    }
+    public function getAge(): int {
+        if(!$this->hasAge())
+            return -1;
+        return intval($this->getBirthdate()->diff(new DateTime('now', new DateTimeZone('UTC')))->format('%y'));
     }
 
     public function profileFields(bool $filterEmpty = true): array {
         if(($userId = $this->getId()) < 1)
             return [];
         return ProfileField::user($userId, $filterEmpty);
+    }
+
+    public function bumpActivity(?string $lastRemoteAddress = null): void {
+        $this->user_active = time();
+        $this->last_ip = $lastRemoteAddress ?? IPAddress::remote();
+
+        DB::prepare(
+            'UPDATE `' . DB::PREFIX . self::TABLE . '`'
+            . ' SET `user_active` = FROM_UNIXTIME(:active), `last_ip` = INET6_ATON(:address)'
+            . ' WHERE `user_id` = :user'
+        )   ->bind('user', $this->user_id)
+            ->bind('active', $this->user_active)
+            ->bind('address', $this->last_ip)
+            ->execute();
     }
 
     // TODO: Is this the proper location/implementation for this? (no)
@@ -278,6 +376,118 @@ class User implements HasRankInterface {
                 'can_vote' => MSZ_PERM_COMMENTS_VOTE,
             ]);
         return $this->commentPermsArray;
+    }
+
+    /********
+     * JSON *
+     ********/
+
+    public function jsonSerialize() {
+        return [
+            'id' => $this->getId(),
+            'username' => $this->getUsername(),
+            'country' => $this->getCountry(),
+            'is_super' => $this->isSuper(),
+            'rank' => $this->getRank(),
+            'display_role' => $this->getDisplayRoleId(),
+            'title' => $this->getTitle(),
+            'created' => date('c', $this->getCreatedTime()),
+            'last_active' => ($date = $this->getActiveTime()) < 0 ? null : date('c', $date),
+            'avatar' => $this->getAvatarInfo(),
+            'background' => $this->getBackgroundInfo(),
+        ];
+    }
+
+    /************
+     * PASSWORD *
+     ************/
+
+    public static function hashPassword(string $password): string {
+        return password_hash($password, self::PASSWORD_ALGO);
+    }
+    public function hasPassword(): bool {
+        return !empty($this->password);
+    }
+    public function checkPassword(string $password): bool {
+        return $this->hasPassword() && password_verify($password, $this->password);
+    }
+    public function passwordNeedsRehash(): bool {
+        return password_needs_rehash($this->password, self::PASSWORD_ALGO);
+    }
+    public function removePassword(): self {
+        $this->password = null;
+        return $this;
+    }
+    public function setPassword(string $password): self {
+        $this->password = self::hashPassword($password);
+        DB::prepare('UPDATE `msz_users` SET `password` = :password WHERE `user_id` = :user_id')
+            ->bind('password', $this->password)
+            ->bind('user_id', $this->getId())
+            ->execute();
+        return $this;
+    }
+
+    /************
+     * DELETING *
+     ************/
+
+    private const NUKE_TIMEOUT = 600;
+
+    public function getDeletedTime(): int {
+        return $this->user_deleted === null ? -1 : $this->user_deleted;
+    }
+    public function isDeleted(): bool {
+        return $this->getDeletedTime() >= 0;
+    }
+    public function delete(): void {
+        if($this->isDeleted())
+            return;
+        $this->user_deleted = time();
+        DB::prepare('UPDATE `' . DB::PREFIX . self::TABLE . '` SET `user_deleted` = NOW() WHERE `user_id` = :user')
+            ->bind('user', $this->user_id)
+            ->execute();
+    }
+    public function restore(): void {
+        if(!$this->isDeleted())
+            return;
+        $this->user_deleted = null;
+        DB::prepare('UPDATE `' . DB::PREFIX . self::TABLE . '` SET `user_deleted` = NULL WHERE `user_id` = :user')
+            ->bind('user', $this->user_id)
+            ->execute();
+    }
+    public function canBeNuked(): bool {
+        return $this->isDeleted() && time() > $this->getDeletedTime() + self::NUKE_TIMEOUT;
+    }
+    public function nuke(): void {
+        if(!$this->canBeNuked())
+            return;
+        DB::prepare('DELETE FROM `' . DB::PREFIX . self::TABLE . '` WHERE `user_id` = :user')
+            ->bind('user', $this->user_id)
+            ->execute();
+    }
+
+    /**********
+     * ASSETS *
+     **********/
+
+    private $avatarAsset = null;
+    public function getAvatarInfo(): UserAvatarAsset {
+        if($this->avatarAsset === null)
+            $this->avatarAsset = new UserAvatarAsset($this);
+        return $this->avatarAsset;
+    }
+    public function hasAvatar(): bool {
+        return $this->getAvatarInfo()->isPresent();
+    }
+
+    private $backgroundAsset = null;
+    public function getBackgroundInfo(): UserBackgroundAsset {
+        if($this->backgroundAsset === null)
+            $this->backgroundAsset = new UserBackgroundAsset($this);
+        return $this->backgroundAsset;
+    }
+    public function hasBackground(): bool {
+        return $this->getBackgroundInfo()->isPresent();
     }
 
     /*********
@@ -408,6 +618,10 @@ class User implements HasRankInterface {
         return $this->forumPostCount;
     }
 
+    /************
+     * WARNINGS *
+     ************/
+
     private $activeWarning = -1;
 
     public function getActiveWarning(): ?UserWarning {
@@ -524,8 +738,80 @@ class User implements HasRankInterface {
         return '';
     }
 
-    public static function hashPassword(string $password): string {
-        return password_hash($password, self::PASSWORD_ALGO);
+    public static function validateBirthdate(int $year, int $month, int $day, int $yearRange = 100): string {
+        if($year > 0) {
+            if($year < date('Y') - $yearRange || $year > date('Y'))
+                return 'year';
+            $checkYear = $year;
+        } else $checkYear = date('Y');
+
+        if(!($day === 0 && $month === 0) && !checkdate($month, $day, $checkYear))
+            return 'date';
+
+        return '';
+    }
+
+    public static function validateProfileAbout(int $parser, string $text, bool $useOld = false): string {
+        if(!Parser::isValid($parser))
+            return 'parser';
+
+        $length = strlen($text);
+        if($length > ($useOld ? self::PROFILE_ABOUT_MAX_LENGTH_OLD : self::PROFILE_ABOUT_MAX_LENGTH))
+            return 'long';
+
+        return '';
+    }
+
+    public static function validateForumSignature(int $parser, string $text): string {
+        if(!Parser::isValid($parser))
+            return 'parser';
+
+        $length = strlen($text);
+        if($length > self::FORUM_SIGNATURE_MAX_LENGTH)
+            return 'long';
+
+        return '';
+    }
+
+    /*********************
+     * CREATION + SAVING *
+     *********************/
+
+    public function save(): void {
+        $save = DB::prepare(
+            'UPDATE `' . DB::PREFIX . self::TABLE . '`'
+            . ' SET `username` = :username, `email` = :email, `password` = :password'
+            . ', `user_super` = :is_super, `user_country` = :country, `user_colour` = :colour, `user_title` = :title'
+            . ', `display_role` = :display_role, `user_birthdate` = :birthdate, `user_totp_key` = :totp'
+            . ' WHERE `user_id` = :user'
+        )   ->bind('user', $this->user_id)
+            ->bind('username', $this->username)
+            ->bind('email', $this->email)
+            ->bind('password', $this->password)
+            ->bind('is_super', $this->user_super)
+            ->bind('country', $this->user_country)
+            ->bind('colour', $this->user_colour)
+            ->bind('display_role', $this->display_role)
+            ->bind('birthdate', $this->user_birthdate)
+            ->bind('totp', $this->user_totp_key)
+            ->bind('title', $this->user_title)
+            ->execute();
+    }
+
+    public function saveProfile(): void {
+        $save = DB::prepare(
+            'UPDATE `' . DB::PREFIX . self::TABLE . '`'
+            . ' SET `user_about_content` = :about_content, `user_about_parser` = :about_parser'
+            . ', `user_signature_content` = :signature_content, `user_signature_parser` = :signature_parser'
+            . ', `user_background_settings` = :background_settings'
+            . ' WHERE `user_id` = :user'
+        )   ->bind('user', $this->user_id)
+            ->bind('about_content', $this->user_about_content)
+            ->bind('about_parser',  $this->user_about_parser)
+            ->bind('signature_content', $this->user_signature_content)
+            ->bind('signature_parser',  $this->user_signature_parser)
+            ->bind('background_settings', $this->user_background_settings)
+            ->execute();
     }
 
     public static function create(
@@ -551,17 +837,37 @@ class User implements HasRankInterface {
         return self::byId($createUser);
     }
 
-    private static function getMemoizer() {
+    /************
+     * FETCHING *
+     ************/
+
+    private static function memoizer() {
         static $memoizer = null;
         if($memoizer === null)
             $memoizer = new Memoizer;
         return $memoizer;
     }
 
+    private static function byQueryBase(): string {
+        return sprintf(self::QUERY_SELECT, sprintf(self::SELECT, self::TABLE));
+    }
     public static function byId(int $userId): ?self {
-        return self::getMemoizer()->find($userId, function() use ($userId) {
-            $user = DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id')
+        return self::memoizer()->find($userId, function() use ($userId) {
+            $user = DB::prepare(self::byQueryBase() . ' WHERE `user_id` = :user_id')
                 ->bind('user_id', $userId)
+                ->fetchObject(self::class);
+            if(!$user)
+                throw new UserNotFoundException;
+            return $user;
+        });
+    }
+    public static function byUsername(string $username): ?self {
+        $username = mb_strtolower($username);
+        return self::memoizer()->find(function($user) use ($username) {
+            return mb_strtolower($user->getUsername()) === $username;
+        }, function() use ($username) {
+            $user = DB::prepare(self::byQueryBase() . ' WHERE LOWER(`username`) = :username')
+                ->bind('username', $username)
                 ->fetchObject(self::class);
             if(!$user)
                 throw new UserNotFoundException;
@@ -570,10 +876,10 @@ class User implements HasRankInterface {
     }
     public static function byEMailAddress(string $address): ?self {
         $address = mb_strtolower($address);
-        return self::getMemoizer()->find(function($user) use ($address) {
-            return $user->getEmailAddress() === $address;
+        return self::memoizer()->find(function($user) use ($address) {
+            return mb_strtolower($user->getEmailAddress()) === $address;
         }, function() use ($address) {
-            $user = DB::prepare(self::USER_SELECT . 'WHERE LOWER(`email`) = :email')
+            $user = DB::prepare(self::byQueryBase() . ' WHERE LOWER(`email`) = :email')
                 ->bind('email', $address)
                 ->fetchObject(self::class);
             if(!$user)
@@ -581,27 +887,31 @@ class User implements HasRankInterface {
             return $user;
         });
     }
-    public static function findForLogin(string $usernameOrEmail): ?self {
-        $usernameOrEmailLower = mb_strtolower($usernameOrEmail);
-        return self::getMemoizer()->find(function($user) use ($usernameOrEmailLower) {
-            return mb_strtolower($user->getUsername())     === $usernameOrEmailLower
-                || mb_strtolower($user->getEmailAddress()) === $usernameOrEmailLower;
-        }, function() use ($usernameOrEmail) {
-            $user = DB::prepare(self::USER_SELECT . 'WHERE LOWER(`email`) = LOWER(:email) OR LOWER(`username`) = LOWER(:username)')
-                ->bind('email', $usernameOrEmail)
-                ->bind('username', $usernameOrEmail)
+    public static function byUsernameOrEMailAddress(string $usernameOrAddress): self {
+        $usernameOrAddressLower = mb_strtolower($usernameOrAddress);
+        return self::memoizer()->find(function($user) use ($usernameOrAddressLower) {
+            return mb_strtolower($user->getUsername())     === $usernameOrAddressLower
+                || mb_strtolower($user->getEmailAddress()) === $usernameOrAddressLower;
+        }, function() use ($usernameOrAddressLower) {
+            $user = DB::prepare(self::byQueryBase() . ' WHERE LOWER(`email`) = :email OR LOWER(`username`) = :username')
+                ->bind('email', $usernameOrAddressLower)
+                ->bind('username', $usernameOrAddressLower)
                 ->fetchObject(self::class);
             if(!$user)
                 throw new UserNotFoundException;
             return $user;
         });
     }
+    public static function byLatest(): ?self {
+        return DB::prepare(self::byQueryBase() . ' WHERE `user_deleted` IS NULL ORDER BY `user_id` DESC LIMIT 1')
+            ->fetchObject(self::class);
+    }
     public static function findForProfile($userIdOrName): ?self {
         $userIdOrNameLower = mb_strtolower($userIdOrName);
-        return self::getMemoizer()->find(function($user) use ($userIdOrNameLower) {
+        return self::memoizer()->find(function($user) use ($userIdOrNameLower) {
             return $user->getId() == $userIdOrNameLower || mb_strtolower($user->getUsername()) === $userIdOrNameLower;
         }, function() use ($userIdOrName) {
-            $user = DB::prepare(self::USER_SELECT . 'WHERE `user_id` = :user_id OR LOWER(`username`) = LOWER(:username)')
+            $user = DB::prepare(self::byQueryBase() . ' WHERE `user_id` = :user_id OR LOWER(`username`) = LOWER(:username)')
                 ->bind('user_id', (int)$userIdOrName)
                 ->bind('username', (string)$userIdOrName)
                 ->fetchObject(self::class);
@@ -609,5 +919,11 @@ class User implements HasRankInterface {
                 throw new UserNotFoundException;
             return $user;
         });
+    }
+    public static function byBirthdate(?DateTime $date = null): array {
+        $date = $date === null ? new DateTime('now', new DateTimeZone('UTC')) : (clone $date)->setTimezone(new DateTimeZone('UTC'));
+        return DB::prepare(self::byQueryBase() . ' WHERE `user_deleted` IS NULL AND `user_birthdate` LIKE :date')
+            ->bind('date', $date->format('%-m-d'))
+            ->fetchObjects(self::class);
     }
 }
