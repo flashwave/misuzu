@@ -27,7 +27,6 @@ class UserBackgroundAsset extends UserImageAsset {
     public const ATTRIB_SLIDE = 0x20;
 
     public const ATTACHMENT_STRINGS = [
-        self::ATTACH_NONE    => '',
         self::ATTACH_COVER   => 'cover',
         self::ATTACH_STRETCH => 'stretch',
         self::ATTACH_TILE    => 'tile',
@@ -88,7 +87,7 @@ class UserBackgroundAsset extends UserImageAsset {
     }
 
     public function getAttributes(): int {
-        return $this->getUser()->getBackgroundSettings();
+        return $this->getUser()->getBackgroundSettings() & 0xF0;
     }
     public function setAttributes(int $attrib): self {
         $this->getUser()->setBackgroundSettings($this->getAttachment() | ($attrib & 0xF0));
@@ -100,8 +99,8 @@ class UserBackgroundAsset extends UserImageAsset {
     public function setBlend(bool $blend): self {
         $this->getUser()->setBackgroundSettings(
             $blend
-            ? ($this->getAttributes() |  self::ATTRIB_BLEND)
-            : ($this->getAttributes() & ~self::ATTRIB_BLEND)
+            ? ($this->getUser()->getBackgroundSettings() |  self::ATTRIB_BLEND)
+            : ($this->getUser()->getBackgroundSettings() & ~self::ATTRIB_BLEND)
         );
         return $this;
     }
@@ -111,8 +110,8 @@ class UserBackgroundAsset extends UserImageAsset {
     public function setSlide(bool $slide): self {
         $this->getUser()->setBackgroundSettings(
             $slide
-            ? ($this->getAttributes() |  self::ATTRIB_SLIDE)
-            : ($this->getAttributes() & ~self::ATTRIB_SLIDE)
+            ? ($this->getUser()->getBackgroundSettings() |  self::ATTRIB_SLIDE)
+            : ($this->getUser()->getBackgroundSettings() & ~self::ATTRIB_SLIDE)
         );
         return $this;
     }

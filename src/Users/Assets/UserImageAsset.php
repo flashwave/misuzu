@@ -114,7 +114,7 @@ abstract class UserImageAsset implements JsonSerializable, UserImageAssetInterfa
         if(!is_dir($targetDir))
             mkdir($targetDir, 0775, true);
 
-        if(is_uploaded_file($path) ? move_uploaded_file($path, $targetPath) : copy($path, $targetPath))
+        if(is_uploaded_file($path) ? !move_uploaded_file($path, $targetPath) : !copy($path, $targetPath))
             throw new UserImageAssetMoveFailedException;
     }
 

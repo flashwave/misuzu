@@ -242,14 +242,12 @@ if($isEditing) {
                                 } catch(UserImageAssetException $ex) {
                                     $notices[] = 'Unable to save your background, contact an administator!';
                                 }
-
-                                try {
-                                    $backgroundInfo->setAttachmentString($_POST['background']['attach'] ?? '')
-                                        ->setBlend(!empty($_POST['background']['attr']['blend']))
-                                        ->setSlide(!empty($_POST['background']['attr']['slide']));
-                                } catch(InvalidArgumentException $ex) {}
                             }
                         }
+
+                        $backgroundInfo->setAttachment((int)($_POST['background']['attach'] ?? 0))
+                            ->setBlend(!empty($_POST['background']['attr']['blend']))
+                            ->setSlide(!empty($_POST['background']['attr']['slide']));
                     }
                 }
             }
