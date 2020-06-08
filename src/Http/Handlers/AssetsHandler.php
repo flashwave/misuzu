@@ -17,6 +17,10 @@ final class AssetsHandler extends Handler {
         ],
     ];
 
+    public function __construct() {
+        $GLOBALS['misuzuBypassLockdown'] = true;
+    }
+
     private static function recurse(string $dir): string {
         $str = '';
         $dir = rtrim(realpath($dir), '/') . '/*';
