@@ -228,30 +228,37 @@ if($authToken->isValid()) {
 CSRF::setGlobalSecretKey(Config::get('csrf.secret', Config::TYPE_STR, 'soup'));
 CSRF::setGlobalIdentity(UserSession::hasCurrent() ? UserSession::getCurrent()->getToken() : IPAddress::remote());
 
-if(Config::get('private.enabled', Config::TYPE_BOOL)) {
-    $onLoginPage = $_SERVER['PHP_SELF'] === url('auth-login');
-    $onPasswordPage = parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH) === url('auth-forgot');
-    $misuzuBypassLockdown = !empty($misuzuBypassLockdown) || $onLoginPage;
+function mszLockdown(): void {
+    global $misuzuBypassLockdown, $userDisplayInfo;
 
-    if(!$misuzuBypassLockdown) {
-        if(UserSession::hasCurrent()) {
-            $privatePermCat = Config::get('private.perm.cat', Config::TYPE_STR);
-            $privatePermVal = Config::get('private.perm.val', Config::TYPE_INT);
+    if(Config::get('private.enabled', Config::TYPE_BOOL)) {
+        $onLoginPage = $_SERVER['PHP_SELF'] === url('auth-login');
+        $onPasswordPage = parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH) === url('auth-forgot');
+        $misuzuBypassLockdown = !empty($misuzuBypassLockdown) || $onLoginPage;
 
-            if(!empty($privatePermCat) && $privatePermVal > 0) {
-                if(!perms_check_user($privatePermCat, User::getCurrent()->getId(), $privatePermVal)) {
-                    // au revoir
-                    unset($userDisplayInfo);
-                    UserSession::unsetCurrent();
-                    User::unsetCurrent();
+        if(!$misuzuBypassLockdown) {
+            if(UserSession::hasCurrent()) {
+                $privatePermCat = Config::get('private.perm.cat', Config::TYPE_STR);
+                $privatePermVal = Config::get('private.perm.val', Config::TYPE_INT);
+
+                if(!empty($privatePermCat) && $privatePermVal > 0) {
+                    if(!perms_check_user($privatePermCat, User::getCurrent()->getId(), $privatePermVal)) {
+                        // au revoir
+                        unset($userDisplayInfo);
+                        UserSession::unsetCurrent();
+                        User::unsetCurrent();
+                    }
                 }
+            } elseif(!$onLoginPage && !($onPasswordPage && Config::get('private.allow_password_reset', Config::TYPE_BOOL, true))) {
+                url_redirect('auth-login');
+                exit;
             }
-        } elseif(!$onLoginPage && !($onPasswordPage && Config::get('private.allow_password_reset', Config::TYPE_BOOL, true))) {
-            url_redirect('auth-login');
-            exit;
         }
     }
 }
+
+if(parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH) !== '/index.php')
+    mszLockdown();
 
 // delete these
 if(!empty($userDisplayInfo))

@@ -24,6 +24,7 @@ final class AssetsHandler extends Handler {
 
     public function __construct() {
         $GLOBALS['misuzuBypassLockdown'] = true;
+        parent::__construct();
     }
 
     private static function recurse(string $dir): string {

@@ -5,6 +5,11 @@ use HttpResponse;
 use HttpRequest;
 
 final class AuthHandler extends Handler {
+    public function __construct() {
+        $GLOBALS['misuzuBypassLockdown'] = true;
+        parent::__construct();
+    }
+
     public static function legacy(HttpResponse $response, HttpRequest $request): void {
         $mode = $request->getQueryParam('m', FILTER_SANITIZE_STRING);
         $destination = [

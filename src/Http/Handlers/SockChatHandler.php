@@ -52,6 +52,9 @@ final class SockChatHandler extends Handler {
 
         if(is_file($hashKeyPath))
             $this->hashKey = file_get_contents($hashKeyPath);
+
+        $GLOBALS['misuzuBypassLockdown'] = true;
+        parent::__construct();
     }
 
     public function phpFile(HttpResponse $response, HttpRequest $request) {
