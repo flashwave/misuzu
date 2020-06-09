@@ -259,6 +259,14 @@ class UserWarning {
 
         return $getObjects->fetchObjects(self::class);
     }
+    public static function byActive(): array {
+        return DB::prepare(
+            self::byQueryBase()
+            . ' WHERE `warning_type` IN (' . implode(',', self::HAS_DURATION) . ')'
+            . ' AND (`warning_duration` IS NULL OR `warning_duration` >= NOW())'
+            . ' ORDER BY `warning_type` DESC, `warning_duration` DESC'
+        )->fetchObjects(self::class);
+    }
     public static function all(?User $user = null, ?Pagination $pagination = null): array {
         $query = self::byQueryBase()
             . ($user === null ? '' : ' WHERE `user_id` = :user')

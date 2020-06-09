@@ -16,6 +16,7 @@ use Misuzu\Users\UserChatTokenNotFoundException;
 use Misuzu\Users\UserChatTokenCreationFailedException;
 use Misuzu\Users\UserSession;
 use Misuzu\Users\UserSessionNotFoundException;
+use Misuzu\Users\UserWarning;
 
 final class SockChatHandler extends Handler {
     private string $hashKey = 'woomy';
@@ -124,14 +125,22 @@ final class SockChatHandler extends Handler {
         if(!hash_equals($realHash, $userHash))
             return [];
 
-        return DB::prepare('
-            SELECT uw.`user_id` AS `id`, DATE_FORMAT(uw.`warning_duration`, \'%Y-%m-%dT%TZ\') AS `expires`, INET6_NTOA(uw.`user_ip`) AS `ip`, u.`username`
-            FROM `msz_user_warnings` AS uw
-            LEFT JOIN `msz_users` AS u
-            ON u.`user_id` = uw.`user_id`
-            WHERE uw.`warning_type` = 3
-            AND uw.`warning_duration` > NOW()
-        ')->fetchAll();
+        $warnings = UserWarning::byActive();
+        $bans = [];
+
+        foreach($warnings as $warning) {
+            if(!$warning->isBan() || $warning->hasExpired())
+                continue;
+
+            $bans[] = [
+                'id' => $warning->getUser()->getId(),
+                'expires' => date('c', $warning->isPermanent() ? 0x7FFFFFFF : $warning->getExpirationTime()),
+                'ip' => $warning->getUserRemoteAddress(),
+                'username' => $warning->getUser()->getUsername()
+            ];
+        }
+
+        return $bans;
     }
 
     public function login(HttpResponse $response, HttpRequest $request) {
