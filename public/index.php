@@ -16,7 +16,11 @@ Router::addRoutes(
     Route::get('/', 'index', 'Home'),
 
     // Assets
-    Route::get('/assets/([a-zA-Z0-9\-]+)\.(css|js)', 'view', 'Assets'),
+    Route::group('/assets', 'Assets')->addChildren(
+        Route::get('/([a-zA-Z0-9\-]+)\.(css|js)', 'serveComponent'),
+        Route::get('/avatar/([0-9]+)(?:\.png)?', 'serveAvatar'),
+        Route::get('/profile-background/([0-9]+)(?:\.png)?', 'serveProfileBackground'),
+    ),
 
     // Info
     Route::get('/info', 'index', 'Info'),
@@ -71,6 +75,7 @@ Router::addRoutes(
     Route::get('/news/feed.php', 'legacy', 'News'),
     Route::get('/news/feed.php/rss', 'legacy', 'News'),
     Route::get('/news/feed.php/atom', 'legacy', 'News'),
+    Route::get('/user-assets.php', 'serveLegacy', 'Assets'),
 );
 
 $response = Router::handle($request);
@@ -90,7 +95,7 @@ foreach($response->getHeaders() as $name => $lines) {
 
 $responseBody = $response->getBody();
 
-if($responseStatus >= 400 && $responseStatus <= 599 && ($responseBody === null || $responseBody->getSize() < 1))
+if($responseStatus >= 400 && $responseStatus <= 599 && $responseBody === null)
     echo render_error($responseStatus);
 else
     echo (string)$responseBody;

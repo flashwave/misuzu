@@ -9,4 +9,6 @@ interface UserAssetScalableInterface {
     public function ensureScaledExists(int $dims): void;
     public function getPublicScaledPath(int $dims): string;
     public function getScaledFileName(int $dims): string;
+    public function getScaledFileExtension(int $dims): string;
+    public function getScaledMimeType(int $dims): string;
 }

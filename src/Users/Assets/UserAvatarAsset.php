@@ -47,7 +47,19 @@ class UserAvatarAsset extends UserImageAsset implements UserAssetScalableInterfa
         return sprintf('avatar-%1$d.%2$s', $this->getUser()->getId(), $this->getFileExtension());
     }
     public function getScaledFileName(int $dims): string {
-        return sprintf('avatar-%1$d-%3$dx%3$d.%2$s', $this->getUser()->getId(), $this->getFileExtension(), self::clampDimensions($dims));
+        return sprintf('avatar-%1$d-%3$dx%3$d.%2$s', $this->getUser()->getId(), $this->getScaledFileExtension($dims), self::clampDimensions($dims));
+    }
+
+    public function getScaledMimeType(int $dims): string {
+        if(!$this->isScaledPresent($dims))
+            return '';
+        return mime_content_type($this->getScaledPath($dims));
+    }
+    public function getScaledFileExtension(int $dims): string {
+        $imageSize = getimagesize($this->getScaledPath($dims));
+        if($imageSize === null)
+            return 'img';
+        return self::TYPES_EXT[$imageSize[2]] ?? 'img';
     }
 
     public function getRelativePath(): string {

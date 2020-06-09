@@ -74,8 +74,8 @@ define('MSZ_URLS', [
     'user-profile-edit'                 => ['/profile.php',                     ['u' => '<user>', 'edit' => '1']],
     'user-account-standing'             => ['/profile.php',                     ['u' => '<user>'], 'account-standing'],
 
-    'user-avatar'                       => ['/user-assets.php',                 ['u' => '<user>', 'm' => 'avatar', 'r' => '<res>']],
-    'user-background'                   => ['/user-assets.php',                 ['u' => '<user>', 'm' => 'background']],
+    'user-avatar'                       => ['/assets/avatar/<user>',            ['res' => '<res>']],
+    'user-background'                   => ['/assets/profile-background/<user>'],
 
     'user-relation-create'              => ['/relations.php',                   ['u' => '<user>', 'm' => '<type>', 'csrf' => '{csrf}']],
     'user-relation-none'                => ['/relations.php',                   ['u' => '<user>', 'm' => '[\Misuzu\Users\UserRelation::TYPE_NONE]', 'csrf' => '{csrf}']],
