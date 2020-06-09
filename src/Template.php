@@ -45,7 +45,6 @@ final class Template {
         echo self::renderRaw($file, $vars);
     }
 
-    /// DEPRECATED: Will be removed in the future, use the $vars param for render and renderRaw instead.
     public static function set($arrayOrKey, $value = null): void {
         if(is_string($arrayOrKey)) {
             self::$vars[$arrayOrKey] = $value;

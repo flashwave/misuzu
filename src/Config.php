@@ -43,6 +43,10 @@ final class Config {
         return $value ?? $default ?? self::DEFAULTS[$type];
     }
 
+    public static function has(string $key): bool {
+        return array_key_exists($key, self::$config);
+    }
+
     public static function set(string $key, $value, bool $soft = false): void {
         self::$config[$key] = $value;
 

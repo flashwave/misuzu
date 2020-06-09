@@ -8,57 +8,72 @@
         <link href="/vendor/fontawesome/css/all.min.css" type="text/css" rel="stylesheet"/>
         <link href="/vendor/highlightjs/styles/tomorrow-night.css" type="text/css" rel="stylesheet"/>
         <link href="/assets/misuzu.css" type="text/css" rel="stylesheet"/>
-        {% if site_background is defined %}
-            <style>
-                :root {
-                    --background-width: {{ site_background.width }}px;
-                    --background-height: {{ site_background.height }}px;
-                    --background-image: url('{{ site_background.url|raw }}');
-                }
-            </style>
-        {% endif %}
-        {% if site_logo is defined %}
-            <style>
-                :root {
-                    --site-logo: url('{{ site_logo }}');
-                }
-            </style>
-        {% endif %}
+{% if site_background is defined %}
+        <style>
+            :root {
+                --background-width: {{ site_background.width }}px;
+                --background-height: {{ site_background.height }}px;
+                --background-image: url('{{ site_background.url|raw }}');
+            }
+        </style>
+{% endif %}
+{% if site_logo is defined %}
+        <style>
+            :root {
+                --site-logo: url('{{ site_logo }}');
+            }
+        </style>
+{% endif %}
     </head>
-
     <body class="main{% if site_background is defined %} {{ site_background.classNames('main--bg-%s')|join(' ') }}{% endif %}"
         style="{% if global_accent_colour is defined %}{{ global_accent_colour|html_colour('--accent-colour') }}{% endif %}" id="container">
-        {% include '_layout/header.twig' %}
+{% include '_layout/header.twig' %}
 
         <div class="main__wrapper">
-            {% if current_user2.hasActiveWarning|default(false) %}
-                <div class="warning">
-                    <div class="warning__content">
-                        You have been {{ current_user2.isSilenced ? 'silenced' : 'banned' }} {% if current_user2.isActiveWarningPermanent %}<strong>permanently</strong>{% else %}until <strong>{{ current_user2.activeWarningExpiration|date('r') }}</strong>{% endif %}, view the account standing table on <a href="{{ url('user-account-standing', {'user': current_user2.id}) }}" class="warning__link">your profile</a> to view why.
-                    </div>
+{% if current_user2.hasActiveWarning|default(false) %}
+            <div class="warning">
+                <div class="warning__content">
+                    You have been {{ current_user2.isSilenced ? 'silenced' : 'banned' }} {% if current_user2.isActiveWarningPermanent %}<strong>permanently</strong>{% else %}until <strong>{{ current_user2.activeWarningExpiration|date('r') }}</strong>{% endif %}, view the account standing table on <a href="{{ url('user-account-standing', {'user': current_user2.id}) }}" class="warning__link">your profile</a> to view why.
                 </div>
-            {% endif %}
+            </div>
+{% endif %}
 
-            {% block content %}
-                <div class="container" style="margin: 2px 0; padding: 2px 5px;">
-                    This page is empty, populate it.
-                </div>
-            {% endblock %}
+{% block content %}
+            <div class="container" style="margin: 2px 0; padding: 2px 5px;">
+                This page is empty, populate it.
+            </div>
+{% endblock %}
         </div>
 
-        {% include '_layout/footer.twig' %}
+{% include '_layout/footer.twig' %}
 
-        {% if current_user is defined %}
-            <script type="application/json" id="js-user-info">
-                {{ current_user|json_encode|raw }}
-            </script>
-        {% endif %}
+{% if current_user is defined %}
+        <script type="application/json" id="js-user-info">
+            {{ current_user|json_encode|raw }}
+        </script>
+{% endif %}
         <script type="application/json" id="js-urls-list">
             {{ url_list()|json_encode|raw }}
         </script>
         <script type="text/javascript">
             window.addEventListener('DOMContentLoaded', function() { Misuzu(); });
         </script>
+{% if matomo_endpoint is defined and matomo_js is defined and matomo_site is defined %}
+        <script type="text/javascript">
+            var _paq = window._paq || [];
+            _paq.push(['disableCookies']);
+            _paq.push(['trackPageView']);
+            _paq.push(['enableLinkTracking']);
+            (function() {
+                _paq.push(['setTrackerUrl', '{{ matomo_endpoint }}']);
+                _paq.push(['setSiteId', '{{ matomo_site }}']);
+                var g = document.createElement('script');
+                g.type = 'text/javascript'; g.async = true;
+                g.defer = true; g.src = '{{ matomo_js }}';
+                document.head.appendChild(g);
+            })();
+        </script>
+{% endif %}
         <script src="/vendor/timeago/timeago.min.js" type="text/javascript"></script>
         <script src="/vendor/timeago/timeago.locales.min.js" type="text/javascript"></script>
         <script src="/vendor/highlightjs/highlight.pack.js" type="text/javascript"></script>

@@ -259,6 +259,14 @@ if(!empty($userDisplayInfo))
 if(!empty($userInfo))
     Template::set('current_user2', $userInfo);
 
+if(Config::has('matomo.endpoint') && Config::has('matomo.javascript') && Config::has('matomo.site')) {
+    Template::set([
+        'matomo_endpoint' => Config::get('matomo.endpoint', Config::TYPE_STR),
+        'matomo_js' => Config::get('matomo.javascript', Config::TYPE_STR),
+        'matomo_site' => Config::get('matomo.site', Config::TYPE_STR),
+    ]);
+}
+
 $inManageMode = starts_with($_SERVER['REQUEST_URI'], '/manage');
 $hasManageAccess = User::hasCurrent()
     && !User::getCurrent()->hasActiveWarning()
