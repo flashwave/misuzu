@@ -378,6 +378,13 @@ class User implements HasRankInterface, JsonSerializable {
         return $this->commentPermsArray;
     }
 
+    private $legacyPerms = null;
+    public function getLegacyPerms(): array {
+        if($this->legacyPerms === null)
+            $this->legacyPerms = perms_get_user($this->getId());
+        return $this->legacyPerms;
+    }
+
     /********
      * JSON *
      ********/
@@ -659,6 +666,15 @@ class User implements HasRankInterface, JsonSerializable {
     }
     public static function hasCurrent(): bool {
         return self::$localUser !== null;
+    }
+
+    public function getClientJson(): string {
+        return json_encode([
+            'user_id' => $this->getId(),
+            'username' => $this->getUsername(),
+            'user_colour' => $this->getColour()->getRaw(),
+            'perms' => $this->getLegacyPerms(),
+        ]);
     }
 
     /**************

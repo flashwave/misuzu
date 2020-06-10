@@ -28,7 +28,7 @@
             <label class="form__label">
                 <div class="form__label__text">Contributor Id</div>
                 <div class="form__label__input">
-                    {{ input_text('change[user]', '', change.userId|default(current_user.user_id), 'number', '', false, {'min':1}) }}
+                    {{ input_text('change[user]', '', change.userId|default(current_user.id), 'number', '', false, {'min':1}) }}
                 </div>
             </label>
 

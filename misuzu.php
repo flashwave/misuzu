@@ -189,7 +189,6 @@ if($authToken->isValid()) {
             if(!$userInfo->isDeleted()) {
                 $sessionInfo->setCurrent();
                 $userInfo->setCurrent();
-
                 $sessionInfo->bump();
 
                 if($sessionInfo->shouldBumpExpire())
@@ -206,19 +205,6 @@ if($authToken->isValid()) {
 
     if(UserSession::hasCurrent()) {
         $userInfo->bumpActivity();
-
-        $userDisplayInfo = DB::prepare('
-            SELECT
-                u.`user_id`, u.`username`,
-                COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
-            FROM `msz_users` AS u
-            LEFT JOIN `msz_roles` AS r
-            ON u.`display_role` = r.`role_id`
-            WHERE `user_id` = :user_id
-        ')  ->bind('user_id', $userInfo->getId())
-            ->fetch();
-
-        $userDisplayInfo['perms'] = perms_get_user($userInfo->getId());
     } else {
         setcookie('msz_auth', '', -9001, '/', '.' . $_SERVER['HTTP_HOST'], !empty($_SERVER['HTTPS']), true);
         setcookie('msz_auth', '', -9001, '/', '', !empty($_SERVER['HTTPS']), true);
@@ -229,7 +215,7 @@ CSRF::setGlobalSecretKey(Config::get('csrf.secret', Config::TYPE_STR, 'soup'));
 CSRF::setGlobalIdentity(UserSession::hasCurrent() ? UserSession::getCurrent()->getToken() : IPAddress::remote());
 
 function mszLockdown(): void {
-    global $misuzuBypassLockdown, $userDisplayInfo;
+    global $misuzuBypassLockdown;
 
     if(Config::get('private.enabled', Config::TYPE_BOOL)) {
         $onLoginPage = $_SERVER['PHP_SELF'] === url('auth-login');
@@ -244,7 +230,6 @@ function mszLockdown(): void {
                 if(!empty($privatePermCat) && $privatePermVal > 0) {
                     if(!perms_check_user($privatePermCat, User::getCurrent()->getId(), $privatePermVal)) {
                         // au revoir
-                        unset($userDisplayInfo);
                         UserSession::unsetCurrent();
                         User::unsetCurrent();
                     }
@@ -260,11 +245,8 @@ function mszLockdown(): void {
 if(parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH) !== '/index.php')
     mszLockdown();
 
-// delete these
-if(!empty($userDisplayInfo))
-    Template::set('current_user', $userDisplayInfo);
 if(!empty($userInfo))
-    Template::set('current_user2', $userInfo);
+    Template::set('current_user', $userInfo);
 
 if(Config::has('matomo.endpoint') && Config::has('matomo.javascript') && Config::has('matomo.site')) {
     Template::set([

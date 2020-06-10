@@ -43,11 +43,11 @@
             </div>
         {% endif %}
 
-        <div class="container forum__post js-forum-posting" style="{{ posting_post.poster_colour|default(current_user.user_colour)|html_colour('--accent-colour') }}">
+        <div class="container forum__post js-forum-posting" style="{{ posting_post.poster_colour|default(current_user.colour.raw)|html_colour('--accent-colour') }}">
             <div class="forum__post__info">
                 <div class="forum__post__info__background"></div>
                 <div class="forum__post__info__content">
-                    <span class="forum__post__avatar">{{ avatar(posting_post.poster_id|default(current_user.user_id), 120, posting_post.poster_name|default(current_user.username)) }}</span>
+                    <span class="forum__post__avatar">{{ avatar(posting_post.poster_id|default(current_user.id), 120, posting_post.poster_name|default(current_user.username)) }}</span>
 
                     <span class="forum__post__username">{{ posting_post.poster_name|default(current_user.username) }}</span>
 

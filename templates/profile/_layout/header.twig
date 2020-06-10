@@ -82,7 +82,7 @@
                         <a href="{{ url('user-profile-edit', {'user': profile_user.id}) }}" class="input__button profile__header__action">Edit Profile</a>
                     {% endif %}
 
-                    {% if current_user2 is defined and current_user2.id|default(0) != profile_user.id and not profile_is_editing %}
+                    {% if current_user is defined and current_user.id|default(0) != profile_user.id and not profile_is_editing %}
                         {% if profile_user.relationString(profile_viewer) != 'following' %}
                             <a href="{{ url('user-relation-none', {'user': profile_user.id}) }}" class="input__button input__button--destroy profile__header__action js-user-relation-action" data-relation-user="{{ profile_user.id }}" data-relation-type="0">Unfollow</a>
                         {% else %}

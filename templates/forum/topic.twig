@@ -60,9 +60,9 @@
     {% if forum_has_priority_voting(topic_info.forum_type) %}
         {{ forum_priority_votes(topic_info, topic_priority_votes, true) }} {# replace true this with perms check #}
     {% endif %}
-    {{ forum_poll(topic_info, topic_poll_options, topic_poll_user_answers, topic_info.topic_id, current_user.user_id|default(0) > 0, topic_info.author_user_id == current_user.user_id|default(0)) }}
+    {{ forum_poll(topic_info, topic_poll_options, topic_poll_user_answers, topic_info.topic_id, current_user.id|default(0) > 0, topic_info.author_user_id == current_user.id|default(0)) }}
     {{ topic_tools }}
-    {{ forum_post_listing(topic_posts, current_user.user_id|default(0), topic_perms) }}
+    {{ forum_post_listing(topic_posts, current_user.id|default(0), topic_perms) }}
     {{ topic_tools }}
     {{ topic_notice }}
     {{ forum_header('', topic_breadcrumbs) }}

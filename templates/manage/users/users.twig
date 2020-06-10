@@ -15,7 +15,7 @@
 
         <div class="manage__users__collection">
             {% for user in manage_users %}
-                <div class="manage__user-item{% if user.isDeleted %} manage__user-item--deleted{% endif %}" style="{{ user.colour }}">
+                <div class="manage__user-item{% if user.isDeleted %} manage__user-item--deleted{% endif %}" style="--accent-colour: {{ user.colour }}">
                     <a href="{{ url('manage-user', {'user': user.id}) }}" class="manage__user-item__background"></a>
 
                     <div class="manage__user-item__container">

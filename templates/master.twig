@@ -30,10 +30,10 @@
 {% include '_layout/header.twig' %}
 
         <div class="main__wrapper">
-{% if current_user2.hasActiveWarning|default(false) %}
+{% if current_user.hasActiveWarning|default(false) %}
             <div class="warning">
                 <div class="warning__content">
-                    You have been {{ current_user2.isSilenced ? 'silenced' : 'banned' }} {% if current_user2.isActiveWarningPermanent %}<strong>permanently</strong>{% else %}until <strong>{{ current_user2.activeWarningExpiration|date('r') }}</strong>{% endif %}, view the account standing table on <a href="{{ url('user-account-standing', {'user': current_user2.id}) }}" class="warning__link">your profile</a> to view why.
+                    You have been {{ current_user.isSilenced ? 'silenced' : 'banned' }} {% if current_user.isActiveWarningPermanent %}<strong>permanently</strong>{% else %}until <strong>{{ current_user.activeWarningExpiration|date('r') }}</strong>{% endif %}, view the account standing table on <a href="{{ url('user-account-standing', {'user': current_user.id}) }}" class="warning__link">your profile</a> to view why.
                 </div>
             </div>
 {% endif %}
@@ -49,7 +49,7 @@
 
 {% if current_user is defined %}
         <script type="application/json" id="js-user-info">
-            {{ current_user|json_encode|raw }}
+            {{ current_user.clientJson|raw }}
         </script>
 {% endif %}
         <script type="application/json" id="js-urls-list">
