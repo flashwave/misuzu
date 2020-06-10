@@ -420,10 +420,6 @@ class User implements HasRankInterface, JsonSerializable {
     }
     public function setPassword(string $password): self {
         $this->password = self::hashPassword($password);
-        DB::prepare('UPDATE `msz_users` SET `password` = :password WHERE `user_id` = :user_id')
-            ->bind('password', $this->password)
-            ->bind('user_id', $this->getId())
-            ->execute();
         return $this;
     }
 
@@ -841,6 +837,16 @@ class User implements HasRankInterface, JsonSerializable {
      * FETCHING *
      ************/
 
+    private static function countQueryBase(): string {
+        return sprintf(self::QUERY_SELECT, sprintf('COUNT(*)', self::TABLE));
+    }
+    public static function countAll(bool $showDeleted = false): int {
+        return (int)DB::prepare(
+            self::countQueryBase()
+            . ($showDeleted ? '' : ' WHERE `user_deleted` IS NULL')
+        )->fetchColumn();
+    }
+
     private static function memoizer() {
         static $memoizer = null;
         if($memoizer === null)
@@ -925,5 +931,24 @@ class User implements HasRankInterface, JsonSerializable {
         return DB::prepare(self::byQueryBase() . ' WHERE `user_deleted` IS NULL AND `user_birthdate` LIKE :date')
             ->bind('date', $date->format('%-m-d'))
             ->fetchObjects(self::class);
+    }
+    public static function all(bool $showDeleted = false, ?Pagination $pagination = null): array {
+        $query = self::byQueryBase();
+
+        if(!$showDeleted)
+            $query .= ' WHERE `user_deleted` IS NULL';
+
+        $query .= ' ORDER BY `user_id` ASC';
+
+        if($pagination !== null)
+            $query .= ' LIMIT :range OFFSET :offset';
+
+        $getObjects = DB::prepare($query);
+
+        if($pagination !== null)
+            $getObjects->bind('range', $pagination->getRange())
+                ->bind('offset', $pagination->getOffset());
+
+        return $getObjects->fetchObjects(self::class);
     }
 }

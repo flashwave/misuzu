@@ -15,11 +15,11 @@
 
         <div class="manage__users__collection">
             {% for user in manage_users %}
-                <div class="manage__user-item{% if user.user_deleted is not null %} manage__user-item--deleted{% endif %}" style="{{ user.user_colour|html_colour('--accent-colour') }}">
-                    <a href="{{ url('manage-user', {'user': user.user_id}) }}" class="manage__user-item__background"></a>
+                <div class="manage__user-item{% if user.isDeleted %} manage__user-item--deleted{% endif %}" style="{{ user.colour }}">
+                    <a href="{{ url('manage-user', {'user': user.id}) }}" class="manage__user-item__background"></a>
 
                     <div class="manage__user-item__container">
-                        <div class="manage__user-item__avatar">{{ avatar(user.user_id, 40, user.username) }}</div>
+                        <div class="manage__user-item__avatar">{{ avatar(user.id, 40, user.username) }}</div>
                         <div class="manage__user-item__info">
                             <div class="manage__user-item__name">
                                 {{ user.username }}
@@ -27,24 +27,24 @@
                             <div class="manage__user-item__details">
                                 <div class="manage__user-item__detail">
                                     <i class="fas fa-user-plus fa-fw"></i>
-                                    <time datetime="{{ user.user_created|date('c') }}" title="{{ user.user_created|date('r') }}">{{ user.user_created|time_diff }}</time> /
-                                    <span>{{ user.register_ip }}</span>
+                                    <time datetime="{{ user.createdTime|date('c') }}" title="{{ user.createdTime|date('r') }}">{{ user.createdTime|time_diff }}</time> /
+                                    <span>{{ user.registerRemoteAddress }}</span>
                                 </div>
                                 <div class="manage__user-item__detail">
                                     <i class="fas fa-user-clock fa-fw"></i>
-                                    <time datetime="{{ user.user_active|date('c') }}" title="{{ user.user_active|date('r') }}">{{ user.user_active|time_diff }}</time> /
-                                    <span>{{ user.last_ip }}</span>
+                                    <time datetime="{{ user.activeTime|date('c') }}" title="{{ user.activeTime|date('r') }}">{{ user.activeTime|time_diff }}</time> /
+                                    <span>{{ user.lastRemoteAddress }}</span>
                                 </div>
-                                {% if user.user_deleted is not null %}
+                                {% if user.isDeleted %}
                                     <div class="manage__user-item__detail">
                                         <i class="fas fa-trash-alt fa-fw"></i>
-                                        <time datetime="{{ user.user_deleted|date('c') }}" title="{{ user.user_deleted|date('r') }}">{{ user.user_deleted|time_diff }}</time>
+                                        <time datetime="{{ user.deletedTime|date('c') }}" title="{{ user.deletedTime|date('r') }}">{{ user.deletedTime|time_diff }}</time>
                                     </div>
                                 {% endif %}
                             </div>
                         </div>
                         <div class="manage__user-item__actions">
-                            <a href="{{ url('user-profile', {'user': user.user_id}) }}" class="manage__user-item__action" title="Profile">
+                            <a href="{{ url('user-profile', {'user': user.id}) }}" class="manage__user-item__action" title="Profile">
                                 <i class="fas fa-user fa-fw"></i>
                             </a>
                         </div>
