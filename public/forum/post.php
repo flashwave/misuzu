@@ -33,11 +33,11 @@ if(!empty($postMode) && !UserSession::hasCurrent()) {
 $currentUser = User::getCurrent():
 $currentUserId = $currentUser === null ? 0 : $currentUser->getId();
 
-if($currentUser->isBanned()) {
+if(isset($currentUser) && $currentUser->isBanned()) {
     echo render_info_or_json($isXHR, 'You have been banned, check your profile for more information.', 403);
     return;
 }
-if($currentUser->isSilenced()) {
+if(isset($currentUser) && $currentUser->isSilenced()) {
     echo render_info_or_json($isXHR, 'You have been silenced, check your profile for more information.', 403);
     return;
 }

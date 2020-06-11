@@ -28,7 +28,7 @@ $perms = $topic
     ? forum_perms_get_user($topic['forum_id'], $topicUserId)[MSZ_FORUM_PERMS_GENERAL]
     : 0;
 
-if($topicUser->hasActiveWarning())
+if(isset($topicUser) && $topicUser->hasActiveWarning())
     $perms &= ~MSZ_FORUM_PERM_SET_WRITE;
 
 $topicIsDeleted = !empty($topic['topic_deleted']);

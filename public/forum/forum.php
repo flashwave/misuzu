@@ -29,7 +29,7 @@ if(!perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM)) {
     return;
 }
 
-if($forumUser->hasActiveWarning())
+if(isset($forumUser) && $forumUser->hasActiveWarning())
     $perms &= ~MSZ_FORUM_PERM_SET_WRITE;
 
 Template::set('forum_perms', $perms);
