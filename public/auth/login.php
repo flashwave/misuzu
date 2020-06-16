@@ -27,7 +27,7 @@ if(!empty($_GET['resolve'])) {
         echo json_encode([
             'id' => 0,
             'name' => '',
-            'avatar' => url('user-avatar', ['res' => 200]),
+            'avatar' => url('user-avatar', ['res' => 200, 'user' => 0]),
         ]);
         return;
     }
