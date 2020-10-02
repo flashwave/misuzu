@@ -53,6 +53,10 @@ body {
     --user-header: url('/images/pixel.png');
     --accent-colour: #8559a5;
     --header-accent-colour: var(--accent-colour);
+
+    /** octobre **/
+    --site-logo: url('/images/logos/imouto-halloween.png');
+    --accent-colour: #ee9400;
 }
 
 html {
