@@ -1,30 +1,28 @@
 {% extends 'forum/master.twig' %}
 {% from 'forum/macros.twig' import forum_category_listing, forum_topic_listing, forum_category_buttons, forum_header, forum_category_tools %}
 
-{% set title = forum_info.forum_name %}
+{% set title = forum_info.name %}
 {% set canonical_url = url('forum-category', {
-    'forum': forum_info.forum_id,
+    'forum': forum_info.id,
     'page': forum_pagination.page|default(0) > 1 ? forum_pagination.page : 0,
 }) %}
 
 {% block content %}
-    {{ forum_header(forum_info.forum_name, forum_breadcrumbs, true, canonical_url, [
+    {{ forum_header(forum_info.name, forum_breadcrumbs, true, canonical_url, [
         {
             'html': '<i class="far fa-check-circle"></i> Mark as Read',
-            'url': url('forum-mark-single', {'forum': forum_info.forum_id}),
+            'url': url('forum-mark-single', {'forum': forum_info.id}),
             'display': current_user is defined,
             'method': 'POST',
         }
     ]) }}
 
-    {% if forum_may_have_children and forum_info.forum_subforums|length > 0 %}
-        {{ forum_category_listing(forum_info.forum_subforums, 'Forums') }}
-    {% endif %}
+    {{ forum_category_listing(forum_info, current_user, 'Forums') }}
 
-    {% if forum_may_have_topics %}
+    {% if forum_info.canHaveTopics %}
         {% set category_tools = forum_category_tools(forum_info, forum_perms, forum_pagination) %}
         {{ category_tools }}
-        {{ forum_topic_listing(forum_topics) }}
+        {{ forum_topic_listing(forum_info.topics(can_view_deleted, forum_pagination), null, current_user) }}
         {{ category_tools }}
     {% endif %}
 

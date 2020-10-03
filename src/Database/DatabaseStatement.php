@@ -43,13 +43,12 @@ class DatabaseStatement {
         return $out ? $out : $default;
     }
 
+    private $hasExecuted = false;
     public function fetchObject(string $className = 'stdClass', ?array $args = null, $default = null) {
-        $out = false;
+        if(!$this->hasExecuted)
+            $this->hasExecuted = $this->isQuery || $this->execute();
 
-        if($this->isQuery || $this->execute()) {
-            $out = $args === null ? $this->stmt->fetchObject($className) : $this->stmt->fetchObject($className, $args);
-        }
-
+        $out = $args === null ? $this->stmt->fetchObject($className) : $this->stmt->fetchObject($className, $args);
         return $out !== false ? $out : $default;
     }
 

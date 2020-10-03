@@ -1,6 +1,8 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Forum\ForumCategory;
+use Misuzu\Forum\ForumCategoryNotFoundException;
 use Misuzu\Net\IPAddress;
 use Misuzu\Parsers\Parser;
 use Misuzu\Users\User;
@@ -79,18 +81,17 @@ if(!empty($topicId)) {
     }
 }
 
-if(!empty($forumId)) {
-    $forum = forum_get($forumId);
-}
 
-if(empty($forum)) {
+try {
+    $forumInfo = ForumCategory::byId($forumId);
+} catch(ForumCategoryNotFoundException $ex) {
     echo render_error(404);
     return;
 }
 
-$perms = forum_perms_get_user($forum['forum_id'], $currentUserId)[MSZ_FORUM_PERMS_GENERAL];
+$perms = forum_perms_get_user($forumInfo->getId(), $currentUserId)[MSZ_FORUM_PERMS_GENERAL];
 
-if($forum['forum_archived']
+if($forumInfo->isArchived()
     || (!empty($topic['topic_locked']) && !perms_check($perms, MSZ_FORUM_PERM_LOCK_TOPIC))
     || !perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM | MSZ_FORUM_PERM_CREATE_POST)
     || (empty($topic) && !perms_check($perms, MSZ_FORUM_PERM_CREATE_TOPIC))) {
@@ -98,7 +99,7 @@ if($forum['forum_archived']
     return;
 }
 
-if(!forum_may_have_topics($forum['forum_type'])) {
+if(!$forumInfo->canHaveTopics()) {
     echo render_error(400);
     return;
 }
@@ -147,7 +148,7 @@ if(!empty($_POST)) {
         $isEditingTopic = empty($topic) || ($mode === 'edit' && $post['is_opening_post']);
 
         if($mode === 'create') {
-            $timeoutCheck = max(1, forum_timeout($forumId, $currentUserId));
+            $timeoutCheck = max(1, forum_timeout($forumInfo->getId(), $currentUserId));
 
             if($timeoutCheck < 5) {
                 $notices[] = sprintf("You're posting too quickly! Please wait %s seconds before posting again.", number_format($timeoutCheck));
@@ -199,7 +200,7 @@ if(!empty($_POST)) {
                         forum_topic_bump($topic['topic_id']);
                     } else {
                         $topicId = forum_topic_create(
-                            $forum['forum_id'],
+                            $forumInfo->getId(),
                             $currentUserId,
                             $topicTitle,
                             $topicType
@@ -208,15 +209,15 @@ if(!empty($_POST)) {
 
                     $postId = forum_post_create(
                         $topicId,
-                        $forum['forum_id'],
+                        $forumInfo->getId(),
                         $currentUserId,
                         IPAddress::remote(),
                         $postText,
                         $postParser,
                         $postSignature
                     );
-                    forum_topic_mark_read($currentUserId, $topicId, $forum['forum_id']);
-                    forum_count_increase($forum['forum_id'], empty($topic));
+                    forum_topic_mark_read($currentUserId, $topicId, $forumInfo->getId());
+                    $forumInfo->increaseTopicPostCount(empty($topic));
                     break;
 
                 case 'edit':
@@ -256,9 +257,9 @@ if($mode === 'edit') { // $post is pretty much sure to be populated at this poin
 $displayInfo = forum_posting_info($currentUserId);
 
 Template::render('forum.posting', [
-    'posting_breadcrumbs' => forum_get_breadcrumbs($forumId),
-    'global_accent_colour' => forum_get_colour($forumId),
-    'posting_forum' => $forum,
+    'posting_breadcrumbs' => forum_get_breadcrumbs($forumInfo->getId()),
+    'global_accent_colour' => $forumInfo->getColour(),
+    'posting_forum' => $forumInfo,
     'posting_info' => $displayInfo,
     'posting_notices' => $notices,
     'posting_mode' => $mode,

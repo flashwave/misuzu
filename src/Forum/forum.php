@@ -1,128 +1,4 @@
 <?php
-define('MSZ_FORUM_TYPE_DISCUSSION', 0);
-define('MSZ_FORUM_TYPE_CATEGORY', 1);
-define('MSZ_FORUM_TYPE_LINK', 2);
-define('MSZ_FORUM_TYPE_FEATURE', 3);
-define('MSZ_FORUM_TYPES', [
-    MSZ_FORUM_TYPE_DISCUSSION,
-    MSZ_FORUM_TYPE_CATEGORY,
-    MSZ_FORUM_TYPE_LINK,
-    MSZ_FORUM_TYPE_FEATURE,
-]);
-
-define('MSZ_FORUM_MAY_HAVE_CHILDREN', [
-    MSZ_FORUM_TYPE_DISCUSSION,
-    MSZ_FORUM_TYPE_CATEGORY,
-    MSZ_FORUM_TYPE_FEATURE,
-]);
-
-define('MSZ_FORUM_MAY_HAVE_TOPICS', [
-    MSZ_FORUM_TYPE_DISCUSSION,
-    MSZ_FORUM_TYPE_FEATURE,
-]);
-
-define('MSZ_FORUM_HAS_PRIORITY_VOTING', [
-    MSZ_FORUM_TYPE_FEATURE,
-]);
-
-define('MSZ_FORUM_ROOT', 0);
-define('MSZ_FORUM_ROOT_DATA', [ // should be compatible with the data fetched in forum_get_root_categories
-    'forum_id' => MSZ_FORUM_ROOT,
-    'forum_name' => 'Forums',
-    'forum_children' => 0,
-    'forum_type' => MSZ_FORUM_TYPE_CATEGORY,
-    'forum_colour' => null,
-    'forum_permissions' => MSZ_FORUM_PERM_SET_READ,
-]);
-
-function forum_is_valid_type(int $type): bool {
-    return in_array($type, MSZ_FORUM_TYPES, true);
-}
-
-function forum_may_have_children(int $forumType): bool {
-    return in_array($forumType, MSZ_FORUM_MAY_HAVE_CHILDREN);
-}
-
-function forum_may_have_topics(int $forumType): bool {
-    return in_array($forumType, MSZ_FORUM_MAY_HAVE_TOPICS);
-}
-
-function forum_has_priority_voting(int $forumType): bool {
-    return in_array($forumType, MSZ_FORUM_HAS_PRIORITY_VOTING);
-}
-
-function forum_get(int $forumId, bool $showDeleted = false): array {
-    $getForum = \Misuzu\DB::prepare(sprintf(
-        '
-            SELECT
-                `forum_id`, `forum_name`, `forum_type`, `forum_link`, `forum_archived`,
-                `forum_link_clicks`, `forum_parent`, `forum_colour`, `forum_icon`,
-                (
-                    SELECT COUNT(`topic_id`)
-                    FROM `msz_forum_topics`
-                    WHERE `forum_id` = f.`forum_id`
-                    %1$s
-                ) as `forum_topic_count`
-            FROM `msz_forum_categories` as f
-            WHERE `forum_id` = :forum_id
-        ',
-        $showDeleted ? '' : 'AND `topic_deleted` IS NULL'
-    ));
-    $getForum->bind('forum_id', $forumId);
-    return $getForum->fetch();
-}
-
-function forum_get_root_categories(int $userId): array {
-    $getCategories = \Misuzu\DB::prepare(sprintf(
-        '
-            SELECT
-                f.`forum_id`, f.`forum_name`, f.`forum_type`, f.`forum_colour`, f.`forum_icon`,
-                (
-                    SELECT COUNT(`forum_id`)
-                    FROM `msz_forum_categories` AS sf
-                    WHERE sf.`forum_parent` = f.`forum_id`
-                ) AS `forum_children`
-            FROM `msz_forum_categories` AS f
-            WHERE f.`forum_parent` = 0
-            AND f.`forum_type` = %1$d
-            AND f.`forum_hidden` = 0
-            GROUP BY f.`forum_id`
-            ORDER BY f.`forum_order`
-        ',
-        MSZ_FORUM_TYPE_CATEGORY
-    ));
-    $categories = array_merge([MSZ_FORUM_ROOT_DATA], $getCategories->fetchAll());
-
-    $getRootForumCount = \Misuzu\DB::prepare(sprintf(
-        "
-            SELECT COUNT(`forum_id`)
-            FROM `msz_forum_categories`
-            WHERE `forum_parent` = %d
-            AND `forum_type` != %d
-        ",
-        MSZ_FORUM_ROOT,
-        MSZ_FORUM_TYPE_CATEGORY
-    ));
-    $categories[0]['forum_children'] = (int)$getRootForumCount->fetchColumn();
-
-    foreach($categories as $key => $category) {
-        $categories[$key]['forum_permissions'] = $perms = forum_perms_get_user($category['forum_id'], $userId)[MSZ_FORUM_PERMS_GENERAL];
-
-        if(!perms_check($perms, MSZ_FORUM_PERM_SET_READ)) {
-            unset($categories[$key]);
-            continue;
-        }
-
-        $categories[$key] = array_merge(
-            $category,
-            ['forum_unread' => forum_topics_unread($category['forum_id'], $userId)],
-            forum_latest_post($category['forum_id'], $userId)
-        );
-    }
-
-    return $categories;
-}
-
 function forum_get_breadcrumbs(
     int $forumId,
     string $linkFormat = '/forum/forum.php?f=%d',
@@ -145,8 +21,8 @@ function forum_get_breadcrumbs(
         }
 
         $breadcrumbs[$breadcrumb['forum_name']] = sprintf(
-            $breadcrumb['forum_parent'] === MSZ_FORUM_ROOT
-            && $breadcrumb['forum_type'] === MSZ_FORUM_TYPE_CATEGORY
+            $breadcrumb['forum_parent'] === \Misuzu\Forum\ForumCategory::ROOT_ID
+            && $breadcrumb['forum_type'] === \Misuzu\Forum\ForumCategory::TYPE_CATEGORY
                 ? $rootFormat
                 : $linkFormat,
             $breadcrumb['forum_id']
@@ -155,43 +31,6 @@ function forum_get_breadcrumbs(
     }
 
     return array_reverse($breadcrumbs + $indexLink);
-}
-
-function forum_get_colour(int $forumId): int {
-    $getColours = \Misuzu\DB::prepare('
-        SELECT `forum_id`, `forum_parent`, `forum_colour`
-        FROM `msz_forum_categories`
-        WHERE `forum_id` = :forum_id
-    ');
-
-    while($forumId > 0) {
-        $getColours->bind('forum_id', $forumId);
-        $colourInfo = $getColours->fetch();
-
-        if(empty($colourInfo)) {
-            break;
-        }
-
-        if(!empty($colourInfo['forum_colour'])) {
-            return $colourInfo['forum_colour'];
-        }
-
-        $forumId = $colourInfo['forum_parent'];
-    }
-
-    return 0x40000000;
-}
-
-function forum_increment_clicks(int $forumId): void {
-    $incrementLinkClicks = \Misuzu\DB::prepare(sprintf('
-        UPDATE `msz_forum_categories`
-        SET `forum_link_clicks` = `forum_link_clicks` + 1
-        WHERE `forum_id` = :forum_id
-        AND `forum_type` = %d
-        AND `forum_link_clicks` IS NOT NULL
-    ', MSZ_FORUM_TYPE_LINK));
-    $incrementLinkClicks->bind('forum_id', $forumId);
-    $incrementLinkClicks->execute();
 }
 
 function forum_get_parent_id(int $forumId): int {
@@ -278,103 +117,6 @@ function forum_topics_unread(int $forumId, int $userId): int {
     return $memoized[$memoId];
 }
 
-function forum_latest_post(int $forumId, int $userId): array {
-    if($forumId < 1) {
-        return [];
-    }
-
-    static $memoized = [];
-    $memoId = "{$forumId}-{$userId}";
-
-    if(array_key_exists($memoId, $memoized)) {
-        return $memoized[$memoId];
-    }
-
-    if(!forum_perms_check_user(MSZ_FORUM_PERMS_GENERAL, $forumId, $userId, MSZ_FORUM_PERM_SET_READ)) {
-        return $memoized[$memoId] = [];
-    }
-
-    $getLastPost = \Misuzu\DB::prepare('
-        SELECT
-            p.`post_id` AS `recent_post_id`, t.`topic_id` AS `recent_topic_id`,
-            t.`topic_title` AS `recent_topic_title`, t.`topic_bumped` AS `recent_topic_bumped`,
-            p.`post_created` AS `recent_post_created`,
-            u.`user_id` AS `recent_post_user_id`,
-            u.`username` AS `recent_post_username`,
-            COALESCE(u.`user_colour`, r.`role_colour`) AS `recent_post_user_colour`,
-            UNIX_TIMESTAMP(p.`post_created`) AS `post_created_unix`
-        FROM `msz_forum_posts` AS p
-        LEFT JOIN `msz_forum_topics` AS t
-        ON t.`topic_id` = p.`topic_id`
-        LEFT JOIN `msz_users` AS u
-        ON u.`user_id` = p.`user_id`
-        LEFT JOIN `msz_roles` AS r
-        ON r.`role_id` = u.`display_role`
-        WHERE p.`forum_id` = :forum_id
-        AND p.`post_deleted` IS NULL
-        ORDER BY p.`post_id` DESC
-    ');
-    $getLastPost->bind('forum_id', $forumId);
-    $currentLast = $getLastPost->fetch();
-
-    $children = forum_get_child_ids($forumId);
-
-    foreach($children as $child) {
-        $lastPost = forum_latest_post($child, $userId);
-
-        if(($currentLast['post_created_unix'] ?? 0) < ($lastPost['post_created_unix'] ?? 0)) {
-            $currentLast = $lastPost;
-        }
-    }
-
-    return $memoized[$memoId] = $currentLast;
-}
-
-function forum_get_children(int $parentId, int $userId): array {
-    $getListing = \Misuzu\DB::prepare(sprintf(
-        '
-            SELECT
-                :user_id AS `target_user_id`,
-                f.`forum_id`, f.`forum_name`, f.`forum_description`, f.`forum_type`, f.`forum_icon`,
-                f.`forum_link`, f.`forum_link_clicks`, f.`forum_archived`, f.`forum_colour`,
-                f.`forum_count_topics`, f.`forum_count_posts`
-            FROM `msz_forum_categories` AS f
-            WHERE f.`forum_parent` = :parent_id
-            AND f.`forum_hidden` = 0
-            AND (
-                (f.`forum_parent` = %1$d AND f.`forum_type` != %2$d)
-                OR f.`forum_parent` != %1$d
-            )
-            GROUP BY f.`forum_id`
-            ORDER BY f.`forum_order`
-        ',
-        MSZ_FORUM_ROOT,
-        MSZ_FORUM_TYPE_CATEGORY
-    ));
-
-    $getListing->bind('user_id', $userId);
-    $getListing->bind('parent_id', $parentId);
-
-    $listing = $getListing->fetchAll();
-
-    foreach($listing as $key => $forum) {
-        $listing[$key]['forum_permissions'] = $perms = forum_perms_get_user($forum['forum_id'], $userId)[MSZ_FORUM_PERMS_GENERAL];
-
-        if(!perms_check($perms, MSZ_FORUM_PERM_SET_READ)) {
-            unset($listing[$key]);
-            continue;
-        }
-
-        $listing[$key] = array_merge(
-            $forum,
-            ['forum_unread' => forum_topics_unread($forum['forum_id'], $userId)],
-            forum_latest_post($forum['forum_id'], $userId)
-        );
-    }
-
-    return $listing;
-}
-
 function forum_timeout(int $forumId, int $userId): int {
     $checkTimeout = \Misuzu\DB::prepare('
         SELECT TIMESTAMPDIFF(SECOND, COALESCE(MAX(`post_created`), NOW() - INTERVAL 1 YEAR), NOW())
@@ -455,21 +197,7 @@ function forum_posting_info(int $userId): array {
     return $getPostingInfo->fetch();
 }
 
-function forum_count_increase(int $forumId, bool $topic = false): void {
-    $increaseCount = \Misuzu\DB::prepare(sprintf(
-        '
-            UPDATE `msz_forum_categories`
-            SET `forum_count_posts` = `forum_count_posts` + 1
-                %s
-            WHERE `forum_id` = :forum
-        ',
-        $topic ? ',`forum_count_topics` = `forum_count_topics` + 1' : ''
-    ));
-    $increaseCount->bind('forum', $forumId);
-    $increaseCount->execute();
-}
-
-function forum_count_synchronise(int $forumId = MSZ_FORUM_ROOT, bool $save = true): array {
+function forum_count_synchronise(int $forumId = \Misuzu\Forum\ForumCategory::ROOT_ID, bool $save = true): array {
     static $getChildren = null;
     static $getCounts = null;
     static $setCounts = null;

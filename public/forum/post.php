@@ -30,7 +30,7 @@ if(!empty($postMode) && !UserSession::hasCurrent()) {
     return;
 }
 
-$currentUser = User::getCurrent():
+$currentUser = User::getCurrent();
 $currentUserId = $currentUser === null ? 0 : $currentUser->getId();
 
 if(isset($currentUser) && $currentUser->isBanned()) {

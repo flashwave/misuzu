@@ -1,4 +1,45 @@
 {% macro forum_category_listing(forums, title, colour, id, icon) %}
+    {% if forums is iterable %}
+        {% from _self import forum_category_listing_old %}
+        {{ forum_category_listing_old(forums, title, colour, id, icon) }}
+    {% else %}
+        {% from _self import forum_category_listing_new %}
+        {{ forum_category_listing_new(forums, title, colour) }}
+    {% endif %}
+{% endmacro %}
+
+{% macro forum_category_listing_new(category, user, title) %}
+    {% from _self import forum_category_entry %}
+    {% from 'macros.twig' import container_title %}
+
+    {% if category.canView(user) %}
+
+    {% set children = category.children(user) %}
+
+    {% if children is not empty or category.isCategoryForum %}
+    {% set icon = title is not empty ? 'fas fa-folder fa-fw' : category.icon %}
+    <div class="container forum__categories"
+        {% if not category.colour.inherit %}style="--accent-colour: {{ category.colour }}"{% endif %}
+        {% if not category.isRoot %}id="{{ category.id }}"{% endif %}>
+        {{ container_title('<span class="' ~ icon ~ '"></span> ' ~ title|default(category.name)) }}
+
+        {% if children is empty %}
+            <div class="forum__categories__empty">
+                This category is empty.
+            </div>
+        {% else %}
+            <div class="forum__categories__list">
+                {% for category in children %}
+                    {{ forum_category_entry(category, user) }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% endif %}
+{% endmacro %}
+
+{% macro forum_category_listing_old(forums, title, colour, id, icon) %}
     {% from _self import forum_category_entry %}
     {% from 'macros.twig' import container_title %}
 
@@ -65,49 +106,145 @@
     </div>
 {% endmacro %}
 
-{% macro forum_category_tools(info, perms, pagination_info) %}
-    {% from 'macros.twig' import pagination %}
-
-    {% set is_locked = info.forum_archived != 0 %}
-    {% set can_topic = not is_locked and perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
-    {% set pag = pagination(pagination_info, url('forum-category'), null, {'f': info.forum_id}) %}
+{% macro forum_category_tools(category, perms, pagination_info) %}
+    {% set can_topic = not category.isArchived and perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_TOPIC')) %}
+    {% set pag = pagination_info.render(url('forum-category', {'forum': category.id})) %}
 
     {% if can_topic or pag|trim|length > 0 %}
         <div class="container forum__actions">
             <div class="forum__actions__buttons">
                 {% if can_topic %}
-                    <a href="{{ url('forum-topic-new', {'forum': info.forum_id}) }}" class="input__button forum__actions__button">{{ info.forum_type == constant('MSZ_FORUM_TYPE_FEATURE') ? 'New Request' : 'New Topic' }}</a>
+                    <a href="{{ url('forum-topic-new', {'forum': category.id}) }}" class="input__button forum__actions__button">{{ category.canHavePriorityVotes ? 'New Request' : 'New Topic' }}</a>
                 {% endif %}
             </div>
 
             <div class="forum__actions__pagination">
-                {{ pag }}
+                {{ pag|raw }}
             </div>
         </div>
     {% endif %}
 {% endmacro %}
 
 {% macro forum_topic_tools(info, pagination_info, can_reply) %}
-    {% from 'macros.twig' import pagination %}
+    {% set pag = pagination_info.render('forum-topic', {'t': info.topic_id|default(info.id)}, 'page') %}
 
-    {% set pag = pagination(pagination_info, url('forum-topic'), null, {'t': info.topic_id}, 'page') %}
-
-    {% if can_reply or pag|trim|length > 0 %}
+    {% if can_reply or pag|length > 0 %}
         <div class="container forum__actions">
             <div class="forum__actions__buttons">
                 {% if can_reply %}
-                    <a href="{{ url('forum-reply-new', {'topic': info.topic_id}) }}" class="input__button">Reply</a>
+                    <a href="{{ url('forum-reply-new', {'topic': info.topic_id|default(info.id)}) }}" class="input__button">Reply</a>
                 {% endif %}
             </div>
 
             <div class="forum__actions__pagination">
-                {{ pag }}
+                {{ pag|raw }}
             </div>
         </div>
     {% endif %}
 {% endmacro %}
 
 {% macro forum_category_entry(forum, forum_unread, forum_icon) %}
+    {% if forum.forum_id is defined %}
+        {% from _self import forum_category_entry_old %}
+        {{ forum_category_entry_old(forum, forum_unread, forum_icon) }}
+    {% else %}
+        {% from _self import forum_category_entry_new %}
+        {{ forum_category_entry_new(forum, forum_unread) }}
+    {% endif %}
+{% endmacro %}
+
+{% macro forum_category_entry_new(category, user) %}
+    {% from 'macros.twig' import avatar %}
+
+    <div class="forum__category">
+        <a href="{{ url('forum-category', {'forum': category.id}) }}" class="forum__category__link"></a>
+
+        <div class="forum__category__container">
+            <div class="forum__category__icon forum__category__icon--{{ category.unread(user) ? 'un' : '' }}read">
+                <span class="{{ category.icon }}"></span>
+            </div>
+
+            <div class="forum__category__details">
+                <div class="forum__category__title">
+                    {{ category.name }}
+                </div>
+
+                {% if category.hasDescription %}
+                <div class="forum__category__description">
+                    {{ category.parsedDescription|raw }}
+                </div>
+                {% endif %}
+
+                {% if category.children is not empty %}
+                    <div class="forum__category__subforums">
+                        {% for child in category.children %}
+                        {% if child.canView(user) %}
+                            <a href="{{ url('forum-category', {'forum': child.id}) }}"
+                                class="forum__category__subforum{% if child.unread(user) %} forum__category__subforum--unread{% endif %}">
+                                {{ child.name }}
+                            </a>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if category.isLink %}
+                {% if category.shouldCountLinkClicks %}
+                    <div class="forum__category__stats">
+                        <div class="forum__category__stat" title="Clicks">{{ category.linkClicks|number_format }}</div>
+                    </div>
+                {% endif %}
+            {% elseif category.canHaveChildren %}
+                <div class="forum__category__stats">
+                    <div class="forum__category__stat" title="Topics">{{ category.topicCount|number_format }}</div>
+                    <div class="forum__category__stat" title="Posts">{{ category.postCount|number_format }}</div>
+                </div>
+            {% endif %}
+
+            {% if category.canHaveTopics or category.shouldCountLinkClicks %}
+                <div class="forum__category__activity{% if category.shouldCountLinkClicks %} forum__category__activity--empty{% endif %}">
+                    {% if not category.isLink %}
+                        {% set topic = category.latestTopic(user) %}
+                        {% set post = topic.lastPost|default(null) %}
+                        {% if topic is empty or topic.lastPost is empty %}
+                            <div class="forum__category__activity__none">
+                                There are no posts in this forum yet.
+                            </div>
+                        {% else %}
+                            <div class="forum__category__activity__details">
+                                <a class="forum__category__activity__post"
+                                    href="{{ url('forum-post', {'post': post.id, 'post_fragment': 'p' ~ post.id}) }}">
+                                    {{ topic.title }}
+                                </a>
+
+                                <div class="forum__category__activity__info">
+                                    <time datetime="{{ post.createdTime|date('c') }}"
+                                        title="{{ post.createdTime|date('r') }}">{{ post.createdTime|time_diff }}</time>
+                                    {% if post.hasUser %}
+                                        by
+                                        <a href="{{ url('user-profile', {'user': post.user.id}) }}" class="forum__category__username"
+                                            style="--user-colour: {{ post.user.colour }}">
+                                            {{ post.user.username }}
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if post.hasUser %}
+                                <a href="{{ url('user-profile', {'user': post.user.id}) }}" class="avatar forum__category__avatar">
+                                    {{ avatar(post.user.id, 40, post.user.username) }}
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro forum_category_entry_old(forum, forum_unread, forum_icon) %}
     {% from 'macros.twig' import avatar %}
     {% set forum_unread = forum_unread|default(forum.forum_unread|default(false)) ? 'unread' : 'read' %}
 
@@ -116,12 +253,12 @@
             {% set forum_icon = forum.forum_icon %}
         {% elseif forum.forum_archived is defined and forum.forum_archived %}
             {% set forum_icon = 'fas fa-archive fa-fw' %}
-        {% elseif forum.forum_type is defined and forum.forum_type != constant('MSZ_FORUM_TYPE_DISCUSSION') %}
-            {% if forum.forum_type == constant('MSZ_FORUM_TYPE_FEATURE') %}
+        {% elseif forum.forum_type is defined and forum.forum_type != constant('\\Misuzu\\Forum\\ForumCategory::TYPE_DISCUSSION') %}
+            {% if forum.forum_type == constant('\\Misuzu\\Forum\\ForumCategory::TYPE_FEATURE') %}
                 {% set forum_icon = 'fas fa-star fa-fw' %}
-            {% elseif forum.forum_type == constant('MSZ_FORUM_TYPE_LINK') %}
+            {% elseif forum.forum_type == constant('\\Misuzu\\Forum\\ForumCategory::TYPE_LINK') %}
                 {% set forum_icon = 'fas fa-link fa-fw' %}
-            {% elseif forum.forum_type == constant('MSZ_FORUM_TYPE_CATEGORY') %}
+            {% elseif forum.forum_type == constant('\\Misuzu\\Forum\\ForumCategory::TYPE_CATEGORY') %}
                 {% set forum_icon = 'fas fa-folder fa-fw' %}
             {% endif %}
         {% else %}
@@ -158,22 +295,22 @@
                 {% endif %}
             </div>
 
-            {% if forum.forum_type == constant('MSZ_FORUM_TYPE_LINK') %}
+            {% if forum.forum_type == constant('\\Misuzu\\Forum\\ForumCategory::TYPE_LINK') %}
                 {% if forum.forum_link_clicks is not null %}
                     <div class="forum__category__stats">
                         <div class="forum__category__stat" title="Clicks">{{ forum.forum_link_clicks|number_format }}</div>
                     </div>
                 {% endif %}
-            {% elseif forum_may_have_children(forum.forum_type) %}
+            {% elseif forum.forum_type in constant('\\Misuzu\\Forum\\ForumCategory::HAS_CHILDREN') %}
                 <div class="forum__category__stats">
                     <div class="forum__category__stat" title="Topics">{{ forum.forum_count_topics|number_format }}</div>
                     <div class="forum__category__stat" title="Posts">{{ forum.forum_count_posts|number_format }}</div>
                 </div>
             {% endif %}
 
-            {% if forum_may_have_topics(forum.forum_type) or forum.forum_link_clicks is not null %}
+            {% if forum.forum_type in constant('\\Misuzu\\Forum\\ForumCategory::HAS_TOPICS') or forum.forum_link_clicks is not null %}
                 <div class="forum__category__activity{% if forum.forum_link_clicks is not null %} forum__category__activity--empty{% endif %}">
-                    {% if forum.forum_type != constant('MSZ_FORUM_TYPE_LINK') %}
+                    {% if forum.forum_type != constant('\\Misuzu\\Forum\\ForumCategory::TYPE_LINK') %}
                         {% if forum.recent_topic_id is not defined %}
                             <div class="forum__category__activity__none">
                                 There are no posts in this forum yet.
@@ -212,7 +349,7 @@
 {% endmacro %}
 
 {% macro forum_topic_locked(locked, archived) %}
-    {% if locked is not null or archived %}
+    {% if locked|default(0) > 0 is not null or archived %}
         <div class="container forum__status">
             <div class="forum__status__icon">
                 <div class="forum__status__icon__background"></div>
@@ -223,16 +360,14 @@
                     This topic has been <span class="forum__status__emphasis">archived</span>.
                 {% else %}
                     This topic was locked
-                    <time class="forum__status__emphasis"
-                        datetime="{{ locked|date('c') }}"
-                        title="{{ locked|date('r') }}">{{ locked|time_diff }}</time>.
+                    <time class="forum__status__emphasis" datetime="{{ locked|date('c') }}" title="{{ locked|date('r') }}">{{ locked|time_diff }}</time>.
                 {% endif %}
             </div>
         </div>
     {% endif %}
 {% endmacro %}
 
-{% macro forum_topic_listing(topics, title) %}
+{% macro forum_topic_listing(topics, title, user) %}
     {% from _self import forum_topic_entry %}
     {% from 'macros.twig' import container_title %}
 
@@ -242,7 +377,7 @@
         <div class="forum__topics__list">
             {% if topics|length > 0 %}
                 {% for topic in topics %}
-                    {{ forum_topic_entry(topic) }}
+                    {{ forum_topic_entry(topic, user) }}
                 {% endfor %}
             {% else %}
                 <div class="forum__topics__empty">
@@ -254,10 +389,114 @@
 {% endmacro %}
 
 {% macro forum_topic_entry(topic, topic_icon, topic_unread) %}
+    {% if topic.getId is defined %}
+        {% from _self import forum_topic_entry_new %}
+        {{ forum_topic_entry_new(topic, topic_icon) }}
+    {% else %}
+        {% from _self import forum_topic_entry_old %}
+        {{ forum_topic_entry_old(topic, topic_icon, topic_unread) }}
+    {% endif %}
+{% endmacro %}
+
+{% macro forum_topic_entry_new(topic, user) %}
+    {% from 'macros.twig' import avatar %}
+
+    <div class="forum__topic{% if topic.deleted %} forum__topic--deleted{% elseif topic.locked and not topic.important %} forum__topic--locked{% endif %}">
+        <a href="{{ url('forum-topic', {'topic': topic.id}) }}" class="forum__topic__link"></a>
+
+        <div class="forum__topic__container">
+            <div class="forum__topic__icon forum__topic__icon--{{ topic.hasUnread(user) ? 'un' : '' }}read{% if topic.hasPriorityVoting %} forum__topic__icon--wide{% endif %}">
+                <i class="{{ topic.icon(user) }}{% if topic.hasPriorityVoting %} forum__topic__icon--faded{% endif %}"></i>
+
+                {% if topic.hasPriorityVoting %}
+                    <div class="forum__topic__icon__priority">{{ topic.priority|number_format }}</div>
+                {% endif %}
+
+                {% if topic.hasParticipated(user) %}
+                    <div class="forum__topic__icon__participated" title="You have posted in this topic"></div>
+                {% endif %}
+            </div>
+
+            <div class="forum__topic__details">
+                <div class="forum__topic__title">
+                    <span class="forum__topic__title__inner">
+                        {{ topic.title }}
+                    </span>
+                </div>
+
+                <div class="forum__topic__info">
+                    {% if topic.user is not empty %}
+                        by <a href="{{ url('user-profile', {'user': topic.user.id}) }}"
+                            class="forum__topic__username"
+                            style="--user-colour: {{ topic.user.colour }}">{{ topic.user.username }}</a>,
+
+                    {% endif %}
+                    <time datetime="{{ topic.createdTime|date('c') }}" title="{{ topic.createdTime|date('r') }}">{{ topic.createdTime|time_diff }}</time>
+                </div>
+
+                {% set pages = topic.pageCount %}
+
+                {% if pages > 1 %}
+                    <div class="forum__topic__pagination">
+                        {% for i in 1..pages|clamp(0, 3) %}
+                            <a href="{{ url('forum-topic', {'topic': topic.id, 'page': i}) }}" class="forum__topic__pagination__item">
+                                {{ i }}
+                            </a>
+                        {% endfor %}
+                        {% if pages > 3 %}
+                            {% if pages > 6 %}
+                                <div class="forum__topic__pagination__separator">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </div>
+                            {% endif %}
+
+                            {% for i in (pages - 2)|clamp(4, pages)..pages %}
+                                <a href="{{ url('forum-topic', {'topic': topic.id, 'page': i}) }}" class="forum__topic__pagination__item">
+                                    {{ i }}
+                                </a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="forum__topic__stats">
+                <div class="forum__topic__stat" title="Posts">{{ topic.postCount|number_format }}</div>
+                <div class="forum__topic__stat" title="Views">{{ topic.viewCount|number_format }}</div>
+            </div>
+
+            <div class="forum__topic__activity">
+                {% set post = topic.lastPost %}
+                {% if post is not null %}
+                <div class="forum__topic__activity__details">
+                    {% if post.user is not empty %}
+                        <a href="{{ url('user-profile', {'user': post.user.id}) }}" class="forum__topic__username"
+                            style="--user-colour: {{ post.user.colour }}">{{ post.user.username }}</a>
+                    {% endif %}
+
+                    <a class="forum__topic__activity__post"
+                        href="{{ url('forum-post', {'post': post.id, 'post_fragment': 'p' ~ post.id}) }}">
+                        <time datetime="{{ post.createdTime|date('c') }}"
+                            title="{{ post.createdTime|date('r') }}">{{ post.createdTime|time_diff }}</time>
+                    </a>
+                </div>
+
+                {% if post.user is not empty %}
+                    <a href="{{ url('user-profile', {'user': post.user.id}) }}" class="forum__topic__avatar">
+                        {{ avatar(post.user.id, 30, post.user.username) }}
+                    </a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro forum_topic_entry_old(topic, topic_icon, topic_unread) %}
     {% from 'macros.twig' import avatar %}
     {% set topic_unread = topic_unread|default(topic.topic_unread|default(false)) %}
     {% set topic_important = topic.topic_type == constant('MSZ_TOPIC_TYPE_STICKY') or topic.topic_type == constant('MSZ_TOPIC_TYPE_ANNOUNCEMENT') or topic.topic_type == constant('MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT') %}
-    {% set has_priority_voting = forum_has_priority_voting(topic.forum_type) %}
+    {% set has_priority_voting = topic.forum_type in constant('\\Misuzu\\Forum\\ForumCategory::HAS_PRIORITY_VOTES') %}
 
     {% if topic_icon is null %}
         {% if topic.topic_deleted is defined and topic.topic_deleted is not null %}
@@ -373,6 +612,114 @@
 {% endmacro %}
 
 {% macro forum_post_entry(post, user_id, perms) %}
+    {% if post.getId is defined %}
+        {% from _self import forum_post_entry_new %}
+        {{ forum_post_entry_new(post, user_id, perms) }}
+    {% else %}
+        {% from _self import forum_post_entry_old %}
+        {{ forum_post_entry_old(post, user_id, perms) }}
+    {% endif %}
+{% endmacro %}
+
+{% macro forum_post_entry_new(post, user, perms) %}
+    {% from 'macros.twig' import avatar %}
+    {% set can_post = perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_POST')) %}
+    {% set can_edit = perms|perms_check(constant('MSZ_FORUM_PERM_EDIT_ANY_POST')) or (
+        perms|perms_check(constant('MSZ_FORUM_PERM_EDIT_POST'))
+        and post.canBeEdited(user)
+    ) %}
+    {% set can_delete = not post.isOpeningPost and (
+        perms|perms_check(constant('MSZ_FORUM_PERM_DELETE_ANY_POST')) or (
+            perms|perms_check(constant('MSZ_FORUM_PERM_DELETE_POST'))
+            and post.canBeDeleted(user)
+        )
+    ) %}
+
+    <div class="container forum__post{% if post.deleted %} forum__post--deleted{% endif %}" id="p{{ post.id }}" style="{% if post.hasUser %}--accent-colour: {{ post.user.colour }}{% endif %}">
+        <div class="forum__post__info">
+            <div class="forum__post__info__background"></div>
+            <div class="forum__post__info__content">
+                {% if post.hasUser %}
+                    <a class="forum__post__avatar" href="{{ url('user-profile', {'user': post.user.id}) }}">
+                        {{ avatar(post.user.id, 120, post.user.username) }}
+                    </a>
+
+                    <a class="forum__post__username" href="{{ url('user-profile', {'user': post.user.id}) }}">{{ post.user.username }}</a>
+
+                    {% if post.user.hasTitle %}
+                        <div class="forum__post__usertitle">{{ post.user.title }}</div>
+                    {% endif %}
+
+                    <div class="forum__post__icons">
+                        <div class="flag flag--{{ post.user.country|lower }}" title="{{ post.user.countryName }}"></div>
+                        <div class="forum__post__posts-count">{{ post.user.forumPostCount|number_format }} posts</div>
+                    </div>
+
+                    {% if post.isTopicAuthor %}
+                        <div class="forum__post__badge forum__post__badge--original-poster">
+                            <div class="forum__post__badge__desktop">Original Poster</div>
+                            <div class="forum__post__badge__mobile">OP</div>
+                        </div>
+                    {% endif %}
+
+                    <div class="forum__post__joined">
+                        joined <time datetime="{{ post.user.createdTime|date('c') }}" title="{{ post.user.createdTime|date('r') }}">{{ post.user.createdTime|time_diff }}</time>
+                    </div>
+                {% else %}
+                    <div class="forum__post__username">Deleted User</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="forum__post__content">
+            {% set post_link = url(post.isOpeningPost ? 'forum-topic' : 'forum-post', {'topic': post.topic.id, 'post': post.id, 'post_fragment': 'p%d'|format(post.id)}) %}
+
+            <div class="forum__post__details">
+                <a class="forum__post__datetime" href="{{ post_link }}">
+                    <time datetime="{{ post.createdTime|date('c') }}" title="{{ post.createdTime|date('r') }}">{{ post.createdTime|time_diff }}</time>
+                    {% if post.isEdited %}
+                        (edited <time datetime="{{ post.editedTime|date('c') }}" title="{{ post.editedTime|date('r') }}">{{ post.editedTime|time_diff }}</time>)
+                    {% endif %}
+                </a>
+
+                <a class="forum__post__id" href="{{ post_link }}">
+                    #{{ post.id }}
+                </a>
+            </div>
+
+            <div class="forum__post__text {{ post.bodyClasses }}">
+                {{ post.parsedBody|raw }}
+            </div>
+
+            {% if can_post or can_edit or can_delete %}
+                <div class="forum__post__actions">
+                    {% if post.deleted %}
+                        <a href="{{ url('forum-post-restore', {'post': post.id}) }}" class="forum__post__action forum__post__action--restore"><i class="fas fa-magic fa-fw"></i> Restore</a>
+                        <a href="{{ url('forum-post-nuke', {'post': post.id}) }}" class="forum__post__action forum__post__action--nuke"><i class="fas fa-radiation-alt fa-fw"></i> Permanently Delete</a>
+                    {% else %}
+                        {# if can_post %}
+                            <a href="{{ url('forum-post-quote', {'post': post.id}) }}" class="forum__post__action forum__post__action--quote"><i class="fas fa-quote-left fa-fw"></i> Quote</a>
+                        {% endif #}
+                        {% if can_edit %}
+                            <a href="{{ url('forum-post-edit', {'post': post.id}) }}" class="forum__post__action forum__post__action--edit"><i class="fas fa-edit fa-fw"></i> Edit</a>
+                        {% endif %}
+                        {% if can_delete %}
+                            <a href="{{ url('forum-post-delete', {'post': post.id}) }}" class="forum__post__action forum__post__action--delete"><i class="far fa-trash-alt fa-fw"></i> Delete</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if post.shouldDisplaySignature and post.user.hasForumSignature %}
+                <div class="forum__post__signature {{ post.user.forumSignatureClasses }}">
+                    {{ post.user.forumSignatureParsed|raw }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro forum_post_entry_old(post, user_id, perms) %}
     {% from 'macros.twig' import avatar %}
     {% set is_deleted   = post.post_deleted is not null %}
     {% set can_post     = perms|perms_check(constant('MSZ_FORUM_PERM_CREATE_POST')) %}
@@ -472,116 +819,111 @@
     </div>
 {% endmacro %}
 
-{% macro forum_poll(poll, options, user_answers, topic_id, can_vote, preview_results) %}
+{% macro forum_poll(poll, user) %}
     {% from '_layout/input.twig' import input_csrf, input_hidden, input_checkbox, input_checkbox_raw %}
-    {% set user_answers = user_answers is empty or user_answers is not iterable ? [] : user_answers %}
-    {% set user_answered = user_answers|length > 0 %}
-    {% set results_available = preview_results or user_answered or poll.poll_expired or poll.poll_preview_results %}
-    {% set options_available = not poll.poll_expired and (poll.poll_change_vote or not user_answered) %}
-    {% set display_results = user_answered or poll.poll_expired %}
 
-    {% if options is iterable and options|length > 0 %}
-        <div class="forum__poll">
-            {% if results_available %}
-                {% if options_available %}
-                    {{ input_checkbox_raw('', display_results, 'forum__poll__toggle', '', false, {'id':'forum-poll-toggle'}) }}
+    {% set can_vote = poll.canVoteOnPoll(user) %}
+    {% set results_available = poll.hasVoted(user) or poll.hasExpired or poll.canPreviewResults %}
+    {% set options_available = not poll.hasExpired and (poll.canChangeVote or not poll.hasVoted(user)) %}
+    {% set display_results = poll.hasVoted(user) or poll.hasExpired %}
+
+    <div class="forum__poll">
+        {% if results_available %}
+            {% if options_available %}
+                {{ input_checkbox_raw('', display_results, 'forum__poll__toggle', '', false, {'id':'forum-poll-toggle'}) }}
+            {% endif %}
+
+            <div class="container forum__poll__container forum__poll__container--results">
+                <div class="forum__poll__results">
+                    {% for option in poll.options %}
+                        <div class="forum__poll__result{% if option.hasVotedFor(user) %} forum__poll__result--voted{% endif %}">
+                            <div class="forum__poll__result__background" style="width: {{ option.percentage * 100 }}%"></div>
+                            <div class="forum__poll__result__container">
+                                <div class="forum__poll__result__text">{{ option.text }}</div>
+                                <div class="forum__poll__result__votes">{{ option.votes|number_format }}</div>
+                                <div class="forum__poll__result__percent">{{ (option.percentage * 100)|number_format(2) }}%</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="forum__poll__remaining">
+                    This poll got <span class="forum__poll__remaining__num">{{ poll.votes|number_format }} vote{{ poll.votes == 1 ? '' : 's' }}</span>
+                </div>
+
+                {% if poll.canExpire %}
+                    <div class="forum__poll__expires">
+                        Polling {{ poll.hasExpired ? 'closed' : 'will close' }} <time class="forum__poll__expires__datetime" datetime="{{ poll.expiresTime|date('c') }}" title="{{ poll.expiresTime|date('r') }}">{{ poll.expiresTime|time_diff }}</time>.
+                    </div>
                 {% endif %}
 
-                <div class="container forum__poll__container forum__poll__container--results">
-                    <div class="forum__poll__results">
-                        {% for option in options %}
-                            {% set percent = poll.poll_votes < 1 ? 0 : (option.option_votes / poll.poll_votes) * 100 %}
-
-                            <div class="forum__poll__result{% if option.option_id in user_answers %} forum__poll__result--voted{% endif %}">
-                                <div class="forum__poll__result__background" style="width: {{ percent }}%">
-                                </div>
-                                <div class="forum__poll__result__container">
-                                    <div class="forum__poll__result__text">{{ option.option_text }}</div>
-                                    <div class="forum__poll__result__votes">{{ option.option_votes|number_format }}</div>
-                                    <div class="forum__poll__result__percent">{{ percent|number_format(2) }}%</div>
-                                </div>
-                            </div>
-                        {% endfor %}
+                {% if options_available %}
+                    <div class="forum__poll__buttons">
+                        <label class="input__button forum__poll__button" for="forum-poll-toggle">Vote</label>
                     </div>
+                {% endif %}
+            </div>
+        {% endif %}
 
-                    <div class="forum__poll__remaining">
-                        This poll got <span class="forum__poll__remaining__num">{{ poll.poll_votes|number_format }} vote{{ poll.poll_votes == 1 ? '' : 's' }}</span>
+        {% if options_available %}
+            <form method="post" action="{{ url('forum-poll-vote') }}" class="container forum__poll__container forum__poll__container--poll js-forum-poll"
+                data-poll-id="{{ poll.id }}" data-poll-max-votes="{{ poll.maxVotes }}">
+                {{ input_csrf() }}
+                {{ input_hidden('poll[id]', poll.id) }}
+
+                <div class="forum__poll__options">
+                    {% for option in poll.options %}
+                        {{ input_checkbox(
+                            'poll[answers][]',
+                            option.text, option.hasVotedFor(user), 'forum__poll__option',
+                            option.id, poll.maxVotes <= 1,
+                            null, not can_vote
+                        ) }}
+                    {% endfor %}
+                </div>
+
+                {% if can_vote and poll.maxVotes > 1 %}
+                    <div class="forum__poll__remaining js-forum-poll-remaining">
+                        You have <span class="forum__poll__remaining__num">
+                            <span class="js-forum-poll-remaining-count">{{ poll.maxVotes }}</span> vote<span class="js-forum-poll-remaining-plural">s</span>
+                        </span> remaining.
                     </div>
+                {% endif %}
 
-                    {% if poll.poll_expires is not null %}
-                        <div class="forum__poll__expires">
-                            Polling {{ poll.poll_expired ? 'closed' : 'will close' }} <time class="forum__poll__expires__datetime" datetime="{{ poll.poll_expires|date('c') }}" title="{{ poll.poll_expires|date('r') }}">{{ poll.poll_expires|time_diff }}</time>.
-                        </div>
+                {% if poll.canExpire %}
+                    <div class="forum__poll__expires">
+                        Polling {{ poll.hasExpired ? 'closed' : 'will close' }} <time class="forum__poll__expires__datetime" datetime="{{ poll.expiresTime|date('c') }}" title="{{ poll.expiresTime|date('r') }}">{{ poll.expiresTime|time_diff }}</time>.
+                    </div>
+                {% endif %}
+
+                <div class="forum__poll__buttons">
+                    {% if can_vote %}
+                        <button class="input__button forum__poll__button">Vote</button>
                     {% endif %}
-
-                    {% if options_available %}
-                        <div class="forum__poll__buttons">
-                            <label class="input__button forum__poll__button" for="forum-poll-toggle">Vote</label>
-                        </div>
+                    {% if results_available %}
+                        <label class="input__button forum__poll__button" for="forum-poll-toggle">Results</label>
                     {% endif %}
                 </div>
-            {% endif %}
-
-            {% if options_available %}
-                <form method="post" action="{{ url('forum-poll-vote') }}" class="container forum__poll__container forum__poll__container--poll js-forum-poll"
-                    data-poll-id="{{ poll.poll_id }}" data-poll-max-votes="{{ poll.poll_max_votes }}">
-                    {{ input_csrf() }}
-                    {{ input_hidden('poll[id]', poll.poll_id) }}
-
-                    <div class="forum__poll__options">
-                        {% for option in options %}
-                            {{ input_checkbox(
-                                'poll[answers][]',
-                                option.option_text, option.option_id in user_answers, 'forum__poll__option',
-                                option.option_id, poll.poll_max_votes <= 1,
-                                null, not can_vote
-                            ) }}
-                        {% endfor %}
-                    </div>
-
-                    {% if can_vote and poll.poll_max_votes > 1 %}
-                        <div class="forum__poll__remaining js-forum-poll-remaining">
-                            You have <span class="forum__poll__remaining__num">
-                                <span class="js-forum-poll-remaining-count">{{ poll.poll_max_votes }}</span> vote<span class="js-forum-poll-remaining-plural">s</span>
-                            </span> remaining.
-                        </div>
-                    {% endif %}
-
-                    {% if poll.poll_expires is not null %}
-                        <div class="forum__poll__expires">
-                            Polling {{ poll.poll_expired ? 'closed' : 'will close' }} <time class="forum__poll__expires__datetime" datetime="{{ poll.poll_expires|date('c') }}" title="{{ poll.poll_expires|date('r') }}">{{ poll.poll_expires|time_diff }}</time>.
-                        </div>
-                    {% endif %}
-
-                    <div class="forum__poll__buttons">
-                        {% if can_vote %}
-                            <button class="input__button forum__poll__button">Vote</button>
-                        {% endif %}
-                        {% if results_available %}
-                            <label class="input__button forum__poll__button" for="forum-poll-toggle">Results</label>
-                        {% endif %}
-                    </div>
-                </form>
-            {% endif %}
-        </div>
-    {% endif %}
+            </form>
+        {% endif %}
+    </div>
 {% endmacro %}
 
-{% macro forum_priority_votes(topic, votes, can_vote) %}
+{% macro forum_priority_votes(topic, user) %}
     <div class="container forum__priority">
         <div class="forum__priority__votes">
-            {% for vote in votes %}
-                <div title="{{ vote.username }} ({{ vote.topic_priority|number_format }})" class="forum__priority__vote" style="{{ vote.user_colour|html_colour }}">
-                    {% for i in 1..vote.topic_priority %}
+            {% for vote in topic.priorityVotes %}
+                <div title="{{ vote.user.username }} ({{ vote.priority|number_format }})" class="forum__priority__vote" style="--user-colour: {{ vote.user.colour }}">
+                    {% for i in 1..vote.priority %}
                         <span class="forum__priority__star fas fa-star fa-fw"></span>
                     {% endfor %}
                 </div>
             {% endfor %}
         </div>
 
-        {% if can_vote %}
+        {% if topic.canVoteOnPriority(user) %}
             <div class="forum__priority__input">
-                <a class="input__button" href="{{ url('forum-topic-priority', {'topic':topic.topic_id}) }}">
+                <a class="input__button" href="{{ url('forum-topic-priority', {'topic': topic.id}) }}">
                     Vote for this feature
                 </a>
             </div>

@@ -3,21 +3,21 @@
 {% from 'forum/macros.twig' import forum_category_listing %}
 
 {% set title = 'Forum Listing' %}
-{% set canonical_url = '/forum/' %}
+{% set canonical_url = url('forum-index') %}
 
 {% block content %}
-    {% if not forum_empty %}
-        {% for category in forum_categories %}
-            {% if category.forum_children > 0 %}
-                {{ forum_category_listing(
-                    category.forum_subforums,
-                    category.forum_name,
-                    category.forum_colour,
-                    category.forum_id == constant('MSZ_FORUM_ROOT')
-                        ? ''
-                        : 'f' ~ category.forum_id,
-                    category.forum_icon|default('')
-                ) }}
+    {% if forum_root.children|length is empty %}
+        <div class="container">
+            {{ container_title('<i class="fas fa-comment-slash fa-fw"></i> Forums') }}
+
+            <div class="container__content">
+                <p>There are currently no visible forums.</p>
+            </div>
+        </div>
+    {% else %}
+        {% for category in forum_root.children %}
+            {% if category.children is not empty %}
+                {{ forum_category_listing(category, current_user|default(null)) }}
             {% endif %}
         {% endfor %}
 
@@ -26,13 +26,5 @@
                 <a href="{{ url('forum-mark-global') }}" class="input__button forum__actions__button" data-msz-method="POST">Mark All Read</a>
             </div>
         {% endif %}
-    {% else %}
-        <div class="container">
-            {{ container_title('<i class="fas fa-comment-slash fa-fw"></i> Forums') }}
-
-            <div class="container__content">
-                <p>There are currently no visible forums.</p>
-            </div>
-        </div>
     {% endif %}
 {% endblock %}

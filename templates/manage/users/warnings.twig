@@ -1,5 +1,5 @@
 {% extends 'manage/users/master.twig' %}
-{% from 'macros.twig' import pagination, container_title %}
+{% from 'macros.twig' import container_title %}
 {% from 'user/macros.twig' import user_profile_warning %}
 {% from '_layout/input.twig' import input_text, input_csrf, input_select, input_hidden %}
 
@@ -38,9 +38,9 @@
 
     <div class="container container--lazy">
         {{ container_title('<i class="fas fa-exclamation-circle fa-fw"></i> Warnings') }}
-        {% set warnpag = pagination(warnings.pagination, url('manage-users-warnings', {'user': warnings.user.id|default(0)})) %}
+        {% set warnpag = warnings.pagination.render('manage-users-warnings', {'user': warnings.user.id|default(0)}) %}
 
-        {{ warnpag }}
+        {{ warnpag|raw }}
 
         <div class="profile__warnings__container">
             <div class="profile__warning profile__warning--extendo">
@@ -90,6 +90,6 @@
             {% endfor %}
         </div>
 
-        {{ warnpag }}
+        {{ warnpag|raw }}
     </div>
 {% endblock %}

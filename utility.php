@@ -33,16 +33,21 @@ function clamp($num, int $min, int $max): int {
     return max($min, min($max, intval($num)));
 }
 
-function starts_with(string $string, string $text, bool $multibyte = true): bool {
+function starts_with(string $haystack, string $needle, bool $multibyte = true): bool {
     $strlen = $multibyte ? 'mb_strlen' : 'strlen';
     $substr = $multibyte ? 'mb_substr' : 'substr';
-    return $substr($string, 0, $strlen($text)) === $text;
+    return $substr($haystack, 0, $strlen($needle)) === $needle;
 }
 
-function ends_with(string $string, string $text, bool $multibyte = true): bool {
+function ends_with(string $haystack, string $needle, bool $multibyte = true): bool {
     $strlen = $multibyte ? 'mb_strlen' : 'strlen';
     $substr = $multibyte ? 'mb_substr' : 'substr';
-    return $substr($string, 0 - $strlen($text)) === $text;
+    return $substr($haystack, 0 - $strlen($needle)) === $needle;
+}
+
+if(!function_exists('str_starts_with')) {
+    function str_starts_with(string $haystack, string $needle): bool { return starts_with($haystack, $needle, false); }
+    function str_ends_with(string $haystack, string $needle): bool { return ends_with($haystack, $needle, false); }
 }
 
 function first_paragraph(string $text, string $delimiter = "\n"): string {
@@ -79,21 +84,13 @@ function byte_symbol(int $bytes, bool $decimal = false, array $symbols = ['', 'K
     return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
 }
 
-function get_country_name(string $code): string {
-    switch(strtolower($code)) {
-        case 'xx':
-            return 'Unknown';
-
-        case 'a1':
-            return 'Anonymous Proxy';
-
-        case 'a2':
-            return 'Satellite Provider';
-
-        default:
-            return locale_get_display_region("-{$code}", 'en');
-    }
+function get_country_name(string $code, string $locale = 'en'): string {
+    if($code === 'xx')
+        return 'Unknown';
+    return \Locale::getDisplayRegion("-{$code}", $locale);
 }
+
+/*** THE DEPRECATION NATION (LINE) ***/
 
 // render_error, render_info and render_info_or_json should be redone a bit better
 // following a uniform format so there can be a global handler for em
@@ -160,38 +157,4 @@ function html_colour(?int $colour, $attribs = '--user-colour'): string {
     }
 
     return $css;
-}
-
-function html_avatar(?int $userId, int $resolution, string $altText = '', array $attributes = []): string {
-    $attributes['src'] = url('user-avatar', ['user' => $userId ?? 0, 'res' => $resolution * 2]);
-    $attributes['alt'] = $altText;
-    $attributes['class'] = trim('avatar ' . ($attributes['class'] ?? ''));
-
-    if(!isset($attributes['width']))
-        $attributes['width'] = $resolution;
-    if(!isset($attributes['height']))
-        $attributes['height'] = $resolution;
-
-    return html_tag('img', $attributes);
-}
-
-function html_tag(string $name, array $atrributes = [], ?bool $close = null, string $content = ''): string {
-    $html = '<' . $name;
-
-    foreach($atrributes as $key => $value) {
-        $html .= ' ' . $key;
-
-        if(!empty($value))
-            $html .= '="' . $value . '"';
-    }
-
-    if($close === false)
-        $html .= '/';
-
-    $html .= '>';
-
-    if($close === true)
-        $html .= $content . '</' . $name . '>';
-
-    return $html;
 }

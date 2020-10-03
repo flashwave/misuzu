@@ -9,7 +9,7 @@
 
 {% block content %}
     <form method="post" action="{{ url('forum-' ~ (is_reply ? 'post' : 'topic') ~ '-create') }}">
-        {{ input_hidden('post[' ~ (is_reply ? 'topic' : 'forum') ~ ']', is_reply ? posting_topic.topic_id : posting_forum.forum_id) }}
+        {{ input_hidden('post[' ~ (is_reply ? 'topic' : 'forum') ~ ']', is_reply ? posting_topic.topic_id : posting_forum.id) }}
         {{ input_hidden('post[mode]', posting_mode) }}
         {{ input_csrf() }}
         {{ forum_header(

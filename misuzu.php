@@ -78,7 +78,6 @@ require_once 'src/url.php';
 require_once 'src/Forum/perms.php';
 require_once 'src/Forum/forum.php';
 require_once 'src/Forum/leaderboard.php';
-require_once 'src/Forum/poll.php';
 require_once 'src/Forum/post.php';
 require_once 'src/Forum/topic.php';
 require_once 'src/Forum/validate.php';
@@ -122,12 +121,6 @@ if(MSZ_CLI) { // Temporary backwards compatibility measure, remove this later
 
 // Everything below here should eventually be moved to index.php, probably only initialised when required.
 // Serving things like the css/js doesn't need to initialise sessions.
-
-if(!mb_check_encoding()) {
-    http_response_code(415);
-    echo 'Invalid request encoding.';
-    exit;
-}
 
 ob_start();
 

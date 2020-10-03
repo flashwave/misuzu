@@ -1,1 +1,9 @@
 {% extends 'master.twig' %}
+
+{% if forum_info is not defined and topic_info.category is defined %}
+    {% set forum_info = topic_info.category %}
+{% endif %}
+
+{% if forum_info.colour.raw is defined %}
+    {% set global_accent_colour = forum_info.colour %}
+{% endif %}

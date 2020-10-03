@@ -1,7 +1,7 @@
 {% extends 'manage/users/master.twig' %}
-{% from 'macros.twig' import pagination, container_title, avatar %}
+{% from 'macros.twig' import container_title, avatar %}
 
-{% set users_pagination = pagination(manage_users_pagination, url('manage-users')) %}
+{% set users_pagination = manage_users_pagination.render('manage-users') %}
 
 {% block manage_content %}
     <div class="container manage__users">
@@ -9,7 +9,7 @@
 
         {% if users_pagination|trim|length > 0 %}
             <div class="manage__users__pagination">
-                {{ users_pagination }}
+                {{ users_pagination|raw }}
             </div>
         {% endif %}
 
@@ -55,7 +55,7 @@
 
         {% if users_pagination|trim|length > 0 %}
             <div class="manage__users__pagination">
-                {{ users_pagination }}
+                {{ users_pagination|raw }}
             </div>
         {% endif %}
     </div>

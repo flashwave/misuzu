@@ -1,5 +1,5 @@
 {% extends 'settings/master.twig' %}
-{% from 'macros.twig' import container_title, pagination %}
+{% from 'macros.twig' import container_title %}
 {% from 'user/macros.twig' import user_login_attempt, user_account_log %}
 
 {% set title = 'Settings / Logs' %}
@@ -7,7 +7,7 @@
 {% block settings_content %}
     <div class="container settings__container" id="login-history">
         {{ container_title('<i class="fas fa-user-lock fa-fw"></i> Login History') }}
-        {% set lhpagination = pagination(login_history_pagination, url('settings-logs'), null, {
+        {% set lhpagination = login_history_pagination.render('settings-logs', {
             'ap': account_log_pagination.page > 1 ? account_log_pagination.page : 0,
         }, 'hp', 'login-history') %}
 
@@ -17,7 +17,7 @@
 
         <div class="settings__login-attempts">
             <div class="settings__login-attempts__pagination">
-                {{ lhpagination }}
+                {{ lhpagination|raw }}
             </div>
 
             {% if login_history_list|length < 1 %}
@@ -31,14 +31,14 @@
             {% endif %}
 
             <div class="settings__login-attempts__pagination">
-                {{ lhpagination }}
+                {{ lhpagination|raw }}
             </div>
         </div>
     </div>
 
     <div class="container settings__container" id="account-log">
         {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Account Log') }}
-        {% set alpagination = pagination(account_log_pagination, url('settings-logs'), null, {
+        {% set alpagination = account_log_pagination.render('settings-logs', {
             'hp': login_history_pagination.page > 1 ? login_history_pagination.page : 0,
         }, 'ap', 'account-log') %}
 
@@ -48,7 +48,7 @@
 
         <div class="settings__account-logs">
             <div class="settings__account-logs__pagination">
-                {{ alpagination }}
+                {{ alpagination|raw }}
             </div>
 
             {% for log in account_log_list %}
@@ -56,7 +56,7 @@
             {% endfor %}
 
             <div class="settings__account-logs__pagination">
-                {{ alpagination }}
+                {{ alpagination|raw }}
             </div>
         </div>
     </div>

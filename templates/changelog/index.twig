@@ -1,5 +1,5 @@
 {% extends 'changelog/master.twig' %}
-{% from 'macros.twig' import pagination, container_title %}
+{% from 'macros.twig' import container_title %}
 {% from 'changelog/macros.twig' import changelog_listing %}
 {% from '_layout/comments.twig' import comments_section %}
 
@@ -39,7 +39,7 @@
 
         {% if not is_date %}
             <div class="changelog__pagination">
-                {{ pagination(changelog_pagination, url('changelog-index'), null, {'date':changelog_date_fmt, 'user':changelog_user.id|default(0)})}}
+                {{ changelog_pagination.render('changelog-index', {'date':changelog_date_fmt, 'user':changelog_user.id|default(0)})|raw }}
             </div>
         {% endif %}
     </div>

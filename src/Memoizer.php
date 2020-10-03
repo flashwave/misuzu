@@ -15,13 +15,20 @@ class Memoizer {
 
         if(is_callable($find)) {
             $item = array_find($this->collection, $find) ?? $create();
-            if(method_exists($item, 'getId'))
-                $this->collection[$item->getId()] = $item;
-            else
-                $this->collection[] = $item;
+            if($item !== null)
+                $this->insert($item);
             return $item;
         }
 
         throw new InvalidArgumentException('Wasn\'t able to figure out your $find argument.');
+    }
+
+    public function insert($item): void {
+        if($item === null)
+            throw new InvalidArgumentException('null');
+        if(method_exists($item, 'getId'))
+            $this->collection[$item->getId()] = $item;
+        else
+            $this->collection[] = $item;
     }
 }

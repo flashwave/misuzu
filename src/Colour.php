@@ -38,9 +38,10 @@ class Colour {
         return $this;
     }
 
-    public function getInherit(): bool {
+    public function isInherit(): bool {
         return ($this->getRaw() & self::FLAG_INHERIT) > 0;
     }
+    public function getInherit(): bool { return $this->isInherit(); }
     public function setInherit(bool $inherit): self {
         $raw = $this->getRaw();
 

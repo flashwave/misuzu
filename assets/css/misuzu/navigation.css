@@ -3,7 +3,7 @@
     width: 100%;
     display: flex;
     border-width: 0;
-    border-color: var(--text-colour);
+    border-color: #000;
     border-style: solid;
     border-top-width: 1px;
     align-items: flex-start;
@@ -23,7 +23,7 @@
 .navigation__option {
     list-style: none;
     background-color: #c9bbcc;
-    border: 1px solid var(--text-colour);
+    border: 1px solid #000;
     border-top-width: 0;
     flex-grow: 0;
 }
@@ -31,6 +31,7 @@
 .navigation__option--selected {
     background-color: var(--accent-colour);
     top: -1px;
+    padding-bottom: 2px;
 }
 .navigation__option--selected:not(:first-child) {
     margin-left: -1px;
@@ -40,7 +41,7 @@
 .navigation__link {
     display: block;
     padding: 2px 1em;
-    color: var(--text-colour);
+    color: #000;
     text-decoration: none;
 }
 .navigation__link:hover, .navigation__link:focus { color: #609; }

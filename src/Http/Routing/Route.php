@@ -19,7 +19,8 @@ class Route implements Serializable {
     public function __construct(array $methods, string $path, ?string $method = null, ?string $class = null) {
         $this->methods = array_map('strtoupper', $methods);
         $this->path = $path;
-        $this->handlerClass = $class;
+        if($class !== null)
+            $this->handlerClass = str_replace('.', '\\', $class);
         $this->handlerMethod = $method;
     }
 

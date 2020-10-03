@@ -1,5 +1,4 @@
 {% extends 'profile/master.twig' %}
-{% from 'macros.twig' import pagination %}
 {% from 'forum/macros.twig' import forum_post_listing %}
 
 {% block content %}
@@ -7,7 +6,7 @@
         {% include 'profile/_layout/header.twig' %}
 
         {% set sp = profile_posts_pagination.pages > 1
-            ? '<div class="container profile__pagination">' ~ pagination(profile_posts_pagination, canonical_url) ~ '</div>'
+            ? '<div class="container profile__pagination">' ~ profile_posts_pagination.render(canonical_url) ~ '</div>'
             : '' %}
 
         {% if sp is not empty %}

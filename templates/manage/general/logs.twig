@@ -1,15 +1,15 @@
 {% extends 'manage/general/master.twig' %}
-{% from 'macros.twig' import container_title, pagination %}
+{% from 'macros.twig' import container_title, %}
 {% from 'user/macros.twig' import user_account_log %}
 
 {% block manage_content %}
     <div class="container settings__container">
         {{ container_title('<i class="fas fa-file-alt fa-fw"></i> Global Log') }}
-        {% set glp = pagination(global_logs_pagination, url('manage-general-logs'), null, {'v': 'logs'}) %}
+        {% set glp = global_logs_pagination.render('manage-general-logs', {'v': 'logs'}) %}
 
         <div class="settings__account-logs">
             <div class="settings__account-logs__pagination">
-                {{ glp }}
+                {{ glp|raw }}
             </div>
 
             {% for log in global_logs %}
@@ -17,7 +17,7 @@
             {% endfor %}
 
             <div class="settings__account-logs__pagination">
-                {{ glp }}
+                {{ glp|raw }}
             </div>
         </div>
     </div>

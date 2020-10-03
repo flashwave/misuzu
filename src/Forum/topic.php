@@ -77,8 +77,6 @@ function forum_topic_get(int $topicId, bool $allowDeleted = false): array {
             SELECT
                 t.`topic_id`, t.`forum_id`, t.`topic_title`, t.`topic_type`, t.`topic_locked`, t.`topic_created`,
                 f.`forum_archived` AS `topic_archived`, t.`topic_deleted`, t.`topic_bumped`, f.`forum_type`,
-                tp.`poll_id`, tp.`poll_max_votes`, tp.`poll_expires`, tp.`poll_preview_results`, tp.`poll_change_vote`,
-                (tp.`poll_expires` < CURRENT_TIMESTAMP) AS `poll_expired`,
                 fp.`topic_id` AS `author_post_id`, fp.`user_id` AS `author_user_id`,
                 (
                     SELECT COUNT(`post_id`)
@@ -91,12 +89,7 @@ function forum_topic_get(int $topicId, bool $allowDeleted = false): array {
                     FROM `msz_forum_posts`
                     WHERE `topic_id` = t.`topic_id`
                     AND `post_deleted` IS NOT NULL
-                ) AS `topic_count_posts_deleted`,
-                (
-                    SELECT COUNT(*)
-                    FROM `msz_forum_polls_answers`
-                    WHERE `poll_id` = tp.`poll_id`
-                ) AS `poll_votes`
+                ) AS `topic_count_posts_deleted`
             FROM `msz_forum_topics` AS t
             LEFT JOIN `msz_forum_categories` AS f
             ON f.`forum_id` = t.`forum_id`
@@ -106,8 +99,6 @@ function forum_topic_get(int $topicId, bool $allowDeleted = false): array {
                 FROM `msz_forum_posts`
                 WHERE `topic_id` = t.`topic_id`
             )
-            LEFT JOIN `msz_forum_polls` AS tp
-            ON tp.`poll_id` = t.`poll_id`
             WHERE t.`topic_id` = :topic_id
             %s
         ',
@@ -538,7 +529,16 @@ function forum_topic_can_delete($topicId, ?int $userId = null): int {
         return MSZ_E_FORUM_TOPIC_DELETE_USER;
     }
 
-    if(is_array($topicId)) {
+    if($topicId instanceof \Misuzu\Forum\ForumTopic) {
+        $topic = [
+            'forum_id' => $topicId->getCategoryId(),
+            'topic_deleted' => $topicId->isDeleted(),
+            'author_user_id' => $topicId->getUserId(),
+            'topic_created' => date('c', $topicId->getCreatedTime()),
+            'topic_count_posts' => $topicId->getActualPostCount(true),
+            'topic_count_posts_deleted' => 0,
+        ];
+    } elseif(is_array($topicId)) {
         $topic = $topicId;
     } else {
         $topic = forum_topic_get((int)$topicId, true);
@@ -664,46 +664,4 @@ function forum_topic_nuke(int $topicId): bool {
     ');
     $nukeTopic->bind('topic', $topicId);
     return $nukeTopic->execute();
-}
-
-function forum_topic_priority(int $topic): array {
-    if($topic < 1) {
-        return [];
-    }
-
-    $getPriority = \Misuzu\DB::prepare('
-        SELECT
-            tp.`topic_id`, tp.`topic_priority`,
-            u.`user_id`, u.`username`,
-            COALESCE(u.`user_colour`, r.`role_colour`) AS `user_colour`
-        FROM `msz_forum_topics_priority` AS tp
-        LEFT JOIN `msz_users` AS u
-        ON u.`user_id` = tp.`user_id`
-        LEFT JOIN `msz_roles` AS r
-        ON u.`display_role` = r.`role_id`
-        WHERE `topic_id` = :topic
-    ');
-    $getPriority->bind('topic', $topic);
-
-    return $getPriority->fetchAll();
-}
-
-function forum_topic_priority_increase(int $topic, int $user, int $bump = 1): void {
-    if($topic < 1 || $user < 1 || $bump === 0) {
-        return;
-    }
-
-    $bumpPriority = \Misuzu\DB::prepare('
-        INSERT INTO `msz_forum_topics_priority`
-            (`topic_id`, `user_id`, `topic_priority`)
-        VALUES
-            (:topic, :user, :bump1)
-        ON DUPLICATE KEY UPDATE
-            `topic_priority` = `topic_priority` + :bump2
-    ');
-    $bumpPriority->bind('topic', $topic);
-    $bumpPriority->bind('user', $user);
-    $bumpPriority->bind('bump1', $bump);
-    $bumpPriority->bind('bump2', $bump);
-    $bumpPriority->execute();
 }

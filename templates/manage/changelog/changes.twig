@@ -1,9 +1,9 @@
 {% extends 'manage/changelog/master.twig' %}
-{% from 'macros.twig' import pagination, container_title %}
+{% from 'macros.twig' import container_title %}
 {% from 'changelog/macros.twig' import changelog_listing %}
 
 {% block manage_content %}
-    {% set changelog_pagination = pagination(changelog_pagination, url('manage-changelog-changes')) %}
+    {% set changelog_pagination = changelog_pagination.render('manage-changelog-changes') %}
 
 
     <div class="container">
@@ -12,13 +12,13 @@
         <div class="changelog__content">
             <div class="changelog__pagination">
                 <a href="{{ url('manage-changelog-change') }}" class="input__button">Create new change</a>
-                {{ changelog_pagination }}
+                {{ changelog_pagination|raw }}
             </div>
 
             {{ changelog_listing(changelog_changes, false, false, true) }}
 
             <div class="changelog__pagination">
-                {{ changelog_pagination }}
+                {{ changelog_pagination|raw }}
             </div>
         </div>
     </div>

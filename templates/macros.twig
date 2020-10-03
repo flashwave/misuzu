@@ -11,63 +11,6 @@
     </ul>
 {% endmacro %}
 
-{% macro pagination(info, path, page_range, params, page_param, url_fragment) %}
-    {% if info.page is defined and info.pages > 1 %}
-        {% set params = params is iterable ? params : [] %}
-        {% set page_param = page_param|default('p') %}
-        {% set page_range = page_range|default(5) %}
-
-        <div class="pagination">
-            <div class="pagination__section pagination__section--first">
-                {% if info.page <= 1 %}
-                    <div class="pagination__link pagination__link--first pagination__link--disabled">
-                        <i class="fas fa-angle-double-left"></i>
-                    </div>
-                    <div class="pagination__link pagination__link--prev pagination__link--disabled">
-                        <i class="fas fa-angle-left"></i>
-                    </div>
-                {% else %}
-                    <a href="{{ url_construct(path, params, url_fragment) }}" class="pagination__link pagination__link--first" rel="first">
-                        <i class="fas fa-angle-double-left"></i>
-                    </a>
-                    <a href="{{ url_construct(path, info.page <= 2 ? params : params|merge({(page_param): info.page - 1}), url_fragment) }}" class="pagination__link pagination__link--prev" rel="prev">
-                        <i class="fas fa-angle-left"></i>
-                    </a>
-                {% endif %}
-            </div>
-
-            <div class="pagination__section pagination__section--pages">
-                {% set p_start = max(info.page - page_range, 1) %}
-                {% set p_stop = min(info.page + page_range, info.pages) %}
-
-                {% for i in p_start..p_stop %}
-                    <a href="{{ url_construct(path, i <= 1 ? params : params|merge({(page_param): i}), url_fragment) }}" class="pagination__link{{ info.page == i ? ' pagination__link--current' : '' }}">
-                        {{ i }}
-                    </a>
-                {% endfor %}
-            </div>
-
-            <div class="pagination__section pagination__section--last">
-                {% if info.page >= info.pages %}
-                    <div class="pagination__link pagination__link--next pagination__link--disabled">
-                        <i class="fas fa-angle-right"></i>
-                    </div>
-                    <div class="pagination__link pagination__link--last pagination__link--disabled">
-                        <i class="fas fa-angle-double-right"></i>
-                    </div>
-                {% else %}
-                    <a href="{{ url_construct(path, params|merge({(page_param): info.page + 1}), url_fragment) }}" class="pagination__link pagination__link--next" rel="next">
-                        <i class="fas fa-angle-right"></i>
-                    </a>
-                    <a href="{{ url_construct(path, params|merge({(page_param): info.pages}), url_fragment) }}" class="pagination__link pagination__link--last" rel="last">
-                        <i class="fas fa-angle-double-right"></i>
-                    </a>
-                {% endif %}
-            </div>
-        </div>
-    {% endif %}
-{% endmacro %}
-
 {% macro container_title(title, unsafe, url) %}
     {% set has_url = url is not null and url|length > 0 %}
 
@@ -86,5 +29,5 @@
 {% endmacro %}
 
 {% macro avatar(user_id, resolution, alt_text, attributes) %}
-{{ html_avatar(user_id, resolution, alt_text|default(''), attributes|default([]))|raw }}
+    <img src="{{ url('user-avatar', {'user': user_id|default(0), 'res': resolution|default(0) * 2}) }}" alt="{{ alt_text|default('') }}" class="{{ ('avatar ' ~ attributes.class|default(''))|trim }}"{% if resolution > 0 %} width="{{ resolution }}" height="{{ resolution }}"{% endif %}/>
 {% endmacro %}

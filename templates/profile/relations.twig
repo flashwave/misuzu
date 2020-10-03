@@ -1,5 +1,4 @@
 {% extends 'profile/master.twig' %}
-{% from 'macros.twig' import pagination %}
 {% from 'user/macros.twig' import user_card %}
 
 {% block content %}
@@ -16,7 +15,7 @@
 
         {% if profile_relation_pagination.pages > 1 %}
             <div class="container profile__pagination">
-                {{ pagination(profile_relation_pagination, canonical_url) }}
+                {{ profile_relation_pagination.render(canonical_url)|raw }}
             </div>
         {% endif %}
     </div>

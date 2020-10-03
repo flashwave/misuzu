@@ -1,5 +1,5 @@
 {% extends 'news/master.twig' %}
-{% from 'macros.twig' import pagination, container_title %}
+{% from 'macros.twig' import container_title %}
 {% from 'news/macros.twig' import news_preview %}
 
 {% set title = 'News' %}
@@ -29,7 +29,7 @@
             {% endfor %}
 
             <div class="container" style="padding: 4px; display: {{ news_pagination.pages > 1 ? 'block' : 'none' }}">
-                {{ pagination(news_pagination, url('news-index')) }}
+                {{ news_pagination.render('news-index')|raw }}
             </div>
         </div>
 

@@ -303,6 +303,11 @@ class User implements HasRankInterface, JsonSerializable {
         return Parser::instance($this->getForumSignatureParser())
             ->parseText(htmlspecialchars($this->getForumSignatureText()));
     }
+    public function getForumSignatureClasses(): string {
+        if($this->getForumSignatureParser() === Parser::MARKDOWN)
+            return 'markdown';
+        return '';
+    }
 
     // Address these through getBackgroundInfo()
     public function getBackgroundSettings(): int {
@@ -883,7 +888,7 @@ class User implements HasRankInterface, JsonSerializable {
             return $user;
         });
     }
-    public static function byUsername(string $username): ?self {
+    public static function byUsername(string $username): self {
         $username = mb_strtolower($username);
         return self::memoizer()->find(function($user) use ($username) {
             return mb_strtolower($user->getUsername()) === $username;
@@ -896,7 +901,7 @@ class User implements HasRankInterface, JsonSerializable {
             return $user;
         });
     }
-    public static function byEMailAddress(string $address): ?self {
+    public static function byEMailAddress(string $address): self {
         $address = mb_strtolower($address);
         return self::memoizer()->find(function($user) use ($address) {
             return mb_strtolower($user->getEmailAddress()) === $address;
@@ -928,7 +933,7 @@ class User implements HasRankInterface, JsonSerializable {
         return DB::prepare(self::byQueryBase() . ' WHERE `user_deleted` IS NULL ORDER BY `user_id` DESC LIMIT 1')
             ->fetchObject(self::class);
     }
-    public static function findForProfile($userIdOrName): ?self {
+    public static function findForProfile($userIdOrName): self {
         $userIdOrNameLower = mb_strtolower($userIdOrName);
         return self::memoizer()->find(function($user) use ($userIdOrNameLower) {
             return $user->getId() == $userIdOrNameLower || mb_strtolower($user->getUsername()) === $userIdOrNameLower;

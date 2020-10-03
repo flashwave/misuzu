@@ -1,5 +1,5 @@
 {% extends 'manage/news/master.twig' %}
-{% from 'macros.twig' import pagination, container_title %}
+{% from 'macros.twig' import container_title %}
 
 {% block manage_content %}
     <div class="container">
@@ -22,6 +22,6 @@
             </p>
         {% endfor %}
 
-        {{ pagination(posts_pagination, url('manage-news-posts')) }}
+        {{ posts_pagination.render('manage-news-posts') }}
     </div>
 {% endblock %}

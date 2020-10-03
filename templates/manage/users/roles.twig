@@ -1,7 +1,7 @@
 {% extends 'manage/users/master.twig' %}
-{% from 'macros.twig' import pagination, container_title %}
+{% from 'macros.twig' import container_title %}
 
-{% set roles_pagination = pagination(manage_roles_pagination, url('manage-roles')) %}
+{% set roles_pagination = manage_roles_pagination.render('manage-roles') %}
 
 {% block manage_content %}
     <div class="container manage__roles">
@@ -9,7 +9,7 @@
 
         {% if roles_pagination|trim|length > 0 %}
             <div class="manage__roles__pagination">
-                {{ roles_pagination }}
+                {{ roles_pagination|raw }}
             </div>
         {% endif %}
 
@@ -71,7 +71,7 @@
 
         {% if roles_pagination|trim|length > 0 %}
             <div class="manage__roles__pagination">
-                {{ roles_pagination }}
+                {{ roles_pagination|raw }}
             </div>
         {% endif %}
     </div>

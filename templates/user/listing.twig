@@ -15,7 +15,6 @@
 {% set manage_link = url('manage-users') %}
 
 {% macro member_nav(roles, role_id, orders, order, directions, direction, users_pagination, url_role, url_sort, url_direction) %}
-    {% from 'macros.twig' import pagination %}
     {% from '_layout/input.twig' import input_select %}
 
     <div class="userlist__navigation">
@@ -30,7 +29,7 @@
         </form>
 
         <div class="userlist__pagination">
-            {{ pagination(users_pagination, url('user-list'), null, {'r': url_role, 'ss': url_sort, 'sd': url_direction}) }}
+            {{ users_pagination.render('user-list', {'r': url_role, 'ss': url_sort, 'sd': url_direction})|raw }}
         </div>
     </div>
 {% endmacro %}
