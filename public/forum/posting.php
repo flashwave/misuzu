@@ -3,6 +3,8 @@ namespace Misuzu;
 
 use Misuzu\Forum\ForumCategory;
 use Misuzu\Forum\ForumCategoryNotFoundException;
+use Misuzu\Forum\ForumTopic;
+use Misuzu\Forum\ForumTopicNotFoundException;
 use Misuzu\Net\IPAddress;
 use Misuzu\Parsers\Parser;
 use Misuzu\Users\User;
@@ -73,13 +75,11 @@ if(!empty($postId)) {
     }
 }
 
-if(!empty($topicId)) {
-    $topic = forum_topic_get($topicId);
-
-    if(isset($topic['forum_id'])) {
-        $forumId = (int)$topic['forum_id'];
-    }
-}
+if(!empty($topicId))
+    try {
+        $topicInfo = ForumTopic::byId($topicId);
+        $forumId = $topicInfo->getCategoryId();
+    } catch(ForumTopicNotFoundException $ex) {}
 
 
 try {
@@ -92,9 +92,9 @@ try {
 $perms = forum_perms_get_user($forumInfo->getId(), $currentUserId)[MSZ_FORUM_PERMS_GENERAL];
 
 if($forumInfo->isArchived()
-    || (!empty($topic['topic_locked']) && !perms_check($perms, MSZ_FORUM_PERM_LOCK_TOPIC))
+    || (!empty($topicInfo) && $topicInfo->isLocked() && !perms_check($perms, MSZ_FORUM_PERM_LOCK_TOPIC))
     || !perms_check($perms, MSZ_FORUM_PERM_VIEW_FORUM | MSZ_FORUM_PERM_CREATE_POST)
-    || (empty($topic) && !perms_check($perms, MSZ_FORUM_PERM_CREATE_TOPIC))) {
+    || (empty($topicInfo) && !perms_check($perms, MSZ_FORUM_PERM_CREATE_TOPIC))) {
     echo render_error(403);
     return;
 }
@@ -145,7 +145,7 @@ if(!empty($_POST)) {
     if(!CSRF::validateRequest()) {
         $notices[] = 'Could not verify request.';
     } else {
-        $isEditingTopic = empty($topic) || ($mode === 'edit' && $post['is_opening_post']);
+        $isEditingTopic = empty($topicInfo) || ($mode === 'edit' && $post['is_opening_post']);
 
         if($mode === 'create') {
             $timeoutCheck = max(1, forum_timeout($forumInfo->getId(), $currentUserId));
@@ -157,9 +157,9 @@ if(!empty($_POST)) {
         }
 
         if($isEditingTopic) {
-            $originalTopicTitle = $topic['topic_title'] ?? null;
+            $originalTopicTitle = empty($topicInfo) ? null : $topicInfo->getTitle();
             $topicTitleChanged = $topicTitle !== $originalTopicTitle;
-            $originalTopicType = (int)($topic['topic_type'] ?? MSZ_TOPIC_TYPE_DISCUSSION);
+            $originalTopicType =  empty($topicInfo) ? ForumTopic::TYPE_DISCUSSION : $topicInfo->getType();
             $topicTypeChanged = $topicType !== null && $topicType !== $originalTopicType;
 
             switch(forum_validate_title($topicTitle)) {
@@ -196,8 +196,8 @@ if(!empty($_POST)) {
         if(empty($notices)) {
             switch($mode) {
                 case 'create':
-                    if(!empty($topic)) {
-                        forum_topic_bump($topic['topic_id']);
+                    if(!empty($topicInfo)) {
+                        $topicInfo->bumpTopic();
                     } else {
                         $topicId = forum_topic_create(
                             $forumInfo->getId(),
@@ -217,7 +217,7 @@ if(!empty($_POST)) {
                         $postSignature
                     );
                     forum_topic_mark_read($currentUserId, $topicId, $forumInfo->getId());
-                    $forumInfo->increaseTopicPostCount(empty($topic));
+                    $forumInfo->increaseTopicPostCount(empty($topicInfo));
                     break;
 
                 case 'edit':
@@ -234,7 +234,7 @@ if(!empty($_POST)) {
             }
 
             if(empty($notices)) {
-                $redirect = url(empty($topic) ? 'forum-topic' : 'forum-post', [
+                $redirect = url(empty($topicInfo) ? 'forum-topic' : 'forum-post', [
                     'topic' => $topicId ?? 0,
                     'post' => $postId ?? 0,
                     'post_fragment' => 'p' . ($postId ?? 0),
@@ -246,8 +246,8 @@ if(!empty($_POST)) {
     }
 }
 
-if(!empty($topic)) {
-    Template::set('posting_topic', $topic);
+if(!empty($topicInfo)) {
+    Template::set('posting_topic', $topicInfo);
 }
 
 if($mode === 'edit') { // $post is pretty much sure to be populated at this point

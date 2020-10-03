@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Forum\ForumTopic;
 use Misuzu\News\NewsPost;
 use Misuzu\Users\User;
 
@@ -9,7 +10,7 @@ require_once '../misuzu.php';
 $searchQuery = !empty($_GET['q']) && is_string($_GET['q']) ? $_GET['q'] : '';
 
 if(!empty($searchQuery)) {
-    $forumTopics = forum_topic_listing_search($searchQuery, User::hasCurrent() ? User::getCurrent()->getId() : 0);
+    $forumTopics = ForumTopic::bySearchQuery($searchQuery);
     $forumPosts = forum_post_search($searchQuery);
     $newsPosts = NewsPost::bySearchQuery($searchQuery);
 

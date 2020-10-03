@@ -9,23 +9,23 @@
 
 {% block content %}
     <form method="post" action="{{ url('forum-' ~ (is_reply ? 'post' : 'topic') ~ '-create') }}">
-        {{ input_hidden('post[' ~ (is_reply ? 'topic' : 'forum') ~ ']', is_reply ? posting_topic.topic_id : posting_forum.id) }}
+        {{ input_hidden('post[' ~ (is_reply ? 'topic' : 'forum') ~ ']', is_reply ? posting_topic.id : posting_forum.id) }}
         {{ input_hidden('post[mode]', posting_mode) }}
         {{ input_csrf() }}
         {{ forum_header(
             is_reply and not is_opening
-                ? posting_topic.topic_title
+                ? posting_topic.title
                 : input_text(
                     'post[title]',
                     'forum__header__input',
-                    posting_defaults.title|default(posting_topic.topic_title|default('')),
+                    posting_defaults.title|default(posting_topic.title|default('')),
                     'text',
                     'Enter your title here...'
                 ),
             posting_breadcrumbs,
             false,
             is_reply and not is_opening
-                ? url('forum-topic', {'topic': posting_topic.topic_id})
+                ? url('forum-topic', {'topic': posting_topic.id})
                 : ''
         ) }}
 
@@ -147,7 +147,7 @@
                             {{ input_select(
                                 'post[type]',
                                 posting_types,
-                                posting_defaults.type|default(posting_topic.topic_type|default(posting_types|keys|first)),
+                                posting_defaults.type|default(posting_topic.type|default(posting_types|keys|first)),
                                 null, null, null, 'forum__post__dropdown'
                             ) }}
                         {% endif %}

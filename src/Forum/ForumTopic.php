@@ -15,14 +15,14 @@ class ForumTopic {
     public const TYPE_ANNOUNCEMENT = 2;
     public const TYPE_GLOBAL_ANNOUNCEMENT = 3;
 
-    private const TYPE_ORDER = [
+    public const TYPE_ORDER = [
         self::TYPE_GLOBAL_ANNOUNCEMENT,
         self::TYPE_ANNOUNCEMENT,
         self::TYPE_STICKY,
         self::TYPE_DISCUSSION,
     ];
 
-    private const TYPE_IMPORTANT = [
+    public const TYPE_IMPORTANT = [
         self::TYPE_STICKY,
         self::TYPE_ANNOUNCEMENT,
         self::TYPE_GLOBAL_ANNOUNCEMENT,
@@ -212,11 +212,14 @@ class ForumTopic {
         return $this->topic_bumped === null ? -1 : $this->topic_bumped;
     }
     public function bumpTopic(): void {
+        if($this->isDeleted())
+            return;
         $this->topic_bumped = time();
         DB::prepare(
             'UPDATE `' . DB::PREFIX . self::TABLE . '`'
             . ' SET `topic_bumped` = NOW()'
             . ' WHERE `topic_id` = :topic'
+            . ' AND `topic_deleted` IS NULL'
         )->bind('topic', $this->getId())->execute();
     }
 
@@ -357,6 +360,28 @@ class ForumTopic {
 
         $getObjects = DB::prepare($query)
             ->bind('category', $category->getId());
+
+        if($pagination !== null)
+            $getObjects->bind('range', $pagination->getRange())
+                ->bind('offset', $pagination->getOffset());
+
+        $objects = [];
+        $memoizer = self::memoizer();
+        while($object = $getObjects->fetchObject(self::class))
+            $memoizer->insert($objects[] = $object);
+        return $objects;
+    }
+    public static function bySearchQuery(string $search, bool $includeDeleted = false, ?Pagination $pagination = null): array {
+        $query = self::byQueryBase()
+                . ' WHERE MATCH(`topic_title`) AGAINST (:search IN NATURAL LANGUAGE MODE)'
+                . ($includeDeleted ? '' : ' AND `topic_deleted` IS NULL')
+                . ' ORDER BY FIELD(`topic_type`, ' . implode(',', self::TYPE_ORDER) . '), `topic_bumped` DESC';
+
+        if($pagination !== null)
+            $query .= ' LIMIT :range OFFSET :offset';
+
+        $getObjects = DB::prepare($query)
+            ->bind('search', $search);
 
         if($pagination !== null)
             $getObjects->bind('range', $pagination->getRange())

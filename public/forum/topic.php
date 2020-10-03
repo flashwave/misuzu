@@ -293,7 +293,8 @@ if(in_array($moderationMode, $validModerationModes, true)) {
             break;
 
         case 'bump':
-            if($canBumpTopic && forum_topic_bump($topicInfo->getId())) {
+            if($canBumpTopic) {
+                $topicInfo->bumpTopic();
                 AuditLog::create(AuditLog::FORUM_TOPIC_BUMP, [$topicInfo->getId()]);
             }
 
@@ -303,7 +304,8 @@ if(in_array($moderationMode, $validModerationModes, true)) {
             break;
 
         case 'lock':
-            if($canLockTopic && !$topicInfo->isLocked() && forum_topic_lock($topicInfo->getId())) {
+            if($canLockTopic && !$topicInfo->isLocked()) {
+                $topicInfo->setLocked(true);
                 AuditLog::create(AuditLog::FORUM_TOPIC_LOCK, [$topicInfo->getId()]);
             }
 
@@ -313,7 +315,8 @@ if(in_array($moderationMode, $validModerationModes, true)) {
             break;
 
         case 'unlock':
-            if($canLockTopic && $topicInfo->isLocked() && forum_topic_unlock($topicInfo->getId())) {
+            if($canLockTopic && $topicInfo->isLocked()) {
+                $topicInfo->setLocked(false);
                 AuditLog::create(AuditLog::FORUM_TOPIC_UNLOCK, [$topicInfo->getId()]);
             }
 
