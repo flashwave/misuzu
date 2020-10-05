@@ -348,6 +348,17 @@ class User implements HasRankInterface, JsonSerializable {
         return intval($this->getBirthdate()->diff(new DateTime('now', new DateTimeZone('UTC')))->format('%y'));
     }
 
+    private $preferredParser = null;
+    public function getPreferredParser(): int {
+        if($this->preferredParser === null)
+            $this->preferredParser = DB::prepare(
+                'SELECT `post_parse` FROM `msz_forum_posts`'
+                . ' WHERE `user_id` = :user AND `post_deleted` IS NULL'
+                . ' ORDER BY `post_id` DESC LIMIT 1'
+            )->bind('user', $this->getId())->fetchColumn() ?? Parser::BBCODE;
+        return $this->preferredParser;
+    }
+
     public function profileFields(bool $filterEmpty = true): array {
         if(($userId = $this->getId()) < 1)
             return [];

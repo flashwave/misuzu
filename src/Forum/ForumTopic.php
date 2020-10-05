@@ -15,6 +15,13 @@ class ForumTopic {
     public const TYPE_ANNOUNCEMENT = 2;
     public const TYPE_GLOBAL_ANNOUNCEMENT = 3;
 
+    public const TYPES = [
+        self::TYPE_DISCUSSION,
+        self::TYPE_STICKY,
+        self::TYPE_ANNOUNCEMENT,
+        self::TYPE_GLOBAL_ANNOUNCEMENT,
+    ];
+
     public const TYPE_ORDER = [
         self::TYPE_GLOBAL_ANNOUNCEMENT,
         self::TYPE_ANNOUNCEMENT,
@@ -295,6 +302,39 @@ class ForumTopic {
             return false;
         // shouldn't there be an actual permission for this?
         return $this->getCategory()->canView($user);
+    }
+
+    public function synchronise(bool $save = true): array {
+        $stats = DB::prepare(
+            'SELECT :topic AS `topic`, ('
+            .  'SELECT MIN(`post_id`) FROM `msz_forum_posts` WHERE `topic_id` = `topic`' // this shouldn't be deleteable without nuking the topic
+            . ') AS `first_post`, ('
+            .  'SELECT MAX(`post_id`) FROM `msz_forum_posts` WHERE `topic_id` = `topic` AND `post_deleted` IS NULL'
+            . ') AS `last_post`, ('
+            .  'SELECT COUNT(*) FROM `msz_forum_posts` WHERE `topic_id` = `topic` AND `post_deleted` IS NULL'
+            . ') AS `posts`, ('
+            .  'SELECT UNIX_TIMESTAMP(`post_created`) FROM `msz_forum_posts` WHERE `post_id` = `last_post`'
+            . ') AS `last_post_time`'
+        )->bind('topic', $this->getId())->fetch();
+
+        if($save) {
+            $this->topic_post_first = $stats['first_post'];
+            $this->topic_post_last = $stats['last_post'];
+            $this->topic_count_posts = $stats['posts'];
+            DB::prepare(
+                'UPDATE `msz_forum_topics`'
+                . ' SET `topic_post_first` = :first'
+                . ', `topic_post_last` = :last'
+                . ', `topic_count_posts` = :posts'
+                . ' WHERE `topic_id` = :topic'
+            )   ->bind('first', $this->topic_post_first)
+                ->bind('last', $this->topic_post_last)
+                ->bind('posts', $this->topic_count_posts)
+                ->bind('topic', $this->getId())
+                ->execute();
+        }
+
+        return $stats;
     }
 
     private static function countQueryBase(): string {

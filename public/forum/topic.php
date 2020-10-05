@@ -328,7 +328,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
     return;
 }
 
-$topicPagination = new Pagination($topicInfo->getActualPostCount($canDeleteAny), MSZ_FORUM_POSTS_PER_PAGE, 'page');
+$topicPagination = new Pagination($topicInfo->getActualPostCount($canDeleteAny), \Misuzu\Forum\ForumPost::PER_PAGE, 'page');
 
 if(isset($postInfo['preceeding_post_count'])) {
     $preceedingPosts = $postInfo['preceeding_post_count'];
@@ -351,7 +351,6 @@ forum_topic_mark_read($topicUserId, $topicInfo->getId(), $topicInfo->getCategory
 
 Template::render('forum.topic', [
     'topic_perms' => $perms,
-    'topic_breadcrumbs' => forum_get_breadcrumbs($topicInfo->getCategory()->getId()),
     'topic_info' => $topicInfo,
     'can_reply' => $canReply,
     'topic_pagination' => $topicPagination,

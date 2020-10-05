@@ -1,6 +1,4 @@
 <?php
-define('MSZ_FORUM_POSTS_PER_PAGE', 10);
-
 function forum_post_create(
     int $topicId,
     int $forumId,

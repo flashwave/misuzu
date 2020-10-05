@@ -274,6 +274,6 @@ switch($postMode) {
 
         url_redirect('forum-topic', [
             'topic' => $postFind['topic_id'],
-            'page' => floor($postFind['preceeding_post_count'] / MSZ_FORUM_POSTS_PER_PAGE) + 1,
+            'page' => floor($postFind['preceeding_post_count'] / \Misuzu\Forum\ForumPost::PER_PAGE) + 1,
         ]);
 }

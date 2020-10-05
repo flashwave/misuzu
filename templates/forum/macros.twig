@@ -13,29 +13,28 @@
     {% from 'macros.twig' import container_title %}
 
     {% if category.canView(user) %}
+        {% set children = category.children(user) %}
 
-    {% set children = category.children(user) %}
+        {% if children is not empty or category.isCategoryForum %}
+        {% set icon = title is not empty ? 'fas fa-folder fa-fw' : category.icon %}
+        <div class="container forum__categories"
+            {% if not category.colour.inherit %}style="--accent-colour: {{ category.colour }}"{% endif %}
+            {% if not category.isRoot %}id="{{ category.id }}"{% endif %}>
+            {{ container_title('<span class="' ~ icon ~ '"></span> ' ~ title|default(category.name)) }}
 
-    {% if children is not empty or category.isCategoryForum %}
-    {% set icon = title is not empty ? 'fas fa-folder fa-fw' : category.icon %}
-    <div class="container forum__categories"
-        {% if not category.colour.inherit %}style="--accent-colour: {{ category.colour }}"{% endif %}
-        {% if not category.isRoot %}id="{{ category.id }}"{% endif %}>
-        {{ container_title('<span class="' ~ icon ~ '"></span> ' ~ title|default(category.name)) }}
-
-        {% if children is empty %}
-            <div class="forum__categories__empty">
-                This category is empty.
-            </div>
-        {% else %}
-            <div class="forum__categories__list">
-                {% for category in children %}
-                    {{ forum_category_entry(category, user) }}
-                {% endfor %}
-            </div>
+            {% if children is empty %}
+                <div class="forum__categories__empty">
+                    This category is empty.
+                </div>
+            {% else %}
+                <div class="forum__categories__list">
+                    {% for category in children %}
+                        {{ forum_category_entry(category, user) }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
         {% endif %}
-    </div>
-    {% endif %}
     {% endif %}
 {% endmacro %}
 
@@ -62,32 +61,29 @@
     </div>
 {% endmacro %}
 
-{% macro forum_header(title, breadcrumbs, omit_last_breadcrumb, title_url, actions) %}
+{% macro forum_header(info, is_top, title_url, actions, is_topic, title) %}
     <div class="container forum__header">
-        {% if breadcrumbs is iterable and breadcrumbs|length > 0 %}
-            <div class="forum__header__breadcrumbs">
-                {% for name, url in breadcrumbs %}
-                    {% if url != breadcrumbs|first %}
-                        <div class="forum__header__breadcrumb__separator">
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                    {% endif %}
+        {% set parents = info.parentTree %}
+        <div class="forum__header__breadcrumbs">
+            {% for parent in parents %}
+                <a href="{{ parent.url }}" class="forum__header__breadcrumb">{{ parent.name }}</a>
+                <div class="forum__header__breadcrumb__separator">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            {% endfor %}
+            {% if not is_top or is_topic %}
+                <a href="{{ info.url }}" class="forum__header__breadcrumb">{{ info.name }}</a>
+            {% endif %}
+        </div>
 
-                    {% if not (omit_last_breadcrumb|default(false) and url == breadcrumbs|last) %}
-                        <a href="{{ url }}" class="forum__header__breadcrumb">{{ name }}</a>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        {% if title|length > 0 %}
+        {% if is_top %}
             {% if title_url|length > 0 %}
                 <a class="forum__header__title" href="{{ title_url }}">
-                    {{ title }}
+                    {{ title|default(info.name) }}
                 </a>
             {% else %}
                 <div class="forum__header__title forum__header__title--fill">
-                    {{ title }}
+                    {{ title|default(info.name) }}
                 </div>
             {% endif %}
         {% endif %}
@@ -495,16 +491,16 @@
 {% macro forum_topic_entry_old(topic, topic_icon, topic_unread) %}
     {% from 'macros.twig' import avatar %}
     {% set topic_unread = topic_unread|default(topic.topic_unread|default(false)) %}
-    {% set topic_important = topic.topic_type == constant('MSZ_TOPIC_TYPE_STICKY') or topic.topic_type == constant('MSZ_TOPIC_TYPE_ANNOUNCEMENT') or topic.topic_type == constant('MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT') %}
+    {% set topic_important = topic.topic_type == constant('\\Misuzu\\Forum\\ForumTopic::TYPE_STICKY') or topic.topic_type == constant('\\Misuzu\\Forum\\ForumTopic::TYPE_ANNOUNCEMENT') or topic.topic_type == constant('\\Misuzu\\Forum\\ForumTopic::TYPE_GLOBAL_ANNOUNCEMENT') %}
     {% set has_priority_voting = topic.forum_type in constant('\\Misuzu\\Forum\\ForumCategory::HAS_PRIORITY_VOTES') %}
 
     {% if topic_icon is null %}
         {% if topic.topic_deleted is defined and topic.topic_deleted is not null %}
             {% set topic_icon = 'fas fa-trash-alt' %}
-        {% elseif topic.topic_type is defined and topic.topic_type != constant('MSZ_TOPIC_TYPE_DISCUSSION') %}
-            {% if topic.topic_type == constant('MSZ_TOPIC_TYPE_ANNOUNCEMENT') or topic.topic_type == constant('MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT') %}
+        {% elseif topic.topic_type is defined and topic.topic_type != constant('\\Misuzu\\Forum\\ForumTopic::DISCUSSION') %}
+            {% if topic.topic_type == constant('\\Misuzu\\Forum\\ForumTopic::TYPE_ANNOUNCEMENT') or topic.topic_type == constant('\\Misuzu\\Forum\\ForumTopic::GLOBAL_ANNOUNCEMENT') %}
                 {% set topic_icon = 'fas fa-bullhorn' %}
-            {% elseif topic.topic_type == constant('MSZ_TOPIC_TYPE_STICKY') %}
+            {% elseif topic.topic_type == constant('\\Misuzu\\Forum\\ForumTopic::STICKY') %}
                 {% set topic_icon = 'fas fa-thumbtack' %}
             {% endif %}
         {% elseif topic.topic_locked is defined and topic.topic_locked is not null %}

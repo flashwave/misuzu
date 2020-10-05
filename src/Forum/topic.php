@@ -1,32 +1,11 @@
 <?php
-define('MSZ_TOPIC_TYPE_DISCUSSION', 0);
-define('MSZ_TOPIC_TYPE_STICKY', 1);
-define('MSZ_TOPIC_TYPE_ANNOUNCEMENT', 2);
-define('MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT', 3);
-define('MSZ_TOPIC_TYPES', [
-    MSZ_TOPIC_TYPE_DISCUSSION,
-    MSZ_TOPIC_TYPE_STICKY,
-    MSZ_TOPIC_TYPE_ANNOUNCEMENT,
-    MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT,
-]);
-
-define('MSZ_TOPIC_TYPE_ORDER', [ // in which order to display topics, only add types here that should appear above others
-    MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT,
-    MSZ_TOPIC_TYPE_ANNOUNCEMENT,
-    MSZ_TOPIC_TYPE_STICKY,
-]);
-
-function forum_topic_is_valid_type(int $type): bool {
-    return in_array($type, MSZ_TOPIC_TYPES, true);
-}
-
 function forum_topic_create(
     int $forumId,
     int $userId,
     string $title,
-    int $type = MSZ_TOPIC_TYPE_DISCUSSION
+    int $type = \Misuzu\Forum\ForumTopic::TYPE_DISCUSSION
 ): int {
-    if(empty($title) || !forum_topic_is_valid_type($type)) {
+    if(empty($title) || !in_array($type, \Misuzu\Forum\ForumTopic::TYPES)) {
         return 0;
     }
 
@@ -54,7 +33,7 @@ function forum_topic_update(int $topicId, ?string $title, ?int $type = null): bo
         $title = null;
     }
 
-    if($type !== null && !forum_topic_is_valid_type($type)) {
+    if($type !== null && !in_array($type, \Misuzu\Forum\ForumTopic::TYPES)) {
         return false;
     }
 
@@ -220,15 +199,15 @@ function forum_topic_listing_user(
             ON lr.`role_id` = lu.`display_role`
             WHERE au.`user_id` = :author_id
             %1$s
-            ORDER BY FIELD(t.`topic_type`, %4$s) DESC, t.`topic_bumped` DESC
+            ORDER BY FIELD(t.`topic_type`, %4$s), t.`topic_bumped` DESC
             %2$s
         ',
         $showDeleted ? '' : 'AND t.`topic_deleted` IS NULL',
         $hasPagination ? 'LIMIT :offset, :take' : '',
-        MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT,
-        implode(',', array_reverse(MSZ_TOPIC_TYPE_ORDER)),
+        \Misuzu\Forum\ForumTopic::TYPE_GLOBAL_ANNOUNCEMENT,
+        implode(',', \Misuzu\Forum\ForumTopic::TYPE_ORDER),
         $showDeleted ? '' : 'AND `post_deleted` IS NULL',
-        MSZ_FORUM_POSTS_PER_PAGE
+        \Misuzu\Forum\ForumPost::PER_PAGE
     ));
     $getTopics->bind('author_id', $authorId);
     $getTopics->bind('user_id', $userId);

@@ -107,17 +107,13 @@ if(!$forumInfo->canHaveTopics()) {
 $topicTypes = [];
 
 if($mode === 'create' || $mode === 'edit') {
-    $topicTypes[MSZ_TOPIC_TYPE_DISCUSSION] = 'Normal discussion';
-
-    if(perms_check($perms, MSZ_FORUM_PERM_STICKY_TOPIC)) {
-        $topicTypes[MSZ_TOPIC_TYPE_STICKY] = 'Sticky topic';
-    }
-    if(perms_check($perms, MSZ_FORUM_PERM_ANNOUNCE_TOPIC)) {
-        $topicTypes[MSZ_TOPIC_TYPE_ANNOUNCEMENT] = 'Announcement';
-    }
-    if(perms_check($perms, MSZ_FORUM_PERM_GLOBAL_ANNOUNCE_TOPIC)) {
-        $topicTypes[MSZ_TOPIC_TYPE_GLOBAL_ANNOUNCEMENT] = 'Global Announcement';
-    }
+    $topicTypes[ForumTopic::TYPE_DISCUSSION] = 'Normal discussion';
+    if(perms_check($perms, MSZ_FORUM_PERM_STICKY_TOPIC))
+        $topicTypes[ForumTopic::TYPE_STICKY] = 'Sticky topic';
+    if(perms_check($perms, MSZ_FORUM_PERM_ANNOUNCE_TOPIC))
+        $topicTypes[ForumTopic::TYPE_ANNOUNCEMENT] = 'Announcement';
+    if(perms_check($perms, MSZ_FORUM_PERM_GLOBAL_ANNOUNCE_TOPIC))
+        $topicTypes[ForumTopic::TYPE_GLOBAL_ANNOUNCEMENT] = 'Global Announcement';
 }
 
 // edit mode stuff
@@ -254,13 +250,10 @@ if($mode === 'edit') { // $post is pretty much sure to be populated at this poin
     Template::set('posting_post', $post);
 }
 
-$displayInfo = forum_posting_info($currentUserId);
-
 Template::render('forum.posting', [
-    'posting_breadcrumbs' => forum_get_breadcrumbs($forumInfo->getId()),
     'global_accent_colour' => $forumInfo->getColour(),
     'posting_forum' => $forumInfo,
-    'posting_info' => $displayInfo,
+    'posting_user' => $currentUser,
     'posting_notices' => $notices,
     'posting_mode' => $mode,
     'posting_types' => $topicTypes,

@@ -13,6 +13,8 @@ class ForumPostNotFoundException extends ForumPostException {}
 class ForumPostCreationFailedException extends ForumPostException {}
 
 class ForumPost {
+    public const PER_PAGE = 10;
+
     // Database fields
     private $post_id = -1;
     private $topic_id = -1;

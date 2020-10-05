@@ -107,9 +107,15 @@ class ForumCategory {
     public function getParentTree(): array {
         $current = $this;
         $parents = [];
-        while($current->hasParent())
-            $parents[] = $current = $this->getParent();
+        while(!$current->isRoot())
+            $parents[] = $current = $current->getParent();
         return array_reverse($parents);
+    }
+
+    public function getUrl(): string {
+        if($this->isRoot())
+            return url('forum-index');
+        return url('forum-category', ['forum' => $this->getId()]);
     }
 
     public function getName(): string {
@@ -321,6 +327,12 @@ class ForumCategory {
             return 0;
         return ForumTopic::countByCategory($this, $includeDeleted);
     }
+    public function getActualPostCount(bool $includeDeleted = false): int {
+        if(!$this->canHaveTopics())
+            return 0;
+        return ForumPost::countByCategory($this, $includeDeleted);
+    }
+
     public function getTopics(bool $includeDeleted = false, ?Pagination $pagination = null): array {
         if(!$this->canHaveTopics())
             return [];
@@ -361,6 +373,63 @@ class ForumCategory {
         }
 
         return $lastTopic;
+    }
+
+    // This function is really fucking expensive and should only be called by cron
+    // Optimise this as much as possible at some point
+    public function synchronise(bool $save = true): array {
+        $topics = 0; $posts = 0; $topicStats = [];
+
+        $children = $this->getChildren();
+        foreach($children as $child) {
+            $stats = $child->synchronise($save);
+            $topics += $stats['topics'];
+            $posts += $stats['posts'];
+            if(empty($topicStats) || (!empty($stats['topic_stats']) && $stats['topic_stats']['last_post_time'] > $topicStats['last_post_time']))
+                $topicStats = $stats['topic_stats'];
+        }
+
+        $getCounts = DB::prepare(
+            'SELECT :forum as `target_forum_id`, ('
+            .  ' SELECT COUNT(`topic_id`)'
+            .  ' FROM `msz_forum_topics`'
+            .  ' WHERE `forum_id` = `target_forum_id`'
+            .  ' AND `topic_deleted` IS NULL'
+            . ') AS `topics`, ('
+            .  ' SELECT COUNT(`post_id`)'
+            .  ' FROM `msz_forum_posts`'
+            .  ' WHERE `forum_id` = `target_forum_id`'
+            .  ' AND `post_deleted` IS NULL'
+            . ') AS `posts`'
+        );
+        $getCounts->bind('forum', $this->getId());
+        $counts = $getCounts->fetch();
+        $topics += $counts['topics'];
+        $posts += $counts['posts'];
+
+        foreach($this->getTopics() as $topic) {
+            $stats = $topic->synchronise($save);
+            if(empty($topicStats) || $stats['last_post_time'] > $topicStats['last_post_time'])
+                $topicStats = $stats;
+        }
+
+        if($save && !$this->isRoot()) {
+            $setCounts = \Misuzu\DB::prepare(
+                'UPDATE `msz_forum_categories`'
+                . ' SET `forum_count_topics` = :topics, `forum_count_posts` = :posts'
+                . ' WHERE `forum_id` = :forum'
+            );
+            $setCounts->bind('forum', $this->getId());
+            $setCounts->bind('topics', $topics);
+            $setCounts->bind('posts', $posts);
+            $setCounts->execute();
+        }
+
+        return [
+            'topics' => $topics,
+            'posts' => $posts,
+            'topic_stats' => $topicStats,
+        ];
     }
 
     public static function root(): self {

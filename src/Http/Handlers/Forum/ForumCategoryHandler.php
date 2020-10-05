@@ -46,7 +46,6 @@ class ForumCategoryHandler extends ForumHandler {
 
         $response->setTemplate('forum.forum', [
             'forum_perms' => $perms,
-            'forum_breadcrumbs' => forum_get_breadcrumbs($categoryInfo->getId()),
             'forum_info' => $categoryInfo,
             'forum_pagination' => $pagination,
             'can_view_deleted' => $canViewDeleted,

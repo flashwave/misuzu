@@ -55,7 +55,7 @@
 ] %}
 
 {% block content %}
-    {{ forum_header(topic_info.title, topic_breadcrumbs, false, canonical_url, topic_actions) }}
+    {{ forum_header(topic_info.category, true, canonical_url, topic_actions, true, topic_info.title) }}
     {{ topic_notice }}
     {% if topic_info.hasPriorityVoting %}
         {{ forum_priority_votes(topic_info, current_user|default(null)) }}
@@ -67,5 +67,5 @@
     {{ forum_post_listing(topic_info.posts(topic_can_view_deleted, topic_pagination), current_user|default(null), topic_perms) }}
     {{ topic_tools }}
     {{ topic_notice }}
-    {{ forum_header('', topic_breadcrumbs) }}
+    {{ forum_header(topic_info.category, false) }}
 {% endblock %}

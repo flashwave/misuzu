@@ -1,38 +1,4 @@
 <?php
-function forum_get_breadcrumbs(
-    int $forumId,
-    string $linkFormat = '/forum/forum.php?f=%d',
-    string $rootFormat = '/forum/#f%d',
-    array $indexLink = ['Forums' => '/forum/']
-): array {
-    $breadcrumbs = [];
-    $getBreadcrumb = \Misuzu\DB::prepare('
-        SELECT `forum_id`, `forum_name`, `forum_type`, `forum_parent`
-        FROM `msz_forum_categories`
-        WHERE `forum_id` = :forum_id
-    ');
-
-    while($forumId > 0) {
-        $getBreadcrumb->bind('forum_id', $forumId);
-        $breadcrumb = $getBreadcrumb->fetch();
-
-        if(empty($breadcrumb)) {
-            break;
-        }
-
-        $breadcrumbs[$breadcrumb['forum_name']] = sprintf(
-            $breadcrumb['forum_parent'] === \Misuzu\Forum\ForumCategory::ROOT_ID
-            && $breadcrumb['forum_type'] === \Misuzu\Forum\ForumCategory::TYPE_CATEGORY
-                ? $rootFormat
-                : $linkFormat,
-            $breadcrumb['forum_id']
-        );
-        $forumId = $breadcrumb['forum_parent'];
-    }
-
-    return array_reverse($breadcrumbs + $indexLink);
-}
-
 function forum_get_parent_id(int $forumId): int {
     if($forumId < 1) {
         return 0;
@@ -172,94 +138,10 @@ function forum_mark_read(?int $forumId, int $userId): void {
     $doMark->execute();
 }
 
-function forum_posting_info(int $userId): array {
-    $getPostingInfo = \Misuzu\DB::prepare('
-        SELECT
-            u.`user_country`, u.`user_created`,
-            (
-                SELECT COUNT(`post_id`)
-                FROM `msz_forum_posts`
-                WHERE `user_id` = u.`user_id`
-                AND `post_deleted` IS NULL
-            ) AS `user_forum_posts`,
-            (
-                SELECT `post_parse`
-                FROM `msz_forum_posts`
-                WHERE `user_id` = u.`user_id`
-                AND `post_deleted` IS NULL
-                ORDER BY `post_id` DESC
-                LIMIT 1
-            ) AS `user_post_parse`
-        FROM `msz_users` as u
-        WHERE `user_id` = :user_id
-    ');
-    $getPostingInfo->bind('user_id', $userId);
-    return $getPostingInfo->fetch();
-}
-
 function forum_count_synchronise(int $forumId = \Misuzu\Forum\ForumCategory::ROOT_ID, bool $save = true): array {
-    static $getChildren = null;
-    static $getCounts = null;
-    static $setCounts = null;
-
-    if(is_null($getChildren)) {
-        $getChildren = \Misuzu\DB::prepare('
-            SELECT `forum_id`, `forum_parent`
-            FROM `msz_forum_categories`
-            WHERE `forum_parent` = :parent
-        ');
+    try {
+        return \Misuzu\Forum\ForumCategory::byId($forumId)->synchronise($save);
+    } catch(\Misuzu\Forum\ForumCategoryNotFoundException $ex) {
+        return ['topics' => 0, 'posts' => 0];
     }
-
-    if(is_null($getCounts)) {
-        $getCounts = \Misuzu\DB::prepare('
-            SELECT :forum as `target_forum_id`,
-            (
-                SELECT COUNT(`topic_id`)
-                FROM `msz_forum_topics`
-                WHERE `forum_id` = `target_forum_id`
-                AND `topic_deleted` IS NULL
-            ) AS `count_topics`,
-            (
-                SELECT COUNT(`post_id`)
-                FROM `msz_forum_posts`
-                WHERE `forum_id` = `target_forum_id`
-                AND `post_deleted` IS NULL
-            ) AS `count_posts`
-        ');
-    }
-
-    if($save && is_null($setCounts)) {
-        $setCounts = \Misuzu\DB::prepare('
-            UPDATE `msz_forum_categories`
-            SET `forum_count_topics` = :topics,
-                `forum_count_posts` = :posts
-            WHERE `forum_id` = :forum_id
-        ');
-    }
-
-    $getChildren->bind('parent', $forumId);
-    $children = $getChildren->fetchAll();
-
-    $topics = 0;
-    $posts = 0;
-
-    foreach($children as $child) {
-        $childCount = forum_count_synchronise($child['forum_id'], $save);
-        $topics += $childCount['topics'];
-        $posts += $childCount['posts'];
-    }
-
-    $getCounts->bind('forum', $forumId);
-    $counts = $getCounts->fetch();
-    $topics += $counts['count_topics'];
-    $posts += $counts['count_posts'];
-
-    if($forumId > 0 && $save) {
-        $setCounts->bind('forum_id', $forumId);
-        $setCounts->bind('topics', $topics);
-        $setCounts->bind('posts', $posts);
-        $setCounts->execute();
-    }
-
-    return compact('topics', 'posts');
 }

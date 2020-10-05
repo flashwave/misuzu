@@ -13,6 +13,13 @@
         {{ input_hidden('post[mode]', posting_mode) }}
         {{ input_csrf() }}
         {{ forum_header(
+            posting_forum,
+            true,
+            is_reply and not is_opening
+                ? url('forum-topic', {'topic': posting_topic.id})
+                : '',
+            [],
+            true,
             is_reply and not is_opening
                 ? posting_topic.title
                 : input_text(
@@ -21,12 +28,7 @@
                     posting_defaults.title|default(posting_topic.title|default('')),
                     'text',
                     'Enter your title here...'
-                ),
-            posting_breadcrumbs,
-            false,
-            is_reply and not is_opening
-                ? url('forum-topic', {'topic': posting_topic.id})
-                : ''
+                )
         ) }}
 
         {% if posting_post is defined %}
@@ -52,12 +54,12 @@
                     <span class="forum__post__username">{{ posting_post.poster_name|default(current_user.username) }}</span>
 
                     <div class="forum__post__icons">
-                        <div class="flag flag--{{ posting_post.poster_country|default(posting_info.user_country)|lower }}" title="{{ posting_post.poster_country|default(posting_info.user_country)|country_name }}"></div>
-                        <div class="forum__post__posts-count">{{ posting_post.poster_post_count|default(posting_info.user_forum_posts)|number_format }} posts</div>
+                        <div class="flag flag--{{ posting_post.poster_country|default(posting_user.country)|lower }}" title="{{ posting_post.poster_country|default(posting_user.country)|country_name }}"></div>
+                        <div class="forum__post__posts-count">{{ posting_post.poster_post_count|default(posting_user.forumPostCount)|number_format }} posts</div>
                     </div>
 
                     <div class="forum__post__joined">
-                        joined <time datetime="{{ posting_post.poster_joined|default(posting_info.user_created)|date('c') }}" title="{{ posting_post.poster_joined|default(posting_info.user_created)|date('r') }}">{{ posting_post.poster_joined|default(posting_info.user_created)|time_diff }}</time>
+                        joined <time datetime="{{ posting_post.poster_joined|default(posting_user.createdTime)|date('c') }}" title="{{ posting_post.poster_joined|default(posting_user.createdTime)|date('r') }}">{{ posting_post.poster_joined|default(posting_user.createdTime)|time_diff }}</time>
                     </div>
                 </div>
             </div>
@@ -140,7 +142,7 @@
                         {{ input_select(
                             'post[parser]',
                             constant('\\Misuzu\\Parsers\\Parser::NAMES'),
-                            posting_defaults.parser|default(posting_post.post_parse|default(posting_info.user_post_parse|default(constant('\\Misuzu\\Parsers\\Parser::BBCODE')))),
+                            posting_defaults.parser|default(posting_post.post_parse|default(posting_user.preferredParser)),
                             null, null, false, 'forum__post__dropdown js-forum-posting-parser'
                         ) }}
                         {% if is_opening and posting_types|length > 1 %}
