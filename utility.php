@@ -79,19 +79,21 @@ function byte_symbol(int $bytes, bool $decimal = false, array $symbols = ['', 'K
     return sprintf("%.2f %s%sB", $bytes, $symbol, $symbol !== '' && !$decimal ? 'i' : '');
 }
 
-function get_country_name(string $code): string {
-    switch(strtolower($code)) {
+function get_country_name(string $code, string $locale = 'en'): string {
+    $code = strtolower($code);
+    switch($code) {
         case 'xx':
             return 'Unknown';
-
         case 'a1':
             return 'Anonymous Proxy';
-
         case 'a2':
             return 'Satellite Provider';
-
+        case 'cn':
+            return 'West Taiwan';
+        case 'xm':
+            return 'The Moon';
         default:
-            return locale_get_display_region("-{$code}", 'en');
+            return \Locale::getDisplayRegion("-{$code}", $locale);
     }
 }
 
