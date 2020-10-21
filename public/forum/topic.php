@@ -19,12 +19,14 @@ $submissionConfirmed =         filter_input(INPUT_GET, 'confirm') === '1';
 $topicUser = User::getCurrent();
 $topicUserId = $topicUser === null ? 0 : $topicUser->getId();
 
-if($topicId < 1 && $postId > 0) {
-    $postInfo = forum_post_find($postId, $topicUserId);
-
-    if(!empty($postInfo['topic_id']))
-        $topicId = (int)$postInfo['topic_id'];
-}
+if($topicId < 1 && $postId > 0)
+    try {
+        $postInfo = ForumPost::byId($postId);
+        $topicId = $postInfo->getTopicId();
+    } catch(ForumPostNotFoundException $ex) {
+        echo render_error(404);
+        return;
+    }
 
 try {
     $topicInfo = ForumTopic::byId($topicId);
@@ -113,8 +115,8 @@ if(in_array($moderationMode, $validModerationModes, true)) {
                 'posts' => 403,
                 '' => 200,
             ];
-            $canDelete = $topicInfo->canDelete($topicUser);
-            $canDeleteMsg = ForumTopic::canDeleteErrorString($canDelete);
+            $canDelete = $topicInfo->canBeDeleted($topicUser);
+            $canDeleteMsg = ForumTopic::canBeDeletedErrorString($canDelete);
             $responseCode = $canDeleteCodes[$canDelete] ?? 500;
 
             if($canDelete !== '') {
@@ -283,15 +285,8 @@ if(in_array($moderationMode, $validModerationModes, true)) {
 
 $topicPagination = new Pagination($topicInfo->getActualPostCount($canDeleteAny), \Misuzu\Forum\ForumPost::PER_PAGE, 'page');
 
-if(isset($postInfo['preceeding_post_count'])) {
-    $preceedingPosts = $postInfo['preceeding_post_count'];
-
-    if($canDeleteAny) {
-        $preceedingPosts += $postInfo['preceeding_post_deleted_count'];
-    }
-
-    $topicPagination->setPage(floor($preceedingPosts / $topicPagination->getRange()), true);
-}
+if(isset($postInfo))
+    $topicPagination->setPage($postInfo->getTopicPage($canDeleteAny, $topicPagination->getRange()));
 
 if(!$topicPagination->hasValidOffset()) {
     echo render_error(404);
@@ -300,7 +295,7 @@ if(!$topicPagination->hasValidOffset()) {
 
 $canReply = !$topicInfo->isArchived() && !$topicInfo->isLocked() && !$topicInfo->isDeleted() && perms_check($perms, MSZ_FORUM_PERM_CREATE_POST);
 
-forum_topic_mark_read($topicUserId, $topicInfo->getId(), $topicInfo->getCategoryId());
+$topicInfo->markRead($topicUser);
 
 Template::render('forum.topic', [
     'topic_perms' => $perms,

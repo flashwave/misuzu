@@ -351,15 +351,77 @@ class ForumCategory {
         return $this->checkLegacyPermission($user, MSZ_FORUM_PERM_SET_READ);
     }
 
-    public function hasUnread(?User $user): bool {
-        if($user === null)
-            return false;
-        return forum_topics_unread($this->getId(), $user->getId());
+    public function hasRead(User $user): bool {
+        static $cache = [];
+
+        $cacheId = $user->getId() . ':' . $this->getId();
+        if(isset($cache[$cacheId]))
+            return $cache[$cacheId];
+
+        if(!$this->canView($user))
+            return $cache[$cacheId] = true;
+
+        $countUnread = (int)DB::prepare(
+            'SELECT COUNT(*) FROM `' . DB::PREFIX . ForumTopic::TABLE . '` AS ti'
+            . ' LEFT JOIN `' . DB::PREFIX . ForumTopicTrack::TABLE . '` AS tt'
+            . ' ON tt.`topic_id` = ti.`topic_id` AND tt.`user_id` = :user'
+            . ' WHERE ti.`forum_id` = :forum AND ti.`topic_deleted` IS NULL'
+            . ' AND ti.`topic_bumped` >= NOW() - INTERVAL :limit SECOND'
+            . ' AND (tt.`track_last_read` IS NULL OR tt.`track_last_read` < ti.`topic_bumped`)'
+        )->bind('forum', $this->getId())
+         ->bind('user', $user->getId())
+         ->bind('limit', ForumTopic::UNREAD_TIME_LIMIT)
+         ->fetchColumn();
+
+        if($countUnread > 0)
+            return $cache[$cacheId] = false;
+
+        foreach($this->getChildren() as $child)
+            if(!$child->hasRead($user))
+                return $cache[$cacheId] = false;
+
+        return $cache[$cacheId] = true;
     }
+
     public function markAsRead(User $user, bool $recursive = true): void {
-        // Recursion is implied for now
-        // Also forego recursion if we're root and just mark the entire forum as expected
-        forum_mark_read($this->isRoot() ? null : $this->getId(), $user->getId());
+        if($this->isRoot()) {
+            if(!$recursive)
+                return;
+            $recursive = false;
+        }
+
+        if($recursive) {
+            $children = $this->getChildren($user);
+            foreach($children as $child)
+                $child->markAsRead($user, true);
+        }
+
+        $mark = DB::prepare(
+            'INSERT INTO `' . DB::PREFIX . ForumTopicTrack::TABLE . '`'
+            . ' (`user_id`, `topic_id`, `forum_id`, `track_last_read`)'
+            . ' SELECT u.`user_id`, t.`topic_id`, t.`forum_id`, NOW()'
+            . ' FROM `msz_forum_topics` AS t'
+            . ' LEFT JOIN `msz_users` AS u ON u.`user_id` = :user'
+            . ' WHERE t.`topic_deleted` IS NULL'
+            . ' AND t.`topic_bumped` >= NOW() - INTERVAL :limit SECOND'
+            . ($this->isRoot() ? '' : ' AND t.`forum_id` = :forum')
+            . ' GROUP BY t.`topic_id`'
+            . ' ON DUPLICATE KEY UPDATE `track_last_read` = NOW()'
+        )->bind('user', $user->getId())
+         ->bind('limit', ForumTopic::UNREAD_TIME_LIMIT);
+
+        if(!$this->isRoot())
+            $mark->bind('forum', $this->getId());
+
+        $mark->execute();
+    }
+
+    public function checkCooldown(User $user): int {
+        return (int)DB::prepare(
+            'SELECT TIMESTAMPDIFF(SECOND, COALESCE(MAX(`post_created`), NOW() - INTERVAL 1 YEAR), NOW())'
+            . ' FROM `' . DB::PREFIX . ForumPost::TABLE . '`'
+            . ' WHERE `forum_id` = :forum AND `user_id` = :user'
+        )->bind('forum', $this->getId())->bind('user', $user->getId())->fetchColumn();
     }
 
     public function getLatestTopic(?User $viewer = null): ?ForumTopic {

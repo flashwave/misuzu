@@ -5,7 +5,7 @@
 
 {% set title = 'Posting' %}
 {% set is_reply = posting_topic is defined %}
-{% set is_opening = not is_reply or posting_post.is_opening_post|default(false) %}
+{% set is_opening = not is_reply or posting_post.isOpeningPost|default(false) %}
 
 {% block content %}
     <form method="post" action="{{ url('forum-' ~ (is_reply ? 'post' : 'topic') ~ '-create') }}">
@@ -32,7 +32,7 @@
         ) }}
 
         {% if posting_post is defined %}
-            {{ input_hidden('post[id]', posting_post.post_id) }}
+            {{ input_hidden('post[id]', posting_post.id) }}
         {% endif %}
 
         {% if posting_notices|length > 0 %}
@@ -45,21 +45,21 @@
             </div>
         {% endif %}
 
-        <div class="container forum__post js-forum-posting" style="{{ posting_post.poster_colour|default(current_user.colour.raw)|html_colour('--accent-colour') }}">
+        <div class="container forum__post js-forum-posting" style="{{ posting_post.user.colour.raw|default(current_user.colour.raw)|html_colour('--accent-colour') }}">
             <div class="forum__post__info">
                 <div class="forum__post__info__background"></div>
                 <div class="forum__post__info__content">
-                    <span class="forum__post__avatar">{{ avatar(posting_post.poster_id|default(current_user.id), 120, posting_post.poster_name|default(current_user.username)) }}</span>
+                    <span class="forum__post__avatar">{{ avatar(posting_post.user.id|default(current_user.id), 120, posting_post.user.username|default(current_user.username)) }}</span>
 
-                    <span class="forum__post__username">{{ posting_post.poster_name|default(current_user.username) }}</span>
+                    <span class="forum__post__username">{{ posting_post.user.username|default(current_user.username) }}</span>
 
                     <div class="forum__post__icons">
-                        <div class="flag flag--{{ posting_post.poster_country|default(posting_user.country)|lower }}" title="{{ posting_post.poster_country|default(posting_user.country)|country_name }}"></div>
-                        <div class="forum__post__posts-count">{{ posting_post.poster_post_count|default(posting_user.forumPostCount)|number_format }} posts</div>
+                        <div class="flag flag--{{ posting_post.user.country|default(posting_user.country)|lower }}" title="{{ posting_post.user.country|default(posting_user.country)|country_name }}"></div>
+                        <div class="forum__post__posts-count">{{ posting_post.user.forumPostCount|default(posting_user.forumPostCount)|number_format }} posts</div>
                     </div>
 
                     <div class="forum__post__joined">
-                        joined <time datetime="{{ posting_post.poster_joined|default(posting_user.createdTime)|date('c') }}" title="{{ posting_post.poster_joined|default(posting_user.createdTime)|date('r') }}">{{ posting_post.poster_joined|default(posting_user.createdTime)|time_diff }}</time>
+                        joined <time datetime="{{ posting_post.user.createdTime|default(posting_user.createdTime)|date('c') }}" title="{{ posting_post.user.createdTime|default(posting_user.createdTime)|date('r') }}">{{ posting_post.user.createdTime|default(posting_user.createdTime)|time_diff }}</time>
                     </div>
                 </div>
             </div>
@@ -77,7 +77,7 @@
                     </span>
                 </div>
 
-                <textarea name="post[text]" class="forum__post__text forum__post__text--edit js-forum-posting-text js-ctrl-enter-submit" placeholder="Type your post content here...">{{ posting_defaults.text|default(posting_post.post_text|default('')) }}</textarea>
+                <textarea name="post[text]" class="forum__post__text forum__post__text--edit js-forum-posting-text js-ctrl-enter-submit" placeholder="Type your post content here...">{{ posting_defaults.text|default(posting_post.body|default('')) }}</textarea>
                 <div class="forum__post__text js-forum-posting-preview" hidden></div>
 
                 <div class="forum__post__actions forum__post__actions--bbcode" hidden>
@@ -142,7 +142,7 @@
                         {{ input_select(
                             'post[parser]',
                             constant('\\Misuzu\\Parsers\\Parser::NAMES'),
-                            posting_defaults.parser|default(posting_post.post_parse|default(posting_user.preferredParser)),
+                            posting_defaults.parser|default(posting_post.bodyParser|default(posting_user.preferredParser)),
                             null, null, false, 'forum__post__dropdown js-forum-posting-parser'
                         ) }}
                         {% if is_opening and posting_types|length > 1 %}
@@ -158,8 +158,8 @@
                             'Display Signature',
                             posting_defaults.signature is not null
                                 ? posting_defaults.signature : (
-                                    posting_post.post_display_signature is defined
-                                        ? posting_post.post_display_signature
+                                    posting_post.shouldDisplaySignature is defined
+                                        ? posting_post.shouldDisplaySignature
                                         : true
                                 )
                         ) }}

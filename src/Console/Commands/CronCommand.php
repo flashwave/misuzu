@@ -28,9 +28,17 @@ class CronCommand implements CommandInterface {
                     case 'func':
                         call_user_func($task['command']);
                         break;
+
+                    case 'selffunc':
+                        call_user_func(self::class . '::' . $task['command']);
+                        break;
                 }
             }
         }
+    }
+
+    private static function syncForum(): void {
+        \Misuzu\Forum\ForumCategory::root()->synchronise(true);
     }
 
     private const TASKS = [
@@ -147,9 +155,9 @@ class CronCommand implements CommandInterface {
         ],
         [
             'name' => 'Recount forum topics and posts.',
-            'type' => 'func',
+            'type' => 'selffunc',
             'slow' => true,
-            'command' => 'forum_count_synchronise',
+            'command' => 'syncForum',
         ],
         [
             'name' => 'Clean up expired tfa tokens.',

@@ -8,6 +8,8 @@ use Misuzu\Forum\ForumTopicNotFoundException;
 use Misuzu\Forum\ForumTopicCreationFailedException;
 use Misuzu\Forum\ForumTopicUpdateFailedException;
 use Misuzu\Forum\ForumPost;
+use Misuzu\Forum\ForumPostCreationFailedException;
+use Misuzu\Forum\ForumPostUpdateFailedException;
 use Misuzu\Forum\ForumPostNotFoundException;
 use Misuzu\Net\IPAddress;
 use Misuzu\Parsers\Parser;
@@ -71,13 +73,11 @@ if(empty($postId) && empty($topicId) && empty($forumId)) {
     return;
 }
 
-if(!empty($postId)) {
-    $post = forum_post_get($postId);
-
-    if(isset($post['topic_id'])) { // should automatic cross-quoting be a thing? if so, check if $topicId is < 1 first
-        $topicId = (int)$post['topic_id'];
-    }
-}
+if(!empty($postId))
+    try {
+        $postInfo = ForumPost::byId($postId);
+        $topicId = $postInfo->getTopicId();
+    } catch(ForumPostNotFoundException $ex) {}
 
 if(!empty($topicId))
     try {
@@ -122,12 +122,12 @@ if($mode === 'create' || $mode === 'edit') {
 
 // edit mode stuff
 if($mode === 'edit') {
-    if(empty($post)) {
+    if(empty($postInfo)) {
         echo render_error(404);
         return;
     }
 
-    if(!perms_check($perms, $post['poster_id'] === $currentUserId ? MSZ_FORUM_PERM_EDIT_POST : MSZ_FORUM_PERM_EDIT_ANY_POST)) {
+    if(!perms_check($perms, $postInfo->getUserId() === $currentUserId ? MSZ_FORUM_PERM_EDIT_POST : MSZ_FORUM_PERM_EDIT_ANY_POST)) {
         echo render_error(403);
         return;
     }
@@ -140,16 +140,16 @@ if(!empty($_POST)) {
     $topicTitle = $_POST['post']['title'] ?? '';
     $postText = $_POST['post']['text'] ?? '';
     $postParser = (int)($_POST['post']['parser'] ?? Parser::BBCODE);
-    $topicType = isset($_POST['post']['type']) ? (int)$_POST['post']['type'] : null;
+    $topicType = isset($_POST['post']['type']) ? (int)$_POST['post']['type'] : ForumTopic::TYPE_DISCUSSION;
     $postSignature = isset($_POST['post']['signature']);
 
     if(!CSRF::validateRequest()) {
         $notices[] = 'Could not verify request.';
     } else {
-        $isEditingTopic = $isNewTopic || ($mode === 'edit' && $post['is_opening_post']);
+        $isEditingTopic = $isNewTopic || ($mode === 'edit' && $postInfo->isOpeningPost());
 
         if($mode === 'create') {
-            $timeoutCheck = max(1, forum_timeout($forumInfo->getId(), $currentUserId));
+            $timeoutCheck = max(1, $forumInfo->checkCooldown($currentUser));
 
             if($timeoutCheck < 5) {
                 $notices[] = sprintf("You're posting too quickly! Please wait %s seconds before posting again.", number_format($timeoutCheck));
@@ -192,21 +192,25 @@ if(!empty($_POST)) {
                         $topicId = $topicInfo->getId();
                     }
 
-                    $postId = forum_post_create(
-                        $topicId,
-                        $forumInfo->getId(),
-                        $currentUserId,
-                        IPAddress::remote(),
-                        $postText,
-                        $postParser,
-                        $postSignature
-                    );
-                    forum_topic_mark_read($currentUserId, $topicId, $forumInfo->getId());
+                    $postInfo = ForumPost::create($topicInfo, $currentUser, IPAddress::remote(), $postText, $postParser, $postSignature);
+                    $postId = $postInfo->getId();
+
+                    $topicInfo->markRead($currentUser);
                     $forumInfo->increaseTopicPostCount($isNewTopic);
                     break;
 
                 case 'edit':
-                    if(!forum_post_update($postId, IPAddress::remote(), $postText, $postParser, $postSignature, $postText !== $post['post_text'])) {
+                    if($postText !== $postInfo->getBody() && $postInfo->shouldBumpEdited())
+                        $postInfo->bumpEdited();
+
+                    $postInfo->setRemoteAddress(IPAddress::remote())
+                        ->setBody($postText)
+                        ->setBodyParser($postParser)
+                        ->setDisplaySignature($postSignature);
+
+                    try {
+                        $postInfo->update();
+                    } catch(ForumPostUpdateFailedException $ex) {
                         $notices[] = 'Post edit failed.';
                     }
 
@@ -240,7 +244,7 @@ if(!$isNewTopic && !empty($topicInfo)) {
 }
 
 if($mode === 'edit') { // $post is pretty much sure to be populated at this point
-    Template::set('posting_post', $post);
+    Template::set('posting_post', $postInfo);
 }
 
 Template::render('forum.posting', [

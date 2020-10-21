@@ -11,12 +11,17 @@ use Misuzu\Users\UserNotFoundException;
 class ForumPostException extends ForumException {}
 class ForumPostNotFoundException extends ForumPostException {}
 class ForumPostCreationFailedException extends ForumPostException {}
+class ForumPostUpdateFailedException extends ForumPostException {}
 
 class ForumPost {
     public const PER_PAGE = 10;
 
     public const BODY_MIN_LENGTH = 1;
     public const BODY_MAX_LENGTH = 60000;
+
+    public const EDIT_BUMP_THRESHOLD = 60 * 5;
+
+    public const DELETE_AGE_LIMIT = 60 * 60 * 24 * 7;
 
     // Database fields
     private $post_id = -1;
@@ -117,6 +122,10 @@ class ForumPost {
     public function getRemoteAddress(): string {
         return $this->post_ip;
     }
+    public function setRemoteAddress(string $remoteAddress): self {
+        $this->post_ip = $remoteAddress;
+        return $this;
+    }
 
     public function getBody(): string {
         return $this->post_text;
@@ -157,6 +166,12 @@ class ForumPost {
     public function getCreatedTime(): int {
         return $this->post_created === null ? -1 : $this->post_created;
     }
+    public function getAge(): int {
+        return time() - $this->getCreatedTime();
+    }
+    public function shouldBumpEdited(): bool {
+        return $this->getAge() > self::EDIT_BUMP_THRESHOLD;
+    }
 
     public function getEditedTime(): int {
         return $this->post_edited === null ? -1 : $this->post_edited;
@@ -188,6 +203,17 @@ class ForumPost {
         return $this->getTopic()->isTopicAuthor($this->getUser());
     }
 
+    public function getTopicOffset(bool $includeDeleted = false): int {
+        return (int)DB::prepare(
+            'SELECT COUNT(`post_id`) FROM `' . DB::PREFIX . self::TABLE . '`'
+            . ' WHERE `topic_id` = :topic AND `post_id` < :post'
+            . ($includeDeleted ? '' : ' AND `post_deleted` IS NULL')
+        )->bind('topic', $this->getTopicId())->bind('post', $this->getId())->fetchColumn();
+    }
+    public function getTopicPage(bool $includeDeleted = false, int $postsPerPage = self::PER_PAGE): int {
+        return floor($this->getTopicOffset() / $postsPerPage) + 1;
+    }
+
     public function canBeSeen(?User $user): bool {
         if($user === null && $this->isDeleted())
             return false;
@@ -197,13 +223,6 @@ class ForumPost {
 
     // complete this implementation
     public function canBeEdited(?User $user): bool {
-        if($user === null)
-            return false;
-        return $this->getUser()->getId() === $user->getId();
-    }
-
-    // complete this implementation
-    public function canBeDeleted(?User $user): bool {
         if($user === null)
             return false;
         return $this->getUser()->getId() === $user->getId();
@@ -228,6 +247,73 @@ class ForumPost {
             default:
                 return 'Post body is incorrectly formatted.';
         }
+    }
+
+    public function canBeDeleted(User $user): string {
+        if(false) // check if viewable
+            return 'view';
+
+        if($this->isOpeningPost())
+            return 'opening';
+
+        // check if user can view deleted posts/is mod
+        $canDeleteAny = false;
+
+        if($this->isDeleted())
+            return $canDeleteAny ? 'deleted' : 'view';
+
+        if(!$canDeleteAny) {
+            if(false) // check if user can delete posts
+                return 'permission';
+            if($user->getId() !== $this->getUserId())
+                return 'owner';
+            if($this->getCreatedTime() <= time() - self::DELETE_AGE_LIMIT)
+                return 'age';
+        }
+
+        return '';
+    }
+    public static function canBeDeletedErrorString(string $error): string {
+        switch($error) {
+            case 'view':
+                return 'This post doesn\'t exist.';
+            case 'deleted':
+                return 'This post has already been marked as deleted.';
+            case 'permission':
+                return 'You aren\'t allowed to this post.';
+            case 'owner':
+                return 'You can only delete your own posts.';
+            case 'age':
+                return 'This post is too old to be deleted. Ask a moderator to remove it if you deem it absolutely necessary.';
+            case '':
+                return 'Post can be deleted!';
+            default:
+                return 'Post cannot be deleted.';
+        }
+    }
+
+    public function delete(): void {
+        if($this->isDeleted())
+            return;
+        $this->post_deleted = time();
+        DB::prepare('UPDATE `' . DB::PREFIX . self::TABLE . '` SET `post_deleted` = NOW() WHERE `post_id` = :post')
+            ->bind('post', $this->getId())
+            ->execute();
+    }
+    public function restore(): void {
+        if(!$this->isDeleted())
+            return;
+        $this->post_deleted = null;
+        DB::prepare('UPDATE `' . DB::PREFIX . self::TABLE . '` SET `post_deleted` = NULL WHERE `post_id` = :post')
+            ->bind('post', $this->getId())
+            ->execute();
+    }
+    public function nuke(): void {
+        if(!$this->isDeleted())
+            return;
+        DB::prepare('DELETE FROM `' . DB::PREFIX . self::TABLE . '` WHERE `post_id` = :post')
+            ->bind('post', $this->getId())
+            ->execute();
     }
 
     public static function deleteTopic(ForumTopic $topic): void {
@@ -259,6 +345,62 @@ class ForumPost {
         DB::prepare('DELETE FROM `' . DB::PREFIX . self::TABLE . '` WHERE `topic_id` = :topic')
             ->bind('topic', $topic->getId())
             ->execute();
+    }
+
+    public static function create(
+        ForumTopic $topic,
+        User $user,
+        string $ipAddress,
+        string $text,
+        int $parser = Parser::PLAIN,
+        bool $displaySignature = true
+    ): ForumPost {
+        $create = DB::prepare(
+            'INSERT INTO `msz_forum_posts` ('
+            .  '`topic_id`, `forum_id`, `user_id`, `post_ip`, `post_text`, `post_parse`, `post_display_signature`'
+            . ') VALUES (:topic, :forum, :user, INET6_ATON(:ip), :body, :parser, :display_signature)'
+        )->bind('topic', $topic->getId())
+         ->bind('forum', $topic->getCategoryId())
+         ->bind('user', $user->getId())
+         ->bind('ip', $ipAddress)
+         ->bind('body', $text)
+         ->bind('parser', $parser)
+         ->bind('display_signature', $displaySignature ? 1 : 0)
+         ->execute();
+        if(!$create)
+            throw new ForumPostCreationFailedException;
+
+        $postId = DB::lastId();
+        if($postId < 1)
+            throw new ForumPostCreationFailedException;
+
+        try {
+            return self::byId($postId);
+        } catch(ForumPostNotFoundException $ex) {
+            throw new ForumPostCreationFailedException;
+        }
+    }
+
+    public function update(): void {
+        if($this->getId() < 1)
+            throw new ForumPostUpdateFailedException;
+
+        if(!DB::prepare(
+            'UPDATE `' . DB::PREFIX . self::TABLE . '`'
+            . ' SET `post_ip` = INET6_ATON(:ip),'
+            .     ' `post_text` = :body,'
+            .     ' `post_parse` = :parser,'
+            .     ' `post_display_signature` = :display_signature,'
+            .     ' `post_edited` = FROM_UNIXTIME(:edited)'
+            . ' WHERE `post_id` = :post'
+        )->bind('post', $this->getId())
+         ->bind('ip', $this->getRemoteAddress())
+         ->bind('body', $this->getBody())
+         ->bind('parser', $this->getBodyParser())
+         ->bind('display_signature', $this->shouldDisplaySignature() ? 1 : 0)
+         ->bind('edited', $this->isEdited() ? $this->getEditedTime() : null)
+         ->execute())
+            throw new ForumPostUpdateFailedException;
     }
 
     private static function countQueryBase(): string {
@@ -310,6 +452,28 @@ class ForumPost {
 
         $getObjects = DB::prepare($query)
             ->bind('topic', $topic->getId());
+
+        if($pagination !== null)
+            $getObjects->bind('range', $pagination->getRange())
+                ->bind('offset', $pagination->getOffset());
+
+        $objects = [];
+        $memoizer = self::memoizer();
+        while($object = $getObjects->fetchObject(self::class))
+            $memoizer->insert($objects[] = $object);
+        return $objects;
+    }
+    public static function bySearchQuery(string $search, bool $includeDeleted = false, ?Pagination $pagination = null): array {
+        $query = self::byQueryBase()
+                . ' WHERE MATCH(`post_text`) AGAINST (:search IN NATURAL LANGUAGE MODE)'
+                . ($includeDeleted ? '' : ' AND `post_deleted` IS NULL')
+                . ' ORDER BY `post_id`';
+
+        if($pagination !== null)
+            $query .= ' LIMIT :range OFFSET :offset';
+
+        $getObjects = DB::prepare($query)
+            ->bind('search', $search);
 
         if($pagination !== null)
             $getObjects->bind('range', $pagination->getRange())

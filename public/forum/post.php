@@ -2,6 +2,8 @@
 namespace Misuzu;
 
 use Misuzu\AuditLog;
+use Misuzu\Forum\ForumPost;
+use Misuzu\Forum\ForumPostNotFoundException;
 use Misuzu\Users\User;
 use Misuzu\Users\UserSession;
 
@@ -55,59 +57,34 @@ if($isXHR) {
     header(CSRF::header());
 }
 
-$postInfo = forum_post_get($postId, true);
-$perms = empty($postInfo)
-    ? 0
-    : forum_perms_get_user($postInfo['forum_id'], $currentUserId)[MSZ_FORUM_PERMS_GENERAL];
+try {
+    $postInfo = ForumPost::byId($postId);
+    $perms = forum_perms_get_user($postInfo->getCategoryId(), $currentUserId)[MSZ_FORUM_PERMS_GENERAL];
+} catch(ForumPostNotFoundException $ex) {
+    $postInfo = null;
+    $perms = 0;
+}
 
 switch($postMode) {
     case 'delete':
-        $canDelete = forum_post_can_delete($postInfo, $currentUserId);
-        $canDeleteMsg = '';
-        $responseCode = 200;
+        $canDeleteCodes = [
+            'view' => 404,
+            'deleted' => 404,
+            'owner' => 403,
+            'age' => 403,
+            'permission' => 403,
+            '' => 200,
+        ];
+        $canDelete = $postInfo->canBeDeleted($currentUser);
+        $canDeleteMsg = ForumPost::canBeDeletedErrorString($canDelete);
+        $responseCode = $canDeleteCodes[$canDelete] ?? 500;
 
-        switch($canDelete) {
-            case MSZ_E_FORUM_POST_DELETE_USER: // i don't think this is ever reached but we may as well have it
-                $responseCode = 401;
-                $canDeleteMsg = 'You must be logged in to delete posts.';
-                break;
-            case MSZ_E_FORUM_POST_DELETE_POST:
-                $responseCode = 404;
-                $canDeleteMsg = "This post doesn't exist.";
-                break;
-            case MSZ_E_FORUM_POST_DELETE_DELETED:
-                $responseCode = 404;
-                $canDeleteMsg = 'This post has already been marked as deleted.';
-                break;
-            case MSZ_E_FORUM_POST_DELETE_OWNER:
-                $responseCode = 403;
-                $canDeleteMsg = 'You can only delete your own posts.';
-                break;
-            case MSZ_E_FORUM_POST_DELETE_OLD:
-                $responseCode = 401;
-                $canDeleteMsg = 'This post has existed for too long. Ask a moderator to remove if it absolutely necessary.';
-                break;
-            case MSZ_E_FORUM_POST_DELETE_PERM:
-                $responseCode = 401;
-                $canDeleteMsg = 'You are not allowed to delete posts.';
-                break;
-            case MSZ_E_FORUM_POST_DELETE_OP:
-                $responseCode = 403;
-                $canDeleteMsg = 'This is the opening post of a topic, it may not be deleted without deleting the entire topic as well.';
-                break;
-            case MSZ_E_FORUM_POST_DELETE_OK:
-                break;
-            default:
-                $responseCode = 500;
-                $canDeleteMsg = sprintf('Unknown error \'%d\'', $canDelete);
-        }
-
-        if($canDelete !== MSZ_E_FORUM_POST_DELETE_OK) {
+        if($canDelete !== '') {
             if($isXHR) {
                 http_response_code($responseCode);
                 echo json_encode([
                     'success' => false,
-                    'post_id' => $postInfo['post_id'],
+                    'post_id' => $postInfo->getId(),
                     'code' => $canDelete,
                     'message' => $canDeleteMsg,
                 ]);
@@ -121,17 +98,17 @@ switch($postMode) {
         if(!$isXHR) {
             if($postRequestVerified && !$submissionConfirmed) {
                 url_redirect('forum-post', [
-                    'post' => $postInfo['post_id'],
-                    'post_fragment' => 'p' . $postInfo['post_id'],
+                    'post' => $postInfo->getId(),
+                    'post_fragment' => 'p' . $postInfo->getId(),
                 ]);
                 break;
             } elseif(!$postRequestVerified) {
                 Template::render('forum.confirm', [
                     'title' => 'Confirm post deletion',
                     'class' => 'far fa-trash-alt',
-                    'message' => sprintf('You are about to delete post #%d. Are you sure about that?', $postInfo['post_id']),
+                    'message' => sprintf('You are about to delete post #%d. Are you sure about that?', $postInfo->getId()),
                     'params' => [
-                        'p' => $postInfo['post_id'],
+                        'p' => $postInfo->getId(),
                         'm' => 'delete',
                     ],
                 ]);
@@ -139,16 +116,13 @@ switch($postMode) {
             }
         }
 
-        $deletePost = forum_post_delete($postInfo['post_id']);
-
-        if($deletePost) {
-            AuditLog::create(AuditLog::FORUM_POST_DELETE, [$postInfo['post_id']]);
-        }
+        $postInfo->delete();
+        AuditLog::create(AuditLog::FORUM_POST_DELETE, [$postInfo->getId()]);
 
         if($isXHR) {
             echo json_encode([
                 'success' => $deletePost,
-                'post_id' => $postInfo['post_id'],
+                'post_id' => $postInfo->getId(),
                 'message' => $deletePost ? 'Post deleted!' : 'Failed to delete post.',
             ]);
             break;
@@ -159,7 +133,7 @@ switch($postMode) {
             break;
         }
 
-        url_redirect('forum-topic', ['topic' => $postInfo['topic_id']]);
+        url_redirect('forum-topic', ['topic' => $postInfo->getTopicId()]);
         break;
 
     case 'nuke':
@@ -171,17 +145,17 @@ switch($postMode) {
         if(!$isXHR) {
             if($postRequestVerified && !$submissionConfirmed) {
                 url_redirect('forum-post', [
-                    'post' => $postInfo['post_id'],
-                    'post_fragment' => 'p' . $postInfo['post_id'],
+                    'post' => $postInfo->getId(),
+                    'post_fragment' => 'p' . $postInfo->getId(),
                 ]);
                 break;
             } elseif(!$postRequestVerified) {
                 Template::render('forum.confirm', [
                     'title' => 'Confirm post nuke',
                     'class' => 'fas fa-radiation',
-                    'message' => sprintf('You are about to PERMANENTLY DELETE post #%d. Are you sure about that?', $postInfo['post_id']),
+                    'message' => sprintf('You are about to PERMANENTLY DELETE post #%d. Are you sure about that?', $postInfo->getId()),
                     'params' => [
-                        'p' => $postInfo['post_id'],
+                        'p' => $postInfo->getId(),
                         'm' => 'nuke',
                     ],
                 ]);
@@ -189,18 +163,12 @@ switch($postMode) {
             }
         }
 
-        $nukePost = forum_post_nuke($postInfo['post_id']);
-
-        if(!$nukePost) {
-            echo render_error(500);
-            break;
-        }
-
-        AuditLog::create(AuditLog::FORUM_POST_NUKE, [$postInfo['post_id']]);
+        $postInfo->nuke();
+        AuditLog::create(AuditLog::FORUM_POST_NUKE, [$postInfo->getId()]);
         http_response_code(204);
 
         if(!$isXHR) {
-            url_redirect('forum-topic', ['topic' => $postInfo['topic_id']]);
+            url_redirect('forum-topic', ['topic' => $postInfo->getTopicId()]);
         }
         break;
 
@@ -213,17 +181,17 @@ switch($postMode) {
         if(!$isXHR) {
             if($postRequestVerified && !$submissionConfirmed) {
                 url_redirect('forum-post', [
-                    'post' => $postInfo['post_id'],
-                    'post_fragment' => 'p' . $postInfo['post_id'],
+                    'post' => $postInfo->getId(),
+                    'post_fragment' => 'p' . $postInfo->getId(),
                 ]);
                 break;
             } elseif(!$postRequestVerified) {
                 Template::render('forum.confirm', [
                     'title' => 'Confirm post restore',
                     'class' => 'fas fa-magic',
-                    'message' => sprintf('You are about to restore post #%d. Are you sure about that?', $postInfo['post_id']),
+                    'message' => sprintf('You are about to restore post #%d. Are you sure about that?', $postInfo->getId()),
                     'params' => [
-                        'p' => $postInfo['post_id'],
+                        'p' => $postInfo->getId(),
                         'm' => 'restore',
                     ],
                 ]);
@@ -231,49 +199,12 @@ switch($postMode) {
             }
         }
 
-        $restorePost = forum_post_restore($postInfo['post_id']);
-
-        if(!$restorePost) {
-            echo render_error(500);
-            break;
-        }
-
-        AuditLog::create(AuditLog::FORUM_POST_RESTORE, [$postInfo['post_id']]);
+        $postInfo->restore();
+        AuditLog::create(AuditLog::FORUM_POST_RESTORE, [$postInfo->getId()]);
         http_response_code(204);
 
         if(!$isXHR) {
-            url_redirect('forum-topic', ['topic' => $postInfo['topic_id']]);
+            url_redirect('forum-topic', ['topic' => $postInfo->getTopicId()]);
         }
         break;
-
-    default: // function as an alt for topic.php?p= by default
-        $canDeleteAny = perms_check($perms, MSZ_FORUM_PERM_DELETE_ANY_POST);
-
-        if(!empty($postInfo['post_deleted']) && !$canDeleteAny) {
-            echo render_error(404);
-            break;
-        }
-
-        $postFind = forum_post_find($postInfo['post_id'], $currentUserId);
-
-        if(empty($postFind)) {
-            echo render_error(404);
-            break;
-        }
-
-        if($canDeleteAny) {
-            $postInfo['preceeding_post_count'] += $postInfo['preceeding_post_deleted_count'];
-        }
-
-        unset($postInfo['preceeding_post_deleted_count']);
-
-        if($isXHR) {
-            echo json_encode($postFind);
-            break;
-        }
-
-        url_redirect('forum-topic', [
-            'topic' => $postFind['topic_id'],
-            'page' => floor($postFind['preceeding_post_count'] / \Misuzu\Forum\ForumPost::PER_PAGE) + 1,
-        ]);
 }

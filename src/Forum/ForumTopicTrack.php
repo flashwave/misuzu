@@ -2,7 +2,11 @@
 namespace Misuzu\Forum;
 
 use Misuzu\DB;
+use Misuzu\Memoizer;
 use Misuzu\Users\User;
+
+class ForumTopicTrackException extends ForumException {}
+class ForumTopicTrackNotFoundException extends ForumTopicTrackException {}
 
 class ForumTopicTrack {
     // Database fields
@@ -49,5 +53,53 @@ class ForumTopicTrack {
 
     public function getReadTime(): int {
         return $this->track_last_read === null ? -1 : $this->track_last_read;
+    }
+
+    public static function bump(ForumTopic $topic, User $user): void {
+        DB::prepare(
+            'REPLACE INTO `' . DB::PREFIX . self::TABLE . '`'
+            . ' (`user_id`, `topic_id`, `forum_id`, `track_last_read`)'
+            . ' VALUES (:user, :topic, :forum, NOW())'
+        )->bind('user', $user->getId())
+         ->bind('topic', $topic->getId())
+         ->bind('forum', $topic->getCategoryId())
+         ->execute();
+    }
+
+    private static function memoizer() {
+        static $memoizer = null;
+        if($memoizer === null)
+            $memoizer = new Memoizer;
+        return $memoizer;
+    }
+
+    private static function byQueryBase(): string {
+        return sprintf(self::QUERY_SELECT, sprintf(self::SELECT, self::TABLE));
+    }
+    public static function byTopicAndUser(ForumTopic $topic, User $user): ForumTopicTrack {
+        return self::memoizer()->find(function($track) use ($topic, $user) {
+            return $track->getTopicId() === $topic->getId() && $track->getUserId() === $user->getId();
+        }, function() use ($topic, $user) {
+            $obj = DB::prepare(self::byQueryBase() . ' WHERE `topic_id` = :topic AND `user_id` = :user')
+                ->bind('topic', $topic->getId())
+                ->bind('user', $user->getId())
+                ->fetchObject(self::class);
+            if(!$obj)
+                throw new ForumTopicTrackNotFoundException;
+            return $obj;
+        });
+    }
+    public static function byCategoryAndUser(ForumCategory $category, User $user): ForumTopicTrack {
+        return self::memoizer()->find(function($track) use ($category, $user) {
+            return $track->getCategoryId() === $category->getId() && $track->getUserId() === $user->getId();
+        }, function() use ($category, $user) {
+            $obj = DB::prepare(self::byQueryBase() . ' WHERE `forum_id` = :category AND `user_id` = :user')
+                ->bind('category', $category->getId())
+                ->bind('user', $user->getId())
+                ->fetchObject(self::class);
+            if(!$obj)
+                throw new ForumTopicTrackNotFoundException;
+            return $obj;
+        });
     }
 }

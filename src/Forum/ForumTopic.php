@@ -43,6 +43,8 @@ class ForumTopic {
     public const DELETE_AGE_LIMIT = 60 * 60 * 24;
     public const DELETE_POST_LIMIT = 2;
 
+    public const UNREAD_TIME_LIMIT = 60 * 60 * 24 * 31;
+
     // Database fields
     private $topic_id = -1;
     private $forum_id = -1;
@@ -155,7 +157,7 @@ class ForumTopic {
         if($this->hasPriorityVoting())
             return 'far fa-star fa-fw';
 
-        return ($this->hasUnread($viewer) ? 'fas' : 'far') . ' fa-comment fa-fw';
+        return ($viewer === null || $this->hasRead($viewer) ? 'far' : 'fas') . ' fa-comment fa-fw';
     }
 
     public function getTitle(): string {
@@ -179,6 +181,12 @@ class ForumTopic {
 
     public function getViewCount(): int {
         return $this->topic_count_views;
+    }
+    public function incrementViewCount(): void {
+        ++$this->topic_count_views;
+        DB::prepare('UPDATE `msz_forum_topics` SET `topic_count_views` = `topic_count_views` + 1 WHERE `topic_id` = :topic')
+            ->bind('topic', $this->getId())
+            ->execute();
     }
 
     public function getFirstPostId(): int {
@@ -274,10 +282,24 @@ class ForumTopic {
         return $this->polls;
     }
 
-    public function hasUnread(?User $user): bool {
-        if($user === null)
+    public function isAbandoned(): bool {
+        return $this->getBumpedTime() < time() - self::UNREAD_TIME_LIMIT;
+    }
+    public function hasRead(User $user): bool {
+        if($this->isAbandoned())
+            return true;
+
+        try {
+            $trackInfo = ForumTopicTrack::byTopicAndUser($this, $user);
+            return $trackInfo->getReadTime() >= $this->getBumpedTime();
+        } catch(ForumTopicTrackNotFoundException $ex) {
             return false;
-        return mt_rand(0, 10) >= 5;
+        }
+    }
+    public function markRead(User $user): void {
+        if(!$this->hasRead($user))
+            $this->incrementViewCount();
+        ForumTopicTrack::bump($this, $user);
     }
 
     public function hasParticipated(?User $user): bool {
@@ -307,7 +329,7 @@ class ForumTopic {
         return $this->getCategory()->canView($user);
     }
 
-    public function canDelete(User $user): string {
+    public function canBeDeleted(User $user): string {
         if(false) // check if viewable
             return 'view';
 
@@ -330,7 +352,7 @@ class ForumTopic {
 
         return '';
     }
-    public static function canDeleteErrorString(string $error): string {
+    public static function canBeDeletedErrorString(string $error): string {
         switch($error) {
             case 'view':
                 return 'This topic doesn\'t exist.';
@@ -402,7 +424,7 @@ class ForumTopic {
             throw new ForumTopicUpdateFailedException;
 
         if(!DB::prepare(
-            'UPDATE `msz_forum_topics`'
+            'UPDATE `' . DB::PREFIX . self::TABLE . '`'
             . ' SET `topic_title` = :title,'
             .     ' `topic_type` = :type'
             . ' WHERE `topic_id` = :topic'

@@ -43,6 +43,27 @@ define('MSZ_FORUM_PERM_MODES', [
     MSZ_FORUM_PERMS_GENERAL,
 ]);
 
+function forum_get_parent_id(int $forumId): int {
+    if($forumId < 1) {
+        return 0;
+    }
+
+    static $memoized = [];
+
+    if(array_key_exists($forumId, $memoized)) {
+        return $memoized[$forumId];
+    }
+
+    $getParent = \Misuzu\DB::prepare('
+        SELECT `forum_parent`
+        FROM `msz_forum_categories`
+        WHERE `forum_id` = :forum_id
+    ');
+    $getParent->bind('forum_id', $forumId);
+
+    return (int)$getParent->fetchColumn();
+}
+
 function forum_perms_get_user(?int $forum, int $user): array {
     $perms = perms_get_blank(MSZ_FORUM_PERM_MODES);
 

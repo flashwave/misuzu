@@ -10,6 +10,7 @@ use Misuzu\HasRankInterface;
 use Misuzu\Memoizer;
 use Misuzu\Pagination;
 use Misuzu\TOTP;
+use Misuzu\Forum\ForumCategory;
 use Misuzu\Net\IPAddress;
 use Misuzu\Parsers\Parser;
 use Misuzu\Users\Assets\UserAvatarAsset;

@@ -156,7 +156,7 @@
         <a href="{{ url('forum-category', {'forum': category.id}) }}" class="forum__category__link"></a>
 
         <div class="forum__category__container">
-            <div class="forum__category__icon forum__category__icon--{{ category.unread(user) ? 'un' : '' }}read">
+            <div class="forum__category__icon forum__category__icon--{{ user is null or category.hasRead(user) ? '' : 'un' }}read">
                 <span class="{{ category.icon }}"></span>
             </div>
 
@@ -176,7 +176,7 @@
                         {% for child in category.children %}
                         {% if child.canView(user) %}
                             <a href="{{ url('forum-category', {'forum': child.id}) }}"
-                                class="forum__category__subforum{% if child.unread(user) %} forum__category__subforum--unread{% endif %}">
+                                class="forum__category__subforum{% if user is not null and not child.hasRead(user) %} forum__category__subforum--unread{% endif %}">
                                 {{ child.name }}
                             </a>
                         {% endif %}
@@ -401,7 +401,7 @@
         <a href="{{ url('forum-topic', {'topic': topic.id}) }}" class="forum__topic__link"></a>
 
         <div class="forum__topic__container">
-            <div class="forum__topic__icon forum__topic__icon--{{ topic.hasUnread(user) ? 'un' : '' }}read{% if topic.hasPriorityVoting %} forum__topic__icon--wide{% endif %}">
+            <div class="forum__topic__icon forum__topic__icon--{{ user is null or topic.hasRead(user) ? '' : 'un' }}read{% if topic.hasPriorityVoting %} forum__topic__icon--wide{% endif %}">
                 <i class="{{ topic.icon(user) }}{% if topic.hasPriorityVoting %} forum__topic__icon--faded{% endif %}"></i>
 
                 {% if topic.hasPriorityVoting %}
@@ -727,7 +727,7 @@
         perms|perms_check(constant('MSZ_FORUM_PERM_DELETE_ANY_POST')) or (
             user_id == post.poster_id
             and perms|perms_check(constant('MSZ_FORUM_PERM_DELETE_POST'))
-            and post.post_created|date('U') > ''|date('U') - constant('MSZ_FORUM_POST_DELETE_LIMIT')
+            and post.post_created|date('U') > ''|date('U') - constant('\\Misuzu\\Forum\\ForumPost::DELETE_AGE_LIMIT')
         )
     ) %}
 

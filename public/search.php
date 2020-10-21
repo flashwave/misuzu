@@ -2,6 +2,7 @@
 namespace Misuzu;
 
 use Misuzu\Forum\ForumTopic;
+use Misuzu\Forum\ForumPost;
 use Misuzu\News\NewsPost;
 use Misuzu\Users\User;
 
@@ -11,7 +12,7 @@ $searchQuery = !empty($_GET['q']) && is_string($_GET['q']) ? $_GET['q'] : '';
 
 if(!empty($searchQuery)) {
     $forumTopics = ForumTopic::bySearchQuery($searchQuery);
-    $forumPosts = forum_post_search($searchQuery);
+    $forumPosts = ForumPost::bySearchQuery($searchQuery);
     $newsPosts = NewsPost::bySearchQuery($searchQuery);
 
     $findUsers = DB::prepare(sprintf(
