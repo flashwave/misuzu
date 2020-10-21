@@ -1,22 +1,13 @@
 {% extends 'profile/master.twig' %}
-{% from 'forum/macros.twig' import forum_topic_listing %}
 
 {% block content %}
     <div class="profile">
         {% include 'profile/_layout/header.twig' %}
 
-        {% set sp = profile_topics_pagination.pages > 1
-            ? '<div class="container profile__pagination">' ~ profile_topics_pagination.render(canonical_url) ~ '</div>'
-            : '' %}
-
-        {% if sp is not empty %}
-            {{ sp|raw }}
-        {% endif %}
-
-        {{ forum_topic_listing(profile_topics) }}
-
-        {% if sp is not empty %}
-            {{ sp|raw }}
-        {% endif %}
+        <div class="warning">
+            <div class="warning__content">
+                <p>User topic listing is gone for a while, it will be back someday but with less bad.</p>
+            </div>
+        </div>
     </div>
 {% endblock %}

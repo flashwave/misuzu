@@ -5,6 +5,10 @@ use Misuzu\Forum\ForumCategory;
 use Misuzu\Forum\ForumCategoryNotFoundException;
 use Misuzu\Forum\ForumTopic;
 use Misuzu\Forum\ForumTopicNotFoundException;
+use Misuzu\Forum\ForumTopicCreationFailedException;
+use Misuzu\Forum\ForumTopicUpdateFailedException;
+use Misuzu\Forum\ForumPost;
+use Misuzu\Forum\ForumPostNotFoundException;
 use Misuzu\Net\IPAddress;
 use Misuzu\Parsers\Parser;
 use Misuzu\Users\User;
@@ -130,6 +134,7 @@ if($mode === 'edit') {
 }
 
 $notices = [];
+$isNewTopic = false;
 
 if(!empty($_POST)) {
     $topicTitle = $_POST['post']['title'] ?? '';
@@ -141,7 +146,7 @@ if(!empty($_POST)) {
     if(!CSRF::validateRequest()) {
         $notices[] = 'Could not verify request.';
     } else {
-        $isEditingTopic = empty($topicInfo) || ($mode === 'edit' && $post['is_opening_post']);
+        $isEditingTopic = $isNewTopic || ($mode === 'edit' && $post['is_opening_post']);
 
         if($mode === 'create') {
             $timeoutCheck = max(1, forum_timeout($forumInfo->getId(), $currentUserId));
@@ -153,20 +158,14 @@ if(!empty($_POST)) {
         }
 
         if($isEditingTopic) {
-            $originalTopicTitle = empty($topicInfo) ? null : $topicInfo->getTitle();
+            $originalTopicTitle = $isNewTopic ? null : $topicInfo->getTitle();
             $topicTitleChanged = $topicTitle !== $originalTopicTitle;
-            $originalTopicType =  empty($topicInfo) ? ForumTopic::TYPE_DISCUSSION : $topicInfo->getType();
+            $originalTopicType =  $isNewTopic ? ForumTopic::TYPE_DISCUSSION : $topicInfo->getType();
             $topicTypeChanged = $topicType !== null && $topicType !== $originalTopicType;
 
-            switch(forum_validate_title($topicTitle)) {
-                case 'too-short':
-                    $notices[] = 'Topic title was too short.';
-                    break;
-
-                case 'too-long':
-                    $notices[] = 'Topic title was too long.';
-                    break;
-            }
+            $validateTopicTitle = ForumTopic::validateTitle($topicTitle);
+            if(!empty($validateTopicTitle))
+                $notices[] = ForumTopic::titleValidationErrorString($validateTopicTitle);
 
             if($mode === 'create' && $topicType === null) {
                 $topicType = array_key_first($topicTypes);
@@ -175,19 +174,12 @@ if(!empty($_POST)) {
             }
         }
 
-        if(!Parser::isValid($postParser)) {
+        if(!Parser::isValid($postParser))
             $notices[] = 'Invalid parser selected.';
-        }
 
-        switch(forum_validate_post($postText)) {
-            case 'too-short':
-                $notices[] = 'Post content was too short.';
-                break;
-
-            case 'too-long':
-                $notices[] = 'Post content was too long.';
-                break;
-        }
+        $postBodyValidation = ForumPost::validateBody($postText);
+        if(!empty($postBodyValidation))
+            $notices[] = ForumPost::bodyValidationErrorString($postBodyValidation);
 
         if(empty($notices)) {
             switch($mode) {
@@ -195,12 +187,9 @@ if(!empty($_POST)) {
                     if(!empty($topicInfo)) {
                         $topicInfo->bumpTopic();
                     } else {
-                        $topicId = forum_topic_create(
-                            $forumInfo->getId(),
-                            $currentUserId,
-                            $topicTitle,
-                            $topicType
-                        );
+                        $isNewTopic = true;
+                        $topicInfo = ForumTopic::create($forumInfo, $currentUser, $topicTitle, $topicType);
+                        $topicId = $topicInfo->getId();
                     }
 
                     $postId = forum_post_create(
@@ -213,7 +202,7 @@ if(!empty($_POST)) {
                         $postSignature
                     );
                     forum_topic_mark_read($currentUserId, $topicId, $forumInfo->getId());
-                    $forumInfo->increaseTopicPostCount(empty($topicInfo));
+                    $forumInfo->increaseTopicPostCount($isNewTopic);
                     break;
 
                 case 'edit':
@@ -222,7 +211,11 @@ if(!empty($_POST)) {
                     }
 
                     if($isEditingTopic && ($topicTitleChanged || $topicTypeChanged)) {
-                        if(!forum_topic_update($topicId, $topicTitle, $topicType)) {
+                        $topicInfo->setTitle($topicTitle)->setType($topicType);
+
+                        try {
+                            $topicInfo->update();
+                        } catch(ForumTopicUpdateFailedException $ex) {
                             $notices[] = 'Topic update failed.';
                         }
                     }
@@ -230,7 +223,7 @@ if(!empty($_POST)) {
             }
 
             if(empty($notices)) {
-                $redirect = url(empty($topicInfo) ? 'forum-topic' : 'forum-post', [
+                $redirect = url($isNewTopic ? 'forum-topic' : 'forum-post', [
                     'topic' => $topicId ?? 0,
                     'post' => $postId ?? 0,
                     'post_fragment' => 'p' . ($postId ?? 0),
@@ -242,7 +235,7 @@ if(!empty($_POST)) {
     }
 }
 
-if(!empty($topicInfo)) {
+if(!$isNewTopic && !empty($topicInfo)) {
     Template::set('posting_topic', $topicInfo);
 }
 

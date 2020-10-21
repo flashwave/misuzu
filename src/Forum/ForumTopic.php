@@ -8,6 +8,8 @@ use Misuzu\Users\User;
 
 class ForumTopicException extends ForumException {}
 class ForumTopicNotFoundException extends ForumTopicException {}
+class ForumTopicCreationFailedException extends ForumTopicException {}
+class ForumTopicUpdateFailedException extends ForumTopicException {}
 
 class ForumTopic {
     public const TYPE_DISCUSSION = 0;
@@ -34,6 +36,12 @@ class ForumTopic {
         self::TYPE_ANNOUNCEMENT,
         self::TYPE_GLOBAL_ANNOUNCEMENT,
     ];
+
+    public const TITLE_MIN_LENGTH = 3;
+    public const TITLE_MAX_LENGTH = 100;
+
+    public const DELETE_AGE_LIMIT = 60 * 60 * 24;
+    public const DELETE_POST_LIMIT = 2;
 
     // Database fields
     private $topic_id = -1;
@@ -236,11 +244,6 @@ class ForumTopic {
     public function isDeleted(): bool {
         return $this->getDeletedTime() >= 0;
     }
-    public function setDeleted(bool $deleted): self {
-        if($this->isDeleted() !== $deleted)
-            $this->topic_deleted = $deleted ? time() : null;
-        return $this;
-    }
 
     public function getLockedTime(): int {
         return $this->topic_locked === null ? -1 : $this->topic_locked;
@@ -274,7 +277,7 @@ class ForumTopic {
     public function hasUnread(?User $user): bool {
         if($user === null)
             return false;
-        return true;
+        return mt_rand(0, 10) >= 5;
     }
 
     public function hasParticipated(?User $user): bool {
@@ -302,6 +305,112 @@ class ForumTopic {
             return false;
         // shouldn't there be an actual permission for this?
         return $this->getCategory()->canView($user);
+    }
+
+    public function canDelete(User $user): string {
+        if(false) // check if viewable
+            return 'view';
+
+        // check if user can view deleted posts/is mod
+        $canDeleteAny = false;
+
+        if($this->isDeleted())
+            return $canDeleteAny ? 'deleted' : 'view';
+
+        if(!$canDeleteAny) {
+            if(false) // check if user can delete posts
+                return 'permission';
+            if($user->getId() !== $this->getUserId())
+                return 'owner';
+            if($this->getCreatedTime() <= time() - self::DELETE_AGE_LIMIT)
+                return 'age';
+            if($this->getActualPostCount(true) >= self::DELETE_POST_LIMIT)
+                return 'posts';
+        }
+
+        return '';
+    }
+    public static function canDeleteErrorString(string $error): string {
+        switch($error) {
+            case 'view':
+                return 'This topic doesn\'t exist.';
+            case 'deleted':
+                return 'This topic has already been marked as deleted.';
+            case 'permission':
+                return 'You aren\'t allowed to this topic.';
+            case 'owner':
+                return 'You can only delete your own topics.';
+            case 'age':
+                return 'This topic is too old to be deleted. Ask a moderator to remove it if you deem it absolutely necessary.';
+            case 'posts':
+                return 'This topic has too many replies to be deleted. Ask a moderator to remove it if you deem it absolutely necessary.';
+            case '':
+                return 'Topic can be deleted!';
+            default:
+                return 'Topic cannot be deleted.';
+        }
+    }
+
+    public function delete(): void {
+        if($this->isDeleted())
+            return;
+        $this->topic_deleted = time();
+        DB::prepare('UPDATE `' . DB::PREFIX . self::TABLE . '` SET `topic_deleted` = NOW() WHERE `topic_id` = :topic')
+            ->bind('topic', $this->getId())
+            ->execute();
+        ForumPost::deleteTopic($this);
+    }
+    public function restore(): void {
+        if(!$this->isDeleted())
+            return;
+        ForumPost::restoreTopic($this);
+        DB::prepare('UPDATE `' . DB::PREFIX . self::TABLE . '` SET `topic_deleted` = NULL WHERE `topic_id` = :topic')
+            ->bind('topic', $this->getId())
+            ->execute();
+        $this->topic_deleted = null;
+    }
+    public function nuke(): void {
+        if(!$this->isDeleted())
+            return;
+        DB::prepare('DELETE FROM `' . DB::PREFIX . self::TABLE . '` WHERE `topic_id` = :topic')
+            ->bind('topic', $this->getId())
+            ->execute();
+        //ForumPost::nukeTopic($this);
+    }
+
+    public static function create(ForumCategory $category, User $user, string $title, int $type = self::TYPE_DISCUSSION): ForumTopic {
+        $create = DB::prepare(
+            'INSERT INTO `msz_forum_topics` (`forum_id`, `user_id`, `topic_title`, `topic_type`) VALUES (:forum, :user, :title, :type)'
+        )->bind('forum', $category->getId())->bind('user', $user->getId())
+         ->bind('title', $title)->bind('type', $type)
+         ->execute();
+        if(!$create)
+            throw new ForumTopicCreationFailedException;
+        $topicId = DB::lastId();
+        if($topicId < 1)
+            throw new ForumTopicCreationFailedException;
+
+        try {
+            return self::byId($topicId);
+        } catch(ForumTopicNotFoundException $ex) {
+            throw new ForumTopicCreationFailedException;
+        }
+    }
+
+    public function update(): void {
+        if($this->getId() < 1)
+            throw new ForumTopicUpdateFailedException;
+
+        if(!DB::prepare(
+            'UPDATE `msz_forum_topics`'
+            . ' SET `topic_title` = :title,'
+            .     ' `topic_type` = :type'
+            . ' WHERE `topic_id` = :topic'
+        )->bind('topic', $this->getId())
+         ->bind('title', $this->getTitle())
+         ->bind('type', $this->getType())
+         ->execute())
+            throw new ForumTopicUpdateFailedException;
     }
 
     public function synchronise(bool $save = true): array {
@@ -335,6 +444,27 @@ class ForumTopic {
         }
 
         return $stats;
+    }
+
+    public static function validateTitle(string $title): string {
+        $length = mb_strlen(trim($title));
+        if($length < self::TITLE_MIN_LENGTH)
+            return 'short';
+        if($length > self::TITLE_MAX_LENGTH)
+            return 'long';
+        return '';
+    }
+    public static function titleValidationErrorString(string $error): string {
+        switch($error) {
+            case 'short':
+                return sprintf('Topic title was too short, it has to be at least %d characters!', self::TITLE_MIN_LENGTH);
+            case 'long':
+                return sprintf("Topic title was too long, it can't be longer than %d characters!", self::TITLE_MAX_LENGTH);
+            case '':
+                return 'Topic title is correctly formatted!';
+            default:
+                return 'Topic title is incorrectly formatted.';
+        }
     }
 
     private static function countQueryBase(): string {

@@ -1,6 +1,7 @@
 <?php
 namespace Misuzu;
 
+use Misuzu\Forum\ForumLeaderboard;
 use Misuzu\Users\User;
 
 require_once '../../misuzu.php';
@@ -14,7 +15,7 @@ $leaderboardMode = !empty($_GET['mode']) && is_string($_GET['mode']) && ctype_lo
 $leaderboardId = !empty($_GET['id']) && is_string($_GET['id'])
     && ctype_digit($_GET['id'])
     ? $_GET['id']
-    : MSZ_FORUM_LEADERBOARD_CATEGORY_ALL;
+    : ForumLeaderboard::CATEGORY_ALL;
 $leaderboardIdLength = strlen($leaderboardId);
 
 $leaderboardYear  = $leaderboardIdLength === 4 || $leaderboardIdLength === 6 ? substr($leaderboardId, 0, 4) : null;
@@ -22,8 +23,8 @@ $leaderboardMonth = $leaderboardIdLength === 6 ? substr($leaderboardId, 4, 2) : 
 
 $unrankedForums = !empty($_GET['allow_unranked']) ? [] : Config::get('forum_leader.unranked.forum', Config::TYPE_ARR);
 $unrankedTopics = !empty($_GET['allow_unranked']) ? [] : Config::get('forum_leader.unranked.topic', Config::TYPE_ARR);
-$leaderboards = forum_leaderboard_categories();
-$leaderboard = forum_leaderboard_listing($leaderboardYear, $leaderboardMonth, $unrankedForums, $unrankedTopics);
+$leaderboards = ForumLeaderboard::categories();
+$leaderboard = ForumLeaderboard::listing($leaderboardYear, $leaderboardMonth, $unrankedForums, $unrankedTopics);
 
 $leaderboardName = 'All Time';
 

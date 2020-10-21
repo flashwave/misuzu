@@ -414,7 +414,7 @@ class ForumCategory {
         }
 
         if($save && !$this->isRoot()) {
-            $setCounts = \Misuzu\DB::prepare(
+            $setCounts = DB::prepare(
                 'UPDATE `msz_forum_categories`'
                 . ' SET `forum_count_topics` = :topics, `forum_count_posts` = :posts'
                 . ' WHERE `forum_id` = :forum'

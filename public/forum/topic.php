@@ -59,7 +59,7 @@ $canNukeOrRestore = $canDeleteAny && $topicInfo->isDeleted();
 $canDelete = !$topicInfo->isDeleted() && (
     $canDeleteAny || (
         $topicPostsTotal > 0
-        && $topicPostsTotal <= MSZ_FORUM_TOPIC_DELETE_POST_LIMIT
+        && $topicPostsTotal <= ForumTopic::DELETE_POST_LIMIT
         && $canDeleteOwn
         && $topicInfo->getUserId() === $topicUserId
     )
@@ -104,47 +104,20 @@ if(in_array($moderationMode, $validModerationModes, true)) {
 
     switch($moderationMode) {
         case 'delete':
-            $canDeleteCode = forum_topic_can_delete($topicInfo, $topicUserId);
-            $canDeleteMsg = '';
-            $responseCode = 200;
+            $canDeleteCodes = [
+                'view' => 404,
+                'deleted' => 404,
+                'owner' => 403,
+                'age' => 403,
+                'permission' => 403,
+                'posts' => 403,
+                '' => 200,
+            ];
+            $canDelete = $topicInfo->canDelete($topicUser);
+            $canDeleteMsg = ForumTopic::canDeleteErrorString($canDelete);
+            $responseCode = $canDeleteCodes[$canDelete] ?? 500;
 
-            switch($canDeleteCode) {
-                case MSZ_E_FORUM_TOPIC_DELETE_USER:
-                    $responseCode = 401;
-                    $canDeleteMsg = 'You must be logged in to delete topics.';
-                    break;
-                case MSZ_E_FORUM_TOPIC_DELETE_TOPIC:
-                    $responseCode = 404;
-                    $canDeleteMsg = "This topic doesn't exist.";
-                    break;
-                case MSZ_E_FORUM_TOPIC_DELETE_DELETED:
-                    $responseCode = 404;
-                    $canDeleteMsg = 'This topic has already been marked as deleted.';
-                    break;
-                case MSZ_E_FORUM_TOPIC_DELETE_OWNER:
-                    $responseCode = 403;
-                    $canDeleteMsg = 'You can only delete your own topics.';
-                    break;
-                case MSZ_E_FORUM_TOPIC_DELETE_OLD:
-                    $responseCode = 401;
-                    $canDeleteMsg = 'This topic has existed for too long. Ask a moderator to remove if it absolutely necessary.';
-                    break;
-                case MSZ_E_FORUM_TOPIC_DELETE_PERM:
-                    $responseCode = 401;
-                    $canDeleteMsg = 'You are not allowed to delete topics.';
-                    break;
-                case MSZ_E_FORUM_TOPIC_DELETE_POSTS:
-                    $responseCode = 403;
-                    $canDeleteMsg = 'This topic already has replies, you may no longer delete it. Ask a moderator to remove if it absolutely necessary.';
-                    break;
-                case MSZ_E_FORUM_TOPIC_DELETE_OK:
-                    break;
-                default:
-                    $responseCode = 500;
-                    $canDeleteMsg = sprintf('Unknown error \'%d\'', $canDelete);
-            }
-
-            if($canDeleteCode !== MSZ_E_FORUM_TOPIC_DELETE_OK) {
+            if($canDelete !== '') {
                 if($isXHR) {
                     http_response_code($responseCode);
                     echo json_encode([
@@ -181,23 +154,15 @@ if(in_array($moderationMode, $validModerationModes, true)) {
                 }
             }
 
-            $deleteTopic = forum_topic_delete($topicInfo->getId());
-
-            if($deleteTopic) {
-                AuditLog::create(AuditLog::FORUM_TOPIC_DELETE, [$topicInfo->getId()]);
-            }
+            $topicInfo->delete();
+            AuditLog::create(AuditLog::FORUM_TOPIC_DELETE, [$topicInfo->getId()]);
 
             if($isXHR) {
                 echo json_encode([
-                    'success' => $deleteTopic,
+                    'success' => true,
                     'topic_id' => $topicInfo->getId(),
-                    'message' => $deleteTopic ? 'Topic deleted!' : 'Failed to delete topic.',
+                    'message' => 'Topic deleted!',
                 ]);
-                break;
-            }
-
-            if(!$deleteTopic) {
-                echo render_error(500);
                 break;
             }
 
@@ -232,13 +197,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
                 }
             }
 
-            $restoreTopic = forum_topic_restore($topicInfo->getId());
-
-            if(!$restoreTopic) {
-                echo render_error(500);
-                break;
-            }
-
+            $topicInfo->restore();
             AuditLog::create(AuditLog::FORUM_TOPIC_RESTORE, [$topicInfo->getId()]);
             http_response_code(204);
 
@@ -275,13 +234,7 @@ if(in_array($moderationMode, $validModerationModes, true)) {
                 }
             }
 
-            $nukeTopic = forum_topic_nuke($topicInfo->getId());
-
-            if(!$nukeTopic) {
-                echo render_error(500);
-                break;
-            }
-
+            $topicInfo->nuke();
             AuditLog::create(AuditLog::FORUM_TOPIC_NUKE, [$topicInfo->getId()]);
             http_response_code(204);
 

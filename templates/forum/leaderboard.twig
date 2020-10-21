@@ -1,6 +1,5 @@
 {% extends 'forum/master.twig' %}
 {% from 'macros.twig' import avatar %}
-{% from 'forum/macros.twig' import forum_header %}
 
 {% set title = 'Forum Leaderboard » ' ~ leaderboard_name %}
 {% set canonical_url = url('forum-leaderboard', {
@@ -9,18 +8,23 @@
 }) %}
 
 {% block content %}
-    {{ forum_header(title, [], false, canonical_url, [
-        {
-            'html': '<i class="fab fa-markdown fa-fw"></i> Markdown',
-            'url': url('forum-leaderboard', {'id': leaderboard_id, 'mode': 'markdown'}),
-            'display': leaderboard_mode != 'markdown',
-        },
-        {
-            'html': '<i class="fas fa-table fa-fw"></i> Table',
-            'url': url('forum-leaderboard', {'id': leaderboard_id}),
-            'display': leaderboard_mode == 'markdown',
-        },
-    ]) }}
+    <div class="container forum__header">
+        <a class="forum__header__title" href="{{ canonical_url }}">
+            {{ title }}
+        </a>
+
+        <div class="forum__header__actions">
+            {% if leaderboard_mode == 'markdown' %}
+                <a class="forum__header__action" href="{{ url('forum-leaderboard', {'id': leaderboard_id}) }}">
+                    <i class="fas fa-table fa-fw"></i> Table
+                </a>
+            {% else %}
+                <a class="forum__header__action" href="{{ url('forum-leaderboard', {'id': leaderboard_id, 'mode': 'markdown'}) }}">
+                    <i class="fas fa-markdown fa-fw"></i> Markdown
+                </a>
+            {% endif %}
+        </div>
+    </div>
 
     <div class="container forum__leaderboard__categories">
         {% for id, name in leaderboard_categories %}

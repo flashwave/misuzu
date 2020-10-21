@@ -77,10 +77,8 @@ require_once 'src/manage.php';
 require_once 'src/url.php';
 require_once 'src/Forum/perms.php';
 require_once 'src/Forum/forum.php';
-require_once 'src/Forum/leaderboard.php';
 require_once 'src/Forum/post.php';
 require_once 'src/Forum/topic.php';
-require_once 'src/Forum/validate.php';
 
 $dbConfig = parse_ini_file(MSZ_CONFIG . '/config.ini', true, INI_SCANNER_TYPED);
 

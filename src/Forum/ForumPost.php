@@ -15,6 +15,9 @@ class ForumPostCreationFailedException extends ForumPostException {}
 class ForumPost {
     public const PER_PAGE = 10;
 
+    public const BODY_MIN_LENGTH = 1;
+    public const BODY_MAX_LENGTH = 60000;
+
     // Database fields
     private $post_id = -1;
     private $topic_id = -1;
@@ -176,11 +179,6 @@ class ForumPost {
     public function isDeleted(): bool {
         return $this->getDeletedTime() >= 0;
     }
-    public function setDeleted(bool $deleted): self {
-        if($this->isDeleted() !== $deleted)
-            $this->post_deleted = $deleted ? time() : null;
-        return $this;
-    }
 
     public function isOpeningPost(): bool {
         return $this->getTopic()->isOpeningPost($this);
@@ -209,6 +207,58 @@ class ForumPost {
         if($user === null)
             return false;
         return $this->getUser()->getId() === $user->getId();
+    }
+
+    public static function validateBody(string $body): string {
+        $length = mb_strlen(trim($body));
+        if($length < self::BODY_MIN_LENGTH)
+            return 'short';
+        if($length > self::BODY_MAX_LENGTH)
+            return 'long';
+        return '';
+    }
+    public static function bodyValidationErrorString(string $error): string {
+        switch($error) {
+            case 'short':
+                return sprintf('Post body was too short, it has to be at least %d characters!', self::BODY_MIN_LENGTH);
+            case 'long':
+                return sprintf("Post body was too long, it can't be longer than %d characters!", self::BODY_MAX_LENGTH);
+            case '':
+                return 'Post body is correctly formatted!';
+            default:
+                return 'Post body is incorrectly formatted.';
+        }
+    }
+
+    public static function deleteTopic(ForumTopic $topic): void {
+        // Deleting posts should only be possible while the topic is already in a deleted state
+        if(!$topic->isDeleted())
+            return;
+        DB::prepare(
+            'UPDATE `' . DB::PREFIX . self::TABLE . '`'
+            . ' SET `post_deleted` = NOW()'
+            . ' WHERE `topic_id` = :topic'
+            . ' AND `post_deleted` IS NULL'
+        )->bind('topic', $topic->getId())->execute();
+    }
+    public static function restoreTopic(ForumTopic $topic): void {
+        // This looks like an error but it's not, run this before restoring the topic
+        if(!$topic->isDeleted())
+            return;
+        DB::prepare(
+            'UPDATE `' . DB::PREFIX . self::TABLE . '`'
+            . ' SET `post_deleted` = NULL'
+            . ' WHERE `topic_id` = :topic'
+            . ' AND `post_deleted` = FROM_UNIXTIME(:deleted)'
+        )->bind('topic', $topic->getId())->bind('deleted', $topic->getDeletedTime())->execute();
+    }
+    public static function nukeTopic(ForumTopic $topic): void { // Does this need to exist? Happens implicitly through foreign keys.
+        // Hard deleting should only be allowed if the topic is already soft deleted
+        if(!$topic->isDeleted())
+            return;
+        DB::prepare('DELETE FROM `' . DB::PREFIX . self::TABLE . '` WHERE `topic_id` = :topic')
+            ->bind('topic', $topic->getId())
+            ->execute();
     }
 
     private static function countQueryBase(): string {

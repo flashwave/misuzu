@@ -344,50 +344,19 @@ switch($profileMode) {
 
     case 'forum-topics':
         $template = 'profile.topics';
-        $topicsCount = forum_topic_count_user($profileUser->getId(), $currentUserId);
-        $topicsPagination = new Pagination($topicsCount, 20);
-
-        if(!$topicsPagination->hasValidOffset()) {
-            echo render_error(404);
-            return;
-        }
-
-        $topics = forum_topic_listing_user(
-            $profileUser->getId(), $currentUserId,
-            $topicsPagination->getOffset(), $topicsPagination->getRange()
-        );
 
         Template::set([
             'title' => $profileUser->getUsername() . ' / topics',
             'canonical_url' => url('user-profile-forum-topics', ['user' => $profileUser->getId(), 'page' => Pagination::param()]),
-            'profile_topics' => $topics,
-            'profile_topics_pagination' => $topicsPagination,
         ]);
         break;
 
     case 'forum-posts':
         $template = 'profile.posts';
-        $postsCount = forum_post_count_user($profileUser->getId());
-        $postsPagination = new Pagination($postsCount, 20);
-
-        if(!$postsPagination->hasValidOffset()) {
-            echo render_error(404);
-            return;
-        }
-
-        $posts = forum_post_listing(
-            $profileUser->getId(),
-            $postsPagination->getOffset(),
-            $postsPagination->getRange(),
-            false,
-            true
-        );
 
         Template::set([
             'title' => $profileUser->getUsername() . ' / posts',
             'canonical_url' => url('user-profile-forum-posts', ['user' => $profileUser->getId(), 'page' => Pagination::param()]),
-            'profile_posts' => $posts,
-            'profile_posts_pagination' => $postsPagination,
         ]);
         break;
 
