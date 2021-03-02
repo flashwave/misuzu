@@ -17,6 +17,7 @@ use Misuzu\Users\UserChatTokenCreationFailedException;
 use Misuzu\Users\UserSession;
 use Misuzu\Users\UserSessionNotFoundException;
 use Misuzu\Users\UserWarning;
+use Misuzu\Users\UserWarningCreationFailedException;
 
 final class SockChatHandler extends Handler {
     private string $hashKey = 'woomy';
@@ -132,15 +133,125 @@ final class SockChatHandler extends Handler {
             if(!$warning->isBan() || $warning->hasExpired())
                 continue;
 
+            $isPermanent = $warning->isPermanent();
             $bans[] = [
                 'id' => $warning->getUser()->getId(),
-                'expires' => date('c', $warning->isPermanent() ? 0x7FFFFFFF : $warning->getExpirationTime()),
+                'expires' => date('c', $isPermanent ? 0x7FFFFFFF : $warning->getExpirationTime()),
+                'is_permanent' => $isPermanent,
                 'ip' => $warning->getUserRemoteAddress(),
-                'username' => $warning->getUser()->getUsername()
+                'username' => $warning->getUser()->getUsername(),
             ];
         }
 
         return $bans;
+    }
+
+    public function checkBan(HttpResponse $response, HttpRequest $request): array {
+        $userHash = $request->getHeaderLine('X-SharpChat-Signature');
+        $ipAddress = (string)$request->getQueryParam('a', FILTER_SANITIZE_STRING);
+        $userId = (int)$request->getQueryParam('u', FILTER_SANITIZE_NUMBER_INT);
+
+        $realHash = hash_hmac('sha256', "check#{$ipAddress}#{$userId}", $this->hashKey);
+        if(!hash_equals($realHash, $userHash))
+            return [];
+
+        $response = [];
+        $warning = UserWarning::byRemoteAddressActive($ipAddress)
+            ?? UserWarning::byUserIdActive($userId);
+
+        if($warning !== null) {
+            $response['warning'] = $warning->getId();
+            $response['id'] = $warning->getUserId();
+            $response['ip'] = $warning->getUserRemoteAddress();
+            $response['is_permanent'] = $warning->isPermanent();
+            $response['expires'] = date('c', $response['is_permanent'] ? 0x7FFFFFFF : $warning->getExpirationTime());
+        } else {
+            $response['expires'] = date('c', 0);
+            $response['is_permanent'] = false;
+        }
+
+        return $response;
+    }
+
+    public function createBan(HttpResponse $response, HttpRequest $request): int {
+        $userHash = $request->getHeaderLine('X-SharpChat-Signature');
+        $userId = (int)$request->getBodyParam('u', FILTER_SANITIZE_NUMBER_INT);
+        $modId = (int)$request->getBodyParam('m', FILTER_SANITIZE_NUMBER_INT);
+        $duration = (int)$request->getBodyParam('d', FILTER_SANITIZE_NUMBER_INT);
+        $isPermanent = (int)$request->getBodyParam('p', FILTER_SANITIZE_NUMBER_INT);
+        $reason = (string)$request->getBodyParam('r', FILTER_SANITIZE_STRING);
+
+        $realHash = hash_hmac('sha256', "create#{$userId}#{$modId}#{$duration}#{$isPermanent}#{$reason}", $this->hashKey);
+        if(!hash_equals($realHash, $userHash))
+            return 403;
+
+        if(empty($reason))
+            $reason = 'Banned through chat.';
+
+        if($isPermanent)
+            $duration = -1;
+        elseif($duration < 1)
+            return 400;
+
+        try {
+            $userInfo = User::byId($userId);
+        } catch(UserNotFoundException $ex) {
+            return 404;
+        }
+
+        try {
+            $modInfo = User::byId($modId);
+        } catch(UserNotFoundException $ex) {
+            return 404;
+        }
+
+        try {
+            UserWarning::create(
+                $userInfo,
+                $modInfo,
+                UserWarning::TYPE_BAHN,
+                $duration,
+                $reason
+            );
+        } catch(UserWarningCreationFailedException $ex) {
+            return 500;
+        }
+
+        return 201;
+    }
+
+    public function removeBan(HttpResponse $response, HttpRequest $request): int {
+        $userHash = $request->getHeaderLine('X-SharpChat-Signature');
+        $type = (string)$request->getQueryParam('t', FILTER_SANITIZE_STRING);
+        $subject = (string)$request->getQueryParam('s', FILTER_SANITIZE_STRING);
+
+        $realHash = hash_hmac('sha256', "remove#{$type}#{$subject}", $this->hashKey);
+        if(!hash_equals($realHash, $userHash))
+            return 403;
+
+        $warning = null;
+        switch($type) {
+            case 'ip':
+                $warning = UserWarning::byRemoteAddressActive($subject);
+                break;
+
+            case 'user':
+                try {
+                    $userInfo = User::byUsername($subject);
+                } catch(UserNotFoundException $ex) {
+                    return 404;
+                }
+
+                $warning = UserWarning::byUserIdActive($userInfo->getId());
+                break;
+        }
+
+        if($warning === null)
+            return 404;
+
+        $warning->delete();
+
+        return 204;
     }
 
     public function login(HttpResponse $response, HttpRequest $request) {

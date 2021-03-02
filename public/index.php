@@ -53,10 +53,14 @@ Router::addRoutes(
     Route::create(['GET', 'POST'], '/_sockchat.php', 'phpFile', 'SockChat'),
     Route::group('/_sockchat', 'SockChat')->addChildren(
         Route::get('/emotes',  'emotes'),
-        Route::get('/bans',    'bans'),
         Route::get('/login',   'login'),
         Route::post('/bump',   'bump'),
         Route::post('/verify', 'verify'),
+        Route::get('/bans',    'bans')->addChildren(
+            Route::get('/check', 'checkBan'),
+            Route::post('/create', 'createBan'),
+            Route::delete('/remove', 'removeBan'),
+        ),
     ),
 
     // Redirects

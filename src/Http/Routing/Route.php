@@ -32,6 +32,9 @@ class Route implements Serializable {
     public static function post(string $path, ?string $method = null, ?string $class = null): self {
         return self::create(['POST'], $path, $method, $class);
     }
+    public static function delete(string $path, ?string $method = null, ?string $class = null): self {
+        return self::create(['DELETE'], $path, $method, $class);
+    }
     public static function group(string $path, ?string $class = null): self {
         return self::create([''], $path, null, $class);
     }

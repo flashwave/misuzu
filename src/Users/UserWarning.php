@@ -228,13 +228,29 @@ class UserWarning {
         return $object;
     }
     public static function byUserActive(User $user): ?self {
+        return self::byUserIdActive($user->getId());
+    }
+    public static function byUserIdActive(int $userId): ?self {
+        if($userId < 1)
+            return null;
+
         return DB::prepare(
             self::byQueryBase()
             . ' WHERE `user_id` = :user'
             . ' AND `warning_type` IN (' . implode(',', self::HAS_DURATION) . ')'
             . ' AND (`warning_duration` IS NULL OR `warning_duration` >= NOW())'
             . ' ORDER BY `warning_type` DESC, `warning_duration` DESC'
-        )   ->bind('user', $user->getId())
+        )   ->bind('user', $userId)
+            ->fetchObject(self::class);
+    }
+    public static function byRemoteAddressActive(string $ipAddress): ?self {
+        return DB::prepare(
+            self::byQueryBase()
+            . ' WHERE `user_ip` = INET6_ATON(:address)'
+            . ' AND `warning_type` IN (' . implode(',', self::HAS_DURATION) . ')'
+            . ' AND (`warning_duration` IS NULL OR `warning_duration` >= NOW())'
+            . ' ORDER BY `warning_type` DESC, `warning_duration` DESC'
+        )   ->bind('address', $ipAddress)
             ->fetchObject(self::class);
     }
     public static function byProfile(User $user, ?User $viewer = null): array {
